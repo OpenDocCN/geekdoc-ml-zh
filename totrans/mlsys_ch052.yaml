@@ -1,10 +1,14 @@
 - en: Small Language Models (SLM)
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 小型语言模型（SLM）
 - en: '![](../media/file908.jpg)'
+  id: totrans-1
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file908.jpg)'
 - en: '*DALL·E prompt - A 1950s-style cartoon illustration showing a Raspberry Pi
     running a small language model at the edge. The Raspberry Pi is stylized in a
     retro-futuristic way with rounded edges and chrome accents, connected to playful
@@ -13,26 +17,36 @@
     devices with wires and small gadgets, all drawn in a vintage cartoon style. The
     color palette uses soft pastel colors and bold outlines typical of 1950s cartoons,
     giving a fun and nostalgic vibe to the scene.*'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '*DALL·E提示 - 一幅1950年代风格的卡通插图，展示一个Raspberry Pi在边缘运行一个小型语言模型。Raspberry Pi以复古未来主义的方式设计，边缘圆润，铬色装饰，连接到有趣的卡通式传感器和设备。气泡在周围飘浮，代表语言处理，背景是一个奇妙的互联设备景观，有电线和小型小玩意，所有这些都以复古卡通风格绘制。色彩调色板使用柔和的粉彩颜色和典型的1950年代卡通的粗轮廓，给场景增添了乐趣和怀旧感。*'
 - en: Overview
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 概述
 - en: In the fast-growing area of artificial intelligence, edge computing presents
     an opportunity to decentralize capabilities traditionally reserved for powerful,
     centralized servers. This lab explores the practical integration of small versions
     of traditional large language models (LLMs) into a Raspberry Pi 5, transforming
     this edge device into an AI hub capable of real-time, on-site data processing.
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 在人工智能快速增长的领域，边缘计算为将传统上保留给强大、集中式服务器的功能去中心化提供了机会。本实验探讨了将传统大型语言模型（LLMs）的小型版本集成到Raspberry
+    Pi 5中的实际应用，将这个边缘设备转变为一个能够实时、现场处理数据的AI中心。
 - en: As large language models grow in size and complexity, Small Language Models
     (SLMs) offer a compelling alternative for edge devices, striking a balance between
     performance and resource efficiency. By running these models directly on Raspberry
     Pi, we can create responsive, privacy-preserving applications that operate even
     in environments with limited or no internet connectivity.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着大型语言模型在规模和复杂性上的增长，小型语言模型（SLMs）为边缘设备提供了一个引人注目的替代方案，在性能和资源效率之间取得了平衡。通过直接在Raspberry
+    Pi上运行这些模型，我们可以创建响应式、保护隐私的应用程序，即使在有限或没有互联网连接的环境中也能运行。
 - en: This lab will guide you through setting up, optimizing, and leveraging SLMs
     on Raspberry Pi. We will explore the installation and utilization of [Ollama](https://ollama.com/).
     This open-source framework allows us to run LLMs locally on our machines (our
@@ -42,15 +56,23 @@
     (Multimodal). We will integrate some of those models into projects using Python’s
     ecosystem, exploring their potential in real-world scenarios (or at least point
     in this direction).
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 本实验将指导您在Raspberry Pi上设置、优化和利用SLMs。我们将探讨[Ollama](https://ollama.com/)的安装和使用。这个开源框架允许我们在自己的机器上（我们的台式机或边缘设备，如Raspberry
+    Pi或NVidia Jetsons）本地运行LLMs。Ollama被设计成高效、可扩展且易于使用，使其成为部署AI模型（如Microsoft Phi、Google
+    Gemma、Meta Llama和LLaVa（多模态））的好选择。我们将使用Python生态系统将这些模型中的某些集成到项目中，探索它们在现实世界场景中的潜力（或者至少指向这个方向）。
 - en: '![](../media/file909.jpg)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file909.jpg)'
 - en: Setup
+  id: totrans-8
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 设置
 - en: We could use any Raspi model in the previous labs, but here, the choice must
     be the Raspberry Pi 5 (Raspi-5). It is a robust platform that substantially upgrades
     the last version 4, equipped with the Broadcom BCM2712, a 2.4 GHz quad-core 64-bit
@@ -60,265 +82,373 @@
     with 8GB being our choice to run SLMs. It also features expandable storage via
     a microSD card slot and a PCIe 2.0 interface for fast peripherals such as M.2
     SSDs (Solid State Drives).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用之前实验中的任何Raspi型号，但在这里，选择必须是Raspberry Pi 5（Raspi-5）。这是一个坚固的平台，实质性地升级了上一版本的4，配备了Broadcom
+    BCM2712，一个2.4 GHz四核64位Arm Cortex-A76 CPU，具有加密扩展和增强的缓存功能。它拥有VideoCore VII GPU，双4Kp60
+    HDMI®输出带HDR，以及4Kp60 HEVC解码器。内存选项包括4 GB和8 GB的高速LPDDR4X SDRAM，我们选择8 GB来运行SLMs。它还通过microSD卡槽和PCIe
+    2.0接口提供可扩展的存储，用于快速外围设备，如M.2 SSDs（固态硬盘）。
 - en: For real SSL applications, SSDs are a better option than SD cards.
+  id: totrans-10
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 对于真正的SSL应用，SSD比SD卡是更好的选择。
 - en: By the way, as [Alasdair Allan](https://www.hackster.io/aallan) discussed, inferencing
     directly on the Raspberry Pi 5 CPU—with no GPU acceleration—is now on par with
     the performance of the Coral TPU.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 顺便提一下，正如[阿拉斯代尔·艾伦](https://www.hackster.io/aallan)所讨论的，直接在Raspberry Pi 5 CPU上进行推理——没有GPU加速——现在的性能已经与Coral
+    TPU相当。
 - en: '![](../media/file910.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file910.png)'
 - en: 'For more info, please see the complete article: [Benchmarking TensorFlow and
     TensorFlow Lite on Raspberry Pi 5](https://www.hackster.io/news/benchmarking-tensorflow-and-tensorflow-lite-on-raspberry-pi-5-b9156d58a6a2?mc_cid=0cab3d08f4&mc_eid=e96256ccba).'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 更多信息，请参阅完整文章：[在Raspberry Pi 5上基准测试TensorFlow和TensorFlow Lite](https://www.hackster.io/news/benchmarking-tensorflow-and-tensorflow-lite-on-raspberry-pi-5-b9156d58a6a2?mc_cid=0cab3d08f4&mc_eid=e96256ccba)。
 - en: Raspberry Pi Active Cooler
+  id: totrans-14
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Raspberry Pi活性散热器
 - en: We suggest installing an Active Cooler, a dedicated clip-on cooling solution
     for Raspberry Pi 5 (Raspi-5), for this lab. It combines an aluminum heat sink
     with a temperature-controlled blower fan to keep the Raspi-5 operating comfortably
     under heavy loads, such as running SLMs.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们建议为这个实验室安装一个活性散热器，这是为Raspberry Pi 5（Raspi-5）设计的专用夹具式冷却解决方案。它结合了铝制散热器和温度控制的吹风风扇，以保持Raspi-5在重负载下（如运行SLMs）舒适运行。
 - en: '![](../media/file911.png)'
+  id: totrans-16
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file911.png)'
 - en: 'The Active Cooler has pre-applied thermal pads for heat transfer and is mounted
     directly to the Raspberry Pi 5 board using spring-loaded push pins. The Raspberry
     Pi firmware actively manages it: at 60°C, the blower’s fan will be turned on;
     at 67.5°C, the fan speed will be increased; and finally, at 75°C, the fan increases
     to full speed. The blower’s fan will spin down automatically when the temperature
     drops below these limits.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 活性散热器预先涂有热垫以进行热传递，并使用弹簧加载的推钉直接安装到Raspberry Pi 5板上。Raspberry Pi固件会主动管理它：在60°C时，风扇将开启；在67.5°C时，风扇速度将提高；最后，在75°C时，风扇将全速运转。当温度降至这些限制以下时，风扇将自动减速。
 - en: '![](../media/file912.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file912.png)'
 - en: To prevent overheating, all Raspberry Pi boards begin to throttle the processor
     when the temperature reaches 80°Cand throttle even further when it reaches the
     maximum temperature of 85°C (more detail [here](https://www.raspberrypi.com/news/heating-and-cooling-raspberry-pi-5/)).
+  id: totrans-19
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 为了防止过热，所有Raspberry Pi板在温度达到80°C时开始降低处理器速度，当温度达到最大温度85°C时进一步降低速度（更多详情[这里](https://www.raspberrypi.com/news/heating-and-cooling-raspberry-pi-5/))。
 - en: Generative AI (GenAI)
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 生成式AI（GenAI）
 - en: Generative AI is an artificial intelligence system capable of creating new,
     original content across various mediums such as **text, images, audio, and video**.
     These systems learn patterns from existing data and use that knowledge to generate
     novel outputs that didn’t previously exist. **Large Language Models (LLMs)**,
     **Small Language Models (SLMs)**, and **multimodal models** can all be considered
     types of GenAI when used for generative tasks.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 生成式AI是一种能够在各种媒介如**文本、图像、音频和视频**中创建新、原创内容的人工智能系统。这些系统从现有数据中学习模式，并利用这些知识生成之前不存在的新颖输出。**大型语言模型（LLMs）**、**小型语言模型（SLMs）**和**多模态模型**都可以被认为是用于生成任务的生成式AI的类型。
 - en: GenAI provides the conceptual framework for AI-driven content creation, with
     LLMs serving as powerful general-purpose text generators. SLMs adapt this technology
     for edge computing, while multimodal models extend GenAI capabilities across different
     data types. Together, they represent a spectrum of generative AI technologies,
     each with its strengths and applications, collectively driving AI-powered content
     creation and understanding.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 生成式AI为AI驱动的内容创作提供了概念框架，其中LLMs作为强大的通用文本生成器。SLMs将这项技术应用于边缘计算，而多模态模型扩展了生成式AI在不同数据类型上的能力。它们共同代表了一组生成式AI技术，每种技术都有其优势和用途，共同推动AI驱动的创作和理解。
 - en: Large Language Models (LLMs)
+  id: totrans-23
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 大型语言模型（LLMs）
 - en: 'Large Language Models (LLMs) are advanced artificial intelligence systems that
     understand, process, and generate human-like text. These models are characterized
     by their massive scale in terms of the amount of data they are trained on and
     the number of parameters they contain. Critical aspects of LLMs include:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 大型语言模型（LLMs）是高级人工智能系统，能够理解、处理和生成类似人类的文本。这些模型的特点是它们在训练数据量和参数数量上的巨大规模。LLMs的关键方面包括：
 - en: '**Size**: LLMs typically contain billions of parameters. For example, GPT-3
     has 175 billion parameters, while some newer models exceed a trillion parameters.'
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**规模**：LLMs通常包含数十亿个参数。例如，GPT-3有1750亿个参数，而一些较新的模型超过了万亿个参数。'
 - en: '**Training Data**: They are trained on vast amounts of text data, often including
     books, websites, and other diverse sources, amounting to hundreds of gigabytes
     or even terabytes of text.'
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**训练数据**：它们在大量的文本数据上训练，通常包括书籍、网站和其他多样化的来源，总计达到数百甚至数千吉字节（GB）或甚至太字节（TB）的文本。'
 - en: '**Architecture**: Most LLMs use [transformer-based architectures](https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)),
     which allow them to process and generate text by paying attention to different
     parts of the input simultaneously.'
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**架构**：大多数LLMs使用基于[transformer架构](https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture))，这使得它们能够通过同时关注输入的不同部分来处理和生成文本。'
 - en: '**Capabilities**: LLMs can perform a wide range of language tasks without specific
     fine-tuning, including:'
+  id: totrans-28
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**功能**：LLMs可以在不进行特定微调的情况下执行广泛的语言任务，包括：'
 - en: Text generation
+  id: totrans-29
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 文本生成
 - en: Translation
+  id: totrans-30
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 翻译
 - en: Summarization
+  id: totrans-31
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 摘要
 - en: Question answering
+  id: totrans-32
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 问答
 - en: Code generation
+  id: totrans-33
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 代码生成
 - en: Logical reasoning
+  id: totrans-34
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 逻辑推理
 - en: '**Few-shot Learning**: They can often understand and perform new tasks with
     minimal examples or instructions.'
+  id: totrans-35
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**少样本学习**：它们通常可以通过最少的示例或指令来理解和执行新任务。'
 - en: '**Resource-Intensive**: Due to their size, LLMs typically require significant
     computational resources to run, often needing powerful GPUs or TPUs.'
+  id: totrans-36
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**资源密集型**：由于它们的规模，LLMs通常需要大量的计算资源来运行，通常需要强大的GPU或TPU。'
 - en: '**Continual Development**: The field of LLMs is rapidly evolving, with new
     models and techniques constantly emerging.'
+  id: totrans-37
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**持续发展**：LLMs领域正在迅速发展，新的模型和技术不断涌现。'
 - en: '**Ethical Considerations**: The use of LLMs raises important questions about
     bias, misinformation, and the environmental impact of training such large models.'
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**伦理考量**：LLMs的使用引发了关于偏见、错误信息和训练如此大型模型的环境影响的重大问题。'
 - en: '**Applications**: LLMs are used in various fields, including content creation,
     customer service, research assistance, and software development.'
+  id: totrans-39
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**应用领域**：大型语言模型（LLMs）被应用于各个领域，包括内容创作、客户服务、研究辅助和软件开发。'
 - en: '**Limitations**: Despite their power, LLMs can produce incorrect or biased
     information and lack true understanding or reasoning capabilities.'
+  id: totrans-40
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**局限性**：尽管功能强大，LLMs仍然可能产生错误或带有偏见的信息，并且缺乏真正的理解或推理能力。'
 - en: We must note that we use large models beyond text, calling them *multi-modal
     models*. These models integrate and process information from multiple types of
     input simultaneously. They are designed to understand and generate content across
     various forms of data, such as text, images, audio, and video.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们必须注意，我们使用的是超越文本的大型模型，我们称它们为**多模态模型**。这些模型能够同时整合和处理来自多种类型输入的信息。它们被设计成能够理解和生成跨各种数据形式的内容，例如文本、图像、音频和视频。
 - en: 'Closed vs Open Models:'
+  id: totrans-42
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 封闭模型与开放模型：
 - en: '**Closed models**, also called proprietary models, are AI models whose internal
     workings, code, and training data are not publicly disclosed. Examples: GPT-4
     (by OpenAI), Claude (by Anthropic), Gemini (by Google).'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '**封闭模型**，也称为专有模型，是指其内部工作原理、代码和训练数据不公开的AI模型。例如：GPT-4（由OpenAI开发）、Claude（由Anthropic开发）、Gemini（由Google开发）。'
 - en: '**Open models**, also known as open-source models, are AI models whose underlying
     code, architecture, and often training data are publicly available and accessible.
     Examples: Gemma (by Google), LLaMA (by Meta) and Phi (by Microsoft).'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '**开放模型**，也称为开源模型，是指其底层代码、架构以及通常的训练数据都是公开可用和可访问的AI模型。例如：Gemma（由Google开发）、LLaMA（由Meta开发）和Phi（由Microsoft开发）。'
 - en: Open models are particularly relevant for running models on edge devices like
     Raspberry Pi as they can be more easily adapted, optimized, and deployed in resource-constrained
     environments. Still, it is crucial to verify their Licenses. Open models come
     with various open-source licenses that may affect their use in commercial applications,
     while closed models have clear, albeit restrictive, terms of service.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 开放模型特别适用于在边缘设备（如Raspberry Pi）上运行模型，因为它们更容易适应、优化和部署在资源受限的环境中。然而，验证它们的许可证至关重要。开放模型附带各种开源许可证，可能会影响它们在商业应用中的使用，而封闭模型则具有明确、尽管有些限制的服务条款。
 - en: '![](../media/file913.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file913.png)'
 - en: Adapted from [arXiv](images/2304.13712)
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 修改自 [arXiv](images/2304.13712)
 - en: Small Language Models (SLMs)
+  id: totrans-48
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 小型语言模型（SLMs）
 - en: In the context of edge computing on devices like Raspberry Pi, full-scale LLMs
     are typically too large and resource-intensive to run directly. This limitation
     has driven the development of smaller, more efficient models, such as the Small
     Language Models (SLMs).
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 在边缘计算设备如树莓派（Raspberry Pi）的背景下，全规模的大型语言模型（LLMs）通常太大且资源密集，无法直接运行。这种限制推动了更小、更高效的模型的发展，例如小型语言模型（SLMs）。
 - en: SLMs are compact versions of LLMs designed to run efficiently on resource-constrained
     devices such as smartphones, IoT devices, and single-board computers like the
     Raspberry Pi. These models are significantly smaller in size and computational
     requirements than their larger counterparts while still retaining impressive language
     understanding and generation capabilities.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: SLMs是LLMs的紧凑版本，旨在在资源受限的设备上（如智能手机、物联网设备和树莓派等单板计算机）高效运行。这些模型在尺寸和计算需求方面比其大型对应物小得多，同时仍然保留了令人印象深刻的语言理解和生成能力。
 - en: 'Key characteristics of SLMs include:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: SLMs的关键特性包括：
 - en: '**Reduced parameter count**: Typically ranging from a few hundred million to
     a few billion parameters, compared to two-digit billions in larger models.'
+  id: totrans-52
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**参数数量减少**：通常从几亿到几十亿参数不等，相比之下，大型模型有两位数的十亿参数。'
 - en: '**Lower memory footprint**: Requiring, at most, a few gigabytes of memory rather
     than tens or hundreds of gigabytes.'
+  id: totrans-53
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**更低的内存占用**：最多只需要几GB的内存，而不是数十或数百GB。'
 - en: '**Faster inference time**: Can generate responses in milliseconds to seconds
     on edge devices.'
+  id: totrans-54
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**更快的推理时间**：在边缘设备上可以以毫秒到秒的速度生成响应。'
 - en: '**Energy efficiency**: Consuming less power, making them suitable for battery-powered
     devices.'
+  id: totrans-55
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**能源效率**：消耗更少的电力，使其适合电池供电的设备。'
 - en: '**Privacy-preserving**: Enabling on-device processing without sending data
     to cloud servers.'
+  id: totrans-56
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**隐私保护**：允许在设备上处理数据，而无需发送到云端服务器。'
 - en: '**Offline functionality**: Operating without an internet connection.'
+  id: totrans-57
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**离线功能**：无需互联网连接即可运行。'
 - en: SLMs achieve their compact size through various techniques such as knowledge
     distillation, model pruning, and quantization. While they may not match the broad
     capabilities of larger models, SLMs excel in specific tasks and domains, making
     them ideal for targeted applications on edge devices.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: SLMs通过知识蒸馏、模型剪枝和量化等各种技术实现其紧凑的尺寸。虽然它们可能无法与更大模型的广泛能力相匹配，但SLMs在特定任务和领域方面表现出色，使它们非常适合边缘设备上的针对性应用。
 - en: We will generally consider SLMs, language models with less than 5 billion parameters
     quantized to 4 bits.
+  id: totrans-59
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们通常将SLMs视为参数量少于50亿且量化为4位的语言模型。
 - en: Examples of SLMs include compressed versions of models like Meta Llama, Microsoft
     PHI, and Google Gemma. These models enable a wide range of natural language processing
     tasks directly on edge devices, from text classification and sentiment analysis
     to question answering and limited text generation.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: SLMs的例子包括Meta Llama、Microsoft PHI和Google Gemma等模型的压缩版本。这些模型使得在边缘设备上直接执行广泛的自然语言处理任务成为可能，从文本分类和情感分析到问答和有限的文本生成。
 - en: 'For more information on SLMs, the paper, [LLM Pruning and Distillation in Practice:
     The Minitron Approach](https://arxiv.org/pdf/2408.11796), provides an approach
     applying pruning and distillation to obtain SLMs from LLMs. And, [SMALL LANGUAGE
@@ -326,122 +456,182 @@
     presents a comprehensive survey and analysis of Small Language Models (SLMs),
     which are language models with 100 million to 5 billion parameters designed for
     resource-constrained devices.'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: '关于SLMs的更多信息，论文《LLM Pruning and Distillation in Practice: The Minitron Approach》（[https://arxiv.org/pdf/2408.11796](https://arxiv.org/pdf/2408.11796)）提供了一种将剪枝和蒸馏应用于从LLMs获得SLMs的方法。而《SMALL
+    LANGUAGE MODELS: SURVEY, MEASUREMENTS, AND INSIGHTS》（[https://arxiv.org/pdf/2409.15790](https://arxiv.org/pdf/2409.15790)）则对小型语言模型（SLMs）进行了全面的调查和分析，这些模型具有1亿到50亿参数，旨在为资源受限的设备设计。'
 - en: Ollama
+  id: totrans-62
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Ollama
 - en: '![](../media/file914.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file914.png)'
 - en: ollama logo
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: ollama logo
 - en: '[Ollama](https://ollama.com/) is an open-source framework that allows us to
     run language models (LMs), large or small, locally on our machines. Here are some
     critical points about Ollama:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Ollama](https://ollama.com/) 是一个开源框架，允许我们在自己的机器上本地运行语言模型（LMs），无论是大型还是小型。以下是关于Ollama的一些关键点：'
 - en: '**Local Model Execution**: Ollama enables running LMs on personal computers
     or edge devices such as the Raspi-5, eliminating the need for cloud-based API
     calls.'
+  id: totrans-66
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**本地模型执行**：Ollama使得在个人电脑或边缘设备（如Raspi-5）上运行LMs成为可能，从而消除了对基于云的API调用的需求。'
 - en: '**Ease of Use**: It provides a simple command-line interface for downloading,
     running, and managing different language models.'
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**易于使用**：它提供了一个简单的命令行界面，用于下载、运行和管理不同的语言模型。'
 - en: '**Model Variety**: Ollama supports various LLMs, including Phi, Gemma, Llama,
     Mistral, and other open-source models.'
+  id: totrans-68
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**模型多样性**：Ollama支持各种LLM，包括Phi、Gemma、Llama、Mistral和其他开源模型。'
 - en: '**Customization**: Users can create and share custom models tailored to specific
     needs or domains.'
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**定制**：用户可以创建和分享定制模型，以满足特定需求或领域。'
 - en: '**Lightweight**: Designed to be efficient and run on consumer-grade hardware.'
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**轻量级**：设计为高效且能在消费级硬件上运行。'
 - en: '**API Integration**: Offers an API that allows integration with other applications
     and services.'
+  id: totrans-71
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**API集成**：提供API，允许与其他应用程序和服务集成。'
 - en: '**Privacy-Focused**: By running models locally, it addresses privacy concerns
     associated with sending data to external servers.'
+  id: totrans-72
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**隐私优先**：通过本地运行模型，它解决了与向外部服务器发送数据相关的隐私问题。'
 - en: '**Cross-Platform**: Available for macOS, Windows, and Linux systems (our case,
     here).'
+  id: totrans-73
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**跨平台**：适用于macOS、Windows和Linux系统（我们的案例，在这里）。'
 - en: '**Active Development**: Regularly updated with new features and model support.'
+  id: totrans-74
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**活跃开发**：定期更新新功能和模型支持。'
 - en: '**Community-Driven**: Benefits from community contributions and model sharing.'
+  id: totrans-75
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**社区驱动**：受益于社区贡献和模型共享。'
 - en: 'To learn more about what Ollama is and how it works under the hood, you should
     see this short video from [Matt Williams](https://www.youtube.com/@technovangelist),
     one of the founders of Ollama:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 要了解更多关于Ollama是什么以及它的工作原理，你应该看看来自[Matt Williams](https://www.youtube.com/@technovangelist)，Ollama创始人之一的这个简短视频：
 - en: '[https://www.youtube.com/embed/90ozfdsQOKo](https://www.youtube.com/embed/90ozfdsQOKo)'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://www.youtube.com/embed/90ozfdsQOKo](https://www.youtube.com/embed/90ozfdsQOKo)'
 - en: 'Matt has an entirely free course about Ollama that we recommend: [https://youtu.be/9KEUFe4KQAI?si=D_-q3CMbHiT-twuy](https://youtu.be/9KEUFe4KQAI?si=D_-q3CMbHiT-twuy)'
+  id: totrans-78
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Matt有一个关于Ollama的完全免费的课程，我们推荐：[https://youtu.be/9KEUFe4KQAI?si=D_-q3CMbHiT-twuy](https://youtu.be/9KEUFe4KQAI?si=D_-q3CMbHiT-twuy)
 - en: Installing Ollama
+  id: totrans-79
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 安装Ollama
 - en: 'Let’s set up and activate a Virtual Environment for working with Ollama:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们设置并激活一个用于与Ollama一起工作的虚拟环境：
 - en: '[PRE0]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'And run the command to install Ollama:'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后运行以下命令来安装Ollama：
 - en: '[PRE1]'
+  id: totrans-83
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'As a result, an API will run in the background on `127.0.0.1:11434`. From now
     on, we can run Ollama via the terminal. For starting, let’s verify the Ollama
     version, which will also tell us that it is correctly installed:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，API将在后台运行在`127.0.0.1:11434`。从现在起，我们可以通过终端运行Ollama。首先，让我们验证Ollama的版本，这也会告诉我们它是否正确安装：
 - en: '[PRE2]'
+  id: totrans-85
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '![](../media/file915.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file915.png)'
 - en: On the [Ollama Library page](https://ollama.com/library), we can find the models
     Ollama supports. For example, by filtering by `Most popular`, we can see Meta
     Llama, Google Gemma, Microsoft Phi, LLaVa, etc.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[Ollama库页面](https://ollama.com/library)，我们可以找到Ollama支持的模型。例如，通过按`最受欢迎`筛选，我们可以看到Meta
+    Llama、Google Gemma、Microsoft Phi、LLaVa等。
 - en: Meta Llama 3.2 1B/3B
+  id: totrans-88
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Meta Llama 3.2 1B/3B
 - en: '![](../media/file916.png)'
+  id: totrans-89
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file916.png)'
 - en: Let’s install and run our first small language model, [Llama 3.2](https://ai.meta.com/blog/llama-3-2-connect-2024-vision-edge-mobile-devices/)
     1B (and 3B). The Meta Llama 3.2 series comprises a set of multilingual generative
     language models available in 1 billion and 3 billion parameter sizes. These models
@@ -451,147 +641,218 @@
     with an agentic approach. When compared to many existing open-source and proprietary
     chat models, the Llama 3.2 instruction-tuned models demonstrate superior performance
     on widely-used industry benchmarks.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们安装并运行我们的第一个小型语言模型[Llama 3.2](https://ai.meta.com/blog/llama-3-2-connect-2024-vision-edge-mobile-devices/)
+    1B（和3B）。Meta Llama 3.2系列包括一系列可在1亿和30亿参数大小中使用的多语言生成语言模型。这些模型旨在处理文本输入并生成文本输出。此系列中的指令调整变体专门针对多语言对话应用进行了优化，包括涉及信息检索和摘要的代理方法。与许多现有的开源和专有聊天模型相比，Llama
+    3.2指令调整模型在广泛使用的行业基准测试中表现出卓越的性能。
 - en: The 1B and 3B models were pruned from the Llama 8B, and then logits from the
     8B and 70B models were used as token-level targets (token-level distillation).
     Knowledge distillation was used to recover performance (they were trained with
     9 trillion tokens). The 1B model has 1,24B, quantized to integer (Q8_0), and the
     3B, 3.12B parameters, with a Q4_0 quantization, which ends with a size of 1.3
     GB and 2 GB, respectively. Its context window is 131,072 tokens.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 1B 和 3B 模型是从 Llama 8B 中剪枝得到的，然后使用 8B 和 70B 模型的 logits 作为标记级目标（标记级蒸馏）。使用知识蒸馏来恢复性能（它们是用
+    9 万亿个标记训练的）。1B 模型有 1,24B 个参数，量化为整数（Q8_0），3B 模型有 3.12B 个参数，使用 Q4_0 量化，最终大小分别为 1.3
+    GB 和 2 GB。其上下文窗口为 131,072 个标记。
 - en: '![](../media/file917.jpg)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file917.jpg)'
 - en: '**Install and run the** **Model**'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '**安装并运行** **模型**'
 - en: '[PRE3]'
+  id: totrans-94
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Running the model with the command before, we should have the Ollama prompt
     available for us to input a question and start chatting with the LLM model; for
     example,
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用之前的命令运行模型，我们应该有 Ollama 提示可用，以便我们输入问题并开始与 LLM 模型聊天；例如，
 - en: '`>>> What is the capital of France?`'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '`>>> 法国首都是什么？`'
 - en: 'Almost immediately, we get the correct answer:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 几乎立即，我们得到了正确答案：
 - en: '`The capital of France is Paris.`'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: '`The capital of France is Paris.`'
 - en: Using the option `--verbose` when calling the model will generate several statistics
     about its performance (The model will be polling only the first time we run the
     command).
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 在调用模型时使用 `--verbose` 选项将生成关于其性能的几个统计数据（模型将在我们第一次运行命令时进行轮询）。
 - en: '![](../media/file918.png)'
+  id: totrans-100
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file918.png)'
 - en: 'Each metric gives insights into how the model processes inputs and generates
     outputs. Here’s a breakdown of what each metric means:'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个指标都能揭示模型处理输入和生成输出的方式。以下是每个指标的含义分解：
 - en: '**Total Duration (2.620170326 s)**: This is the complete time taken from the
     start of the command to the completion of the response. It encompasses loading
     the model, processing the input prompt, and generating the response.'
+  id: totrans-102
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**总持续时间（2.620170326 秒）**：这是从命令开始到响应完成所花费的完整时间。它包括加载模型、处理输入提示和生成响应。'
 - en: '**Load Duration (39.947908 ms)**: This duration indicates the time to load
     the model or necessary components into memory. If this value is minimal, it can
     suggest that the model was preloaded or that only a minimal setup was required.'
+  id: totrans-103
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**加载持续时间（39.947908 毫秒）**：这个持续时间表示将模型或必要组件加载到内存中的时间。如果这个值很小，可以表明模型是预先加载的，或者只需要最小的设置。'
 - en: '**Prompt Eval Count (32 tokens)**: The number of tokens in the input prompt.
     In NLP, tokens are typically words or subwords, so this count includes all the
     tokens that the model evaluated to understand and respond to the query.'
+  id: totrans-104
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**提示评估计数（32 个标记）**：输入提示中的标记数量。在 NLP 中，标记通常是单词或子词，因此这个计数包括模型评估以理解和响应查询的所有标记。'
 - en: '**Prompt Eval Duration (1.644773 s)**: This measures the model’s time to evaluate
     or process the input prompt. It accounts for the bulk of the total duration, implying
     that understanding the query and preparing a response is the most time-consuming
     part of the process.'
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**提示评估持续时间（1.644773 秒）**：这衡量模型评估或处理输入提示的时间。它占用了总持续时间的大部分，这意味着理解查询和准备响应是整个过程中最耗时的部分。'
 - en: '**Prompt Eval Rate (19.46 tokens/s)**: This rate indicates how quickly the
     model processes tokens from the input prompt. It reflects the model’s speed in
     terms of natural language comprehension.'
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**提示评估速率（19.46 个标记/秒）**：这个速率表明模型处理输入提示中的标记有多快。它反映了模型在自然语言理解方面的速度。'
 - en: '**Eval Count (8 token(s))**: This is the number of tokens in the model’s response,
     which in this case was, “The capital of France is Paris.”'
+  id: totrans-107
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**评估计数（8 个标记）**：这是模型响应中的标记数量，在这种情况下是，“法国的首都是巴黎。”'
 - en: '**Eval Duration (889.941 ms)**: This is the time taken to generate the output
     based on the evaluated input. It’s much shorter than the prompt evaluation, suggesting
     that generating the response is less complex or computationally intensive than
     understanding the prompt.'
+  id: totrans-108
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**评估持续时间（889.941 毫秒）**：这是根据评估输入生成输出所需的时间。它比提示评估要短得多，这表明生成响应比理解提示更简单或计算密集度更低。'
 - en: '**Eval Rate (8.99 tokens/s)**: Similar to the prompt eval rate, this indicates
     the speed at which the model generates output tokens. It’s a crucial metric for
     understanding the model’s efficiency in output generation.'
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**评估速率（8.99 个标记/秒）**：类似于提示评估速率，这表明模型生成输出标记的速度。这是理解模型在输出生成效率方面的一个关键指标。'
 - en: This detailed breakdown can help understand the computational demands and performance
     characteristics of running SLMs like Llama on edge devices like the Raspberry
     Pi 5\. It shows that while prompt evaluation is more time-consuming, the actual
     generation of responses is relatively quicker. This analysis is crucial for optimizing
     performance and diagnosing potential bottlenecks in real-time applications.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 这详细的分解可以帮助我们了解在边缘设备（如 Raspberry Pi 5）上运行 SLMs（如 Llama）的计算需求和性能特征。这表明，虽然提示评估耗时更长，但实际生成响应相对较快。这种分析对于优化性能和诊断实时应用中的潜在瓶颈至关重要。
 - en: Loading and running the 3B model, we can see the difference in performance for
     the same prompt;
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 加载并运行 3B 模型，我们可以看到相同提示下的性能差异；
 - en: '![](../media/file919.png)'
+  id: totrans-112
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file919.png)'
 - en: The eval rate is lower, 5.3 tokens/s versus 9 tokens/s with the smaller model.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 评估率较低，5.3 个 token/s 与较小模型相比为 9 个 token/s。
 - en: When question about
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 当提出问题时
 - en: '`>>> What is the distance between Paris and Santiago, Chile?`'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: '`>>> 巴黎和智利圣地亚哥之间的距离是多少？`'
 - en: The 1B model answered `9,841 kilometers (6,093 miles)`, which is inaccurate,
     and the 3B model answered `7,300 miles (11,700 km)`, which is close to the correct
     (11,642 km).
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 1B 模型回答了 `9,841 公里（6,093 英里）`，这是不准确的，而 3B 模型回答了 `7,300 英里（11,700 公里）`，接近正确答案（11,642
+    公里）。
 - en: 'Let’s ask for the Paris’s coordinates:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们询问巴黎的坐标：
 - en: '`>>> what is the latitude and longitude of Paris?`'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: '`>>> 巴黎的经纬度是多少？`'
 - en: '[PRE4]'
+  id: totrans-119
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '![](../media/file920.png)'
+  id: totrans-120
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file920.png)'
 - en: Both 1B and 3B models gave correct answers.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 1B 和 3B 模型都给出了正确答案。
 - en: Google Gemma 2 2B
+  id: totrans-122
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Google Gemma 2 2B
 - en: 'Let’s install [Gemma 2](https://ollama.com/library/gemma2:2b), a high-performing
     and efficient model available in three sizes: 2B, 9B, and 27B. We will install
     [**Gemma 2 2B**](https://huggingface.co/collections/google/gemma-2-2b-release-66a20f3796a2ff2a7c76f98f),
@@ -599,482 +860,746 @@
     by learning from larger models through distillation. The model has 2.6 billion
     parameters and a Q4_0 quantization, which ends with a size of 1.6 GB. Its context
     window is 8,192 tokens.'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们安装 [Gemma 2](https://ollama.com/library/gemma2:2b)，这是一个高性能且高效的模型，有三种尺寸：2B、9B
+    和 27B。我们将安装 [**Gemma 2 2B**](https://huggingface.co/collections/google/gemma-2-2b-release-66a20f3796a2ff2a7c76f98f)，这是一个经过
+    2 万亿 token 训练的轻量级模型，通过蒸馏从更大模型中学习，产生了超出预期的结果。该模型有 26 亿个参数和一个 Q4_0 量化，最终大小为 1.6
+    GB。其上下文窗口为 8,192 个 token。
 - en: '![](../media/file921.png)'
+  id: totrans-124
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file921.png)'
 - en: '**Install and run the** **Model**'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: '**安装和运行** **模型**'
 - en: '[PRE5]'
+  id: totrans-126
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Running the model with the command before, we should have the Ollama prompt
     available for us to input a question and start chatting with the LLM model; for
     example,
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用之前的命令运行模型，我们应该有 Ollama 提示可用，以便我们输入问题并开始与 LLM 模型聊天；例如，
 - en: '`>>> What is the capital of France?`'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: '`>>> 法国的首都是什么？`'
 - en: 'Almost immediately, we get the correct answer:'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 几乎立即，我们得到了正确答案：
 - en: '`The capital of France is **Paris**. 🗼`'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: '`法国的首都是**巴黎**。 🗼`'
 - en: And it’ statistics.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 以及它的统计数据。
 - en: '![](../media/file922.png)'
+  id: totrans-132
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file922.png)'
 - en: We can see that Gemma 2:2B has around the same performance as Llama 3.2:3B,
     but having less parameters.
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到 Gemma 2:2B 的性能与 Llama 3.2:3B 大致相同，但参数更少。
 - en: '**Other examples**:'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: '**其他示例**:'
 - en: '[PRE6]'
+  id: totrans-135
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Also, a good response but less accurate than Llama3.2:3B.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然回答很好，但不如 Llama3.2:3B 准确。
 - en: '[PRE7]'
+  id: totrans-137
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: A good and accurate answer (a little more verbose than the Llama answers).
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个好且准确的答案（比 Llama 的答案稍微冗长一些）。
 - en: Microsoft Phi3.5 3.8B
+  id: totrans-139
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 微软 Phi3.5 3.8B
 - en: 'Let’s pull a bigger (but still tiny) model, the [PHI3.5,](https://ollama.com/library/phi3.5)
     a 3.8B lightweight state-of-the-art open model by Microsoft. The model belongs
     to the Phi-3 model family and supports `128K token` context length and the languages:
     Arabic, Chinese, Czech, Danish, Dutch, English, Finnish, French, German, Hebrew,
     Hungarian, Italian, Japanese, Korean, Norwegian, Polish, Portuguese, Russian,
     Spanish, Swedish, Thai, Turkish and Ukrainian.'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们拉取一个更大的（但仍然很小）模型，[PHI3.5](https://ollama.com/library/phi3.5)，这是微软的一个 3.8B
+    轻量级最先进开源模型。该模型属于 Phi-3 模型系列，支持 `128K token` 的上下文长度，以及以下语言：阿拉伯语、中文、捷克语、丹麦语、荷兰语、英语、芬兰语、法语、德语、希伯来语、匈牙利语、意大利语、日语、韩语、挪威语、波兰语、葡萄牙语、俄语、西班牙语、瑞典语、泰语、土耳其语和乌克兰语。
 - en: The model size, in terms of bytes, will depend on the specific quantization
     format used. The size can go from 2-bit quantization (`q2_k`) of 1.4 GB (higher
     performance/lower quality) to 16-bit quantization (fp-16) of 7.6 GB (lower performance/higher
     quality).
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型大小（以字节为单位）将取决于所使用的特定量化格式。大小可以从 2 位量化（`q2_k`）的 1.4 GB（高性能/低质量）到 16 位量化（fp-16）的
+    7.6 GB（低性能/高质量）不等。
 - en: Let’s run the 4-bit quantization (`Q4_0`), which will need 2.2 GB of RAM, with
     an intermediary trade-off regarding output quality and performance.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们运行4位量化（`Q4_0`），这将需要2.2GB的RAM，在输出质量和性能之间进行中间权衡。
 - en: '[PRE8]'
+  id: totrans-143
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: You can use `run` or `pull` to download the model. What happens is that Ollama
     keeps note of the pulled models, and once the PHI3 does not exist, before running
     it, Ollama pulls it.
+  id: totrans-144
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 您可以使用`run`或`pull`来下载模型。发生的情况是Ollama会记录拉取的模型，一旦PHI3不存在，在运行之前，Ollama会拉取它。
 - en: 'Let’s enter with the same prompt used before:'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们使用之前使用的相同提示进入：
 - en: '[PRE9]'
+  id: totrans-146
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'The answer was very “verbose”, let’s specify a better prompt:'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 答案非常“冗长”，让我们指定一个更好的提示：
 - en: '![](../media/file923.png)'
+  id: totrans-148
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file923.png)'
 - en: In this case, the answer was still longer than we expected, with an eval rate
     of 2.25 tokens/s, more than double that of Gemma and Llama.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，答案仍然比我们预期的要长，评估速率为2.25个token/秒，是Gemma和Llama的两倍多。
 - en: Choosing the most appropriate prompt is one of the most important skills to
     be used with LLMs, no matter its size.
+  id: totrans-150
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 选择最合适的提示是与LLM一起使用的重要技能之一，无论其大小如何。
 - en: When we asked the same questions about distance and Latitude/Longitude, we did
     not get a good answer for a distance of `13,507 kilometers (8,429 miles)`, but
     it was OK for coordinates. Again, it could have been less verbose (more than 200
     tokens for each answer).
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们询问关于距离和经纬度的相同问题时，我们没有得到关于`13,507公里（8,429英里）`距离的良好答案，但对于坐标来说还可以。再次强调，它可能更加简洁（每个答案超过200个token）。
 - en: We can use any model as an assistant since their speed is relatively decent,
     but on September 24 (2023), the Llama2:3B is a better choice. You should try other
     models, depending on your needs. [🤗 Open LLM Leaderboard](https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard)
     can give you an idea about the best models in size, benchmark, license, etc.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于它们的速度相对适中，我们可以使用任何模型作为助手，但截至2023年9月24日，Llama2:3B是一个更好的选择。您应该根据您的需求尝试其他模型。[🤗
+    Open LLM Leaderboard](https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard)可以给您一个关于最佳模型在大小、基准、许可等方面的想法。
 - en: The best model to use is the one fit for your specific necessity. Also, take
     into consideration that this field evolves with new models everyday.
+  id: totrans-153
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 最好的模型是适合您特定需求的模型。同时，考虑到这个领域每天都在随着新模型的发展而演变。
 - en: Multimodal Models
+  id: totrans-154
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 多模态模型
 - en: Multimodal models are artificial intelligence (AI) systems that can process
     and understand information from multiple sources, such as images, text, audio,
     and video. In our context, multimodal LLMs can process various inputs, including
     text, images, and audio, as prompts and convert those prompts into various outputs,
     not just the source type.
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 多模态模型是能够处理和理解来自多个来源的信息的人工智能（AI）系统，如图像、文本、音频和视频。在我们的上下文中，多模态LLM可以处理各种输入，包括文本、图像和音频，并将这些提示转换为各种输出，而不仅仅是源类型。
 - en: We will work here with [LLaVA-Phi-3](https://ollama.com/library/llava-phi3:3.8b),
     a fine-tuned LLaVA model from Phi 3 Mini 4k. It has strong performance benchmarks
     that are on par with the original [LLaVA](https://llava-vl.github.io/) (Large
     Language and Vision Assistant) model.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将在这里使用[LLaVA-Phi-3](https://ollama.com/library/llava-phi3:3.8b)，这是一个来自Phi
+    3 Mini 4k的微调过的LLaVA模型。它具有与原始[LLaVA](https://llava-vl.github.io/)（大型语言和视觉助手）模型相当的性能基准。
 - en: The LLaVA-Phi-3 is an end-to-end trained large multimodal model designed to
     understand and generate content based on visual inputs (images) and textual instructions.
     It combines the capabilities of a visual encoder and a language model to process
     and respond to multimodal inputs.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: LLaVA-Phi-3是一个端到端训练的大型多模态模型，旨在根据视觉输入（图像）和文本指令理解和生成内容。它结合了视觉编码器和语言模型的能力，以处理和响应用户的多模态输入。
 - en: 'Let’s install the model:'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们安装模型：
 - en: '[PRE10]'
+  id: totrans-159
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'Let’s start with a text input:'
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从文本输入开始：
 - en: '[PRE11]'
+  id: totrans-161
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: The response took around 30 s, with an eval rate of 3.93 tokens/s! Not bad!
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 响应大约需要30秒，评估速率为3.93个token/秒！还不错！
 - en: 'But let us know to enter with an image as input. For that, let’s create a directory
     for working:'
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: 但让我们知道以图像作为输入进入。为此，让我们创建一个工作目录：
 - en: '[PRE12]'
+  id: totrans-164
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'Let’s download a <semantics><mrow><mn>640</mn><mo>×</mo><mn>320</mn></mrow><annotation
     encoding="application/x-tex">640\times 320</annotation></semantics> image from
     the internet, for example (Wikipedia: [Paris, France)](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg/640px-La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg):'
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从互联网下载一张 <semantics><mrow><mn>640</mn><mo>×</mo><mn>320</mn></mrow><annotation
+    encoding="application/x-tex">640\times 320</annotation></semantics> 图片，例如（维基百科：[法国巴黎](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg/640px-La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg)）：
 - en: '![](../media/file924.jpg)'
+  id: totrans-166
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file924.jpg)'
 - en: Using FileZilla, for example, let’s upload the image to the OLLAMA folder at
     the Raspi-5 and name it `image_test_1.jpg`. We should have the whole image path
     (we can use `pwd` to get it).
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，使用 FileZilla 将图片上传到 Raspi-5 的 OLLAMA 文件夹，并命名为 `image_test_1.jpg`。我们应该有完整的图片路径（我们可以使用
+    `pwd` 来获取它）。
 - en: '`/home/mjrovai/Documents/OLLAMA/image_test_1.jpg`'
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: '`/home/mjrovai/Documents/OLLAMA/image_test_1.jpg`'
 - en: If you use a desktop, you can copy the image path by clicking the image with
     the mouse’s right button.
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你使用的是桌面，可以通过右键点击图片来复制图片路径。
 - en: '![](../media/file925.png)'
+  id: totrans-170
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file925.png)'
 - en: 'Let’s enter with this prompt:'
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用以下提示进入：
 - en: '[PRE13]'
+  id: totrans-172
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: The result was great, but the overall latency was significant; almost 4 minutes
     to perform the inference.
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果很棒，但整体延迟很大；推理几乎需要4分钟。
 - en: '![](../media/file926.png)'
+  id: totrans-174
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file926.png)'
 - en: Inspecting local resources
+  id: totrans-175
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 检查本地资源
 - en: Using htop, we can monitor the resources running on our device.
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 htop，我们可以监控设备上运行的资源。
 - en: '[PRE14]'
+  id: totrans-177
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'During the time that the model is running, we can inspect the resources:'
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 在模型运行期间，我们可以检查资源：
 - en: '![](../media/file927.png)'
+  id: totrans-179
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file927.png)'
 - en: All four CPUs run at almost 100% of their capacity, and the memory used with
     the model loaded is `3.24 GB`. Exiting Ollama, the memory goes down to around
     `377 MB` (with no desktop).
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有四个 CPU 都几乎以 100% 的容量运行，加载模型时使用的内存为 `3.24 GB`。退出 Ollama 后，内存下降到大约 `377 MB`（没有桌面）。
 - en: 'It is also essential to monitor the temperature. When running the Raspberry
     with a desktop, you can have the temperature shown on the taskbar:'
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 监控温度也非常重要。当使用桌面运行 Raspberry 时，你可以在任务栏上看到温度：
 - en: '![](../media/file928.png)'
+  id: totrans-182
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file928.png)'
 - en: 'If you are “headless”, the temperature can be monitored with the command:'
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你处于“无头”状态，可以使用以下命令监控温度：
 - en: '[PRE15]'
+  id: totrans-184
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: If you are doing nothing, the temperature is around `50°C` for CPUs running
     at 1%. During inference, with the CPUs at 100%, the temperature can rise to almost
     `70°C`. This is OK and means the active cooler is working, keeping the temperature
     below 80°C / 85°C (its limit).
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你什么也不做，CPU 在 1% 运行时，温度大约为 `50°C`。在推理过程中，当 CPU 达到 100% 时，温度可以上升到几乎 `70°C`。这是正常的，意味着活动散热器正在工作，将温度保持在
+    80°C / 85°C（其限制）以下。
 - en: Ollama Python Library
+  id: totrans-186
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Ollama Python 库
 - en: So far, we have explored SLMs’ chat capability using the command line on a terminal.
     However, we want to integrate those models into our projects, so Python seems
     to be the right path. The good news is that Ollama has such a library.
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们已经使用终端上的命令探索了 SLMs 的聊天功能。然而，我们希望将这些模型集成到我们的项目中，因此 Python 似乎是一条正确的路径。好消息是
+    Ollama 有这样的库。
 - en: The [Ollama Python library](https://github.com/ollama/ollama-python) simplifies
     interaction with advanced LLM models, enabling more sophisticated responses and
     capabilities, besides providing the easiest way to integrate Python 3.8+ projects
     with [Ollama.](https://github.com/ollama/ollama)
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Ollama Python 库](https://github.com/ollama/ollama-python) 简化了与高级 LLM 模型的交互，除了提供将
+    Python 3.8+ 项目与 [Ollama](https://github.com/ollama/ollama) 集成的最简单方式外，还使更复杂的响应和功能成为可能。'
 - en: 'For a better understanding of how to create apps using Ollama with Python,
     we can follow [Matt Williams’s videos](https://www.youtube.com/@technovangelist),
     as the one below:'
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了更好地理解如何使用 Python 和 Ollama 创建应用程序，我们可以参考 [Matt Williams 的视频](https://www.youtube.com/@technovangelist)，如下所示：
 - en: '[https://www.youtube.com/embed/_4K20tOsXK8](https://www.youtube.com/embed/_4K20tOsXK8)'
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://www.youtube.com/embed/_4K20tOsXK8](https://www.youtube.com/embed/_4K20tOsXK8)'
 - en: '**Installation**:'
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: '**安装**：'
 - en: 'In the terminal, run the command:'
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: 在终端中运行以下命令：
 - en: '[PRE16]'
+  id: totrans-193
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: We will need a text editor or an IDE to create a Python script. If you run the
     Raspberry OS on a desktop, several options, such as Thonny and Geany, have already
     been installed by default (accessed by `[Menu][Programming]`). You can download
     other IDEs, such as Visual Studio Code, from `[Menu][Recommended Software]`. When
     the window pops up, go to `[Programming]`, select the option of your choice, and
     press `[Apply]`.
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要一个文本编辑器或IDE来创建Python脚本。如果你在桌面上运行Raspberry OS，Thonny和Geany等几个选项已经默认安装（通过
+    `[Menu][Programming]` 访问）。你可以从 `[Menu][Recommended Software]` 下载其他IDE，例如Visual
+    Studio Code。当窗口弹出时，转到 `[Programming]`，选择你的选项，然后按 `[Apply]`。
 - en: '![](../media/file929.png)'
+  id: totrans-195
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file929.png)'
 - en: 'If you prefer using Jupyter Notebook for development:'
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你更喜欢使用Jupyter Notebook进行开发：
 - en: '[PRE17]'
+  id: totrans-197
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'To run Jupyter Notebook, run the command (change the IP address for yours):'
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: 要运行Jupyter Notebook，运行以下命令（更改IP地址为你的）：
 - en: '[PRE18]'
+  id: totrans-199
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: 'On the terminal, you can see the local URL address to open the notebook:'
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 在终端上，你可以看到打开notebook的本地URL地址：
 - en: '![](../media/file930.png)'
+  id: totrans-201
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file930.png)'
 - en: We can access it from another computer by entering the Raspberry Pi’s IP address
     and the provided token in a web browser (we should copy it from the terminal).
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过在网页浏览器中输入树莓派的IP地址和提供的令牌来从另一台计算机访问它（我们应该从终端复制它）。
 - en: In our working directory in the Raspi, we will create a new Python 3 notebook.
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Raspi的工作目录中，我们将创建一个新的Python 3笔记本。
 - en: 'Let’s enter with a very simple script to verify the installed models:'
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用一个非常简单的脚本来验证已安装的模型：
 - en: '[PRE19]'
+  id: totrans-205
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: 'All the models will be printed as a dictionary, for example:'
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有模型都将打印为字典，例如：
 - en: '[PRE20]'
+  id: totrans-207
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: Let’s repeat one of the questions that we did before, but now using `ollama.generate()`
     from Ollama python library. This API will generate a response for the given prompt
     with the provided model. This is a streaming endpoint, so there will be a series
     of responses. The final response object will include statistics and additional
     data from the request.
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们重复之前做的一个问题，但现在使用Ollama Python库中的`ollama.generate()`。这个API将为给定的提示生成响应，并使用提供的模型。这是一个流式端点，所以会有一系列的响应。最终的响应对象将包括请求的统计信息和附加数据。
 - en: '[PRE21]'
+  id: totrans-209
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: In case you are running the code as a Python script, you should save it, for
     example, test_ollama.py. You can use the IDE to run it or do it directly on the
     terminal. Also, remember that you should always call the model and define it when
     running a stand-alone script.
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你将代码作为Python脚本运行，你应该保存它，例如，test_ollama.py。你可以使用IDE运行它或在终端上直接运行。此外，请记住，在运行独立脚本时，你应该始终调用模型并定义它。
 - en: '[PRE22]'
+  id: totrans-211
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: 'As a result, we will have the model response in a JSON format:'
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们将以JSON格式获得模型响应：
 - en: '[PRE23]'
+  id: totrans-213
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: 'As we can see, several pieces of information are generated, such as:'
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我们所见，生成了几条信息，例如：
 - en: '**response**: the main output text generated by the model in response to our
     prompt.'
+  id: totrans-215
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**response**：模型针对我们的提示生成的文本输出。'
 - en: '`The capital of France is **Paris**. 🇫🇷`'
+  id: totrans-216
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`法国的首都是**巴黎**。🇫🇷`'
 - en: '**context**: the token IDs representing the input and context used by the model.
     Tokens are numerical representations of text used for processing by the language
     model.'
+  id: totrans-217
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**context**：表示模型使用的输入和上下文的标记ID。标记是用于语言模型处理的文本的数值表示。'
 - en: '`[106, 1645, 108, 1841, 603, 573, 6037, 576, 6081, 235336, 107, 108, 106, 2516,
     108, 651, 6037, 576, 6081, 603, 5231, 29437, 168428, 235248, 244304, 241035, 235248,
     108]`'
+  id: totrans-218
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`[106, 1645, 108, 1841, 603, 573, 6037, 576, 6081, 235336, 107, 108, 106, 2516,
+    108, 651, 6037, 576, 6081, 603, 5231, 29437, 168428, 235248, 244304, 241035, 235248,
+    108]`'
 - en: 'The Performance Metrics:'
+  id: totrans-219
   prefs: []
   type: TYPE_NORMAL
+  zh: 性能指标：
 - en: '**total_duration**: The total time taken for the operation in nanoseconds.
     In this case, approximately 24.26 seconds.'
+  id: totrans-220
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**total_duration**：操作所需的总时间，以纳秒为单位。在这种情况下，大约24.26秒。'
 - en: '**load_duration**: The time taken to load the model or components in nanoseconds.
     About 19.83 seconds.'
+  id: totrans-221
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**load_duration**：加载模型或组件所需的时间，以纳秒为单位。大约19.83秒。'
 - en: '**prompt_eval_duration**: The time taken to evaluate the prompt in nanoseconds.
     Around 16 nanoseconds.'
+  id: totrans-222
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**prompt_eval_duration**：评估提示所需的时间，以纳秒为单位。大约16纳秒。'
 - en: '**eval_count**: The number of tokens evaluated during the generation. Here,
     14 tokens.'
+  id: totrans-223
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**eval_count**：生成过程中评估的标记数量。这里，14个标记。'
 - en: '**eval_duration**: The time taken for the model to generate the response in
     nanoseconds. Approximately 2.5 seconds.'
+  id: totrans-224
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**eval_duration**：模型生成响应所需的时间，以纳秒为单位。大约2.5秒。'
 - en: 'But, what we want is the plain ‘response’ and, perhaps for analysis, the total
     duration of the inference, so let’s change the code to extract it from the dictionary:'
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，我们想要的是简单的‘响应’以及，也许为了分析，推理的总时长，所以让我们修改代码从字典中提取它：
 - en: '[PRE24]'
+  id: totrans-226
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: 'Now, we got:'
+  id: totrans-227
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们得到了：
 - en: '[PRE25]'
+  id: totrans-228
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: '**Using Ollama.chat()**'
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
+  zh: '**使用Ollama.chat()**'
 - en: 'Another way to get our response is to use `ollama.chat()`, which generates
     the next message in a chat with a provided model. This is a streaming endpoint,
     so a series of responses will occur. Streaming can be disabled using `"stream":
     false`. The final response object will also include statistics and additional
     data from the request.'
+  id: totrans-230
   prefs: []
   type: TYPE_NORMAL
+  zh: '获取我们响应的另一种方式是使用`ollama.chat()`，它生成与提供的模型进行的聊天中的下一个消息。这是一个流式端点，因此将发生一系列响应。可以通过将`"stream":
+    false`禁用来关闭流。最终响应对象还将包括请求的统计信息和附加数据。'
 - en: '[PRE26]'
+  id: totrans-231
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: The answer is the same as before.
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
+  zh: 答案与之前相同。
 - en: 'An important consideration is that by using `ollama.generate()`, the response
     is “clear” from the model’s “memory” after the end of inference (only used once),
     but If we want to keep a conversation, we must use `ollama.chat()`. Let’s see
     it in action:'
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个重要的考虑因素是，使用`ollama.generate()`后，响应从模型的“记忆”中“清除”（仅使用一次），但如果我们想保持对话，我们必须使用`ollama.chat()`。让我们看看它是如何工作的：
 - en: '[PRE27]'
+  id: totrans-234
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: In the above code, we are running two queries, and the second prompt considers
     the result of the first one.
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上述代码中，我们运行了两个查询，第二个提示考虑了第一个查询的结果。
 - en: 'Here is how the model responded:'
+  id: totrans-236
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是模型的响应：
 - en: '[PRE28]'
+  id: totrans-237
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: '**Getting an image description**:'
+  id: totrans-238
   prefs: []
   type: TYPE_NORMAL
+  zh: '**获取图像描述**：'
 - en: 'In the same way that we have used the `LlaVa-PHI-3` model with the command
     line to analyze an image, the same can be done here with Python. Let’s use the
     same image of Paris, but now with the `ollama.generate()`:'
+  id: totrans-239
   prefs: []
   type: TYPE_NORMAL
+  zh: 就像我们使用`LlaVa-PHI-3`模型通过命令行分析图像一样，这里也可以用Python做同样的事情。让我们使用同样的巴黎图像，但现在使用`ollama.generate()`：
 - en: '[PRE29]'
+  id: totrans-240
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: 'Here is the result:'
+  id: totrans-241
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是结果：
 - en: '[PRE30]'
+  id: totrans-242
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE30]'
 - en: The model took about 4 minutes (256.45 s) to return with a detailed image description.
+  id: totrans-243
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型大约用了4分钟（256.45秒）返回详细的图像描述。
 - en: In the [10-Ollama_Python_Library](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/10-Ollama_Python_Library.ipynb)
     notebook, it is possible to find the experiments with the Ollama Python library.
+  id: totrans-244
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在[10-Ollama_Python_Library](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/10-Ollama_Python_Library.ipynb)笔记本中，可以找到使用Ollama
+    Python库的实验。
 - en: Function Calling
+  id: totrans-245
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 函数调用
 - en: So far, we can observe that by using the model’s response into a variable, we
     can effectively incorporate it into real-world projects. However, a major issue
     arises when the model provides varying responses to the same input. For instance,
@@ -1083,55 +1608,78 @@
     even when utilizing verbose models like Microsoft Phi. To ensure consistent responses,
     we can employ the ‘Ollama function call,’ which is fully compatible with the OpenAI
     API.
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们可以观察到，通过将模型的响应放入一个变量中，我们可以有效地将其融入现实世界的项目中。然而，当模型对相同的输入提供不同的响应时，就会出现一个主要问题。例如，假设我们只需要在之前的例子中模型响应的国家首都名称及其坐标，没有任何附加信息，即使使用像微软Phi这样的冗长模型。为了确保响应的一致性，我们可以使用“Ollama函数调用”，它与OpenAI
+    API完全兼容。
 - en: But what exactly is “function calling”?
+  id: totrans-247
   prefs:
   - PREF_H4
   type: TYPE_NORMAL
+  zh: 但“函数调用”到底是什么呢？
 - en: In modern artificial intelligence, function calling with Large Language Models
     (LLMs) allows these models to perform actions beyond generating text. By integrating
     with external functions or APIs, LLMs can access real-time data, automate tasks,
     and interact with various systems.
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
+  zh: 在现代人工智能中，使用大型语言模型（LLMs）进行函数调用允许这些模型执行生成文本之外的操作。通过集成外部函数或API，LLMs可以访问实时数据，自动化任务，并与各种系统交互。
 - en: For instance, instead of merely responding to a query about the weather, an
     LLM can call a weather API to fetch the current conditions and provide accurate,
     up-to-date information. This capability enhances the relevance and accuracy of
     the model’s responses and makes it a powerful tool for driving workflows and automating
     processes, transforming it into an active participant in real-world applications.
+  id: totrans-249
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，与其仅仅响应关于天气的查询，一个LLM可以调用天气API来获取当前条件并提供准确、最新的信息。这种能力增强了模型响应的相关性和准确性，使其成为驱动工作流程和自动化流程的强大工具，使其成为现实世界应用中的积极参与者。
 - en: 'For more details about Function Calling, please see this video made by [Marvin
     Prison](https://www.youtube.com/@MervinPraison):'
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于函数调用的更多详细信息，请参阅由[Marvin Prison](https://www.youtube.com/@MervinPraison)制作的此视频：
 - en: '[https://www.youtube.com/embed/eHfMCtlsb1o](https://www.youtube.com/embed/eHfMCtlsb1o)'
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://www.youtube.com/embed/eHfMCtlsb1o](https://www.youtube.com/embed/eHfMCtlsb1o)'
 - en: Let’s create a project.
+  id: totrans-252
   prefs:
   - PREF_H4
   type: TYPE_NORMAL
+  zh: 让我们创建一个项目。
 - en: We want to create an *app* where the user enters a country’s name and gets,
     as an output, the distance in km from the capital city of such a country and the
     app’s location (for simplicity, We will use Santiago, Chile, as the app location).
+  id: totrans-253
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们希望创建一个*应用程序*，用户输入一个国家的名称，然后得到输出，即该国首都与该应用程序位置（为了简单起见，我们将使用智利的圣地亚哥作为应用程序位置）之间的距离（公里）。
 - en: '![](../media/file931.png)'
+  id: totrans-254
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file931.png)'
 - en: Once the user enters a country name, the model will return the name of its capital
     city (as a string) and the latitude and longitude of such city (in float). Using
     those coordinates, we can use a simple Python library ([haversine](https://pypi.org/project/haversine/))
     to calculate the distance between those 2 points.
+  id: totrans-255
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦用户输入国家名称，模型将返回该国家的首都名称（作为字符串）以及该城市的纬度和经度（以浮点数表示）。使用这些坐标，我们可以使用一个简单的Python库([haversine](https://pypi.org/project/haversine/))来计算这两个点之间的距离。
 - en: The idea of this project is to demonstrate a combination of language model interaction,
     structured data handling with Pydantic, and geospatial calculations using the
     Haversine formula (traditional computing).
+  id: totrans-256
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个项目的想法是展示语言模型交互、使用Pydantic进行结构化数据处理以及使用Haversine公式（传统计算）进行地理空间计算的组合。
 - en: First, let us install some libraries. Besides *Haversine*, the main one is the
     [OpenAI Python library](https://github.com/openai/openai-python), which provides
     convenient access to the OpenAI REST API from any Python 3.7+ application. The
@@ -1139,336 +1687,506 @@
     robust data validation and settings management library engineered by Python to
     enhance the robustness and reliability of our codebase. In short, *Pydantic* will
     help ensure that our model’s response will always be consistent.
+  id: totrans-257
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们安装一些库。除了*Haversine*，主要的一个是[OpenAI Python库](https://github.com/openai/openai-python)，它为任何Python
+    3.7+应用程序提供了方便的访问OpenAI REST API的方式。另一个是[Pydantic](https://docs.pydantic.dev/latest/)（和instructor），这是一个由Python构建的强大数据验证和设置管理库，旨在增强我们代码库的健壮性和可靠性。简而言之，*Pydantic*将帮助确保我们的模型响应始终一致。
 - en: '[PRE31]'
+  id: totrans-258
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE31]'
 - en: Now, we should create a Python script designed to interact with our model (LLM)
     to determine the coordinates of a country’s capital city and calculate the distance
     from Santiago de Chile to that capital.
+  id: totrans-259
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们应该创建一个Python脚本，用于与我们的模型（LLM）交互，以确定一个国家首都的坐标，并计算从圣地亚哥到该首都的距离。
 - en: 'Let’s go over the code:'
+  id: totrans-260
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们来看看代码：
 - en: 1\. Importing Libraries
+  id: totrans-261
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 1. 导入库
 - en: '[PRE32]'
+  id: totrans-262
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE32]'
 - en: '**sys**: Provides access to system-specific parameters and functions. It’s
     used to get command-line arguments.'
+  id: totrans-263
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**sys**：提供对系统特定参数和函数的访问。它用于获取命令行参数。'
 - en: '**haversine**: A function from the haversine library that calculates the distance
     between two geographic points using the Haversine formula.'
+  id: totrans-264
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**haversine**：一个来自haversine库的函数，它使用Haversine公式计算两个地理点之间的距离。'
 - en: '**openAI**: A module for interacting with the OpenAI API (although it’s used
     in conjunction with a local setup, Ollama). Everything is off-line here.'
+  id: totrans-265
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**openAI**：一个用于与OpenAI API交互的模块（尽管它与本地设置（Ollama）一起使用，但这里一切都是离线的）。'
 - en: '**pydantic**: Provides data validation and settings management using Python-type
     annotations. It’s used to define the structure of expected response data.'
+  id: totrans-266
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**pydantic**：使用Python类型注解提供数据验证和设置管理。它用于定义预期响应数据的结构。'
 - en: '**instructor**: A module is used to patch the OpenAI client to work in a specific
     mode (likely related to structured data handling).'
+  id: totrans-267
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**instructor**：一个模块，用于修补OpenAI客户端以在特定模式下工作（可能与其结构化数据处理有关）。'
 - en: 2\. Defining Input and Model
+  id: totrans-268
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 2. 定义输入和模型
 - en: '[PRE33]'
+  id: totrans-269
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE33]'
 - en: '**country**: On a Python script, getting the country name from command-line
     arguments is possible. On a Jupyter notebook, we can enter its name, for example,'
+  id: totrans-270
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**country**：在Python脚本中，可以从命令行参数中获取国家名称。在Jupyter笔记本中，我们可以输入其名称，例如，'
 - en: '`country = "France"`'
+  id: totrans-271
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`country = "France"`'
 - en: '**MODEL**: Specifies the model being used, which is, in this example, the phi3.5.'
+  id: totrans-272
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**MODEL**：指定正在使用的模型，在这个例子中是phi3.5。'
 - en: '**mylat** **and** **mylon**: Coordinates of Santiago de Chile, used as the
     starting point for the distance calculation.'
+  id: totrans-273
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**mylat** **和** **mylon**：圣地亚哥的坐标，用作距离计算的起点。'
 - en: 3\. Defining the Response Data Structure
+  id: totrans-274
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 3. 定义响应数据结构
 - en: '[PRE34]'
+  id: totrans-275
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE34]'
 - en: '**CityCoord**: A Pydantic model that defines the expected structure of the
     response from the LLM. It expects three fields: city (name of the city), lat (latitude),
     and lon (longitude).'
+  id: totrans-276
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**CityCoord**：一个Pydantic模型，用于定义LLM响应的预期结构。它期望有三个字段：city（城市名称）、lat（纬度）和lon（经度）。'
 - en: 4\. Setting Up the OpenAI Client
+  id: totrans-277
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 4. 设置OpenAI客户端
 - en: '[PRE35]'
+  id: totrans-278
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE35]'
 - en: '**OpenAI**: This setup initializes an OpenAI client with a local base URL and
     an API key (ollama). It uses a local server.'
+  id: totrans-279
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**OpenAI**: 此设置初始化了一个带有本地基本 URL 和 API 密钥（ollama）的 OpenAI 客户端。它使用本地服务器。'
 - en: '**instructor.patch**: Patches the OpenAI client to work in JSON mode, enabling
     structured output that matches the Pydantic model.'
+  id: totrans-280
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**instructor.patch**: 修补 OpenAI 客户端以在 JSON 模式下工作，启用与 Pydantic 模型匹配的结构化输出。'
 - en: 5\. Generating the Response
+  id: totrans-281
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 5. 生成响应
 - en: '[PRE36]'
+  id: totrans-282
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE36]'
 - en: '**client.chat.completions.create**: Calls the LLM to generate a response.'
+  id: totrans-283
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**client.chat.completions.create**: 调用 LLM 生成响应。'
 - en: '**model**: Specifies the model to use (llava-phi3).'
+  id: totrans-284
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**model**: 指定要使用的模型（llava-phi3）。'
 - en: '**messages**: Contains the prompt for the LLM, asking for the latitude and
     longitude of the capital city of the specified country.'
+  id: totrans-285
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**messages**: 包含对 LLM 的提示，要求提供指定国家首都的纬度和经度。'
 - en: '**response_model**: Indicates that the response should conform to the CityCoord
     model.'
+  id: totrans-286
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**response_model**: 指示响应应符合 CityCoord 模型。'
 - en: '**max_retries**: The maximum number of retry attempts if the request fails.'
+  id: totrans-287
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**max_retries**: 如果请求失败，最大重试次数。'
 - en: 6\. Calculating the Distance
+  id: totrans-288
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 6. 计算距离
 - en: '[PRE37]'
+  id: totrans-289
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE37]'
 - en: '**haversine**: Calculates the distance between Santiago de Chile and the capital
     city returned by the LLM using their respective coordinates.'
+  id: totrans-290
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**haversine**: 使用各自的坐标计算 LLM 返回的圣地亚哥·德·智利的首都之间的距离。'
 - en: '**(mylat, mylon)**: Coordinates of Santiago de Chile.'
+  id: totrans-291
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**(mylat, mylon)**: 圣地亚哥·德·智利的坐标。'
 - en: '**resp.city**: Name of the country’s capital'
+  id: totrans-292
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**resp.city**: 国家的首都名称'
 - en: '**(resp.lat, resp.lon)**: Coordinates of the capital city are provided by the
     LLM response.'
+  id: totrans-293
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**(resp.lat, resp.lon)**: 首都的坐标由 LLM 响应提供。'
 - en: '**unit = ‘km’**: Specifies that the distance should be calculated in kilometers.'
+  id: totrans-294
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**unit = ‘km’**: 指定距离应以公里计算。'
 - en: '**print**: Outputs the distance, rounded to the nearest 10 kilometers, with
     thousands of separators for readability.'
+  id: totrans-295
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**print**: 输出距离，四舍五入到最接近的 10 公里，并使用千位分隔符以提高可读性。'
 - en: '**Running the code**'
+  id: totrans-296
   prefs: []
   type: TYPE_NORMAL
+  zh: '**运行代码**'
 - en: 'If we enter different countries, for example, France, Colombia, and the United
     States, We can note that we always receive the same structured information:'
+  id: totrans-297
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们输入不同的国家，例如，法国、哥伦比亚和美国，我们可以注意到我们总是收到相同结构化的信息：
 - en: '[PRE38]'
+  id: totrans-298
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE38]'
 - en: 'If you run the code as a script, the result will be printed on the terminal:'
+  id: totrans-299
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您将代码作为脚本运行，结果将在终端上打印：
 - en: '![](../media/file932.png)'
+  id: totrans-300
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file932.png)'
 - en: And the calculations are pretty good!
+  id: totrans-301
   prefs: []
   type: TYPE_NORMAL
+  zh: 计算结果相当准确！
 - en: '![](../media/file933.png)'
+  id: totrans-302
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file933.png)'
 - en: In the [20-Ollama_Function_Calling](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/20-Ollama_Function_Calling.ipynb)
     notebook, it is possible to find experiments with all models installed.
+  id: totrans-303
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在 [20-Ollama_Function_Calling](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/20-Ollama_Function_Calling.ipynb)
+    笔记本中，可以找到所有已安装模型的实验。
 - en: Adding images
+  id: totrans-304
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 添加图片
 - en: Now it is time to wrap up everything so far! Let’s modify the script so that
     instead of entering the country name (as a text), the user enters an image, and
     the application (based on SLM) returns the city in the image and its geographic
     location. With those data, we can calculate the distance as before.
+  id: totrans-305
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在是时候总结到目前为止的内容了！让我们修改脚本，以便用户输入的不是国家名称（作为文本），而是输入一个图像，并且基于 SLM 的应用程序返回图像中的城市及其地理位置。有了这些数据，我们可以像以前一样计算距离。
 - en: '![](../media/file934.png)'
+  id: totrans-306
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file934.png)'
 - en: For simplicity, we will implement this new code in two steps. First, the LLM
     will analyze the image and create a description (text). This text will be passed
     on to another instance, where the model will extract the information needed to
     pass along.
+  id: totrans-307
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了简单起见，我们将分两步实现此新代码。首先，LLM 将分析图像并创建描述（文本）。此文本将被传递到另一个实例，其中模型将提取所需信息以传递。
 - en: We will start importing the libraries
+  id: totrans-308
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将开始导入库
 - en: '[PRE39]'
+  id: totrans-309
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE39]'
 - en: 'We can see the image if you run the code on the Jupyter Notebook. For that
     we need also import:'
+  id: totrans-310
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您在 Jupyter Notebook 上运行代码，我们可以看到这张图片。为此，我们还需要导入：
 - en: '[PRE40]'
+  id: totrans-311
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE40]'
 - en: Those libraries are unnecessary if we run the code as a script.
+  id: totrans-312
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果我们以脚本方式运行代码，则不需要这些库。
 - en: 'Now, we define the model and the local coordinates:'
+  id: totrans-313
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们定义模型和本地坐标：
 - en: '[PRE41]'
+  id: totrans-314
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE41]'
 - en: 'We can download a new image, for example, Machu Picchu from Wikipedia. On the
     Notebook we can see it:'
+  id: totrans-315
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以下载一张新图片，例如，来自维基百科的马丘比丘。在笔记本中我们可以看到它：
 - en: '[PRE42]'
+  id: totrans-316
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE42]'
 - en: '![](../media/file935.jpg)'
+  id: totrans-317
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file935.jpg)'
 - en: Now, let’s define a function that will receive the image and will `return the
     decimal latitude and decimal longitude of the city in the image, its name, and
     what country it is located`
+  id: totrans-318
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们定义一个函数，该函数将接收图像并将`返回图像中城市的十进制度量和十进制度，以及该城市的名称和所在国家`
 - en: '[PRE43]'
+  id: totrans-319
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE43]'
 - en: We can print the entire response for debug purposes.
+  id: totrans-320
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们可以打印整个响应以供调试目的。
 - en: The image description generated for the function will be passed as a prompt
     for the model again.
+  id: totrans-321
   prefs: []
   type: TYPE_NORMAL
+  zh: 为该函数生成的图像描述将再次作为提示传递给模型。
 - en: '[PRE44]'
+  id: totrans-322
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE44]'
 - en: 'If we print the image description , we will get:'
+  id: totrans-323
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们打印图像描述，我们将得到：
 - en: '[PRE45]'
+  id: totrans-324
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE45]'
 - en: 'And the second response from the model (`resp`) will be:'
+  id: totrans-325
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型的第二个响应（`resp`）将是：
 - en: '[PRE46]'
+  id: totrans-326
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE46]'
 - en: 'Now, we can do a “Post-Processing”, calculating the distance and preparing
     the final answer:'
+  id: totrans-327
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们可以进行“后处理”，计算距离并准备最终答案：
 - en: '[PRE47]'
+  id: totrans-328
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE47]'
 - en: 'And we will get:'
+  id: totrans-329
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将得到：
 - en: '[PRE48]'
+  id: totrans-330
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE48]'
 - en: In the [30-Function_Calling_with_images](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/30-Function_Calling_with_images.ipynb)
     notebook, it is possible to find the experiments with multiple images.
+  id: totrans-331
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[30-Function_Calling_with_images](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/30-Function_Calling_with_images.ipynb)笔记本中，可以找到使用多张图像的实验。
 - en: 'Let’s now download the script `calc_distance_image.py` from the GitHub and
     run it on the terminal with the command:'
+  id: totrans-332
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们从GitHub下载脚本`calc_distance_image.py`并在终端中使用以下命令运行它：
 - en: '[PRE49]'
+  id: totrans-333
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE49]'
 - en: Enter with the Machu Picchu image full patch as an argument. We will get the
     same previous result.
+  id: totrans-334
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用马丘比丘图像完整补丁作为参数。我们将得到相同的前一个结果。
 - en: '![](../media/file936.png)'
+  id: totrans-335
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file936.png)'
 - en: '*How* about Paris?'
+  id: totrans-336
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，巴黎怎么样？
 - en: '![](../media/file937.png)'
+  id: totrans-337
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file937.png)'
 - en: Of course, there are many ways to optimize the code used here. Still, the idea
     is to explore the considerable potential of *function calling* with SLMs at the
     edge, allowing those models to integrate with external functions or APIs. Going
     beyond text generation, SLMs can access real-time data, automate tasks, and interact
     with various systems.
+  id: totrans-338
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，有许多方法可以优化这里使用的代码。但想法是探索在边缘使用SLMs进行**函数调用**的巨大潜力，使这些模型能够与外部函数或API集成。超越文本生成，SLMs可以访问实时数据，自动化任务，并与各种系统交互。
 - en: 'SLMs: Optimization Techniques'
+  id: totrans-339
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: SLMs：优化技术
 - en: Large Language Models (LLMs) have revolutionized natural language processing,
     but their deployment and optimization come with unique challenges. One significant
     issue is the tendency for LLMs (and more, the SLMs) to generate plausible-sounding
     but factually incorrect information, a phenomenon known as **hallucination**.
     This occurs when models produce content that seems coherent but is not grounded
     in truth or real-world facts.
+  id: totrans-340
   prefs: []
   type: TYPE_NORMAL
+  zh: 大型语言模型（LLMs）已经彻底改变了自然语言处理，但它们的部署和优化带来了独特的挑战。一个重大问题是LLMs（以及更多的SLMs）倾向于生成听起来合理但实际上错误的信息，这种现象被称为**幻觉**。这发生在模型产生看似连贯但缺乏真实或现实世界事实的内容时。
 - en: Other challenges include the immense computational resources required for training
     and running these models, the difficulty in maintaining up-to-date knowledge within
     the model, and the need for domain-specific adaptations. Privacy concerns also
@@ -1476,288 +2194,418 @@
     ensuring consistent performance across diverse tasks and maintaining ethical use
     of these powerful tools present ongoing challenges. Addressing these issues is
     crucial for the effective and responsible deployment of LLMs in real-world applications.
+  id: totrans-341
   prefs: []
   type: TYPE_NORMAL
+  zh: 其他挑战包括训练和运行这些模型所需的巨大计算资源、在模型中维护最新知识的难度，以及需要特定领域的适应性。在训练或推理过程中处理敏感数据时，也会出现隐私问题。此外，确保跨不同任务的一致性能以及保持这些强大工具的道德使用也带来了持续挑战。解决这些问题对于在现实世界应用中有效且负责任地部署大型语言模型（LLMs）至关重要。
 - en: The fundamental techniques for enhancing LLM (and SLM) performance and efficiency
     are Fine-tuning, Prompt engineering, and Retrieval-Augmented Generation (RAG).
+  id: totrans-342
   prefs: []
   type: TYPE_NORMAL
+  zh: 提高LLM（和SLM）性能和效率的基本技术包括微调、提示工程和检索增强生成（RAG）。
 - en: '**Fine-tuning**, while more resource-intensive, offers a way to specialize
     LLMs for particular domains or tasks. This process involves further training the
     model on carefully curated datasets, allowing it to adapt its vast general knowledge
     to specific applications. Fine-tuning can lead to substantial improvements in
     performance, especially in specialized fields or for unique use cases.'
+  id: totrans-343
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**微调**，虽然资源消耗更大，但为将LLMs特定化到特定领域或任务提供了一种方法。这个过程涉及在精心挑选的数据集上进一步训练模型，使其能够将广泛的一般知识适应到特定应用中。微调可以带来性能的显著提升，尤其是在特定领域或独特用例中。'
 - en: '**Prompt engineering** is at the forefront of LLM optimization. By carefully
     crafting input prompts, we can guide models to produce more accurate and relevant
     outputs. This technique involves structuring queries that leverage the model’s
     pre-trained knowledge and capabilities, often incorporating examples or specific
     instructions to shape the desired response.'
+  id: totrans-344
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**提示工程**是LLM优化的前沿。通过精心设计输入提示，我们可以引导模型生成更准确和相关的输出。这种技术涉及构建利用模型预先训练的知识和能力的问题结构，通常包括示例或具体指令来塑造期望的响应。'
 - en: '**Retrieval-Augmented Generation (RAG)** represents another powerful approach
     to improving LLM performance. This method combines the vast knowledge embedded
     in pre-trained models with the ability to access and incorporate external, up-to-date
     information. By retrieving relevant data to supplement the model’s decision-making
     process, RAG can significantly enhance accuracy and reduce the likelihood of generating
     outdated or false information.'
+  id: totrans-345
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**检索增强生成（RAG）**代表了一种提高LLM性能的强大方法。这种方法结合了预训练模型中嵌入的广泛知识以及访问和整合外部最新信息的能力。通过检索相关数据以补充模型的决策过程，RAG可以显著提高准确性并减少生成过时或错误信息的可能性。'
 - en: For edge applications, it is more beneficial to focus on techniques like RAG
     that can enhance model performance without needing on-device fine-tuning. Let’s
     explore it.
+  id: totrans-346
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于边缘应用，更有益的是关注像RAG这样的技术，这些技术可以增强模型性能，而无需在设备上进行微调。让我们来探讨它。
 - en: RAG Implementation
+  id: totrans-347
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: RAG实现
 - en: In a basic interaction between a user and a language model, the user asks a
     question, which is sent as a prompt to the model. The model generates a response
     based solely on its pre-trained knowledge. In a RAG process, there’s an additional
     step between the user’s question and the model’s response. The user’s question
     triggers a retrieval process from a knowledge base.
+  id: totrans-348
   prefs: []
   type: TYPE_NORMAL
+  zh: 在用户与语言模型的基本交互中，用户提出一个问题，这个问题作为提示发送给模型。模型根据其预先训练的知识生成一个响应。在RAG过程中，用户的问题和模型的响应之间有一个额外的步骤。用户的问题触发从知识库中检索的过程。
 - en: '![](../media/file938.png)'
+  id: totrans-349
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file938.png)'
 - en: A simple RAG project
+  id: totrans-350
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 一个简单的RAG项目
 - en: 'Here are the steps to implement a basic Retrieval Augmented Generation (RAG):'
+  id: totrans-351
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是实现基本检索增强生成（RAG）的步骤：
 - en: '**Determine the type of documents you’ll be using**: The best types are documents
     from which we can get clean and unobscured text. PDFs can be problematic because
     they are designed for printing, not for extracting sensible text. To work with
     PDFs, we should get the source document or use tools to handle it.'
+  id: totrans-352
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**确定你将使用的文档类型**：最佳类型是我们可以从中获得干净且未被遮挡的文本的文档。PDF可能存在问题，因为它们是为打印而设计的，而不是为了提取有意义的文本。为了处理PDF，我们应该获取源文档或使用工具来处理它。'
 - en: '**Chunk the text**: We can’t store the text as one long stream because of context
     size limitations and the potential for confusion. Chunking involves splitting
     the text into smaller pieces. Chunk text has many ways, such as character count,
     tokens, words, paragraphs, or sections. It is also possible to overlap chunks.'
+  id: totrans-353
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**将文本分块**：由于上下文大小限制和混淆的可能性，我们不能将文本存储为一个长流。分块涉及将文本分成更小的部分。分块文本有多种方式，例如字符计数、标记、单词、段落或部分。也可以重叠分块。'
 - en: '**Create embeddings**: Embeddings are numerical representations of text that
     capture semantic meaning. We create embeddings by passing each chunk of text through
     a particular embedding model. The model outputs a vector, the length of which
     depends on the embedding model used. We should pull one (or more) [embedding models](https://ollama.com/blog/embedding-models)
     from Ollama, to perform this task. Here are some examples of embedding models
     available at Ollama.'
+  id: totrans-354
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**创建嵌入**：嵌入是捕获语义意义的文本的数值表示。我们通过将每个文本块通过特定的嵌入模型来创建嵌入。模型输出一个向量，其长度取决于所使用的嵌入模型。我们应该从Ollama拉取一个（或多个）[嵌入模型](https://ollama.com/blog/embedding-models)来执行此任务。以下是Ollama可用的嵌入模型的一些示例。'
 - en: '| Model | Parameter Size | Embedding Size |'
+  id: totrans-355
   prefs:
   - PREF_IND
   type: TYPE_TB
+  zh: '| 模型 | 参数大小 | 嵌入大小 |'
 - en: '| --- | --- | --- |'
+  id: totrans-356
   prefs:
   - PREF_IND
   type: TYPE_TB
+  zh: '| --- | --- | --- |'
 - en: '| mxbai-embed-large | 334M | 1024 |'
+  id: totrans-357
   prefs:
   - PREF_IND
   type: TYPE_TB
+  zh: '| mxbai-embed-large | 334M | 1024 |'
 - en: '| nomic-embed-text | 137M | 768 |'
+  id: totrans-358
   prefs:
   - PREF_IND
   type: TYPE_TB
+  zh: '| nomic-embed-text | 137M | 768 |'
 - en: '| all-minilm | 23M | 384 |'
+  id: totrans-359
   prefs:
   - PREF_IND
   type: TYPE_TB
+  zh: '| all-minilm | 23M | 384 |'
 - en: Generally, larger embedding sizes capture more nuanced information about the
     input. Still, they also require more computational resources to process, and a
     higher number of parameters should increase the latency (but also the quality
     of the response).
+  id: totrans-360
   prefs:
   - PREF_IND
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 通常，更大的嵌入大小可以捕获关于输入的更细微的信息。然而，它们也需要更多的计算资源来处理，并且参数数量的增加应该会增加延迟（但也会提高响应的质量）。
 - en: '**Store the chunks and embeddings in a vector database**: We will need a way
     to efficiently find the most relevant chunks of text for a given prompt, which
     is where a vector database comes in. We will use [Chromadb](https://www.trychroma.com/),
     an AI-native open-source vector database, which simplifies building RAGs by creating
     knowledge, facts, and skills pluggable for LLMs. Both the embedding and the source
     text for each chunk are stored.'
+  id: totrans-361
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**将片段和嵌入存储在向量数据库中**：我们需要一种方法来高效地找到给定提示中最相关的文本片段，这就是向量数据库的作用。我们将使用[Chromadb](https://www.trychroma.com/)，这是一个AI原生开源向量数据库，通过创建知识、事实和技能插件简化了RAG的构建。每个片段的嵌入和源文本都存储在其中。'
 - en: '**Build the prompt**: When we have a question, we create an embedding and query
     the vector database for the most similar chunks. Then, we select the top few results
     and include their text in the prompt.'
+  id: totrans-362
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**构建提示**：当我们有一个问题时，我们创建一个嵌入并查询向量数据库以找到最相似的片段。然后，我们选择前几个结果并将它们的文本包含在提示中。'
 - en: The goal of RAG is to provide the model with the most relevant information from
     our documents, allowing it to generate more accurate and informative responses.
     So, let’s implement a simple example of an SLM incorporating a particular set
     of facts about bees (“Bee Facts”).
+  id: totrans-363
   prefs: []
   type: TYPE_NORMAL
+  zh: RAG的目标是为模型提供我们文档中最相关的信息，使其能够生成更准确和更有信息量的响应。因此，让我们实现一个简单示例，将关于蜜蜂的特定事实集（“蜜蜂事实”）纳入SLM中。
 - en: 'Inside the `ollama` env, enter the command in the terminal for Chromadb installation:'
+  id: totrans-364
   prefs: []
   type: TYPE_NORMAL
+  zh: 在`ollama`环境中，在终端中输入Chromadb安装命令：
 - en: '[PRE50]'
+  id: totrans-365
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE50]'
 - en: Let’s pull an intermediary embedding model, `nomic-embed-text`
+  id: totrans-366
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们拉取一个中间嵌入模型，`nomic-embed-text`
 - en: '[PRE51]'
+  id: totrans-367
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE51]'
 - en: 'And create a working directory:'
+  id: totrans-368
   prefs: []
   type: TYPE_NORMAL
+  zh: 并创建一个工作目录：
 - en: '[PRE52]'
+  id: totrans-369
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE52]'
 - en: 'Let’s create a new Jupyter notebook, [40-RAG-simple-bee](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/40-RAG-simple-bee.ipynb)
     for some exploration:'
+  id: totrans-370
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们创建一个新的Jupyter笔记本，[40-RAG-simple-bee](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/40-RAG-simple-bee.ipynb)来进行一些探索：
 - en: 'Import the needed libraries:'
+  id: totrans-371
   prefs: []
   type: TYPE_NORMAL
+  zh: 导入所需的库：
 - en: '[PRE53]'
+  id: totrans-372
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE53]'
 - en: 'And define aor models:'
+  id: totrans-373
   prefs: []
   type: TYPE_NORMAL
+  zh: 定义aor模型：
 - en: '[PRE54]'
+  id: totrans-374
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE54]'
 - en: 'Initially, a knowledge base about bee facts should be created. This involves
     collecting relevant documents and converting them into vector embeddings. These
     embeddings are then stored in a vector database, allowing for efficient similarity
     searches later. Enter with the “document,” a base of “bee facts” as a list:'
+  id: totrans-375
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，应该创建一个关于蜜蜂事实的知识库。这涉及到收集相关文档并将它们转换为向量嵌入。然后，这些嵌入存储在向量数据库中，以便以后进行高效的相似性搜索。以“文档”的形式输入“蜜蜂事实”的基础列表：
 - en: '[PRE55]'
+  id: totrans-376
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE55]'
 - en: We do not need to “chunk” the document here because we will use each element
     of the list and a chunk.
+  id: totrans-377
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们在这里不需要“分块”文档，因为我们将会使用列表中的每个元素和一个片段。
 - en: 'Now, we will create our vector embedding database `bee_facts` and store the
     document in it:'
+  id: totrans-378
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们将创建我们的向量嵌入数据库`bee_facts`并将文档存储在其中：
 - en: '[PRE56]'
+  id: totrans-379
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE56]'
 - en: 'Now that we have our “Knowledge Base” created, we can start making queries,
     retrieving data from it:'
+  id: totrans-380
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经创建了“知识库”，我们可以开始进行查询，从其中检索数据：
 - en: '![](../media/file939.png)'
+  id: totrans-381
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file939.png)'
 - en: '**User Query**: The process begins when a user asks a question, such as “How
     many bees are in a colony? Who lays eggs, and how much? How about common pests
     and diseases?”'
+  id: totrans-382
   prefs: []
   type: TYPE_NORMAL
+  zh: '**用户查询**：这个过程从用户提出问题开始，例如：“一个蜂群中有多少蜜蜂？谁产卵，有多少？常见的害虫和疾病又是怎样的？”'
 - en: '[PRE57]'
+  id: totrans-383
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE57]'
 - en: '**Query Embedding**: The user’s question is converted into a vector embedding
     using **the same embedding model** used for the knowledge base.'
+  id: totrans-384
   prefs: []
   type: TYPE_NORMAL
+  zh: '**查询嵌入**：用户的提问被转换为向量嵌入，使用与知识库相同的嵌入模型。'
 - en: '[PRE58]'
+  id: totrans-385
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE58]'
 - en: '**Relevant Document Retrieval**: The system searches the knowledge base using
     the query embedding to find the most relevant documents (in this case, the 5 more
     probable). This is done using a similarity search, which compares the query embedding
     to the document embeddings in the database.'
+  id: totrans-386
   prefs: []
   type: TYPE_NORMAL
+  zh: '**相关文档检索**：系统使用查询嵌入在知识库中进行搜索，以找到最相关的文档（在这种情况下，5个最可能的文档）。这是通过相似性搜索完成的，它将查询嵌入与数据库中的文档嵌入进行比较。'
 - en: '[PRE59]'
+  id: totrans-387
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE59]'
 - en: '**Prompt Augmentation**: The retrieved relevant information is combined with
     the original user query to create an augmented prompt. This prompt now contains
     the user’s question and pertinent facts from the knowledge base.'
+  id: totrans-388
   prefs: []
   type: TYPE_NORMAL
+  zh: '**提示增强**：检索到的相关信息与原始用户查询相结合，以创建增强提示。现在，这个提示包含了用户的问题和知识库中的相关事实。'
 - en: '[PRE60]'
+  id: totrans-389
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE60]'
 - en: '**Answer Generation**: The augmented prompt is then fed into a language model,
     in this case, the `llama3.2:3b` model. The model uses this enriched context to
     generate a comprehensive answer. Parameters like temperature, top_k, and top_p
     are set to control the randomness and quality of the generated response.'
+  id: totrans-390
   prefs: []
   type: TYPE_NORMAL
+  zh: '**答案生成**：增强后的提示随后被输入到语言模型中，在这种情况下，是`llama3.2:3b`模型。该模型使用这个丰富的上下文来生成全面的答案。参数如温度、top_k和top_p被设置为控制生成响应的随机性和质量。'
 - en: '[PRE61]'
+  id: totrans-391
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE61]'
 - en: '**Response Delivery**: Finally, the system returns the generated answer to
     the user.'
+  id: totrans-392
   prefs: []
   type: TYPE_NORMAL
+  zh: '**响应交付**：最后，系统将生成的答案返回给用户。'
 - en: '[PRE62]'
+  id: totrans-393
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE62]'
 - en: '[PRE63]'
+  id: totrans-394
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE63]'
 - en: 'Let’s create a function to help answer new questions:'
+  id: totrans-395
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们创建一个函数来帮助回答新问题：
 - en: '[PRE64]'
+  id: totrans-396
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE64]'
 - en: 'We can now create queries and call the function:'
+  id: totrans-397
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在可以创建查询并调用函数：
 - en: '[PRE65]'
+  id: totrans-398
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE65]'
 - en: '[PRE66]'
+  id: totrans-399
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE66]'
 - en: 'By the way, if the model used supports multiple languages, we can use it (for
     example, Portuguese), even if the dataset was created in English:'
+  id: totrans-400
   prefs: []
   type: TYPE_NORMAL
+  zh: 顺便说一句，如果使用的模型支持多种语言，我们可以使用它（例如，葡萄牙语），即使数据集是用英语创建的：
 - en: '[PRE67]'
+  id: totrans-401
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE67]'
 - en: '[PRE68]'
+  id: totrans-402
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE68]'
 - en: Going Further
+  id: totrans-403
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 进一步探索
 - en: The small LLM models tested worked well at the edge, both in text and with images,
     but of course, they had high latency regarding the last one. A combination of
     specific and dedicated models can lead to better results; for example, in real
     cases, an Object Detection model (such as YOLO) can get a general description
     and count of objects on an image that, once passed to an LLM, can help extract
     essential insights and actions.
+  id: totrans-404
   prefs: []
   type: TYPE_NORMAL
+  zh: 测试的小型LLM模型在边缘上运行良好，无论是文本还是图像，但当然，在最后一个方面有很高的延迟。结合特定和专用模型可以带来更好的结果；例如，在实际案例中，一个目标检测模型（如YOLO）可以对图像中的对象进行一般描述和计数，一旦传递给LLM，就可以帮助提取关键见解和行动。
 - en: According to Avi Baum, CTO at Hailo,
+  id: totrans-405
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据 Hailo 的首席技术官 Avi Baum，
 - en: In the vast landscape of artificial intelligence (AI), one of the most intriguing
     journeys has been the evolution of AI on the edge. This journey has taken us from
     classic machine vision to the realms of discriminative AI, enhancive AI, and now,
@@ -1765,141 +2613,204 @@
     to a future where intelligent systems seamlessly integrate with our daily lives,
     offering an immersive experience of not just perception but also creation at the
     palm of our hand.
+  id: totrans-406
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在人工智能（AI）的广阔领域中，最引人入胜的旅程之一就是边缘AI的演变。这一旅程带我们从经典的机器视觉领域走向了判别性AI、增强性AI，现在，是突破性的生成AI前沿。每一步都让我们更接近一个未来，在那里智能系统无缝地融入我们的日常生活，提供不仅在感知上而且在手掌中也能进行创造的沉浸式体验。
 - en: '![](../media/file940.jpg)'
+  id: totrans-407
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file940.jpg)'
 - en: Summary
+  id: totrans-408
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 摘要
 - en: This lab has demonstrated how a Raspberry Pi 5 can be transformed into a potent
     AI hub capable of running large language models (LLMs) for real-time, on-site
     data analysis and insights using Ollama and Python. The Raspberry Pi’s versatility
     and power, coupled with the capabilities of lightweight LLMs like Llama 3.2 and
     LLaVa-Phi-3-mini, make it an excellent platform for edge computing applications.
+  id: totrans-409
   prefs: []
   type: TYPE_NORMAL
+  zh: 本实验室展示了如何将Raspberry Pi 5转变为一个强大的AI中心，能够运行大型语言模型（LLMs），利用Ollama和Python进行实时、现场数据分析和洞察。Raspberry
+    Pi的多功能和强大性能，加上轻量级LLMs如Llama 3.2和LLaVa-Phi-3-mini的能力，使其成为边缘计算应用的优秀平台。
 - en: 'The potential of running LLMs on the edge extends far beyond simple data processing,
     as in this lab’s examples. Here are some innovative suggestions for using this
     project:'
+  id: totrans-410
   prefs: []
   type: TYPE_NORMAL
+  zh: 在边缘运行LLMs的潜力远远超出了简单的数据处理，正如本实验室的示例所示。以下是一些创新性的使用这个项目的建议：
 - en: '**1\. Smart Home Automation**:'
+  id: totrans-411
   prefs: []
   type: TYPE_NORMAL
+  zh: '**1. 智能家居自动化**:'
 - en: Integrate SLMs to interpret voice commands or analyze sensor data for intelligent
     home automation. This could include real-time monitoring and control of home devices,
     security systems, and energy management, all processed locally without relying
     on cloud services.
+  id: totrans-412
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 集成SLMs以解释语音命令或分析传感器数据以实现智能家居自动化。这可能包括对家庭设备、安全系统和能源管理的实时监控和控制，所有这些处理都在本地进行，不依赖云服务。
 - en: '**2\. Field Data Collection and Analysis**:'
+  id: totrans-413
   prefs: []
   type: TYPE_NORMAL
+  zh: '**2. 场地数据收集和分析**：'
 - en: Deploy SLMs on Raspberry Pi in remote or mobile setups for real-time data collection
     and analysis. This can be used in agriculture to monitor crop health, in environmental
     studies for wildlife tracking, or in disaster response for situational awareness
     and resource management.
+  id: totrans-414
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在远程或移动设置中在Raspberry Pi上部署SLMs进行实时数据收集和分析。这可以用于农业监测作物健康，在环境研究中进行野生动物追踪，或在灾害响应中进行态势感知和资源管理。
 - en: '**3\. Educational Tools**:'
+  id: totrans-415
   prefs: []
   type: TYPE_NORMAL
+  zh: '**3. 教育工具**:'
 - en: Create interactive educational tools that leverage SLMs to provide instant feedback,
     language translation, and tutoring. This can be particularly useful in developing
     regions with limited access to advanced technology and internet connectivity.
+  id: totrans-416
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 创建利用SLMs提供即时反馈、语言翻译和辅导的交互式教育工具。这在技术先进性和互联网连接有限的发达地区尤其有用。
 - en: '**4\. Healthcare Applications**:'
+  id: totrans-417
   prefs: []
   type: TYPE_NORMAL
+  zh: '**4. 医疗保健应用**:'
 - en: Use SLMs for medical diagnostics and patient monitoring. They can provide real-time
     analysis of symptoms and suggest potential treatments. This can be integrated
     into telemedicine platforms or portable health devices.
+  id: totrans-418
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用SLMs进行医疗诊断和患者监测。它们可以提供症状的实时分析并建议潜在的治疗方法。这可以集成到远程医疗平台或便携式健康设备中。
 - en: '**5\. Local Business Intelligence**:'
+  id: totrans-419
   prefs: []
   type: TYPE_NORMAL
+  zh: '**5. 本地商业智能**:'
 - en: Implement SLMs in retail or small business environments to analyze customer
     behavior, manage inventory, and optimize operations. The ability to process data
     locally ensures privacy and reduces dependency on external services.
+  id: totrans-420
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在零售或小型商业环境中实施SLMs以分析客户行为、管理库存和优化运营。本地处理数据的能力确保了隐私并减少了对外部服务的依赖。
 - en: '**6\. Industrial IoT**:'
+  id: totrans-421
   prefs: []
   type: TYPE_NORMAL
+  zh: '**6. 工业物联网**:'
 - en: Integrate SLMs into industrial IoT systems for predictive maintenance, quality
     control, and process optimization. The Raspberry Pi can serve as a localized data
     processing unit, reducing latency and improving the reliability of automated systems.
+  id: totrans-422
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将SLMs集成到工业物联网系统中，用于预测性维护、质量控制和工作流程优化。树莓派可以作为本地数据处理单元，减少延迟并提高自动化系统的可靠性。
 - en: '**7\. Autonomous Vehicles**:'
+  id: totrans-423
   prefs: []
   type: TYPE_NORMAL
+  zh: '**7. 自主车辆**:'
 - en: Use SLMs to process sensory data from autonomous vehicles, enabling real-time
     decision-making and navigation. This can be applied to drones, robots, and self-driving
     cars for enhanced autonomy and safety.
+  id: totrans-424
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用SLMs处理来自自主车辆的感官数据，实现实时决策和导航。这可以应用于无人机、机器人和自动驾驶汽车，以增强自主性和安全性。
 - en: '**8\. Cultural Heritage and Tourism**:'
+  id: totrans-425
   prefs: []
   type: TYPE_NORMAL
+  zh: '**8. 文化遗产和旅游**:'
 - en: Implement SLMs to provide interactive and informative cultural heritage sites
     and museum guides. Visitors can use these systems to get real-time information
     and insights, enhancing their experience without internet connectivity.
+  id: totrans-426
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 实施SLMs以提供互动和富有信息量的文化遗产遗址和博物馆导游。游客可以使用这些系统获取实时信息和见解，增强他们的体验，无需互联网连接。
 - en: '**9\. Artistic and Creative Projects**:'
+  id: totrans-427
   prefs: []
   type: TYPE_NORMAL
+  zh: '**9. 艺术和创意项目**:'
 - en: Use SLMs to analyze and generate creative content, such as music, art, and literature.
     This can foster innovative projects in the creative industries and allow for unique
     interactive experiences in exhibitions and performances.
+  id: totrans-428
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用SLMs分析和生成创意内容，如音乐、艺术和文学。这可以促进创意产业中的创新项目，并在展览和表演中提供独特的互动体验。
 - en: '**10\. Customized Assistive Technologies**:'
+  id: totrans-429
   prefs: []
   type: TYPE_NORMAL
+  zh: '**10. 定制辅助技术**:'
 - en: Develop assistive technologies for individuals with disabilities, providing
     personalized and adaptive support through real-time text-to-speech, language translation,
     and other accessible tools.
+  id: totrans-430
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 为残疾人士开发辅助技术，通过实时文本到语音、语言翻译和其他可访问工具提供个性化自适应支持。
 - en: Resources
+  id: totrans-431
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 资源
 - en: '[10-Ollama_Python_Library notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/10-Ollama_Python_Library.ipynb)'
+  id: totrans-432
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[10-Ollama_Python_Library笔记本](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/10-Ollama_Python_Library.ipynb)'
 - en: '[20-Ollama_Function_Calling notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/20-Ollama_Function_Calling.ipynb)'
+  id: totrans-433
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[20-Ollama_Function_Calling笔记本](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/20-Ollama_Function_Calling.ipynb)'
 - en: '[30-Function_Calling_with_images notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/30-Function_Calling_with_images.ipynb)'
+  id: totrans-434
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[30-Function_Calling_with_images笔记本](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/30-Function_Calling_with_images.ipynb)'
 - en: '[40-RAG-simple-bee notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/40-RAG-simple-bee.ipynb)'
+  id: totrans-435
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[40-RAG-simple-bee笔记本](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/40-RAG-simple-bee.ipynb)'
 - en: '[calc_distance_image python script](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/calc_distance_image.py)'
+  id: totrans-436
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[calc_distance_image python 脚本](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/calc_distance_image.py)'

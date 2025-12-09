@@ -1,10 +1,14 @@
 - en: Keyword Spotting (KWS)
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 关键词检测（KWS）
 - en: '![](../media/file444.jpg)'
+  id: totrans-1
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file444.jpg)'
 - en: '*DALL·E 3 Prompt: 1950s style cartoon scene set in a vintage audio research
     room. Two Afro-American female scientists are at the center. One holds a magnifying
     glass, closely examining ancient circuitry, while the other takes notes. On their
@@ -15,17 +19,24 @@
     reveals outputs indicating the spoken commands ‘yes’ and ‘no’. The room ambiance
     is nostalgic with vintage lamps, classic audio analysis tools, and charts depicting
     FFT graphs and time-domain curves.*'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '*DALL·E 3提示：1950年代风格的卡通场景，设置在一个复古音频研究室中。两位非裔美国女科学家位于中心。一位手持放大镜，仔细检查古老的电路，而另一位在记笔记。在他们木质桌子上，有多块带有传感器的板，其中特别突出麦克风。在这些板后面，一台带有大圆背的计算机显示Arduino
+    IDE。IDE展示了LED引脚分配的代码和用于语音命令检测的机器学习推理。IDE中的一个独特窗口，串行监视器，显示了表示说出的命令“是”和“否”的输出。房间氛围怀旧，有复古灯具、经典音频分析工具和描绘FFT图和时间域曲线的图表。*'
 - en: Overview
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 概述
 - en: Having already explored the Nicla Vision board in the *Image Classification*
     and *Object Detection* applications, we are now shifting our focus to voice-activated
     applications with a project on Keyword Spotting (KWS).
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 在已经探索了Nicla Vision板在*图像分类*和*目标检测*应用中的使用后，我们现在将重点转向语音激活应用，通过一个关于关键词检测（KWS）的项目。
 - en: As introduced in the *Feature Engineering for Audio Classification* Hands-On
     tutorial, Keyword Spotting (KWS) is integrated into many voice recognition systems,
     enabling devices to respond to specific words or phrases. While this technology
@@ -33,294 +44,437 @@
     applicable and feasible on smaller, low-power devices. This tutorial will guide
     you through implementing a KWS system using TinyML on the Nicla Vision development
     board equipped with a digital microphone.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 如在*音频分类特征工程*动手教程中介绍的那样，关键词检测（KWS）集成到许多语音识别系统中，使设备能够对特定的单词或短语做出响应。虽然这项技术支撑着像Google
+    Assistant或Amazon Alexa这样的流行设备，但它同样适用于较小的、低功耗设备。本教程将指导您在配备数字麦克风的Nicla Vision开发板上使用TinyML实现KWS系统。
 - en: Our model will be designed to recognize keywords that can trigger device wake-up
     or specific actions, bringing them to life with voice-activated commands.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的设计模型将能够识别可以触发设备唤醒或特定动作的关键词，通过语音激活命令使它们活跃起来。
 - en: How does a voice assistant work?
+  id: totrans-7
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 语音助手是如何工作的？
 - en: As said, *voice assistants* on the market, like Google Home or Amazon Echo-Dot,
     only react to humans when they are “waked up” by particular keywords such as ”
     Hey Google” on the first one and “Alexa” on the second.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如所说，市场上的*语音助手*，如Google Home或Amazon Echo-Dot，只有在被特定的关键词“唤醒”时才会对人类做出反应，第一个是“嘿，谷歌”，第二个是“Alexa”。
 - en: '![](../media/file445.png)'
+  id: totrans-9
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file445.png)'
 - en: In other words, recognizing voice commands is based on a multi-stage model or
     Cascade Detection.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，语音命令的识别基于多阶段模型或级联检测。
 - en: '![](../media/file446.jpg)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file446.jpg)'
 - en: '**Stage 1**: A small microprocessor inside the Echo Dot or Google Home continuously
     listens, waiting for the keyword to be spotted, using a TinyML model at the edge
     (KWS application).'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '**第一阶段**：Echo Dot或Google Home内部的小型微处理器持续监听，等待检测到关键词，使用边缘的TinyML模型（KWS应用）。'
 - en: '**Stage 2**: Only when triggered by the KWS application on Stage 1 is the data
     sent to the cloud and processed on a larger model.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '**第二阶段**：只有在第一阶段由KWS应用触发后，数据才会被发送到云端并在更大的模型上处理。'
 - en: The video below shows an example of a Google Assistant being programmed on a
     Raspberry Pi (Stage 2), with an Arduino Nano 33 BLE as the TinyML device (Stage
     1).
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的视频展示了在Raspberry Pi上编程Google Assistant的示例（第二阶段），Arduino Nano 33 BLE作为TinyML设备（第一阶段）。
 - en: '[https://youtu.be/e_OPgcnsyvM](https://youtu.be/e_OPgcnsyvM)'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://youtu.be/e_OPgcnsyvM](https://youtu.be/e_OPgcnsyvM)'
 - en: 'To explore the above Google Assistant project, please see the tutorial: [Building
     an Intelligent Voice Assistant From Scratch](https://www.hackster.io/mjrobot/building-an-intelligent-voice-assistant-from-scratch-2199c3).'
+  id: totrans-16
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 要探索上述Google Assistant项目，请参阅教程：[从头开始构建智能语音助手](https://www.hackster.io/mjrobot/building-an-intelligent-voice-assistant-from-scratch-2199c3)。
 - en: In this KWS project, we will focus on Stage 1 (KWS or Keyword Spotting), where
     we will use the Nicla Vision, which has a digital microphone that will be used
     to spot the keyword.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个KWS项目中，我们将专注于第一阶段（KWS或关键词检测），我们将使用Nicla Vision，它有一个数字麦克风，将用于检测关键词。
 - en: The KWS Hands-On Project
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: KWS动手项目
 - en: 'The diagram below gives an idea of how the final KWS application should work
     (during inference):'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的图表展示了最终的KWS应用应该如何工作（在推理过程中）：
 - en: '![](../media/file447.jpg)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file447.jpg)'
 - en: 'Our KWS application will recognize four classes of sound:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的KWS应用将识别四种声音类别：
 - en: '**YES** (Keyword 1)'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**YES**（关键词1）'
 - en: '**NO** (Keyword 2)'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**NO**（关键词2）'
 - en: '**NOISE** (no words spoken; only background noise is present)'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**噪声**（没有说话；只有背景噪声）'
 - en: '**UNKNOWN** (a mix of different words than YES and NO)'
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**未知**（不同于YES和NO的不同单词的混合）'
 - en: For real-world projects, it is always advisable to include other sounds besides
     the keywords, such as “Noise” (or Background) and “Unknown.”
+  id: totrans-26
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 对于现实世界的项目，始终建议除了关键词之外，还包括其他声音，例如“噪声”（或背景）和“未知”。
 - en: The Machine Learning workflow
+  id: totrans-27
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 机器学习工作流程
 - en: 'The main component of the KWS application is its model. So, we must train such
     a model with our specific keywords, noise, and other words (the “unknown”):'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: KWS应用的主要组件是其模型。因此，我们必须使用我们特定的关键词、噪声和其他单词（“未知”）来训练这样的模型：
 - en: '![](../media/file448.jpg)'
+  id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file448.jpg)'
 - en: Dataset
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据集
 - en: 'The critical component of any Machine Learning Workflow is the **dataset**.
     Once we have decided on specific keywords, in our case (*YES* and NO), we can
     take advantage of the dataset developed by Pete Warden, [“Speech Commands: A Dataset
     for Limited-Vocabulary Speech Recognition](https://arxiv.org/pdf/1804.03209.pdf).”
     This dataset has 35 keywords (with +1,000 samples each), such as yes, no, stop,
     and go. In words such as *yes* and *no,* we can get 1,500 samples.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '任何机器学习工作流程的关键组件是**数据集**。一旦我们决定了特定的关键词，在我们的案例中是(*YES*和NO)，我们就可以利用Pete Warden开发的数据集，[“Speech
+    Commands: A Dataset for Limited-Vocabulary Speech Recognition](https://arxiv.org/pdf/1804.03209.pdf)。”这个数据集有35个关键词（每个有+1,000个样本），例如yes、no、stop和go。在*yes*和*no*这样的词中，我们可以得到1,500个样本。'
 - en: 'You can download a small portion of the dataset from Edge Studio ([Keyword
     spotting pre-built dataset](https://docs.edgeimpulse.com/docs/pre-built-datasets/keyword-spotting)),
     which includes samples from the four classes we will use in this project: yes,
     no, noise, and background. For this, follow the steps below:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以从Edge Studio下载数据集的一部分（[关键词检测预构建数据集](https://docs.edgeimpulse.com/docs/pre-built-datasets/keyword-spotting)），该数据集包括我们将在此项目中使用的四个类别的样本：yes、no、noise和background。为此，请按照以下步骤操作：
 - en: Download the [keywords dataset.](https://cdn.edgeimpulse.com/datasets/keywords2.zip)
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 下载[关键词数据集](https://cdn.edgeimpulse.com/datasets/keywords2.zip)
 - en: Unzip the file to a location of your choice.
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将文件解压到您选择的位置。
 - en: Uploading the dataset to the Edge Impulse Studio
+  id: totrans-35
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 将数据集上传到Edge Impulse Studio
 - en: 'Initiate a new project at Edge Impulse Studio (EIS) and select the `Upload
     Existing Data` tool in the `Data Acquisition` section. Choose the files to be
     uploaded:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Edge Impulse Studio（EIS）中启动一个新项目，并在“数据获取”部分选择“上传现有数据”工具。选择要上传的文件：
 - en: '![](../media/file449.jpg)'
+  id: totrans-37
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file449.jpg)'
 - en: Define the Label, select `Automatically split between train and test,` and `Upload
     data` to the EIS. Repeat for all classes.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 定义标签，选择`自动在训练和测试之间分割`，并`上传数据`到EIS。为所有类别重复此操作。
 - en: '![](../media/file450.jpg)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file450.jpg)'
 - en: The dataset will now appear in the `Data acquisition` section. Note that the
     approximately 6,000 samples (1,500 for each class) are split into Train (4,800)
     and Test (1,200) sets.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据集现在将出现在“数据获取”部分。请注意，大约6,000个样本（每类1,500个）被分为训练集（4,800个）和测试集（1,200个）。
 - en: '![](../media/file451.jpg)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file451.jpg)'
 - en: Capturing additional Audio Data
+  id: totrans-42
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 捕获额外的音频数据
 - en: Although we have a lot of data from Pete’s dataset, collecting some words spoken
     by us is advised. When working with accelerometers, creating a dataset with data
     captured by the same type of sensor is essential. In the case of *sound*, this
     is optional because what we will classify is, in reality, *audio* data.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管我们从Pete的数据集中获得了大量数据，但收集一些我们自己的说话词是建议的。当与加速度计一起工作时，创建由相同类型的传感器捕获的数据集是至关重要的。在*声音*的情况下，这是可选的，因为我们实际上要分类的是*音频*数据。
 - en: The key difference between sound and audio is the type of energy. Sound is mechanical
     perturbation (longitudinal sound waves) that propagate through a medium, causing
     variations of pressure in it. Audio is an electrical (analog or digital) signal
     representing sound.
+  id: totrans-44
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 声音和音频之间的关键区别是能量的类型。声音是机械扰动（纵向声波），通过介质传播，导致其压力变化。音频是表示声音的电气（模拟或数字）信号。
 - en: When we pronounce a keyword, the sound waves should be converted to audio data.
     The conversion should be done by sampling the signal generated by the microphone
     at a 16 KHz frequency with 16-bit per sample amplitude.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们发音一个关键词时，声波应转换为音频数据。转换应通过在 16 KHz 频率下以 16 位每样本幅度采样麦克风产生的信号来完成。
 - en: So, any device that can generate audio data with this basic specification (16
     KHz/16 bits) will work fine. As a *device*, we can use the NiclaV, a computer,
     or even your mobile phone.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，任何可以生成具有此基本规格（16 KHz/16 位）的音频数据的设备都可以正常工作。作为一个 *设备*，我们可以使用 NiclaV、计算机，甚至您的手机。
 - en: '![](../media/file452.jpg)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file452.jpg)'
 - en: Using the NiclaV and the Edge Impulse Studio
+  id: totrans-48
   prefs:
   - PREF_H4
   type: TYPE_NORMAL
+  zh: 使用 NiclaV 和 Edge Impulse Studio
 - en: 'As we learned in the chapter *Setup Nicla Vision*, EIS officially supports
     the Nicla Vision, which simplifies the capture of the data from its sensors, including
     the microphone. So, please create a new project on EIS and connect the Nicla to
     it, following these steps:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我们在 *设置 Nicla Vision* 章节中学到的，EIS 正式支持 Nicla Vision，这简化了从其传感器（包括麦克风）捕获数据的过程。因此，请在
+    EIS 上创建一个新项目，并将 Nicla 连接到它，按照以下步骤操作：
 - en: Download the last updated [EIS Firmware](https://cdn.edgeimpulse.com/firmware/arduino-nicla-vision.zip)
     and unzip it.
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 下载最新更新的 [EIS 固件](https://cdn.edgeimpulse.com/firmware/arduino-nicla-vision.zip)
+    并解压。
 - en: 'Open the zip file on your computer and select the uploader corresponding to
     your OS:'
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在您的计算机上打开 zip 文件，并选择对应您操作系统的上传器：
 - en: '![](../media/file453.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file453.png)'
 - en: Put the NiclaV in Boot Mode by pressing the reset button twice.
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过按重置按钮两次将 NiclaV 放入引导模式。
 - en: Upload the binary *arduino-nicla-vision.bin* to your board by running the batch
     code corresponding to your OS.
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过运行对应您操作系统的批处理代码，将二进制文件 *arduino-nicla-vision.bin* 上传到您的板子上。
 - en: Go to your project on EIS, and on the `Data Acquisition tab`, select `WebUSB`.
     A window will pop up; choose the option that shows that the `Nicla is paired`
     and press `[Connect]`.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 前往您在 EIS 上的项目，并在 `数据采集选项卡` 上选择 `WebUSB`。将弹出一个窗口；选择显示 `Nicla 已配对` 的选项，并按 `[连接]`。
 - en: 'You can choose which sensor data to pick in the `Collect Data` section on the
     `Data Acquisition` tab. Select: `Built-in microphone`, define your `label` (for
     example, *yes*), the sampling `Frequency`[16000Hz], and the `Sample length (in
     milliseconds)`, for example [10s]. `Start sampling`.'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以在“数据采集”选项卡上的“收集数据”部分选择要选择哪些传感器数据。选择：`内置麦克风`，定义您的 `标签`（例如，*是*），采样 `频率`[16000Hz]，以及
+    `样本长度（以毫秒计）`，例如 [10s]。`开始采样`。
 - en: '![](../media/file454.jpg)'
+  id: totrans-57
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file454.jpg)'
 - en: Data on Pete’s dataset have a length of 1s, but the recorded samples are 10s
     long and must be split into 1s samples. Click on `three dots` after the sample
     name and select `Split sample`.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: Pete 的数据集中的数据长度为 1 秒，但记录的样本长度为 10 秒，必须分割成 1 秒的样本。在样本名称后面的 `三个点` 上点击，并选择 `分割样本`。
 - en: A window will pop up with the Split tool.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 将弹出一个带有分割工具的窗口。
 - en: '![](../media/file455.jpg)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file455.jpg)'
 - en: Once inside the tool, split the data into 1-second (1000 ms) records. If necessary,
     add or remove segments. This procedure should be repeated for all new samples.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦进入工具，将数据分割成 1 秒（1000 毫秒）的记录。如有必要，添加或删除段。此过程应适用于所有新的样本。
 - en: Using a smartphone and the EI Studio
+  id: totrans-62
   prefs:
   - PREF_H4
   type: TYPE_NORMAL
+  zh: 使用智能手机和 EI Studio
 - en: You can also use your PC or smartphone to capture audio data, using a sampling
     frequency of 16 KHz and a bit depth of 16.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 您还可以使用您的 PC 或智能手机捕获音频数据，使用 16 KHz 的采样频率和 16 位的位深度。
 - en: Go to `Devices`, scan the `QR Code` using your phone, and click on the link.
     A data Collection app will appear in your browser. Select `Collecting Audio`,
     and define your `Label`, data capture `Length,` and `Category`.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 前往 `设备`，使用您的手机扫描 `QR 码`，并点击链接。浏览器中会出现一个数据收集应用程序。选择 `收集音频`，并定义您的 `标签`、数据捕获 `长度`
+    和 `类别`。
 - en: '![](../media/file456.jpg)'
+  id: totrans-65
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file456.jpg)'
 - en: Repeat the same procedure used with the NiclaV.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 重复与 NiclaV 使用的相同程序。
 - en: Note that any app, such as [Audacity](https://www.audacityteam.org/), can be
     used for audio recording, provided you use 16 KHz/16-bit depth samples.
+  id: totrans-67
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 注意，任何应用程序，如 [Audacity](https://www.audacityteam.org/)，都可以用于音频录制，只要您使用 16 KHz/16
+    位深度的样本。
 - en: Creating Impulse (Pre-Process / Model definition)
+  id: totrans-68
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 创建 Impulse（预处理/模型定义）
 - en: '*An* **impulse** *takes raw data, uses signal processing to extract features,
     and then uses a learning block to classify new data.*'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '*一个* **冲激** *从原始数据中提取特征，使用信号处理来提取特征，然后使用学习模块来分类新数据。*'
 - en: Impulse Design
+  id: totrans-70
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 冲激设计
 - en: '![](../media/file457.jpg)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file457.jpg)'
 - en: First, we will take the data points with a 1-second window, augmenting the data
     and sliding that window in 500 ms intervals. Note that the option zero-pad data
     is set. It is essential to fill with ‘zeros’ samples smaller than 1 second (in
     some cases, some samples can result smaller than the 1000 ms window on the split
     tool to avoid noise and spikes).
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们将使用1秒的窗口获取数据点，以500毫秒的间隔增强数据和滑动窗口。请注意，已设置零填充数据的选项。用“零”填充小于1秒的样本（在某些情况下，一些样本可以小于分割工具上的1000毫秒窗口，以避免噪声和尖峰）是至关重要的。
 - en: Each 1-second audio sample should be pre-processed and converted to an image
     (for example, <semantics><mrow><mn>13</mn><mo>×</mo><mn>49</mn><mo>×</mo><mn>1</mn></mrow><annotation
     encoding="application/x-tex">13\times 49\times 1</annotation></semantics>). As
@@ -328,309 +482,464 @@
     we will use `Audio (MFCC)`, which extracts features from audio signals using [Mel
     Frequency Cepstral Coefficients](https://en.wikipedia.org/wiki/Mel-frequency_cepstrum),
     which are well suited for the human voice, our case here.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个持续1秒的音频样本都应该进行预处理并转换为图像（例如，<semantics><mrow><mn>13</mn><mo>×</mo><mn>49</mn><mo>×</mo><mn>1</mn></mrow><annotation
+    encoding="application/x-tex">13\times 49\times 1</annotation></semantics>）。正如在*音频分类特征工程*动手教程中讨论的那样，我们将使用`音频（MFCC）`，它使用[梅尔频率倒谱系数](https://en.wikipedia.org/wiki/Mel-frequency_cepstrum)从音频信号中提取特征，这些特征非常适合人类语音，我们这里的案例。
 - en: Next, we select the `Classification` block to build our model from scratch using
     a Convolution Neural Network (CNN).
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们选择`分类`模块，使用卷积神经网络（CNN）从头开始构建我们的模型。
 - en: Alternatively, you can use the `Transfer Learning (Keyword Spotting)` block,
     which fine-tunes a pre-trained keyword spotting model on your data. This approach
     has good performance with relatively small keyword datasets.
+  id: totrans-75
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 或者，您可以使用`迁移学习（关键词检测）`模块，该模块在您的数据上微调预训练的关键词检测模型。这种方法在相对较小的关键词数据集上具有很好的性能。
 - en: Pre-Processing (MFCC)
+  id: totrans-76
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 预处理（MFCC）
 - en: 'The following step is to create the features to be trained in the next phase:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 下一个步骤是创建下一阶段要训练的特征：
 - en: We could keep the default parameter values, but we will use the DSP `Autotune
     parameters` option.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以保留默认参数值，但我们将使用DSP的`自动调整参数`选项。
 - en: '![](../media/file458.jpg)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file458.jpg)'
 - en: We will take the `Raw features` (our 1-second, 16 KHz sampled audio data) and
     use the MFCC processing block to calculate the `Processed features`. For every
     16,000 raw features (16,000 <semantics><mi>×</mi><annotation encoding="application/x-tex">\times</annotation></semantics>
     1 second), we will get 637 processed features <semantics><mrow><mo stretchy="true"
     form="prefix">(</mo><mn>13</mn><mo>×</mo><mn>49</mn><mo stretchy="true" form="postfix">)</mo></mrow><annotation
     encoding="application/x-tex">(13\times 49)</annotation></semantics>.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用`原始特征`（我们的1秒，16 KHz采样音频数据）并使用MFCC处理模块来计算`处理特征`。对于每16,000个原始特征（16,000 <semantics><mi>×</mi><annotation
+    encoding="application/x-tex">\times</annotation></semantics> 1秒），我们将得到637个处理特征
+    <semantics><mrow><mo stretchy="true" form="prefix">(</mo><mn>13</mn><mo>×</mo><mn>49</mn><mo
+    stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(13\times
+    49)</annotation></semantics>。
 - en: '![](../media/file459.jpg)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file459.jpg)'
 - en: The result shows that we only used a small amount of memory to pre-process data
     (16 KB) and a latency of 34 ms, which is excellent. For example, on an Arduino
     Nano (Cortex-M4f @ 64 MHz), the same pre-process will take around 480 ms. The
     parameters chosen, such as the `FFT length` [512], will significantly impact the
     latency.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果显示，我们只使用了少量的内存来预处理数据（16 KB）和34毫秒的延迟，这是非常出色的。例如，在Arduino Nano（Cortex-M4f @
+    64 MHz）上，相同的预处理将需要大约480毫秒。选择的参数，如`FFT长度`[512]，将显著影响延迟。
 - en: Now, let’s `Save parameters` and move to the `Generated features` tab, where
     the actual features will be generated. Using [UMAP](https://umap-learn.readthedocs.io/en/latest/),
     a dimension reduction technique, the `Feature explorer` shows how the features
     are distributed on a two-dimensional plot.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们`保存参数`并切换到`生成特征`标签页，在这里将生成实际的特征。使用[UMAP](https://umap-learn.readthedocs.io/en/latest/)，一种降维技术，`特征探索器`显示了特征在二维图上的分布情况。
 - en: '![](../media/file460.jpg)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file460.jpg)'
 - en: The result seems OK, with a visually clear separation between *yes* features
     (in red) and *no* features (in blue). The *unknown* features seem nearer to the
     *no space* than the *yes*. This suggests that the keyword *no* has more propensity
     to false positives.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果看起来不错，*是*特征（红色）和*否*特征（蓝色）之间有明显的视觉分离。*未知*特征似乎比*否*空间更接近*是*。这表明关键字*否*更容易产生误报。
 - en: Going under the hood
+  id: totrans-86
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 深入了解内部结构
 - en: To understand better how the raw sound is preprocessed, look at the *Feature
     Engineering for Audio Classification* chapter. You can play with the MFCC features
     generation by downloading this [notebook](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_MFCC_Analysis.ipynb)
     from GitHub or [[Opening it In Colab]](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_MFCC_Analysis.ipynb)
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 要更好地了解原始声音是如何预处理的，请查看*音频分类的特征工程*章节。您可以通过从GitHub下载此[notebook](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_MFCC_Analysis.ipynb)来尝试MFCC特征生成，或[[在Colab中打开]](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_MFCC_Analysis.ipynb)。
 - en: Model Design and Training
+  id: totrans-88
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模型设计和训练
 - en: 'We will use a simple Convolution Neural Network (CNN) model, tested with 1D
     and 2D convolutions. The basic architecture has two blocks of Convolution + MaxPooling
     ([8] and [16] filters, respectively) and a Dropout of [0.25] for the 1D and [0.5]
     for the 2D. For the last layer, after Flattening, we have [4] neurons, one for
     each class:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用一个简单的卷积神经网络（CNN）模型，使用一维和二维卷积进行测试。基本架构有两个卷积+最大池化块（[8]和[16]个过滤器，分别）和一个[0.25]的Dropout用于一维，[0.5]的Dropout用于二维。对于最后一层，在Flattening之后，我们有[4]个神经元，每个类别一个：
 - en: '![](../media/file461.jpg)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file461.jpg)'
 - en: As hyper-parameters, we will have a `Learning Rate` of [0.005] and a model trained
     by [100] epochs. We will also include a data augmentation method based on [SpecAugment](https://arxiv.org/abs/1904.08779).
     We trained the 1D and the 2D models with the same hyperparameters. The 1D architecture
     had a better overall result (90.5% accuracy when compared with 88% of the 2D,
     so we will use the 1D.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为超参数，我们将有一个[0.005]的学习率，并通过[100]个epoch训练模型。我们还将包括基于[SpecAugment](https://arxiv.org/abs/1904.08779)的数据增强方法。我们使用相同超参数训练了一维和二维模型。一维架构的整体结果更好（与二维的88%相比，准确率为90.5%，因此我们将使用一维）。
 - en: '![](../media/file462.jpg)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file462.jpg)'
 - en: Using 1D convolutions is more efficient because it requires fewer parameters
     than 2D convolutions, making them more suitable for resource-constrained environments.
+  id: totrans-93
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 使用一维卷积更高效，因为它需要的参数比二维卷积少，这使得它们更适合资源受限的环境。
 - en: It is also interesting to pay attention to the 1D Confusion Matrix. The F1 Score
     for `yes` is 95%, and for `no`, 91%. That was expected by what we saw with the
     Feature Explorer (`no` and `unknown` at close distance). In trying to improve
     the result, you can inspect closely the results of the samples with an error.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 1D混淆矩阵也很有趣。`是`的F1分数为95%，`否`为91%。这与我们在特征探索器中看到的结果相符（`否`和`未知`距离很近）。在尝试提高结果时，您可以仔细检查出错样本的结果。
 - en: '![](../media/file463.jpg)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file463.jpg)'
 - en: Listen to the samples that went wrong. For example, for `yes`, most of the mistakes
     were related to a yes pronounced as “yeh”. You can acquire additional samples
     and then retrain your model.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 听一下出错的样本。例如，对于“是”，大多数错误都与发音为“耶”的“是”有关。您可以获取更多样本，然后重新训练您的模型。
 - en: Going under the hood
+  id: totrans-97
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 深入了解内部结构
 - en: 'If you want to understand what is happening “under the hood,” you can download
     the pre-processed dataset (`MFCC training data`) from the `Dashboard` tab and
     run this [Jupyter Notebook](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_CNN_training.ipynb),
     playing with the code or [[Opening it In Colab]](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_CNN_training.ipynb).
     For example, you can analyze the accuracy by each epoch:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您想了解“内部结构”中发生的事情，您可以从“仪表板”选项卡下载预处理的数据集（`MFCC训练数据`），并运行此[Jupyter Notebook](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_CNN_training.ipynb)，通过代码进行操作或[[在Colab中打开]](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_CNN_training.ipynb)。例如，您可以按每个epoch分析准确率：
 - en: '![](../media/file464.jpg)'
+  id: totrans-99
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file464.jpg)'
 - en: Testing
+  id: totrans-100
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 测试
 - en: Testing the model with the data reserved for training (Test Data), we got an
     accuracy of approximately 76%.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用为训练保留的数据（测试数据）测试模型，我们得到了大约76%的准确率。
 - en: '![](../media/file465.jpg)'
+  id: totrans-102
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file465.jpg)'
 - en: Inspecting the F1 score, we can see that for YES, we got 0.90, an excellent
     result since we expect to use this keyword as the primary “trigger” for our KWS
     project. The worst result (0.70) is for UNKNOWN, which is OK.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 检查F1分数，我们可以看到对于YES，我们得到了0.90，这是一个非常好的结果，因为我们预计将使用这个关键词作为我们KWS项目的“触发器”。最差的结果（0.70）是UNKNOWN，这是可以接受的。
 - en: For NO, we got 0.72, which was expected, but to improve this result, we can
     move the samples that were not correctly classified to the training dataset and
     then repeat the training process.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于NO，我们得到了0.72，这是预期的，但为了提高这个结果，我们可以将那些未被正确分类的样本移动到训练数据集中，然后重复训练过程。
 - en: Live Classification
+  id: totrans-105
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 实时分类
 - en: We can proceed to the project’s next step but also consider that it is possible
     to perform `Live Classification` using the NiclaV or a smartphone to capture live
     samples, testing the trained model before deployment on our device.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以继续进行项目的下一步，同时考虑使用NiclaV或智能手机捕获实时样本进行实时分类，在将训练模型部署到我们的设备之前进行测试。
 - en: Deploy and Inference
+  id: totrans-107
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 部署和推理
 - en: The EIS will package all the needed libraries, preprocessing functions, and
     trained models, downloading them to your computer. Go to the `Deployment` section,
     select `Arduino Library`, and at the bottom, choose `Quantized (Int8)` and press
     `Build`.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: EIS将打包所有需要的库、预处理函数和训练模型，并将它们下载到你的电脑。转到 `Deployment` 部分，选择 `Arduino Library`，在底部选择
+    `Quantized (Int8)` 并按 `Build`。
 - en: '![](../media/file466.jpg)'
+  id: totrans-109
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file466.jpg)'
 - en: 'When the `Build` button is selected, a zip file will be created and downloaded
     to your computer. On your Arduino IDE, go to the `Sketch` tab, select the option
     `Add .ZIP Library`, and Choose the .zip file downloaded by EIS:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 当选择 `Build` 按钮时，将创建一个zip文件并下载到你的电脑。在你的Arduino IDE中，转到 `Sketch` 选项卡，选择 `Add .ZIP
+    Library` 选项，并选择由EIS下载的.zip文件：
 - en: '![](../media/file467.jpg)'
+  id: totrans-111
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file467.jpg)'
 - en: Now, it is time for a real test. We will make inferences while completely disconnected
     from the EIS. Let’s use the NiclaV code example created when we deployed the Arduino
     Library.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，是时候进行实际测试了。我们将完全断开与EIS的连接进行推理。让我们使用部署Arduino Library时创建的NiclaV代码示例。
 - en: In your Arduino IDE, go to the `File/Examples` tab, look for your project, and
     select `nicla-vision/nicla-vision_microphone` (or `nicla-vision_microphone_continuous`)
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 在你的Arduino IDE中，转到 `File/Examples` 选项卡，查找你的项目，并选择 `nicla-vision/nicla-vision_microphone`（或
+    `nicla-vision_microphone_continuous`）
 - en: '![](../media/file468.jpg)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file468.jpg)'
 - en: 'Press the reset button twice to put the NiclaV in boot mode, upload the sketch
     to your board, and test some real inferences:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 按下复位按钮两次，将NiclaV置于引导模式，将草图上传到你的板子，并测试一些真实的推理：
 - en: '![](../media/file469.jpg)'
+  id: totrans-116
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file469.jpg)'
 - en: Post-processing
+  id: totrans-117
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 后处理
 - en: Now that we know the model is working since it detects our keywords, let’s modify
     the code to see the result with the NiclaV completely offline (disconnected from
     the PC and powered by a battery, a power bank, or an independent 5V power supply).
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然我们知道模型正在工作，因为它检测到了我们的关键词，那么让我们修改代码，看看NiclaV完全离线（未连接到PC，由电池、移动电源或独立的5V电源供电）的结果。
 - en: The idea is that whenever the keyword YES is detected, the Green LED will light;
     if a NO is heard, the Red LED will light, if it is a UNKNOWN, the Blue LED will
     light; and in the presence of noise (No Keyword), the LEDs will be OFF.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 策略是，每当检测到关键词YES时，绿灯将亮起；如果听到NO，红灯将亮起，如果是UNKNOWN，蓝灯将亮起；在存在噪声（无关键词）的情况下，LED将关闭。
 - en: We should modify one of the code examples. Let’s do it now with the `nicla-vision_microphone_continuous`.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该修改其中一个代码示例。现在就让我们用 `nicla-vision_microphone_continuous` 来做吧。
 - en: 'Start with initializing the LEDs:'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 从初始化LED开始：
 - en: '[PRE0]'
+  id: totrans-122
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Create two functions, `turn_off_leds()` function , to turn off all RGB LEDs
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建两个函数，`turn_off_leds()` 函数，用于关闭所有RGB LED
 - en: '[PRE1]'
+  id: totrans-124
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Another `turn_on_led()` function is used to turn on the RGB LEDs according to
     the most probable result of the classifier.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个 `turn_on_led()` 函数用于根据分类器的最可能结果打开RGB LED。
 - en: '[PRE2]'
+  id: totrans-126
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'And change the `// print the predictions` portion of the code on `loop()`:'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 并且更改 `loop()` 中的 `// 打印预测` 部分的代码：
 - en: '[PRE3]'
+  id: totrans-128
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: You can find the complete code on the [project’s GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/KWS/nicla_vision_microphone_continuous_LED).
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以在[项目的GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/KWS/nicla_vision_microphone_continuous_LED)上找到完整的代码。
 - en: Upload the sketch to your board and test some real inferences. The idea is that
     the Green LED will be ON whenever the keyword YES is detected, the Red will lit
     for a NO, and any other word will turn on the Blue LED. All the LEDs should be
     off if silence or background noise is present. Remember that the same procedure
     can “trigger” an external device to perform a desired action instead of turning
     on an LED, as we saw in the introduction.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 将草图上传到你的板子上并测试一些真实推理。想法是，当检测到关键词 YES 时，绿色 LED 将亮起，红色 LED 将亮起表示 NO，任何其他单词都将点亮蓝色
+    LED。如果存在寂静或背景噪音，所有 LED 都应关闭。记住，与我们在介绍中看到的一样，相同的程序可以“触发”外部设备执行所需操作，而不是点亮 LED。
 - en: '[https://youtu.be/25Rd76OTXLY](https://youtu.be/25Rd76OTXLY)'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://youtu.be/25Rd76OTXLY](https://youtu.be/25Rd76OTXLY)'
 - en: Summary
+  id: totrans-132
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 摘要
 - en: You will find the notebooks and code used in this hands-on tutorial on the [GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/KWS)
     repository.
+  id: totrans-133
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 你可以在 [GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/KWS)
+    仓库中找到本动手教程所使用的笔记本和代码。
 - en: 'Before we finish, consider that Sound Classification is more than just voice.
     For example, you can develop TinyML projects around sound in several areas, such
     as:'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们结束之前，考虑一下声音分类不仅仅是声音。例如，你可以在多个领域围绕声音开发 TinyML 项目，例如：
 - en: '**Security** (Broken Glass detection, Gunshot)'
+  id: totrans-135
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**安全**（破碎玻璃检测，枪声）'
 - en: '**Industry** (Anomaly Detection)'
+  id: totrans-136
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**工业**（异常检测）'
 - en: '**Medical** (Snore, Cough, Pulmonary diseases)'
+  id: totrans-137
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**医疗**（打鼾，咳嗽，肺部疾病）'
 - en: '**Nature** (Beehive control, insect sound, pouching mitigation)'
+  id: totrans-138
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**自然**（蜂箱控制，昆虫声音，包装缓解）'
 - en: Resources
+  id: totrans-139
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 资源
 - en: '[Subset of Google Speech Commands Dataset](https://cdn.edgeimpulse.com/datasets/keywords2.zip)'
+  id: totrans-140
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Google 语音命令数据集的子集](https://cdn.edgeimpulse.com/datasets/keywords2.zip)'
 - en: '[KWS MFCC Analysis Colab Notebook](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_MFCC_Analysis.ipynb)'
+  id: totrans-141
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[KWS MFCC 分析 Colab 笔记本](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_MFCC_Analysis.ipynb)'
 - en: '[KWS_CNN_training Colab Notebook](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_CNN_training.ipynb)'
+  id: totrans-142
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[KWS_CNN 训练 Colab 笔记本](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/KWS/KWS_CNN_training.ipynb)'
 - en: '[Arduino Post-processing Code](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/KWS/nicla_vision_microphone_continuous_LED)'
+  id: totrans-143
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Arduino 后处理代码](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/KWS/nicla_vision_microphone_continuous_LED)'
 - en: '[Edge Impulse Project](https://studio.edgeimpulse.com/public/292418/latest)'
+  id: totrans-144
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Edge Impulse 项目](https://studio.edgeimpulse.com/public/292418/latest)'

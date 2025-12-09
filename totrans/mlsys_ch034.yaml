@@ -1,10 +1,14 @@
 - en: Object Detection
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 目标检测
 - en: '![](../media/file412.jpg)'
+  id: totrans-1
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file412.jpg)'
 - en: '*DALL·E 3 Prompt: Cartoon in the style of the 1940s or 1950s showcasing a spacious
     industrial warehouse interior. A conveyor belt is prominently featured, carrying
     a mixture of toy wheels and boxes. The wheels are distinguishable with their bright
@@ -13,375 +17,565 @@
     robot, equipped with tools and sensors, diligently classifying and counting the
     arriving wheels and boxes. The overall aesthetic is reminiscent of mid-century
     animation with bold lines and a classic color palette.*'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '*DALL·E 3 提示：以 1940 年或 1950 年代的卡通风格展示宽敞的工业仓库内部。一个传送带突出显示，上面载着玩具轮子和箱子混合物。轮子以其明亮的黄色中心和黑色轮胎而可辨。箱子是白色立方体，涂有交替的黑白图案。在移动传送带的末端站着一个复古风格的机器人，装备有工具和传感器，勤奋地对到达的轮子和箱子进行分类和计数。整体美学让人联想到中世纪动画，线条粗犷，色彩经典。*'
 - en: Overview
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 概述
 - en: This continuation of Image Classification on Nicla Vision is now exploring **Object
     Detection**.
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，Nicla Vision 上的图像分类的延续正在探索**目标检测**。
 - en: '![](../media/file413.png)'
+  id: totrans-5
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file413.png)'
 - en: Object Detection versus Image Classification
+  id: totrans-6
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 目标检测与图像分类
 - en: 'The main task with Image Classification models is to produce a list of the
     most probable object categories present on an image, for example, to identify
     a tabby cat just after his dinner:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 图像分类模型的主要任务是生成一个列表，列出图像上最可能存在的物体类别，例如，在猫吃完饭后识别一只虎斑猫：
 - en: '![](../media/file414.png)'
+  id: totrans-8
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file414.png)'
 - en: 'But what happens when the cat jumps near the wine glass? The model still only
     recognizes the predominant category on the image, the tabby cat:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是当猫跳到酒杯附近时会发生什么呢？模型仍然只识别图像上的主要类别，即虎斑猫：
 - en: '![](../media/file415.png)'
+  id: totrans-10
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file415.png)'
 - en: And what happens if there is not a dominant category on the image?
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果图像上没有主导类别会发生什么呢？
 - en: '![](../media/file416.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file416.png)'
 - en: The model identifies the above image utterly wrong as an “ashcan,” possibly
     due to the color tonalities.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型完全错误地将上述图像识别为“废纸篓”，可能是由于色彩色调的原因。
 - en: The model used in all previous examples is MobileNet, which was trained with
     a large dataset, *ImageNet*.
+  id: totrans-14
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 所有先前示例中使用的模型是 MobileNet，它使用了一个大型数据集，*ImageNet*。
 - en: To solve this issue, we need another type of model, where not only **multiple
     categories** (or labels) can be found but also **where** the objects are located
     on a given image.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决这个问题，我们需要另一种类型的模型，这种模型不仅能够找到**多个类别**（或标签），而且还能确定在给定图像中**物体**的位置。
 - en: 'As we can imagine, such models are much more complicated and bigger, for example,
     the **MobileNetV2 SSD FPN-Lite 320x320, trained with the COCO dataset.** This
     pre-trained object detection model is designed to locate up to 10 objects within
     an image, outputting a bounding box for each object detected. The below image
     is the result of such a model running on a Raspberry Pi:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我们所想，这样的模型要复杂得多，体积也更大，例如，**MobileNetV2 SSD FPN-Lite 320x320**，使用 COCO 数据集进行训练。这个预训练的目标检测模型旨在在图像中定位多达
+    10 个物体，并为每个检测到的物体输出一个边界框。下面是这样一个模型在 Raspberry Pi 上运行的结果：
 - en: '![](../media/file417.png)'
+  id: totrans-17
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file417.png)'
 - en: Those models used for object detection (such as the MobileNet SSD or YOLO) usually
     have several MB in size, which is OK for Raspberry Pi but unsuitable for use with
     embedded devices, where the RAM is usually lower than 1 Mbyte.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 用于目标检测的模型（如 MobileNet SSD 或 YOLO）通常大小为几个 MB，这对于 Raspberry Pi 来说是可以的，但与嵌入式设备不兼容，因为嵌入式设备的
+    RAM 通常低于 1 兆字节。
 - en: 'An innovative solution for Object Detection: FOMO'
+  id: totrans-19
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 目标检测的创新解决方案：FOMO
 - en: '[Edge Impulse launched in 2022, **FOMO** (Faster Objects, More Objects)](https://docs.edgeimpulse.com/docs/edge-impulse-studio/learning-blocks/object-detection/fomo-object-detection-for-constrained-devices),
     a novel solution for performing object detection on embedded devices, not only
     on the Nicla Vision (Cortex M7) but also on Cortex M4F CPUs (Arduino Nano33 and
     OpenMV M4 series) and the Espressif ESP32 devices (ESP-CAM and XIAO ESP32S3 Sense).'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Edge Impulse 于 2022 年推出，**FOMO**（更快的目标，更多目标）](https://docs.edgeimpulse.com/docs/edge-impulse-studio/learning-blocks/object-detection/fomo-object-detection-for-constrained-devices)，这是一种在嵌入式设备上执行目标检测的新颖解决方案，不仅适用于
+    Nicla Vision（Cortex M7），还适用于 Cortex M4F CPU（Arduino Nano33 和 OpenMV M4 系列以及 Espressif
+    ESP32 设备（ESP-CAM 和 XIAO ESP32S3 Sense））。'
 - en: In this Hands-On lab, we will explore using FOMO with Object Detection, not
     entering many details about the model itself. To understand more about how the
     model works, you can go into the [official FOMO announcement](https://www.edgeimpulse.com/blog/announcing-fomo-faster-objects-more-objects)
     by Edge Impulse, where Louis Moreau and Mat Kelcey explain in detail how it works.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个动手实验中，我们将探索使用 FOMO 进行对象检测，不会深入介绍模型本身的细节。要了解更多关于模型如何工作的信息，你可以查看 Edge Impulse
+    的[官方 FOMO 宣布](https://www.edgeimpulse.com/blog/announcing-fomo-faster-objects-more-objects)，其中
+    Louis Moreau 和 Mat Kelcey 详细解释了其工作原理。
 - en: The Object Detection Project Goal
+  id: totrans-22
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 对象检测项目目标
 - en: All Machine Learning projects need to start with a detailed goal. Let’s assume
     we are in an industrial facility and must sort and count **wheels** and special
     **boxes**.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有机器学习项目都需要从一个详细的目标开始。假设我们在一个工业设施中，必须对**轮子**和特殊的**箱子**进行分类和计数。
 - en: '![](../media/file418.jpg)'
+  id: totrans-24
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file418.jpg)'
 - en: 'In other words, we should perform a multi-label classification, where each
     image can have three classes:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，我们应该执行多标签分类，其中每张图像可以有三种类别：
 - en: Background (No objects)
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 背景（无对象）
 - en: Box
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 箱子
 - en: Wheel
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 轮子
 - en: 'Here are some not labeled image samples that we should use to detect the objects
     (wheels and boxes):'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一些未标记的图像样本，我们将使用它们来检测对象（轮子和箱子）：
 - en: '![](../media/file419.jpg)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file419.jpg)'
 - en: We are interested in which object is in the image, its location (centroid),
     and how many we can find on it. The object’s size is not detected with FOMO, as
     with MobileNet SSD or YOLO, where the Bounding Box is one of the model outputs.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们感兴趣的是图像中的哪个对象，其位置（质心），以及我们能在上面找到多少个。与 MobileNet SSD 或 YOLO 一样，FOMO 不检测对象的大小，因为边界框是模型输出之一。
 - en: We will develop the project using the Nicla Vision for image capture and model
     inference. The ML project will be developed using the Edge Impulse Studio. But
     before starting the object detection project in the Studio, let’s create a *raw
     dataset* (not labeled) with images that contain the objects to be detected.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用 Nicla Vision 进行图像捕捉和模型推理来开发项目。机器学习项目将使用 Edge Impulse Studio 进行开发。但在开始
+    Studio 中的对象检测项目之前，让我们使用包含要检测的对象的图像创建一个*原始数据集*（未标记）。
 - en: Data Collection
+  id: totrans-33
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据收集
 - en: 'For image capturing, we can use:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于图像捕捉，我们可以使用：
 - en: Web Serial Camera tool,
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Web Serial Camera 工具，
 - en: Edge Impulse Studio,
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Edge Impulse Studio,
 - en: OpenMV IDE,
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: OpenMV IDE,
 - en: A smartphone.
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一部智能手机。
 - en: Here, we will use the **OpenMV IDE**.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们将使用**OpenMV IDE**。
 - en: Collecting Dataset with OpenMV IDE
+  id: totrans-40
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用 OpenMV IDE 收集数据集
 - en: 'First, we create a folder on the computer where the data will be saved, for
     example, “data.” Next, on the OpenMV IDE, we go to Tools > Dataset Editor and
     select New Dataset to start the dataset collection:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们在电脑上创建一个文件夹来保存数据，例如，“data。”然后，在 OpenMV IDE 中，我们转到“工具 > 数据集编辑器”并选择“新建数据集”以开始数据集收集：
 - en: '![](../media/file420.jpg)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file420.jpg)'
 - en: Edge impulse suggests that the objects should be similar in size and not overlap
     for better performance. This is OK in an industrial facility, where the camera
     should be fixed, keeping the same distance from the objects to be detected. Despite
     that, we will also try using mixed sizes and positions to see the result.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: Edge Impulse 建议对象的大小应该相似，且不要重叠，以获得更好的性能。这在工业设施中是可行的，因为相机应该固定，保持与要检测的对象相同的距离。尽管如此，我们也会尝试使用不同大小和位置来查看结果。
 - en: We will not create separate folders for our images because each contains multiple
     labels.
+  id: totrans-44
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们不会为我们的图像创建单独的文件夹，因为每个文件夹都包含多个标签。
 - en: 'Connect the Nicla Vision to the OpenMV IDE and run the `dataset_capture_script.py`.
     Clicking on the Capture Image button will start capturing images:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 将 Nicla Vision 连接到 OpenMV IDE 并运行 `dataset_capture_script.py`。点击“捕捉图像”按钮将开始捕捉图像：
 - en: '![](../media/file421.jpg)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file421.jpg)'
 - en: We suggest using around 50 images to mix the objects and vary the number of
     each appearing on the scene. Try to capture different angles, backgrounds, and
     light conditions.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们建议使用大约 50 张图像来混合对象，并改变场景中每个对象出现的数量。尝试捕捉不同的角度、背景和光照条件。
 - en: The stored images use a QVGA frame size <semantics><mrow><mn>320</mn><mo>×</mo><mn>240</mn></mrow><annotation
     encoding="application/x-tex">320\times 240</annotation></semantics> and RGB565
     (color pixel format).
+  id: totrans-48
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 存储的图像使用 QVGA 分辨率 <semantics><mrow><mn>320</mn><mo>×</mo><mn>240</mn></mrow><annotation
+    encoding="application/x-tex">320\times 240</annotation></semantics> 和 RGB565（颜色像素格式）。
 - en: After capturing your dataset, close the Dataset Editor Tool on the `Tools >
     Dataset Editor`.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 在捕捉完你的数据集后，关闭“工具 > 数据集编辑器”中的数据集编辑工具。
 - en: Edge Impulse Studio
+  id: totrans-50
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Edge Impulse Studio
 - en: Setup the project
+  id: totrans-51
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 设置项目
 - en: Go to [Edge Impulse Studio,](https://www.edgeimpulse.com/) enter your credentials
     at **Login** (or create an account), and start a new project.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 前往 [Edge Impulse Studio](https://www.edgeimpulse.com/)，在 **登录**（或创建账户）处输入您的凭据，并开始一个新项目。
 - en: 'Here, you can clone the project developed for this hands-on: [NICLA_Vision_Object_Detection](https://studio.edgeimpulse.com/public/292737/latest).'
+  id: totrans-53
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在这里，您可以克隆为这个动手实践开发的该项目：[NICLA_Vision_Object_Detection](https://studio.edgeimpulse.com/public/292737/latest)。
 - en: On the Project `Dashboard`, go to **Project info** and select **Bounding boxes
     (object detection),** and at the right-top of the page, select `Target`, **Arduino
     Nicla Vision (Cortex-M7)**.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 在项目 `仪表板` 中，转到 **项目信息** 并选择 **边界框（目标检测）**，然后在页面右上角选择 `目标`，**Arduino Nicla Vision
+    (Cortex-M7)**。
 - en: '![](../media/file422.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file422.png)'
 - en: Uploading the unlabeled data
+  id: totrans-56
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 上传未标记的数据
 - en: On Studio, go to the `Data acquisition` tab, and on the `UPLOAD DATA` section,
     upload from your computer files captured.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Studio 中，转到 `数据采集` 选项卡，在 `上传数据` 部分从您的计算机文件上传。
 - en: '![](../media/file423.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file423.png)'
 - en: You can leave for the Studio to split your data automatically between Train
     and Test or do it manually.
+  id: totrans-59
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 您可以离开工作室，让数据自动在训练和测试之间分割，或者手动进行。
 - en: '![](../media/file424.png)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file424.png)'
 - en: All the unlabeled images (51) were uploaded, but they still need to be labeled
     appropriately before being used as a dataset in the project. The Studio has a
     tool for that purpose, which you can find in the link `Labeling queue (51)`.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有未标记的图像（51 张）都已上传，但在用作项目中的数据集之前，它们还需要适当标注。工作室有一个用于此目的的工具，您可以在链接 `标注队列（51）`
+    中找到。
 - en: 'There are two ways you can use to perform AI-assisted labeling on the Edge
     Impulse Studio (free version):'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以使用两种方式在 Edge Impulse Studio（免费版）上执行人工智能辅助标注：
 - en: Using yolov5
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用 yolov5
 - en: Tracking objects between frames
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在帧之间跟踪对象
 - en: Edge Impulse launched an [auto-labeling feature](https://docs.edgeimpulse.com/docs/edge-impulse-studio/data-acquisition/auto-labeler)
     for Enterprise customers, easing labeling tasks in object detection projects.
+  id: totrans-65
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Edge Impulse 为企业客户推出了 [自动标注功能](https://docs.edgeimpulse.com/docs/edge-impulse-studio/data-acquisition/auto-labeler)，简化了目标检测项目中的标注任务。
 - en: Ordinary objects can quickly be identified and labeled using an existing library
     of pre-trained object detection models from YOLOv5 (trained with the COCO dataset).
     But since, in our case, the objects are not part of COCO datasets, we should select
     the option of `tracking objects`. With this option, once you draw bounding boxes
     and label the images in one frame, the objects will be tracked automatically from
     frame to frame, *partially* labeling the new ones (not all are correctly labeled).
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: '使用现有的 YOLOv5 预训练对象检测模型库（使用 COCO 数据集训练）可以快速识别和标注普通对象。但由于在我们的案例中，对象不是 COCO 数据集的一部分，我们应该选择
+    `跟踪对象` 选项。使用此选项，一旦您在一个帧中绘制边界框并标注图像，对象将自动从帧到帧跟踪，*部分* 标注新的对象（并非所有都正确标注）。 '
 - en: If you already have a labeled dataset containing bounding boxes, import your
     data using the EI uploader.
+  id: totrans-67
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果您已经有一个包含边界框的已标记数据集，请使用 EI 上传器导入您的数据。
 - en: Labeling the Dataset
+  id: totrans-68
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 标注数据集
 - en: Starting with the first image of your unlabeled data, use your mouse to drag
     a box around an object to add a label. Then click **Save labels** to advance to
     the next item.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 从您未标记的数据的第一张图像开始，使用鼠标拖动一个框来围绕对象添加标签。然后点击 **保存标签** 以进入下一项。
 - en: '![](../media/file425.png)'
+  id: totrans-70
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file425.png)'
 - en: 'Continue with this process until the queue is empty. At the end, all images
     should have the objects labeled as those samples below:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 继续此过程，直到队列清空。最后，所有图像都应标注为以下样本中的对象：
 - en: '![](../media/file426.jpg)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file426.jpg)'
 - en: 'Next, review the labeled samples on the `Data acquisition` tab. If one of the
     labels is wrong, it can be edited using the *`three dots`* menu after the sample
     name:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，在 `数据采集` 选项卡上查看已标记样本。如果其中一个标签错误，可以在样本名称后的 *`三个点`* 菜单中进行编辑：
 - en: '![](../media/file427.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file427.png)'
 - en: We will be guided to replace the wrong label and correct the dataset.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将指导您替换错误的标签并纠正数据集。
 - en: '![](../media/file428.jpg)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file428.jpg)'
 - en: The Impulse Design
+  id: totrans-77
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 冲量设计
 - en: 'In this phase, we should define how to:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个阶段，我们应该定义如何：
 - en: '**Pre-processing** consists of resizing the individual images from `320 x 240`
     to `96 x 96` and squashing them (squared form, without cropping). Afterward, the
     images are converted from RGB to Grayscale.'
+  id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**预处理**包括将单个图像从 `320 x 240` 调整到 `96 x 96` 并将其压扁（方形形式，不裁剪）。之后，图像从 RGB 转换为灰度。'
 - en: '**Design a Model,** in this case, “Object Detection.”'
+  id: totrans-80
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**设计模型**，在这种情况下，“目标检测”。'
 - en: '![](../media/file429.png)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file429.png)'
 - en: Preprocessing all dataset
+  id: totrans-82
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 预处理所有数据集
 - en: In this section, select **Color depth** as `Grayscale`, suitable for use with
     FOMO models and Save `parameters`.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本节中，选择**颜色深度**为`灰度`，适合与FOMO模型一起使用，并保存`参数`。
 - en: '![](../media/file430.png)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file430.png)'
 - en: The Studio moves automatically to the next section, `Generate features`, where
     all samples will be pre-processed, resulting in a dataset with individual <semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn><mo>×</mo><mn>1</mn></mrow><annotation
     encoding="application/x-tex">96\times 96\times 1</annotation></semantics> images
     or 9,216 features.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: Studio会自动移动到下一个部分，即“生成特征”，在这里所有样本都将进行预处理，从而生成包含单个<semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn><mo>×</mo><mn>1</mn></mrow><annotation
+    encoding="application/x-tex">96\times 96\times 1</annotation></semantics>图像或9,216个特征的数据库。
 - en: '![](../media/file431.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file431.png)'
 - en: The feature explorer shows that all samples evidence a good separation after
     the feature generation.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征探索器显示，在特征生成后，所有样本都显示出良好的分离。
 - en: One of the samples (46) is apparently in the wrong space, but clicking on it
     confirms that the labeling is correct.
+  id: totrans-88
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 其中一个样本（46号）显然位于错误的空间中，但点击它确认标签是正确的。
 - en: Model Design, Training, and Test
+  id: totrans-89
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模型设计、训练和测试
 - en: We will use FOMO, an object detection model based on MobileNetV2 (alpha 0.35)
     designed to coarsely segment an image into a grid of **background** vs **objects
     of interest** (here, *boxes* and *wheels*).
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用FOMO，这是一个基于MobileNetV2（alpha 0.35）的对象检测模型，旨在将图像粗略分割成**背景**与**感兴趣对象**（在此处为*框*和*轮子*）的网格。
 - en: FOMO is an innovative machine learning model for object detection, which can
     use up to 30 times less energy and memory than traditional models like Mobilenet
     SSD and YOLOv5\. FOMO can operate on microcontrollers with less than 200 KB of
@@ -389,12 +583,17 @@
     object’s size by drawing a square around it (bounding box), FOMO ignores the size
     of the image, providing only the information about where the object is located
     in the image, by means of its centroid coordinates.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: FOMO是一个创新的机器学习对象检测模型，与传统模型如Mobilenet SSD和YOLOv5相比，可以节省高达30倍的能量和内存。FOMO可以在小于200
+    KB RAM的微控制器上运行。这之所以可能，是因为其他模型通过围绕对象绘制一个正方形（边界框）来计算对象的大小，而FOMO忽略了图像的大小，仅通过其质心坐标提供有关对象在图像中位置的信息。
 - en: How FOMO works?
+  id: totrans-92
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: FOMO是如何工作的？
 - en: FOMO takes the image in grayscale and divides it into blocks of pixels using
     a factor of 8\. For the input of 96x96, the grid would be <semantics><mrow><mn>12</mn><mo>×</mo><mn>12</mn></mrow><annotation
     encoding="application/x-tex">12\times 12</annotation></semantics> <semantics><mrow><mo
@@ -406,53 +605,81 @@
     block has no objects, it will be classified as *background*). From the overlap
     of the final region, the FOMO provides the coordinates (related to the image dimensions)
     of the centroid of this region.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: FOMO将图像转换为灰度，并使用8的因子将其划分为像素块。对于96x96的输入，网格将是<semantics><mrow><mn>12</mn><mo>×</mo><mn>12</mn></mrow><annotation
+    encoding="application/x-tex">12\times 12</annotation></semantics> <semantics><mrow><mo
+    stretchy="true" form="prefix">(</mo><mn>96</mn><mi>/</mi><mn>8</mn><mo>=</mo><mn>12</mn><mo
+    stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(96/8=12)</annotation></semantics>。接下来，FOMO将对每个像素块运行一个分类器，以计算其中每个像素块包含框或轮子的概率，并随后确定具有最高概率包含对象的区域（如果一个像素块没有对象，它将被分类为*背景*）。从最终区域的重叠部分，FOMO提供了该区域质心的坐标（与图像尺寸相关）。
 - en: '![](../media/file432.png)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file432.png)'
 - en: For training, we should select a pre-trained model. Let’s use the **`FOMO (Faster
     Objects, More Objects) MobileNetV2 0.35`.** This model uses around 250 KB of RAM
     and 80 KB of ROM (Flash), which suits well with our board since it has 1 MB of
     RAM and ROM.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于训练，我们应该选择一个预训练的模型。让我们使用**`FOMO (Faster Objects, More Objects) MobileNetV2
+    0.35`**。这个模型大约使用250 KB的RAM和80 KB的ROM（闪存），非常适合我们的板子，因为它有1 MB的RAM和ROM。
 - en: '![](../media/file433.png)'
+  id: totrans-96
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file433.png)'
 - en: 'Regarding the training hyper-parameters, the model will be trained with:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于训练超参数，模型将使用以下参数进行训练：
 - en: 'Epochs: 60,'
+  id: totrans-98
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 迭代次数：60，
 - en: 'Batch size: 32'
+  id: totrans-99
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批处理大小：32
 - en: 'Learning Rate: 0.001.'
+  id: totrans-100
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 学习率：0.001。
 - en: For validation during training, 20% of the dataset (*validation_dataset*) will
     be spared. For the remaining 80% (*train_dataset*), we will apply Data Augmentation,
     which will randomly flip, change the size and brightness of the image, and crop
     them, artificially increasing the number of samples on the dataset for training.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练期间的验证中，20%的数据集（*validation_dataset*）将被保留。对于剩余的80%（*train_dataset*），我们将应用数据增强，这会随机翻转、改变图像的大小和亮度，并裁剪它们，人为地增加数据集上的样本数量以供训练。
 - en: As a result, the model ends with an F1 score of around 91% (validation) and
     93% (test data).
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，该模型最终在验证数据上达到约91%的F1分数（验证）和93%（测试数据）。
 - en: Note that FOMO automatically added a 3rd label background to the two previously
     defined (*box* and *wheel*).
+  id: totrans-103
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 注意，FOMO自动将第三个标签背景添加到之前定义的两个标签（*box*和*wheel*）中。
 - en: '![](../media/file434.png)'
+  id: totrans-104
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file434.png)'
 - en: In object detection tasks, accuracy is generally not the primary [evaluation
     metric](https://learnopencv.com/mean-average-precision-map-object-detection-model-evaluation-metric/).
     Object detection involves classifying objects and providing bounding boxes around
@@ -460,181 +687,279 @@
     that we do not have the bounding box, only the centroids. In short, using accuracy
     as a metric could be misleading and may not provide a complete understanding of
     how well the model is performing. Because of that, we will use the F1 score.
+  id: totrans-105
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在目标检测任务中，准确率通常不是主要的[评估指标](https://learnopencv.com/mean-average-precision-map-object-detection-model-evaluation-metric/)。目标检测涉及对对象进行分类并在其周围提供边界框，这使得它比简单的分类更复杂。问题是我们没有边界框，只有质心。简而言之，使用准确率作为指标可能是误导性的，并且可能无法完全理解模型的性能。因此，我们将使用F1分数。
 - en: Test model with “Live Classification”
+  id: totrans-106
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用“实时分类”测试模型
 - en: 'Since Edge Impulse officially supports the Nicla Vision, let’s connect it to
     the Studio. For that, follow the steps:'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于Edge Impulse官方支持Nicla Vision，让我们将其连接到Studio。为此，请按照以下步骤操作：
 - en: Download the [last EI Firmware](https://cdn.edgeimpulse.com/firmware/arduino-nicla-vision.zip)
     and unzip it.
+  id: totrans-108
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 下载[最新的EI固件](https://cdn.edgeimpulse.com/firmware/arduino-nicla-vision.zip)并将其解压。
 - en: Open the zip file on your computer and select the uploader related to your OS
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在您的计算机上打开zip文件，并选择与您的操作系统相关的上传器。
 - en: Put the Nicla-Vision on Boot Mode, pressing the reset button twice.
+  id: totrans-110
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将Nicla-Vision置于启动模式，按两次复位按钮。
 - en: Execute the specific batch code for your OS to upload the binary (`arduino-nicla-vision.bin`)
     to your board.
+  id: totrans-111
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 执行针对您操作系统的特定批处理代码，将二进制文件（`arduino-nicla-vision.bin`）上传到您的板子上。
 - en: 'Go to `Live classification` section at EI Studio, and using *webUSB,* connect
     your Nicla Vision:'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 前往EI Studio中的`实时分类`部分，并使用*webUSB*连接您的Nicla Vision：
 - en: '![](../media/file435.png)'
+  id: totrans-113
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file435.png)'
 - en: Once connected, you can use the Nicla to capture actual images to be tested
     by the trained model on Edge Impulse Studio.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 连接后，您可以使用Nicla捕获实际图像，以便在Edge Impulse Studio上由训练模型进行测试。
 - en: '![](../media/file436.png)'
+  id: totrans-115
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file436.png)'
 - en: One thing to note is that the model can produce false positives and negatives.
     This can be minimized by defining a proper `Confidence Threshold` (use the `three
     dots` menu for the setup). Try with 0.8 or more.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 需要注意的是，模型可能会产生误报和漏报。这可以通过定义适当的`置信度阈值`（使用`三个点`菜单进行设置）来最小化。尝试使用0.8或更高。
 - en: Deploying the Model
+  id: totrans-117
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 部署模型
 - en: Select `OpenMV Firmware` on the Deploy Tab and press `[Build]`.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 在部署选项卡上选择`OpenMV固件`并按下 `[构建]`。
 - en: '![](../media/file437.png)'
+  id: totrans-119
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file437.png)'
 - en: When you try to connect the Nicla with the OpenMV IDE again, it will try to
     update its FW. Choose the option `Load a specific firmware` instead. Or go to
     `Tools > Runs Bootloader (Load Firmware).
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 当您再次尝试使用OpenMV IDE连接Nicla时，它将尝试更新其固件。选择`加载特定固件`选项，或者转到`工具 > 运行引导加载程序（加载固件）`。
 - en: '![](../media/file438.png)'
+  id: totrans-121
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file438.png)'
 - en: 'You will find a ZIP file on your computer from the Studio. Open it:'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 您将在计算机上找到来自Studio的ZIP文件。打开它：
 - en: '![](../media/file439.png)'
+  id: totrans-123
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file439.png)'
 - en: 'Load the .bin file to your board:'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 将.bin文件加载到您的板子上：
 - en: '![](../media/file440.png)'
+  id: totrans-125
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file440.png)'
 - en: After the download is finished, a pop-up message will be displayed. `Press OK`,
     and open the script **ei_object_detection.py** downloaded from the Studio.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 下载完成后，将显示一个弹出消息。`按确定`，并打开从Studio下载的脚本**ei_object_detection.py**。
 - en: 'Note: If a Pop-up appears saying that the FW is out of date, press `[NO]`,
     to upgrade it.'
+  id: totrans-127
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 注意：如果出现弹出窗口表示固件过时，请按 `[NO]`，以升级它。
 - en: Before running the script, let’s change a few lines. Note that you can leave
     the window definition as <semantics><mrow><mn>240</mn><mo>×</mo><mn>240</mn></mrow><annotation
     encoding="application/x-tex">240\times 240</annotation></semantics> and the camera
     capturing images as QVGA/RGB. The captured image will be pre-processed by the
     FW deployed from Edge Impulse
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 在运行脚本之前，让我们更改几行。请注意，您可以将窗口定义保留为 <semantics><mrow><mn>240</mn><mo>×</mo><mn>240</mn></mrow><annotation
+    encoding="application/x-tex">240\times 240</annotation></semantics>，并将捕获图像的相机设置为
+    QVGA/RGB。捕获的图像将由从 Edge Impulse 部署的 FW 预处理。
 - en: '[PRE0]'
+  id: totrans-129
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Redefine the minimum confidence, for example, to 0.8 to minimize false positives
     and negatives.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 重新定义最小置信度，例如，设置为 0.8 以最小化误报和漏报。
 - en: '[PRE1]'
+  id: totrans-131
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Change if necessary, the color of the circles that will be used to display the
     detected object’s centroid for a better contrast.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 如有必要，更改用于显示检测到的物体质心的圆圈颜色，以获得更好的对比度。
 - en: '[PRE2]'
+  id: totrans-133
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Keep the remaining code as it is
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 保持剩余代码不变
 - en: '[PRE3]'
+  id: totrans-135
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'and press the `green Play button` to run the code:'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后按下 `绿色播放按钮` 运行代码：
 - en: '![](../media/file441.png)'
+  id: totrans-137
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file441.png)'
 - en: From the camera’s view, we can see the objects with their centroids marked with
     12 pixel-fixed circles (each circle has a distinct color, depending on its class).
     On the Serial Terminal, the model shows the labels detected and their position
     on the image window <semantics><mrow><mo stretchy="true" form="prefix">(</mo><mn>240</mn><mo>×</mo><mn>240</mn><mo
     stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(240\times
     240)</annotation></semantics>.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 从摄像头的视角来看，我们可以看到带有用 12 像素固定圆圈标记的质心的物体（每个圆圈都有独特的颜色，取决于其类别）。在串行终端上，模型显示了检测到的标签及其在图像窗口中的位置
+    <semantics><mrow><mo stretchy="true" form="prefix">(</mo><mn>240</mn><mo>×</mo><mn>240</mn><mo
+    stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(240\times
+    240)</annotation></semantics>。
 - en: Be aware that the coordinate origin is in the upper left corner.
+  id: totrans-139
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 注意，坐标原点位于左上角。
 - en: '![](../media/file442.jpg)'
+  id: totrans-140
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file442.jpg)'
 - en: Note that the frames per second rate is around 8 fps (similar to what we got
     with the Image Classification project). This happens because FOMO is cleverly
     built over a CNN model, not with an object detection model like the SSD MobileNet
     or YOLO. For example, when running a MobileNetV2 SSD FPN-Lite <semantics><mrow><mn>320</mn><mo>×</mo><mn>320</mn></mrow><annotation
     encoding="application/x-tex">320\times 320</annotation></semantics> model on a
     Raspberry Pi 4, the latency is around 5 times higher (around 1.5 fps)
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，每秒帧率约为 8 fps（与我们使用图像分类项目得到的相似）。这是因为 FOMO 是巧妙地建立在 CNN 模型之上，而不是像 SSD MobileNet
+    或 YOLO 这样的物体检测模型。例如，当在 Raspberry Pi 4 上运行 MobileNetV2 SSD FPN-Lite <semantics><mrow><mn>320</mn><mo>×</mo><mn>320</mn></mrow><annotation
+    encoding="application/x-tex">320\times 320</annotation></semantics> 模型时，延迟大约高
+    5 倍（大约 1.5 fps）
 - en: 'Here is a short video showing the inference results: [https://youtu.be/JbpoqRp3BbM](https://youtu.be/JbpoqRp3BbM)'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一个展示推理结果的短视频：[https://youtu.be/JbpoqRp3BbM](https://youtu.be/JbpoqRp3BbM)
 - en: Summary
+  id: totrans-143
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 摘要
 - en: 'FOMO is a significant leap in the image processing space, as Louis Moreau and
     Mat Kelcey put it during its launch in 2022:'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 如路易斯·莫罗和马特·凯尔西在 2022 年发布时所说，FOMO 是图像处理领域的一个重大飞跃：
 - en: FOMO is a ground-breaking algorithm that brings real-time object detection,
     tracking, and counting to microcontrollers for the first time.
+  id: totrans-145
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: FOMO 是一个突破性的算法，首次将实时物体检测、跟踪和计数引入到微控制器中。
 - en: Multiple possibilities exist for exploring object detection (and, more precisely,
     counting them) on embedded devices. This can be very useful on projects counting
     bees, for example.
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 在嵌入式设备上探索物体检测（更确切地说，是计数它们）有多种可能性。这在例如计数蜜蜂的项目中非常有用。
 - en: '![](../media/file443.jpg)'
+  id: totrans-147
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file443.jpg)'
 - en: Resources
+  id: totrans-148
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 资源
 - en: '[Edge Impulse Project](https://studio.edgeimpulse.com/public/292737/latest)'
+  id: totrans-149
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Edge Impulse 项目](https://studio.edgeimpulse.com/public/292737/latest)'

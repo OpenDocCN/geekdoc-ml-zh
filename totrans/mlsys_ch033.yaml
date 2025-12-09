@@ -1,352 +1,527 @@
 - en: Image Classification
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 图像分类
 - en: '![](../media/file364.jpg)'
+  id: totrans-1
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file364.jpg)'
 - en: '*DALL·E 3 Prompt: Cartoon in a 1950s style featuring a compact electronic device
     with a camera module placed on a wooden table. The screen displays blue robots
     on one side and green periquitos on the other. LED lights on the device indicate
     classifications, while characters in retro clothing observe with interest.*'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '*DALL·E 3 提示：1950年代风格的卡通，展示一个紧凑的电子设备，摄像头模块放置在木桌上。屏幕显示一侧是蓝色机器人，另一侧是绿色佩里基托。设备上的LED灯指示分类，而穿着复古服装的人物带着兴趣观察。*'
 - en: Overview
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 概述
 - en: As we initiate our studies into embedded machine learning or TinyML, it’s impossible
     to overlook the transformative impact of Computer Vision (CV) and Artificial Intelligence
     (AI) in our lives. These two intertwined disciplines redefine what machines can
     perceive and accomplish, from autonomous vehicles and robotics to healthcare and
     surveillance.
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们开始研究嵌入式机器学习或TinyML时，不可能忽视计算机视觉（CV）和人工智能（AI）在我们生活中的变革性影响。这两个相互交织的学科重新定义了机器可以感知和完成的事情，从自动驾驶汽车和机器人技术到医疗保健和监控。
 - en: More and more, we are facing an artificial intelligence (AI) revolution where,
     as stated by Gartner, **Edge AI** has a very high impact potential, and **it is
     for now**!
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 越来越多，我们面临着一场人工智能（AI）革命，正如Gartner所说，**边缘AI**具有非常高的潜在影响，**目前确实是如此**！
 - en: '![](../media/file365.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file365.png)'
 - en: In the “bullseye” of the Radar is the *Edge Computer Vision*, and when we talk
     about Machine Learning (ML) applied to vision, the first thing that comes to mind
     is **Image Classification**, a kind of ML “Hello World”!
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 雷达的“靶心”是*边缘计算机视觉*，当我们谈论应用于视觉的机器学习（ML）时，首先想到的是**图像分类**，这是一种机器学习“Hello World”!
 - en: This lab will explore a computer vision project utilizing Convolutional Neural
     Networks (CNNs) for real-time image classification. Leveraging TensorFlow’s robust
     ecosystem, we’ll implement a pre-trained MobileNet model and adapt it for edge
     deployment. The focus will be optimizing the model to run efficiently on resource-constrained
     hardware without sacrificing accuracy.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 本实验室将探索一个利用卷积神经网络（CNNs）进行实时图像分类的计算机视觉项目。利用TensorFlow强大的生态系统，我们将实现一个预训练的MobileNet模型，并适应边缘部署。重点是优化模型，使其在资源受限的硬件上高效运行，同时不牺牲准确性。
 - en: We’ll employ techniques like quantization and pruning to reduce the computational
     load. By the end of this tutorial, you’ll have a working prototype capable of
     classifying images in real-time, all running on a low-power embedded system based
     on the Arduino Nicla Vision board.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将采用量化修剪等技术来降低计算负载。在本教程结束时，你将拥有一个可以实时分类图像的工作原型，所有这些都在基于Arduino Nicla Vision板的低功耗嵌入式系统上运行。
 - en: Computer Vision
+  id: totrans-10
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 计算机视觉
 - en: At its core, computer vision enables machines to interpret and make decisions
     based on visual data from the world, essentially mimicking the capability of the
     human optical system. Conversely, AI is a broader field encompassing machine learning,
     natural language processing, and robotics, among other technologies. When you
     bring AI algorithms into computer vision projects, you supercharge the system’s
     ability to understand, interpret, and react to visual stimuli.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在其核心，计算机视觉使机器能够根据来自世界视觉数据做出解释和决策，本质上模仿了人类视觉系统的能力。相反，人工智能是一个更广泛的领域，包括机器学习、自然语言处理和机器人技术等其他技术。当你将人工智能算法引入计算机视觉项目时，你将极大地增强系统理解、解释和反应视觉刺激的能力。
 - en: When discussing Computer Vision projects applied to embedded devices, the most
     common applications that come to mind are *Image Classification* and *Object Detection*.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 当讨论应用于嵌入式设备的计算机视觉项目时，最常见到的应用是*图像分类*和*目标检测*。
 - en: '![](../media/file366.png)'
+  id: totrans-13
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file366.png)'
 - en: Both models can be implemented on tiny devices like the Arduino Nicla Vision
     and used on real projects. In this chapter, we will cover Image Classification.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两种模型都可以在Arduino Nicla Vision等小型设备上实现，并用于实际项目。在本章中，我们将涵盖图像分类。
 - en: Image Classification Project Goal
+  id: totrans-15
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 图像分类项目目标
 - en: 'The first step in any ML project is to define the goal. In this case, the goal
     is to detect and classify two specific objects present in one image. For this
     project, we will use two small toys: a robot and a small Brazilian parrot (named
     Periquito). We will also collect images of a *background* where those two objects
     are absent.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 任何机器学习项目的第一步是定义目标。在这种情况下，目标是检测和分类一张图像中存在的两个特定物体。对于这个项目，我们将使用两个小玩具：一个机器人和一只小型巴西鹦鹉（名为佩里基托）。我们还将收集一些背景图像，其中这两个物体不存在。
 - en: '![](../media/file367.png)'
+  id: totrans-17
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file367.png)'
 - en: Data Collection
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据收集
 - en: 'Once we have defined our Machine Learning project goal, the next and most crucial
     step is collecting the dataset. For image capturing, we can use:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们定义了机器学习项目的目标，下一步也是最重要的一步是收集数据集。对于图像捕获，我们可以使用：
 - en: Web Serial Camera tool,
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 网络串行摄像头工具，
 - en: Edge Impulse Studio,
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Edge Impulse Studio，
 - en: OpenMV IDE,
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: OpenMV IDE，
 - en: A smartphone.
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一部智能手机。
 - en: Here, we will use the **OpenMV IDE**.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们将使用**OpenMV IDE**。
 - en: Collecting Dataset with OpenMV IDE
+  id: totrans-25
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用OpenMV IDE收集数据集
 - en: 'First, we should create a folder on our computer where the data will be saved,
     for example, “data.” Next, on the OpenMV IDE, we go to `Tools > Dataset Editor`
     and select `New Dataset` to start the dataset collection:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们应该在电脑上创建一个文件夹来保存数据，例如，“data。”接下来，在OpenMV IDE中，我们转到`工具 > 数据集编辑器`并选择`新建数据集`以开始数据集收集：
 - en: '![](../media/file368.png)'
+  id: totrans-27
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file368.png)'
 - en: The IDE will ask us to open the file where the data will be saved. Choose the
     “data” folder that was created. Note that new icons will appear on the Left panel.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: IDE将要求我们打开保存数据的文件。选择创建的“data”文件夹。注意，左侧面板上会出现新的图标。
 - en: '![](../media/file369.png)'
+  id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file369.png)'
 - en: 'Using the upper icon (1), enter with the first class name, for example, “periquito”:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用上面的图标（1），输入第一个类别的名称，例如，“periquito”：
 - en: '![](../media/file370.png)'
+  id: totrans-31
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file370.png)'
 - en: 'Running the `dataset_capture_script.py` and clicking on the camera icon (2)
     will start capturing images:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行`dataset_capture_script.py`并点击相机图标（2）将开始捕获图像：
 - en: '![](../media/file371.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file371.png)'
 - en: Repeat the same procedure with the other classes.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 对其他类别重复相同的步骤。
 - en: '![](../media/file372.png)'
+  id: totrans-35
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file372.png)'
 - en: We suggest around 50 to 60 images from each category. Try to capture different
     angles, backgrounds, and light conditions.
+  id: totrans-36
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们建议每个类别大约有50到60张图片。尽量捕捉不同的角度、背景和光照条件。
 - en: The stored images use a QVGA frame size of <semantics><mrow><mn>320</mn><mo>×</mo><mn>240</mn></mrow><annotation
     encoding="application/x-tex">320\times 240</annotation></semantics> and the RGB565
     (color pixel format).
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 存储的图像使用QVGA帧大小<semantics><mrow><mn>320</mn><mo>×</mo><mn>240</mn></mrow><annotation
+    encoding="application/x-tex">320\times 240</annotation></semantics>和RGB565（颜色像素格式）。
 - en: After capturing the dataset, close the Dataset Editor Tool on the `Tools > Dataset
     Editor`.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 在收集完数据集后，关闭“工具 > 数据集编辑器”中的数据集编辑器工具。
 - en: 'We will end up with a dataset on our computer that contains three classes:
     *periquito,* *robot*, and *background*.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们最终会在电脑上得到一个包含三个类别的数据集：**periquito**、**robot**和**background**。
 - en: '![](../media/file373.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file373.png)'
 - en: We should return to *Edge Impulse Studio* and upload the dataset to our created
     project.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该回到**Edge Impulse Studio**并上传数据集到我们创建的项目。
 - en: Training the model with Edge Impulse Studio
+  id: totrans-42
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用Edge Impulse Studio训练模型
 - en: 'We will use the Edge Impulse Studio to train our model. Enter the account credentials
     and create a new project:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用Edge Impulse Studio来训练我们的模型。输入账户凭证并创建一个新项目：
 - en: '![](../media/file374.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file374.png)'
 - en: 'Here, you can clone a similar project: [NICLA-Vision_Image_Classification](https://studio.edgeimpulse.com/public/273858/latest).'
+  id: totrans-45
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 这里，您可以克隆一个类似的项目：[NICLA-Vision_Image_Classification](https://studio.edgeimpulse.com/public/273858/latest)。
 - en: Dataset
+  id: totrans-46
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据集
 - en: 'Using the EI Studio (or *Studio*), we will go over four main steps to have
     our model ready for use on the Nicla Vision board: Dataset, Impulse, Tests, and
     Deploy (on the Edge Device, in this case, the NiclaV).'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用EI Studio（或**Studio**），我们将完成四个主要步骤，使我们的模型准备好在Nicla Vision板上使用：数据集、脉冲、测试和部署（在本例中，是NiclaV边缘设备上的部署）。
 - en: '![](../media/file375.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file375.png)'
 - en: Regarding the Dataset, it is essential to point out that our Original Dataset,
     captured with the OpenMV IDE, will be split into *Training*, *Validation*, and
     *Test*. The Test Set will be spared from the beginning and reserved for use only
     in the Test phase after training. The Validation Set will be used during training.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于数据集，必须指出的是，我们使用OpenMV IDE捕获的原始数据集将被分为**训练集**、**验证集**和**测试集**。测试集将从一开始就保留，仅用于训练后的测试阶段。验证集将在训练过程中使用。
 - en: The EI Studio will take a percentage of training data to be used for validation
+  id: totrans-50
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: EI Studio将使用一定比例的训练数据用于验证。
 - en: '![](../media/file376.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file376.png)'
 - en: 'On Studio, go to the `Data acquisition` tab, and on the UPLOAD DATA section,
     upload the chosen categories files from your computer:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Studio上，转到“数据采集”标签，在“上传数据”部分，从您的电脑上传所选类别的文件：
 - en: '![](../media/file377.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file377.png)'
 - en: 'Leave to the Studio the splitting of the original dataset into *train and test*
     and choose the label about that specific data:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 将原始数据集拆分为*训练和测试*的任务留给工作室，并选择关于该特定数据的标签：
 - en: '![](../media/file378.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file378.png)'
 - en: Repeat the procedure for all three classes.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 对所有三个类别重复此过程。
 - en: Selecting a folder and upload all the files at once is possible.
+  id: totrans-57
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 选择一个文件夹并一次性上传所有文件是可能的。
 - en: 'At the end, you should see your “raw data” in the Studio:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，你应该在工作室中看到你的“原始数据”：
 - en: '![](../media/file379.png)'
+  id: totrans-59
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file379.png)'
 - en: Note that when you start to upload the data, a pop-up window can appear, asking
     if you are building an Object Detection project. Select `[NO]`.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，当你开始上传数据时，可能会出现一个弹出窗口，询问你是否在构建一个目标检测项目。选择 `[NO]`。
 - en: '![](../media/file380.png)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file380.png)'
 - en: 'We can always change it in the Dashboard section: `One label per data item`
     (Image Classification):'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以在仪表板部分进行更改：`每个数据项一个标签`（图像分类）：
 - en: '![](../media/file381.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file381.png)'
 - en: Optionally, the Studio allows us to explore the data, showing a complete view
     of all the data in the project. We can clear, inspect, or change labels by clicking
     on individual data items. In our case, the data seems OK.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 可选地，工作室允许我们探索数据，展示项目中所有数据的完整视图。我们可以通过点击单个数据项来清除、检查或更改标签。在我们的案例中，数据看起来是好的。
 - en: '![](../media/file382.png)'
+  id: totrans-65
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file382.png)'
 - en: The Impulse Design
+  id: totrans-66
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 冲击设计
 - en: 'In this phase, we should define how to:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个阶段，我们应该定义如何：
 - en: Pre-process our data, which consists of resizing the individual images and determining
     the `color depth` to use (be it RGB or Grayscale) and
+  id: totrans-68
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 预处理我们的数据，这包括调整单个图像的大小和确定要使用的`颜色深度`（无论是RGB还是灰度），
 - en: Specify a Model, in this case, it will be the `Transfer Learning (Images)` to
     fine-tune a pre-trained MobileNet V2 image classification model on our data. This
     method performs well even with relatively small image datasets (around 150 images
     in our case).
+  id: totrans-69
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 指定一个模型，在这种情况下，它将是`迁移学习（图像）`，以在我们的数据上微调预训练的MobileNet V2图像分类模型。这种方法即使在相对较小的图像数据集（在我们的案例中约为150张图像）中也表现良好。
 - en: '![](../media/file383.png)'
+  id: totrans-70
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file383.png)'
 - en: Transfer Learning with MobileNet offers a streamlined approach to model training,
     which is especially beneficial for resource-constrained environments and projects
     with limited labeled data. MobileNet, known for its lightweight architecture,
     is a pre-trained model that has already learned valuable features from a large
     dataset (ImageNet).
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用MobileNet进行迁移学习提供了一种简化的模型训练方法，这对于资源受限的环境和具有有限标记数据的 projekty特别有益。MobileNet以其轻量级架构而闻名，是一个已经从大型数据集（ImageNet）中学习到有价值特征的预训练模型。
 - en: '![](../media/file384.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file384.png)'
 - en: By leveraging these learned features, you can train a new model for your specific
     task with fewer data and computational resources and yet achieve competitive accuracy.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过利用这些学习到的特征，您可以使用更少的数据和计算资源来训练针对特定任务的新模型，同时仍然达到有竞争力的准确性。
 - en: '![](../media/file385.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file385.png)'
 - en: This approach significantly reduces training time and computational cost, making
     it ideal for quick prototyping and deployment on embedded devices where efficiency
     is paramount.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法显著减少了训练时间和计算成本，使其非常适合快速原型设计和在效率至关重要的嵌入式设备上的部署。
 - en: Go to the Impulse Design Tab and create the *impulse*, defining an image size
     of 96x96 and squashing them (squared form, without cropping). Select Image and
     Transfer Learning blocks. Save the Impulse.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 转到冲击设计选项卡并创建*冲击*，定义图像大小为96x96，并压缩它们（方形形式，无需裁剪）。选择图像和迁移学习模块。保存冲击。
 - en: '![](../media/file386.png)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file386.png)'
 - en: Image Pre-Processing
+  id: totrans-78
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 图像预处理
 - en: All the input QVGA/RGB565 images will be converted to 27,640 features <semantics><mrow><mo
     stretchy="true" form="prefix">(</mo><mn>96</mn><mo>×</mo><mn>96</mn><mo>×</mo><mn>3</mn><mo
     stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(96\times
     96\times 3)</annotation></semantics>.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有输入QVGA/RGB565图像都将转换为27,640个特征 <semantics><mrow><mo stretchy="true" form="prefix">(</mo><mn>96</mn><mo>×</mo><mn>96</mn><mo>×</mo><mn>3</mn><mo
+    stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(96\times
+    96\times 3)</annotation></semantics>。
 - en: '![](../media/file387.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file387.png)'
 - en: 'Press `[Save parameters]` and Generate all features:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 点击 `[保存参数]` 并生成所有特征：
 - en: '![](../media/file388.png)'
+  id: totrans-82
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file388.png)'
 - en: Model Design
+  id: totrans-83
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 模型设计
 - en: 'In 2007, Google introduced [MobileNetV1](https://research.googleblog.com/2017/06/mobilenets-open-source-models-for.html),
     a family of general-purpose computer vision neural networks designed with mobile
     devices in mind to support classification, detection, and more. MobileNets are
     small, low-latency, low-power models parameterized to meet the resource constraints
     of various use cases. in 2018, Google launched [MobileNetV2: Inverted Residuals
     and Linear Bottlenecks](https://arxiv.org/abs/1801.04381).'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '在 2007 年，谷歌推出了 [MobileNetV1](https://research.googleblog.com/2017/06/mobilenets-open-source-models-for.html)，这是一系列通用计算机视觉神经网络，旨在考虑移动设备，以支持分类、检测等功能。MobileNets
+    是小型、低延迟、低功耗的模型，参数化以满足各种用例的资源限制。2018 年，谷歌发布了 [MobileNetV2: Inverted Residuals and
+    Linear Bottlenecks](https://arxiv.org/abs/1801.04381)。'
 - en: MobileNet V1 and MobileNet V2 aim at mobile efficiency and embedded vision applications
     but differ in architectural complexity and performance. While both use depthwise
     separable convolutions to reduce the computational cost, MobileNet V2 introduces
@@ -358,8 +533,12 @@
     design choice found to preserve important information through the network. MobileNet
     V2 offers an optimized architecture for higher accuracy and efficiency and will
     be used in this project.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: MobileNet V1 和 MobileNet V2 致力于移动效率和嵌入式视觉应用，但在架构复杂性和性能方面有所不同。虽然两者都使用深度可分离卷积来降低计算成本，但
+    MobileNet V2 引入了倒残差块和线性瓶颈来提升性能。这些新特性使得 V2 能够使用更少的参数捕捉更复杂的特征，使其在计算上更加高效，并且通常比其前身更准确。此外，V2
+    在中间扩展层使用了非线性激活函数。它仍然使用线性激活函数来处理瓶颈层，这种设计选择被发现可以通过网络保留重要信息。MobileNet V2 提供了一种优化的架构，以实现更高的准确性和效率，并将被用于本项目。
 - en: Although the base MobileNet architecture is already tiny and has low latency,
     many times, a specific use case or application may require the model to be even
     smaller and faster. MobileNets introduces a straightforward parameter <semantics><mi>α</mi><annotation
@@ -367,8 +546,13 @@
     multiplier to construct these smaller, less computationally expensive models.
     The role of the width multiplier <semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics>
     is that of thinning a network uniformly at each layer.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管基础 MobileNet 架构已经非常小巧且具有低延迟，但很多时候，特定的用例或应用可能需要模型更加小巧和快速。MobileNets 引入了一个简单的参数
+    <semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics>（alpha），称为宽度乘数，用于构建这些更小、计算成本更低的模型。宽度乘数
+    <semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics>
+    的作用是在每一层均匀地细化网络。
 - en: Edge Impulse Studio can use both MobileNetV1 (<semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn></mrow><annotation
     encoding="application/x-tex">96\times 96</annotation></semantics> images) and
     V2 (<semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn></mrow><annotation encoding="application/x-tex">96\times
@@ -384,357 +568,559 @@
     footprint will be obtained at the other extreme with MobileNetV1 and <semantics><mrow><mi>α</mi><mo>=</mo><mn>0.10</mn></mrow><annotation
     encoding="application/x-tex">\alpha=0.10</annotation></semantics> (around 53.2
     K RAM and 101 K ROM).
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: Edge Impulse Studio可以使用MobileNetV1 (<semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn></mrow><annotation
+    encoding="application/x-tex">96\times 96</annotation></semantics>图像) 和 V2 (<semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn></mrow><annotation
+    encoding="application/x-tex">96\times 96</annotation></semantics>或<semantics><mrow><mn>160</mn><mo>×</mo><mn>160</mn></mrow><annotation
+    encoding="application/x-tex">160\times 160</annotation></semantics>图像)，以及几个不同的**<semantics><mi>α</mi><annotation
+    encoding="application/x-tex">\alpha</annotation></semantics>**值（从0.05到1.0）。例如，使用V2，<semantics><mrow><mn>160</mn><mo>×</mo><mn>160</mn></mrow><annotation
+    encoding="application/x-tex">160\times 160</annotation></semantics>图像，并且<semantics><mrow><mi>α</mi><mo>=</mo><mn>1.0</mn></mrow><annotation
+    encoding="application/x-tex">\alpha=1.0</annotation></semantics>，你可以获得最高的准确率。当然，这里有一个权衡。准确率越高，运行模型所需的内存（大约1.3
+    MB RAM和2.6 MB ROM）就越多，这意味着更大的延迟。在另一个极端，使用MobileNetV1和<semantics><mrow><mi>α</mi><mo>=</mo><mn>0.10</mn></mrow><annotation
+    encoding="application/x-tex">\alpha=0.10</annotation></semantics>（大约53.2 K RAM和101
+    K ROM）可以获得更小的内存占用。
 - en: '![](../media/file389.png)'
+  id: totrans-88
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file389.png)'
 - en: 'We will use **MobileNetV2 96x96 0.1** ( **or 0.05**) for this project, with
     an estimated memory cost of 265.3 KB in RAM. This model should be OK for the Nicla
     Vision with 1MB of SRAM. On the Transfer Learning Tab, select this model:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用**MobileNetV2 96x96 0.1**（**或0.05**）进行此项目，预计内存占用为265.3 KB。此模型对于具有1MB SRAM的Nicla
+    Vision来说应该是合适的。在迁移学习选项卡上选择此模型：
 - en: '![](../media/file390.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file390.png)'
 - en: Model Training
+  id: totrans-91
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模型训练
 - en: Another valuable technique to be used with Deep Learning is **Data Augmentation**.
     Data augmentation is a method to improve the accuracy of machine learning models
     by creating additional artificial data. A data augmentation system makes small,
     random changes to your training data during the training process (such as flipping,
     cropping, or rotating the images).
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 与深度学习结合使用的另一个有价值的技术是**数据增强**。数据增强是一种通过创建额外的合成数据来提高机器学习模型准确率的方法。数据增强系统在训练过程中对您的训练数据进行小的、随机的更改（例如翻转、裁剪或旋转图像）。
 - en: 'Looking under the hood, here you can see how Edge Impulse implements a data
     Augmentation policy on your data:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看内部结构，这里你可以看到Edge Impulse是如何在您的数据上实施数据增强策略的：
 - en: '[PRE0]'
+  id: totrans-94
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Exposure to these variations during training can help prevent your model from
     taking shortcuts by “memorizing” superficial clues in your training data, meaning
     it may better reflect the deep underlying patterns in your dataset.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练过程中接触这些变化可以帮助你的模型避免通过“记忆”训练数据中的表面线索来走捷径，这意味着它可能更好地反映数据集中的深层潜在模式。
 - en: 'The final layer of our model will have 12 neurons with a 15% dropout for overfitting
     prevention. Here is the Training result:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们模型的最后一层将有12个神经元，并使用15%的dropout来防止过拟合。以下是训练结果：
 - en: '![](../media/file391.png)'
+  id: totrans-97
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file391.png)'
 - en: The result is excellent, with 77 ms of latency (estimated), which should result
     in around 13 fps (frames per second) during inference.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果非常出色，延迟仅为77 ms（估计），这意味着在推理过程中应该大约有13 fps（每秒帧数）。
 - en: Model Testing
+  id: totrans-99
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模型测试
 - en: '![](../media/file392.png)'
+  id: totrans-100
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file392.png)'
 - en: 'Now, we should take the data set put aside at the start of the project and
     run the trained model using it as input:'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们应该使用项目开始时放置 aside 的数据集来运行训练好的模型：
 - en: '![](../media/file393.png)'
+  id: totrans-102
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file393.png)'
 - en: The result is, again, excellent.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果再次非常出色。
 - en: '![](../media/file394.png)'
+  id: totrans-104
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file394.png)'
 - en: Deploying the model
+  id: totrans-105
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模型部署
 - en: At this point, we can deploy the trained model as a firmware (FW) and use the
     OpenMV IDE to run it using MicroPython, or we can deploy it as a C/C++ or an Arduino
     library.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们可以将训练好的模型作为固件（FW）部署，并使用 OpenMV IDE 通过 MicroPython 运行它，或者我们可以将其作为 C/C++
+    或 Arduino 库部署。
 - en: '![](../media/file395.png)'
+  id: totrans-107
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file395.png)'
 - en: Arduino Library
+  id: totrans-108
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Arduino 库
 - en: 'First, Let’s deploy it as an Arduino Library:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们将其作为 Arduino 库部署：
 - en: '![](../media/file396.png)'
+  id: totrans-110
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file396.png)'
 - en: We should install the library as.zip on the Arduino IDE and run the sketch *nicla_vision_camera.ino*
     available in Examples under the library name.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该在 Arduino IDE 中将库安装为 .zip 文件，并运行库下 Examples 中的 *nicla_vision_camera.ino*
+    脚本。
 - en: Note that Arduino Nicla Vision has, by default, 512 KB of RAM allocated for
     the M7 core and an additional 244 KB on the M4 address space. In the code, this
     allocation was changed to 288 kB to guarantee that the model will run on the device
     (`malloc_addblock((void*)0x30000000, 288 * 1024);`).
+  id: totrans-112
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 注意，Arduino Nicla Vision 默认为 M7 内核分配了 512 KB 的 RAM，并在 M4 地址空间上额外分配了 244 KB。在代码中，这种分配已被更改为
+    288 kB，以确保模型可以在设备上运行（`malloc_addblock((void*)0x30000000, 288 * 1024);`）。
 - en: The result is good, with 86 ms of measured latency.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果很好，测量的延迟为 86 毫秒。
 - en: '![](../media/file397.png)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file397.png)'
 - en: 'Here is a short video showing the inference results: [https://youtu.be/bZPZZJblU-o](https://youtu.be/bZPZZJblU-o)'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一个展示推理结果的短视频：[https://youtu.be/bZPZZJblU-o](https://youtu.be/bZPZZJblU-o)
 - en: OpenMV
+  id: totrans-116
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: OpenMV
 - en: 'It is possible to deploy the trained model to be used with OpenMV in two ways:
     as a library and as a firmware (FW). Choosing FW, the Edge Impulse Studio generates
     optimized models, libraries, and frameworks needed to make the inference. Let’s
     explore this option.'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以以两种方式将训练好的模型部署到 OpenMV 使用：作为库和作为固件（FW）。选择 FW，Edge Impulse Studio 会生成优化模型、库和框架，以便进行推理。让我们探索这个选项。
 - en: Select `OpenMV Firmware` on the `Deploy Tab` and press `[Build]`.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 `Deploy Tab` 上选择 `OpenMV Firmware` 并按 `[Build]`。
 - en: '![](../media/file398.png)'
+  id: totrans-119
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file398.png)'
 - en: 'On the computer, we will find a ZIP file. Open it:'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 在计算机上，我们将找到一个 ZIP 文件。打开它：
 - en: '![](../media/file399.png)'
+  id: totrans-121
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file399.png)'
 - en: 'Use the Bootloader tool on the OpenMV IDE to load the FW on your board (1):'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 OpenMV IDE 上的 Bootloader 工具将 FW 加载到你的板上（1）：
 - en: '![](../media/file400.png)'
+  id: totrans-123
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file400.png)'
 - en: 'Select the appropriate file (.bin for Nicla-Vision):'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 选择合适的文件（Nicla-Vision 的 .bin 文件）：
 - en: '![](../media/file401.png)'
+  id: totrans-125
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file401.png)'
 - en: 'After the download is finished, press OK:'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 下载完成后，按 OK：
 - en: '![](../media/file402.png)'
+  id: totrans-127
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file402.png)'
 - en: If a message says that the FW is outdated, **DO NOT UPGRADE**. Select `[NO]`.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果出现消息说固件过时，**不要升级**。选择 `[NO]`。
 - en: '![](../media/file403.png)'
+  id: totrans-129
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file403.png)'
 - en: Now, open the script **ei_image_classification.py** that was downloaded from
     the Studio and the.bin file for the Nicla.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，打开从 Studio 下载的 **ei_image_classification.py** 脚本和 Nicla 的 .bin 文件。
 - en: '![](../media/file404.png)'
+  id: totrans-131
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file404.png)'
 - en: Run it. Pointing the camera to the objects we want to classify, the inference
     result will be displayed on the Serial Terminal.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行它。将摄像头指向我们想要分类的对象，推理结果将在串行终端显示。
 - en: '![](../media/file405.png)'
+  id: totrans-133
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file405.png)'
 - en: 'The classification result will appear at the Serial Terminal. If it is difficult
     to read the result, include a new line in the code to add some delay:'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类结果将出现在串行终端。如果难以阅读结果，请在代码中包含一个新行以添加一些延迟：
 - en: '[PRE1]'
+  id: totrans-135
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Changing the Code to add labels
+  id: totrans-136
   prefs:
   - PREF_H4
   type: TYPE_NORMAL
+  zh: 修改代码以添加标签
 - en: The code provided by Edge Impulse can be modified so that we can see, for test
     reasons, the inference result directly on the image displayed on the OpenMV IDE.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: Edge Impulse 提供的代码可以进行修改，以便我们可以为了测试目的，直接在 OpenMV IDE 显示的图像上看到推理结果。
 - en: '[Upload the code from GitHub,](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Micropython/nicla_image_classification.py)
     or modify it as below:'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: '[从 GitHub 上上传代码](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Micropython/nicla_image_classification.py)，或者按照以下方式修改：'
 - en: '[PRE2]'
+  id: totrans-139
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Here you can see the result:'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里你可以看到结果：
 - en: '![](../media/file406.png)'
+  id: totrans-141
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file406.png)'
 - en: Note that the latency (136 ms) is almost double of what we got directly with
     the Arduino IDE. This is because we are using the IDE as an interface and also
     the time to wait for the camera to be ready. If we start the clock just before
     the inference, the latency should drop to around 70 ms.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，延迟（136 毫秒）几乎是我们在 Arduino IDE 中直接获得的两倍。这是因为我们正在使用 IDE 作为接口，并且还需要等待摄像头准备的时间。如果我们就在推理前启动时钟，延迟应该会降低到大约
+    70 毫秒。
 - en: The NiclaV runs about half as fast when connected to the IDE. The FPS should
     increase once disconnected.
+  id: totrans-143
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 当连接到 IDE 时，NiclaV 的运行速度大约是 IDE 的一半。断开连接后，FPS 应该会增加。
 - en: Post-Processing with LEDs
+  id: totrans-144
   prefs:
   - PREF_H4
   type: TYPE_NORMAL
+  zh: 使用 LED 进行后处理
 - en: When working with embedded machine learning, we are looking for devices that
     can continually proceed with the inference and result, taking some action directly
     on the physical world and not displaying the result on a connected computer. To
     simulate this, we will light up a different LED for each possible inference result.
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 当与嵌入式机器学习一起工作时，我们寻找的是可以持续进行推理和结果，直接在物理世界中采取行动，而不是在连接的计算机上显示结果的设备。为了模拟这一点，我们将为每个可能的推理结果点亮不同的
+    LED。
 - en: '![](../media/file407.png)'
+  id: totrans-146
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file407.png)'
 - en: 'To accomplish that, we should [upload the code from GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Micropython/nicla_image_classification_LED.py)
     or change the last code to include the LEDs:'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了实现这一点，我们应该[从 GitHub 上上传代码](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Micropython/nicla_image_classification_LED.py)或更改最后一段代码以包括
+    LED：
 - en: '[PRE3]'
+  id: totrans-148
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Now, each time that a class scores a result greater than 0.8, the correspondent
     LED will be lit:'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，每次某个类别得分超过 0.8 时，相应的 LED 将会点亮：
 - en: 'Led Red 0n: Uncertain (no class is over 0.8)'
+  id: totrans-150
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Led 红色开启：不确定（没有类别得分超过 0.8）
 - en: 'Led Green 0n: Periquito > 0.8'
+  id: totrans-151
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Led 绿色开启：Periquito > 0.8
 - en: 'Led Blue 0n: Robot > 0.8'
+  id: totrans-152
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Led 蓝色开启：Robot > 0.8
 - en: 'All LEDs Off: Background > 0.8'
+  id: totrans-153
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 所有 LED 关闭：背景 > 0.8
 - en: 'Here is the result:'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是结果：
 - en: '![](../media/file408.png)'
+  id: totrans-155
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file408.png)'
 - en: In more detail
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 更详细地
 - en: '![](../media/file409.png)'
+  id: totrans-157
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file409.png)'
 - en: Image Classification (non-official) Benchmark
+  id: totrans-158
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 图像分类（非官方）基准
 - en: Several development boards can be used for embedded machine learning (TinyML),
     and the most common ones for Computer Vision applications (consuming low energy),
     are the ESP32 CAM, the Seeed XIAO ESP32S3 Sense, the Arduino Nicla Vison, and
     the Arduino Portenta.
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以使用多个开发板进行嵌入式机器学习（TinyML），对于计算机视觉应用（消耗低能量）最常见的是 ESP32 CAM、Seeed XIAO ESP32S3
+    Sense、Arduino Nicla Vison 和 Arduino Portenta。
 - en: '![](../media/file410.jpg)'
+  id: totrans-160
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file410.jpg)'
 - en: 'Catching the opportunity, the same trained model was deployed on the ESP-CAM,
     the XIAO, and the Portenta (in this one, the model was trained again, using grayscaled
     images to be compatible with its camera). Here is the result, deploying the models
     as Arduino’s Library:'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 抓住机会，相同的训练模型被部署在 ESP-CAM、XIAO 和 Portenta 上（在这个例子中，模型再次进行了训练，使用灰度图像以兼容其摄像头）。以下是结果，将模型作为
+    Arduino 库部署：
 - en: '![](../media/file411.png)'
+  id: totrans-162
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file411.png)'
 - en: Summary
+  id: totrans-163
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 摘要
 - en: 'Before we finish, consider that Computer Vision is more than just image classification.
     For example, you can develop Edge Machine Learning projects around vision in several
     areas, such as:'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们结束之前，考虑一下计算机视觉不仅仅是图像分类。例如，你可以在多个领域的视觉周围开发边缘机器学习项目，例如：
 - en: '**Autonomous Vehicles**: Use sensor fusion, lidar data, and computer vision
     algorithms to navigate and make decisions.'
+  id: totrans-165
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**自动驾驶汽车**：使用传感器融合、激光雷达数据和计算机视觉算法进行导航和决策。'
 - en: '**Healthcare**: Automated diagnosis of diseases through MRI, X-ray, and CT
     scan image analysis'
+  id: totrans-166
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**医疗保健**：通过 MRI、X 射线和 CT 扫描图像分析自动诊断疾病。'
 - en: '**Retail**: Automated checkout systems that identify products as they pass
     through a scanner.'
+  id: totrans-167
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**零售**：自动结账系统，在产品通过扫描仪时识别产品。'
 - en: '**Security and Surveillance**: Facial recognition, anomaly detection, and object
     tracking in real-time video feeds.'
+  id: totrans-168
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**安全和监控**：实时视频流中的面部识别、异常检测和物体跟踪。'
 - en: '**Augmented Reality**: Object detection and classification to overlay digital
     information in the real world.'
+  id: totrans-169
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**增强现实**：物体检测和分类，以在现实世界中叠加数字信息。'
 - en: '**Industrial Automation**: Visual inspection of products, predictive maintenance,
     and robot and drone guidance.'
+  id: totrans-170
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**工业自动化**：产品的视觉检查、预测性维护以及机器人和无人机引导。'
 - en: '**Agriculture**: Drone-based crop monitoring and automated harvesting.'
+  id: totrans-171
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**农业**：基于无人机进行作物监测和自动化收割。'
 - en: '**Natural Language Processing**: Image captioning and visual question answering.'
+  id: totrans-172
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**自然语言处理**：图像标题和视觉问答。'
 - en: '**Gesture Recognition**: For gaming, sign language translation, and human-machine
     interaction.'
+  id: totrans-173
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**手势识别**：用于游戏、手语翻译和人与机器交互。'
 - en: '**Content Recommendation**: Image-based recommendation systems in e-commerce.'
+  id: totrans-174
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**内容推荐**：基于图像的电子商务推荐系统。'
 - en: Resources
+  id: totrans-175
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 资源
 - en: '[Micropython codes](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Micropython)'
+  id: totrans-176
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Micropython 代码](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Micropython)'
 - en: '[Dataset](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/data)'
+  id: totrans-177
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[数据集](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/data)'
 - en: '[Edge Impulse Project](https://studio.edgeimpulse.com/public/273858/latest)'
+  id: totrans-178
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Edge Impulse 项目](https://studio.edgeimpulse.com/public/273858/latest)'
