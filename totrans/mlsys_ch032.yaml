@@ -1,22 +1,31 @@
 - en: Setup
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 设置
 - en: '![](../media/file333.jpg)'
+  id: totrans-1
   prefs: []
   type: TYPE_IMG
+  zh: '![图片1](../media/file333.jpg)'
 - en: '*DALL·E 3 Prompt: Illustration reminiscent of a 1950s cartoon where the Arduino
     NICLA VISION board, equipped with various sensors including a camera, is the focal
     point on an old-fashioned desk. In the background, a computer screen with rounded
     edges displays the Arduino IDE. The code is related to LED configurations and
     machine learning voice command detection. Outputs on the Serial Monitor explicitly
     display the words ‘yes’ and ‘no’.*'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '*DALL·E 3提示：一幅让人联想到1950年代卡通的插图，Arduino NICLA VISION板，配备各种传感器，包括摄像头，是老式桌子上的焦点。在背景中，一个圆角电脑屏幕显示Arduino
+    IDE。代码与LED配置和机器学习语音命令检测相关。在串行监视器上的输出明确显示“是”和“否”的字样。*'
 - en: Overview
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 概述
 - en: The [Arduino Nicla Vision](https://docs.arduino.cc/hardware/nicla-vision) (sometimes
     called *NiclaV*) is a development board that includes two processors that can
     run tasks in parallel. It is part of a family of development boards with the same
@@ -27,548 +36,838 @@
     At the same time, the other executes low-level operations like controlling a motor
     and communicating or acting as a user interface. The onboard wireless module allows
     the simultaneous management of WiFi and Bluetooth Low Energy (BLE) connectivity.
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Arduino Nicla Vision](https://docs.arduino.cc/hardware/nicla-vision)（有时称为*NiclaV*）是一款包含两个处理器，可以并行运行任务的开发板。它是同一系列开发板的一部分，具有相同的外形，但针对特定任务设计，例如[Nicla
+    Sense ME](https://www.bosch-sensortec.com/software-tools/tools/arduino-nicla-sense-me/)和[Nicla
+    Voice](https://store-usa.arduino.cc/products/nicla-voice?_gl=1*l3abc6*_ga*MTQ3NzE4Mjk4Mi4xNjQwMDIwOTk5*_ga_NEXN8H46L5*MTY5NjM0Mzk1My4xMDIuMS4xNjk2MzQ0MjQ1LjAuMC4w)。*Niclas*可以高效地运行使用TensorFlow
+    Lite创建的过程。例如，NiclaV的一个核心可以实时运行计算机视觉算法（推理）。同时，另一个执行低级操作，如控制电机、通信或作为用户界面。板载无线模块允许同时管理WiFi和蓝牙低功耗（BLE）连接。'
 - en: '![](../media/file334.png)'
+  id: totrans-5
   prefs: []
   type: TYPE_IMG
+  zh: '![图片3](../media/file334.png)'
 - en: Hardware
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 硬件
 - en: Two Parallel Cores
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 两个并行核心
 - en: 'The central processor is the dual-core [STM32H747,](https://content.arduino.cc/assets/Arduino-Portenta-H7_Datasheet_stm32h747xi.pdf?_gl=1*6quciu*_ga*MTQ3NzE4Mjk4Mi4xNjQwMDIwOTk5*_ga_NEXN8H46L5*MTY0NzQ0NTg1My4xMS4xLjE2NDc0NDYzMzkuMA..)
     including a Cortex M7 at 480 MHz and a Cortex M4 at 240 MHz. The two cores communicate
     via a Remote Procedure Call mechanism that seamlessly allows calling functions
     on the other processor. Both processors share all the on-chip peripherals and
     can run:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 中央处理器是双核[STM32H747](https://content.arduino.cc/assets/Arduino-Portenta-H7_Datasheet_stm32h747xi.pdf?_gl=1*6quciu*_ga*MTQ3NzE4Mjk4Mi4xNjQwMDIwOTk5*_ga_NEXN8H46L5*MTY0NzQ0NTg1My4xMS4xLjE2NDc0NDYzMzkuMA..)，包括一个480
+    MHz的Cortex M7和一个240 MHz的Cortex M4。两个核心通过远程过程调用机制进行通信，无缝地允许在另一个处理器上调用函数。两个处理器共享所有片上外设，并且可以运行：
 - en: Arduino sketches on top of the Arm Mbed OS
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在Arm Mbed OS上运行的Arduino草图
 - en: Native Mbed applications
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 本地Mbed应用程序
 - en: MicroPython / JavaScript via an interpreter
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过解释器运行MicroPython / JavaScript
 - en: TensorFlow Lite
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: TensorFlow Lite
 - en: '![](../media/file335.png)'
+  id: totrans-13
   prefs: []
   type: TYPE_IMG
+  zh: '![图片2](../media/file335.png)'
 - en: Memory
+  id: totrans-14
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 内存
 - en: Memory is crucial for embedded machine learning projects. The NiclaV board can
     host up to 16 MB of QSPI Flash for storage. However, it is essential to consider
     that the MCU SRAM is the one to be used with machine learning inferences; the
     STM32H747 is only 1 MB, shared by both processors. This MCU also has incorporated
     2 MB of FLASH, mainly for code storage.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 内存对于嵌入式机器学习项目至关重要。NiclaV板可以容纳高达16 MB的QSPI闪存用于存储。然而，必须考虑的是，用于机器学习推理的是MCU SRAM；STM32H747只有1
+    MB，由两个处理器共享。此MCU还集成了2 MB的闪存，主要用于代码存储。
 - en: Sensors
+  id: totrans-16
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 传感器
 - en: '**Camera**: A GC2145 2 MP Color CMOS Camera.'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**摄像头**：一款GC2145 2 MP彩色CMOS摄像头。'
 - en: '**Microphone**: The `MP34DT05` is an ultra-compact, low-power, omnidirectional,
     digital MEMS microphone built with a capacitive sensing element and the IC interface.'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**麦克风**：`MP34DT05`是一款超紧凑、低功耗、全向、数字MEMS麦克风，采用电容式传感元件和IC接口。'
 - en: '**6-Axis IMU**: 3D gyroscope and 3D accelerometer data from the `LSM6DSOX`
     6-axis IMU.'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**六轴IMU**：来自`LSM6DSOX` 6轴IMU的3D陀螺仪和3D加速度计数据。'
 - en: '**Time of Flight Sensor**: The `VL53L1CBV0FY` Time-of-Flight sensor adds accurate
     and low-power-ranging capabilities to Nicla Vision. The invisible near-infrared
     VCSEL laser (including the analog driver) is encapsulated with receiving optics
     in an all-in-one small module below the camera.'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**飞行时间传感器**：`VL53L1CBV0FY`飞行时间传感器为Nicla Vision增加了准确和低功耗测距功能。不可见的近红外VCSEL激光器（包括模拟驱动器）与接收光学元件一起封装在一个一体化的小型模块中，位于摄像头下方。'
 - en: Arduino IDE Installation
+  id: totrans-21
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Arduino IDE 安装
 - en: 'Start connecting the board (*micro USB*) to your computer:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 开始将板（*微型USB*）连接到您的计算机：
 - en: '![](../media/file336.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file336.png)'
 - en: Install the Mbed OS core for Nicla boards in the Arduino IDE. Having the IDE
     open, navigate to `Tools > Board > Board Manager`, look for Arduino Nicla Vision
     on the search window, and install the board.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Arduino IDE中安装Nicla板的Mbed OS核心。打开IDE后，导航到`工具 > 板 > 板管理器`，在搜索窗口中查找Arduino Nicla
+    Vision，并安装该板。
 - en: '![](../media/file337.png)'
+  id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file337.png)'
 - en: Next, go to `Tools > Board > Arduino Mbed OS Nicla Boards` and select `Arduino
     Nicla Vision`. Having your board connected to the USB, you should see the Nicla
     on Port and select it.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，前往`工具 > 板 > Arduino Mbed OS Nicla Boards`并选择`Arduino Nicla Vision`。将您的板连接到USB后，您应该在端口上看到Nicla并选择它。
 - en: Open the Blink sketch on Examples/Basic and run it using the IDE Upload button.
     You should see the Built-in LED (green RGB) blinking, which means the Nicla board
     is correctly installed and functional!
+  id: totrans-27
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在Examples/Basic上打开Blink草图，并使用IDE上传按钮运行它。您应该看到内置LED（绿色RGB）闪烁，这意味着Nicla板已正确安装并可用！
 - en: Testing the Microphone
+  id: totrans-28
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 测试麦克风
 - en: 'On Arduino IDE, go to `Examples > PDM > PDMSerialPlotter`, open it, and run
     the sketch. Open the Plotter and see the audio representation from the microphone:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Arduino IDE中，前往`示例 > PDM > PDMSerialPlotter`，打开它，并运行草图。打开绘图仪，查看麦克风的声音表示：
 - en: '![](../media/file338.png)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file338.png)'
 - en: Vary the frequency of the sound you generate and confirm that the mic is working
     correctly.
+  id: totrans-31
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 改变您生成的声音频率，并确认麦克风是否正常工作。
 - en: Testing the IMU
+  id: totrans-32
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 测试IMU
 - en: 'Before testing the IMU, it will be necessary to install the LSM6DSOX library.
     To do so, go to Library Manager and look for LSM6DSOX. Install the library provided
     by Arduino:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在测试IMU之前，将需要安装LSM6DSOX库。为此，前往库管理器并查找LSM6DSOX。安装Arduino提供的库：
 - en: '![](../media/file339.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file339.png)'
 - en: 'Next, go to `Examples > Arduino_LSM6DSOX > SimpleAccelerometer` and run the
     accelerometer test (you can also run Gyro and board temperature):'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，前往`示例 > Arduino_LSM6DSOX > SimpleAccelerometer`并运行加速度计测试（您也可以运行陀螺仪和板温度）：
 - en: '![](../media/file340.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file340.png)'
 - en: Testing the ToF (Time of Flight) Sensor
+  id: totrans-37
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 测试飞行时间（ToF）传感器
 - en: 'As we did with IMU, installing the VL53L1X ToF library is necessary. To do
     that, go to Library Manager and look for VL53L1X. Install the library provided
     by Pololu:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们在IMU上所做的那样，安装VL53L1X ToF库是必要的。为此，前往库管理器并查找VL53L1X。安装Pololu提供的库：
 - en: '![](../media/file341.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file341.png)'
 - en: 'Next, run the sketch [proximity_detection.ino](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Arduino-IDE/proximity_detection/proximity_detection.ino):'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，运行草图[proximity_detection.ino](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Arduino-IDE/proximity_detection/proximity_detection.ino)：
 - en: '![](../media/file342.png)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file342.png)'
 - en: On the Serial Monitor, you will see the distance from the camera to an object
     in front of it (max of 4 m).
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 在串行监视器上，您将看到相机与其前方物体之间的距离（最大4米）。
 - en: '![](../media/file343.jpg)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
+  zh: '![](../media/file343.jpg)'
 - en: Testing the Camera
+  id: totrans-44
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 测试摄像头
 - en: We can also test the camera using, for example, the code provided on `Examples
     > Camera > CameraCaptureRawBytes`. We cannot see the image directly, but we can
     get the raw image data generated by the camera.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以使用例如`示例 > 摄像头 > CameraCaptureRawBytes`中提供的代码来测试摄像头。我们无法直接看到图像，但我们可以获取由摄像头生成的原始图像数据。
 - en: We can use the [`Web Serial Camera`](https://labs.arduino.cc/en/labs/web-serial-camera)
     ([API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API)) to see
     the image generated by the camera. This web application streams the camera image
     over Web Serial from camera-equipped Arduino boards.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用[`Web Serial Camera`](https://labs.arduino.cc/en/labs/web-serial-camera)
+    ([API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API))来查看由摄像头生成的图像。这个网络应用程序通过Web
+    Serial从配备摄像头的Arduino板上流式传输摄像头图像。
 - en: The Web Serial Camera example shows you how to send image data over the wire
     from your Arduino board and how to unpack the data in JavaScript for rendering.
     In addition, in the [source code](https://github.com/arduino/ArduinoCore-mbed/tree/main/libraries/Camera/extras/WebSerialCamera)
     of the web application, we can find some example image filters that show us how
     to manipulate pixel data to achieve visual effects.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: Web Serial Camera示例向您展示了如何从Arduino板通过电线发送图像数据以及如何在JavaScript中解包数据以进行渲染。此外，在Web应用程序的[源代码](https://github.com/arduino/ArduinoCore-mbed/tree/main/libraries/Camera/extras/WebSerialCamera)中，我们可以找到一些示例图像过滤器，展示了如何操作像素数据以实现视觉效果。
 - en: The **Arduino sketch** (CameraCaptureWebSerial) for sending the camera image
     data can be found [here](https://github.com/arduino/ArduinoCore-mbed/tree/main/libraries/Camera/examples/CameraCaptureWebSerial)
     and is also directly available from the “`Examples→Camera`” menu in the Arduino
     IDE when selecting the Nicla board.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 用于发送相机图像数据的**Arduino草图**（CameraCaptureWebSerial）可以在[这里](https://github.com/arduino/ArduinoCore-mbed/tree/main/libraries/Camera/examples/CameraCaptureWebSerial)找到，并且也可以在Arduino
+    IDE中选择Nicla板时直接从“`Examples→Camera`”菜单中获取。
 - en: The **web application** for displaying the camera image can be accessed [here](https://arduino.github.io/labs-pages/web-serial-camera/).
     We may also look at [this tutorial, which explains the setup in more detail.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 用于显示相机图像的**Web应用程序**可以通过[这里](https://arduino.github.io/labs-pages/web-serial-camera/)访问。我们还可以查看[这个教程，它更详细地解释了设置过程]。
 - en: '![](../media/file344.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file344.png)'
 - en: Installing the OpenMV IDE
+  id: totrans-51
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 安装OpenMV IDE
 - en: OpenMV IDE is the premier integrated development environment with OpenMV cameras,
     similar to the Nicla Vision. It features a powerful text editor, debug terminal,
     and frame buffer viewer with a histogram display. We will use MicroPython to program
     the camera.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: OpenMV IDE是带有OpenMV相机的首选集成开发环境，类似于Nicla Vision。它具有强大的文本编辑器、调试终端和具有直方图显示的帧缓冲区查看器。我们将使用MicroPython来编程相机。
 - en: Go to the [OpenMV IDE page](https://openmv.io/pages/download), download the
     correct version for your Operating System, and follow the instructions for its
     installation on your computer.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 前往[OpenMV IDE页面](https://openmv.io/pages/download)，下载适用于您的操作系统的正确版本，并按照说明在您的计算机上安装。
 - en: '![](../media/file345.png)'
+  id: totrans-54
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file345.png)'
 - en: The IDE should open, defaulting to the helloworld_1.py code on its Code Area.
     If not, you can open it from `Files > Examples > HelloWord > helloword.py`
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: IDE应该打开，默认在代码区域显示helloworld_1.py代码。如果不是，您可以从`Files > Examples > HelloWord >
+    helloword.py`打开它。
 - en: '![](../media/file346.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file346.png)'
 - en: Any messages sent through a serial connection (using print() or error messages)
     will be displayed on the **Serial Terminal** during run time. The image captured
     by a camera will be displayed in the **Camera Viewer** Area (or Frame Buffer)
     and in the Histogram area, immediately below the Camera Viewer.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 在运行时，通过串行连接（使用print()或错误信息）发送的任何消息都将显示在**串行终端**上。相机捕获的图像将在**相机查看器**区域（或帧缓冲区）以及在其下方立即的直方图区域显示。
 - en: Updating the Bootloader
+  id: totrans-58
   prefs:
   - PREF_H4
   type: TYPE_NORMAL
+  zh: 更新引导加载程序
 - en: Before connecting the Nicla to the OpenMV IDE, ensure you have the latest bootloader
     version. Go to your Arduino IDE, select the Nicla board, and open the sketch on
     `Examples > STM_32H747_System STM32H747_manageBootloader`. Upload the code to
     your board. The Serial Monitor will guide you.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 在将Nicla连接到OpenMV IDE之前，请确保您有最新的引导加载程序版本。转到您的Arduino IDE，选择Nicla板，并在`Examples
+    > STM_32H747_System STM32H747_manageBootloader`中打开草图。将代码上传到您的板子。串行监视器将引导您。
 - en: Installing the Firmware
+  id: totrans-60
   prefs:
   - PREF_H4
   type: TYPE_NORMAL
+  zh: 安装固件
 - en: '**After updating the bootloader**, put the Nicla Vision in bootloader mode
     by double-pressing the reset button on the board. The built-in green LED will
     start fading in and out. Now return to the OpenMV IDE and click on the connect
     icon (Left ToolBar):'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更新引导加载程序后**，通过在板上双击复位按钮将Nicla Vision置于引导加载程序模式。内置的绿色LED将开始闪烁。现在返回到OpenMV
+    IDE，并单击连接图标（左侧工具栏）：'
 - en: '![](../media/file347.jpg)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file347.jpg)'
 - en: A pop-up will tell you that a board in DFU mode was detected and ask how you
     would like to proceed. First, select `Install the latest release firmware (vX.Y.Z)`.
     This action will install the latest OpenMV firmware on the Nicla Vision.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个弹出窗口将告诉您检测到一个处于DFU模式的板子，并询问您希望如何操作。首先，选择“安装最新发布固件（vX.Y.Z）”。此操作将在Nicla Vision上安装最新的OpenMV固件。
 - en: '![](../media/file348.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file348.png)'
 - en: You can leave the option `Erase internal file system` unselected and click `[OK]`.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以不选择“擦除内部文件系统”选项，然后点击[确定]。
 - en: Nicla’s green LED will start flashing while the OpenMV firmware is uploaded
     to the board, and a terminal window will then open, showing the flashing progress.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 当 Nicla 的绿色 LED 在将 OpenMV 固件上传到板子上时开始闪烁，随后将打开一个终端窗口，显示上传进度。
 - en: '![](../media/file349.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file349.png)'
 - en: Wait until the green LED stops flashing and fading. When the process ends, you
     will see a message saying, “DFU firmware update complete!”. Press `[OK]`.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 等待绿色 LED 停止闪烁和褪色。当过程结束时，您将看到一个消息说，“DFU 固件更新完成！”。按 `[OK]`。
 - en: '![](../media/file350.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file350.png)'
 - en: A green play button appears when the Nicla Vison connects to the Tool Bar.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 当 Nicla Vison 连接到工具栏时，会出现一个绿色的播放按钮。
 - en: '![](../media/file351.jpg)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file351.jpg)'
 - en: Also, note that a drive named “NO NAME” will appear on your computer.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，请注意，您的电脑上会出现一个名为“无名称”的驱动器。
 - en: '![](../media/file352.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file352.png)'
 - en: Every time you press the `[RESET]` button on the board, the main.py script stored
     on it automatically executes. You can load the [main.py](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Micropython/main.py)
     code on the IDE (`File > Open File...`).
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 每次您在板上按 `[RESET]` 按钮时，存储在板上的 main.py 脚本将自动执行。您可以在 IDE 上加载 [main.py](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Micropython/main.py)
+    代码（`File > Open File...`）。
 - en: '![](../media/file353.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file353.png)'
 - en: This code is the “Blink” code, confirming that the HW is OK.
+  id: totrans-76
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 这段代码是“闪烁”代码，确认硬件正常。
 - en: Testing the Camera
+  id: totrans-77
   prefs:
   - PREF_H4
   type: TYPE_NORMAL
+  zh: 测试相机
 - en: To test the camera, let’s run *helloword_1.py*. For that, select the script
     on `File > Examples > HelloWorld > helloword.py`,
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 要测试相机，让我们运行 *helloword_1.py*。为此，请选择 `File > Examples > HelloWorld > helloword.py`
+    中的脚本，
 - en: When clicking the green play button, the MicroPython script (*helloworld.py*)
     on the Code Area will be uploaded and run on the Nicla Vision. On-Camera Viewer,
     you will start to see the video streaming. The Serial Monitor will show us the
     FPS (Frames per second), which should be around 27fps.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 当点击绿色播放按钮时，代码区域中的 MicroPython 脚本 (*helloworld.py*) 将被上传并运行在 Nicla Vision 上。在相机查看器中，您将开始看到视频流。串行监视器将显示
+    FPS（每秒帧数），大约为 27fps。
 - en: '![](../media/file354.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file354.png)'
 - en: 'Here is the `helloworld.py` script:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是 `helloworld.py` 脚本：
 - en: '[PRE0]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: In [GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision), you can find the
     Python scripts used here.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 [GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision) 中，您可以找到这里使用的 Python
+    脚本。
 - en: 'The code can be split into two parts:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码可以分为两部分：
 - en: '**Setup**: Where the libraries are imported, initialized and the variables
     are defined and initiated.'
+  id: totrans-85
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**设置**：在这里导入库，初始化，定义和初始化变量。'
 - en: '**Loop**: (while loop) part of the code that runs continually. The image (*img*
     variable) is captured (one frame). Each of those frames can be used for inference
     in Machine Learning Applications.'
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**循环**：（while 循环）代码的一部分，会持续运行。图像 (*img* 变量) 被捕获（一帧）。这些帧中的每一帧都可以用于机器学习应用中的推理。'
 - en: To interrupt the program execution, press the red `[X]` button.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 要中断程序执行，请按红色 `[X]` 按钮。
 - en: 'Note: OpenMV Cam runs about half as fast when connected to the IDE. The FPS
     should increase once disconnected.'
+  id: totrans-88
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 注意：当连接到 IDE 时，OpenMV Cam 的运行速度大约减半。断开连接后，FPS 应该会增加。
 - en: In the [GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Micropython),
     You can find other Python scripts. Try to test the onboard sensors.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 [GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Micropython)
+    中，您可以找到其他 Python 脚本。尝试测试板载传感器。
 - en: Connecting the Nicla Vision to Edge Impulse Studio
+  id: totrans-90
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 将 Nicla Vision 连接到 Edge Impulse Studio
 - en: We will need the Edge Impulse Studio later in other labs. [Edge Impulse](https://www.edgeimpulse.com/)
     is a leading development platform for machine learning on edge devices.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将在其他实验室的后期需要 Edge Impulse Studio。 [Edge Impulse](https://www.edgeimpulse.com/)
+    是边缘设备上机器学习的主要开发平台。
 - en: 'Edge Impulse officially supports the Nicla Vision. So, to start, please create
     a new project on the Studio and connect the Nicla to it. For that, follow the
     steps:'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: Edge Impulse 正式支持 Nicla Vision。因此，为了开始，请在 Studio 上创建一个新项目并将其连接到它。为此，请按照以下步骤操作：
 - en: Download the [Arduino CLI](https://arduino.github.io/arduino-cli/1.2/installation/)
     for your specific computer architecture (OS)
+  id: totrans-93
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 下载适用于您特定计算机架构的 [Arduino CLI](https://arduino.github.io/arduino-cli/1.2/installation/)。
 - en: Download the most updated [EI Firmware](https://cdn.edgeimpulse.com/firmware/arduino-nicla-vision.zip).
+  id: totrans-94
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 下载最新的 [EI 固件](https://cdn.edgeimpulse.com/firmware/arduino-nicla-vision.zip)。
 - en: Unzip both files and place all the files in the same folder.
+  id: totrans-95
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 解压两个文件，并将所有文件放在同一个文件夹中。
 - en: Put the Nicla-Vision on Boot Mode, pressing the reset button twice.
+  id: totrans-96
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将 Nicla-Vision 置于启动模式，按重置按钮两次。
 - en: 'Run the uploader (EI FW) corresponding to your OS:'
+  id: totrans-97
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 运行对应您操作系统的上传器（EI FW）：
 - en: '![](../media/file355.png)'
+  id: totrans-98
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file355.png)'
 - en: Executing the specific batch code for your OS will upload the binary *arduino-nicla-vision.bin*
     to your board.
+  id: totrans-99
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 执行您操作系统特定的批处理代码会将二进制文件 *arduino-nicla-vision.bin* 上传到您的板子上。
 - en: Using `Chrome`, WebUSB can be used to connect the Nicla to the EI Studio. **The
     EI CLI is not needed.**
+  id: totrans-100
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 使用 `Chrome`，可以通过 WebUSB 将 Nicla 连接到 EI Studio。**不需要 EI CLI**。
 - en: Go to your project on the Studio, and on the `Data Acquisition tab`, select
     `WebUSB` (1). A window will pop up; choose the option that shows that the `Nicla
     is paired` (2) and press `[Connect]` (3).
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 前往 Studio 上的项目，在“数据采集”选项卡中，选择“WebUSB”（1）。会出现一个窗口；选择显示“Nicla 已配对”（2）的选项，然后按 `[连接]`（3）。
 - en: '![](../media/file356.png)'
+  id: totrans-102
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file356.png)'
 - en: You can choose which sensor data to pick in the Collect Data section on the
     Data Acquisition tab.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以在“数据采集”选项卡上的“收集数据”部分选择要选择哪些传感器数据。
 - en: '![](../media/file357.png)'
+  id: totrans-104
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file357.png)'
 - en: 'For example. `IMU data (inertial)`:'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，`IMU 数据（惯性）`：
 - en: '![](../media/file358.png)'
+  id: totrans-106
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file358.png)'
 - en: 'Or Image (`Camera`):'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 或图像（`相机`）：
 - en: '![](../media/file359.png)'
+  id: totrans-108
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file359.png)'
 - en: You can also test an external sensor connected to the `ADC` (Nicla pin 0) and
     the other onboard sensors, such as the `built-in microphone`, the `ToF (Proximity)`
     or a combination of sensors (`fusion`).
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 您还可以测试连接到 `ADC`（Nicla 引脚 0）的外部传感器以及板载的其他传感器，例如内置麦克风、`ToF（接近）`或传感器组合（`融合`）。
 - en: Expanding the Nicla Vision Board (optional)
+  id: totrans-110
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 扩展 Nicla 视觉板（可选）
 - en: A last item to explore is that sometimes, during prototyping, it is essential
     to experiment with external sensors and devices. An excellent expansion to the
     Nicla is the [Arduino MKR Connector Carrier (Grove compatible)](https://store-usa.arduino.cc/products/arduino-mkr-connector-carrier-grove-compatible).
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后一个要探索的项目是，在原型设计过程中，有时实验外部传感器和设备是至关重要的。Arduino MKR 连接器载体（Grove 兼容）是 Nicla 的一个优秀扩展。[Arduino
+    MKR 连接器载体（Grove 兼容）](https://store-usa.arduino.cc/products/arduino-mkr-connector-carrier-grove-compatible)。
 - en: 'The shield has 14 Grove connectors: five single analog inputs (A0-A5), one
     double analog input (A5/A6), five single digital I/Os (D0-D4), one double digital
     I/O (D5/D6), one I2C (TWI), and one UART (Serial). All connectors are 5V compatible.'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 该盾牌有 14 个 Grove 连接器：五个单通道模拟输入（A0-A5）、一个双通道模拟输入（A5/A6）、五个单通道数字 I/O（D0-D4）、一个双通道数字
+    I/O（D5/D6）、一个 I2C（TWI）和一个 UART（串行）。所有连接器均兼容 5V。
 - en: Note that all 17 Nicla Vision pins will be connected to the Shield Groves, but
     some Grove connections remain disconnected.
+  id: totrans-113
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 注意，所有 17 个 Nicla 视觉引脚都将连接到盾牌 Grove，但某些 Grove 连接保持未连接。
 - en: '![](../media/file360.jpg)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file360.jpg)'
 - en: This shield is MKR compatible and can be used with the Nicla Vision and Portenta.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 此盾牌与 MKR 兼容，并可配合 Nicla 视觉和 Portenta 使用。
 - en: '![](../media/file361.jpg)'
+  id: totrans-116
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file361.jpg)'
 - en: 'For example, suppose that on a TinyML project, you want to send inference results
     using a LoRaWAN device and add information about local luminosity. Often, with
     offline operations, a local low-power display such as an OLED is advised. This
     setup can be seen here:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，假设在一个 TinyML 项目中，您想使用 LoRaWAN 设备发送推理结果并添加有关本地亮度的信息。通常，在离线操作中，建议使用本地低功耗显示屏，如
+    OLED。此设置如下所示：
 - en: '![](../media/file362.jpg)'
+  id: totrans-118
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file362.jpg)'
 - en: The [Grove Light Sensor](https://wiki.seeedstudio.com/Grove-Light_Sensor/) would
     be connected to one of the single Analog pins (A0/PC4), the [LoRaWAN device](https://wiki.seeedstudio.com/Grove_LoRa_E5_New_Version/)
     to the UART, and the [OLED](https://wiki.seeedstudio.com/Grove-OLED-Display-0.96-SSD1315/)
     to the I2C connector.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Grove 光传感器](https://wiki.seeedstudio.com/Grove-Light_Sensor/)将连接到单个模拟引脚之一（A0/PC4），[LoRaWAN
+    设备](https://wiki.seeedstudio.com/Grove_LoRa_E5_New_Version/)连接到 UART，[OLED](https://wiki.seeedstudio.com/Grove-OLED-Display-0.96-SSD1315/)连接到
+    I2C 连接器。'
 - en: 'The Nicla Pins 3 (Tx) and 4 (Rx) are connected with the Serial Shield connector.
     The UART communication is used with the LoRaWan device. Here is a simple code
     to use the UART:'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: Nicla 引脚 3（Tx）和 4（Rx）与串行盾牌连接器相连。UART 通信用于 LoRaWan 设备。以下是一个简单的 UART 代码示例：
 - en: '[PRE1]'
+  id: totrans-121
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: To verify that the UART is working, you should, for example, connect another
     device as the Arduino UNO, displaying “Hello Word” on the Serial Monitor. Here
     is the [code](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Arduino-IDE/teste_uart_UNO/teste_uart_UNO.ino).
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了验证 UART 是否正常工作，例如，您可以将另一个设备作为 Arduino UNO 连接，在串行监视器上显示“Hello Word”。以下是[代码](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Arduino-IDE/teste_uart_UNO/teste_uart_UNO.ino)。
 - en: '![](../media/file363.jpg)'
+  id: totrans-123
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../media/file363.jpg)'
 - en: Below is the *Hello World code* to be used with the I2C OLED. The MicroPython
     SSD1306 OLED driver (ssd1306.py), created by Adafruit, should also be uploaded
     to the Nicla (the ssd1306.py script can be found in [GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Micropython/ssd1306.py)).
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是用于 I2C OLED 的 *Hello World 代码*。由 Adafruit 创建的 MicroPython SSD1306 OLED 驱动程序（ssd1306.py）也应上传到
+    Nicla（ssd1306.py 脚本可在 [GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Micropython/ssd1306.py)
+    中找到）。
 - en: '[PRE2]'
+  id: totrans-125
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Finally, here is a simple script to read the ADC value on pin “PC4” (Nicla
     pin A0):'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，这是一个简单的脚本，用于读取引脚“PC4”上的 ADC 值（Nicla 引脚 A0）：
 - en: '[PRE3]'
+  id: totrans-127
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: The ADC can be used for other sensor variables, such as [Temperature](https://wiki.seeedstudio.com/Grove-Temperature_Sensor_V1.2/).
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: ADC 可以用于其他传感器变量，例如 [温度](https://wiki.seeedstudio.com/Grove-Temperature_Sensor_V1.2/)。
 - en: Note that the above scripts ([downloaded from Github](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Micropython))
     introduce only how to connect external devices with the Nicla Vision board using
     MicroPython.
+  id: totrans-129
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 注意，上述脚本（[从 Github 下载](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Micropython)）仅介绍了如何使用
+    MicroPython 将外部设备与 Nicla Vision 板连接。
 - en: Summary
+  id: totrans-130
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 摘要
 - en: The Arduino Nicla Vision is an excellent *tiny device* for industrial and professional
     uses! However, it is powerful, trustworthy, low power, and has suitable sensors
     for the most common embedded machine learning applications such as vision, movement,
     sensor fusion, and sound.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: Arduino Nicla Vision 是工业和专业人士使用的优秀 *小型设备*！然而，它功能强大、值得信赖、功耗低，并且具有适合最常见嵌入式机器学习应用（如视觉、运动、传感器融合和声音）的合适传感器。
 - en: On the [GitHub repository,](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main)
     you will find the last version of all the code used or commented on in this hands-on
     lab.
+  id: totrans-132
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在 [GitHub 仓库](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main) 中，你可以找到本动手实验室中使用的或注释的所有代码的最新版本。
 - en: Resources
+  id: totrans-133
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 资源
 - en: '[Micropython codes](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Micropython)'
+  id: totrans-134
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[MicroPython 代码](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Micropython)'
 - en: '[Arduino Codes](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Arduino-IDE)'
+  id: totrans-135
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Arduino 代码](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Arduino-IDE)'
