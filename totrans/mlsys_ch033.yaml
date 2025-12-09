@@ -1,0 +1,740 @@
+- en: Image Classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../media/file364.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*DALL·E 3 Prompt: Cartoon in a 1950s style featuring a compact electronic device
+    with a camera module placed on a wooden table. The screen displays blue robots
+    on one side and green periquitos on the other. LED lights on the device indicate
+    classifications, while characters in retro clothing observe with interest.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we initiate our studies into embedded machine learning or TinyML, it’s impossible
+    to overlook the transformative impact of Computer Vision (CV) and Artificial Intelligence
+    (AI) in our lives. These two intertwined disciplines redefine what machines can
+    perceive and accomplish, from autonomous vehicles and robotics to healthcare and
+    surveillance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More and more, we are facing an artificial intelligence (AI) revolution where,
+    as stated by Gartner, **Edge AI** has a very high impact potential, and **it is
+    for now**!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file365.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the “bullseye” of the Radar is the *Edge Computer Vision*, and when we talk
+    about Machine Learning (ML) applied to vision, the first thing that comes to mind
+    is **Image Classification**, a kind of ML “Hello World”!
+  prefs: []
+  type: TYPE_NORMAL
+- en: This lab will explore a computer vision project utilizing Convolutional Neural
+    Networks (CNNs) for real-time image classification. Leveraging TensorFlow’s robust
+    ecosystem, we’ll implement a pre-trained MobileNet model and adapt it for edge
+    deployment. The focus will be optimizing the model to run efficiently on resource-constrained
+    hardware without sacrificing accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll employ techniques like quantization and pruning to reduce the computational
+    load. By the end of this tutorial, you’ll have a working prototype capable of
+    classifying images in real-time, all running on a low-power embedded system based
+    on the Arduino Nicla Vision board.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Computer Vision
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At its core, computer vision enables machines to interpret and make decisions
+    based on visual data from the world, essentially mimicking the capability of the
+    human optical system. Conversely, AI is a broader field encompassing machine learning,
+    natural language processing, and robotics, among other technologies. When you
+    bring AI algorithms into computer vision projects, you supercharge the system’s
+    ability to understand, interpret, and react to visual stimuli.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When discussing Computer Vision projects applied to embedded devices, the most
+    common applications that come to mind are *Image Classification* and *Object Detection*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file366.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Both models can be implemented on tiny devices like the Arduino Nicla Vision
+    and used on real projects. In this chapter, we will cover Image Classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image Classification Project Goal
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first step in any ML project is to define the goal. In this case, the goal
+    is to detect and classify two specific objects present in one image. For this
+    project, we will use two small toys: a robot and a small Brazilian parrot (named
+    Periquito). We will also collect images of a *background* where those two objects
+    are absent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file367.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data Collection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once we have defined our Machine Learning project goal, the next and most crucial
+    step is collecting the dataset. For image capturing, we can use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Web Serial Camera tool,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Edge Impulse Studio,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OpenMV IDE,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A smartphone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here, we will use the **OpenMV IDE**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collecting Dataset with OpenMV IDE
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'First, we should create a folder on our computer where the data will be saved,
+    for example, “data.” Next, on the OpenMV IDE, we go to `Tools > Dataset Editor`
+    and select `New Dataset` to start the dataset collection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file368.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The IDE will ask us to open the file where the data will be saved. Choose the
+    “data” folder that was created. Note that new icons will appear on the Left panel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file369.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using the upper icon (1), enter with the first class name, for example, “periquito”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file370.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Running the `dataset_capture_script.py` and clicking on the camera icon (2)
+    will start capturing images:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file371.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Repeat the same procedure with the other classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file372.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We suggest around 50 to 60 images from each category. Try to capture different
+    angles, backgrounds, and light conditions.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The stored images use a QVGA frame size of <semantics><mrow><mn>320</mn><mo>×</mo><mn>240</mn></mrow><annotation
+    encoding="application/x-tex">320\times 240</annotation></semantics> and the RGB565
+    (color pixel format).
+  prefs: []
+  type: TYPE_NORMAL
+- en: After capturing the dataset, close the Dataset Editor Tool on the `Tools > Dataset
+    Editor`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will end up with a dataset on our computer that contains three classes:
+    *periquito,* *robot*, and *background*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file373.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We should return to *Edge Impulse Studio* and upload the dataset to our created
+    project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the model with Edge Impulse Studio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will use the Edge Impulse Studio to train our model. Enter the account credentials
+    and create a new project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file374.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, you can clone a similar project: [NICLA-Vision_Image_Classification](https://studio.edgeimpulse.com/public/273858/latest).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Using the EI Studio (or *Studio*), we will go over four main steps to have
+    our model ready for use on the Nicla Vision board: Dataset, Impulse, Tests, and
+    Deploy (on the Edge Device, in this case, the NiclaV).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file375.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Regarding the Dataset, it is essential to point out that our Original Dataset,
+    captured with the OpenMV IDE, will be split into *Training*, *Validation*, and
+    *Test*. The Test Set will be spared from the beginning and reserved for use only
+    in the Test phase after training. The Validation Set will be used during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The EI Studio will take a percentage of training data to be used for validation
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../media/file376.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'On Studio, go to the `Data acquisition` tab, and on the UPLOAD DATA section,
+    upload the chosen categories files from your computer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file377.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Leave to the Studio the splitting of the original dataset into *train and test*
+    and choose the label about that specific data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file378.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Repeat the procedure for all three classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Selecting a folder and upload all the files at once is possible.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'At the end, you should see your “raw data” in the Studio:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file379.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that when you start to upload the data, a pop-up window can appear, asking
+    if you are building an Object Detection project. Select `[NO]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file380.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can always change it in the Dashboard section: `One label per data item`
+    (Image Classification):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file381.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Optionally, the Studio allows us to explore the data, showing a complete view
+    of all the data in the project. We can clear, inspect, or change labels by clicking
+    on individual data items. In our case, the data seems OK.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file382.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Impulse Design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this phase, we should define how to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pre-process our data, which consists of resizing the individual images and determining
+    the `color depth` to use (be it RGB or Grayscale) and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Specify a Model, in this case, it will be the `Transfer Learning (Images)` to
+    fine-tune a pre-trained MobileNet V2 image classification model on our data. This
+    method performs well even with relatively small image datasets (around 150 images
+    in our case).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file383.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transfer Learning with MobileNet offers a streamlined approach to model training,
+    which is especially beneficial for resource-constrained environments and projects
+    with limited labeled data. MobileNet, known for its lightweight architecture,
+    is a pre-trained model that has already learned valuable features from a large
+    dataset (ImageNet).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file384.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By leveraging these learned features, you can train a new model for your specific
+    task with fewer data and computational resources and yet achieve competitive accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file385.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This approach significantly reduces training time and computational cost, making
+    it ideal for quick prototyping and deployment on embedded devices where efficiency
+    is paramount.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Go to the Impulse Design Tab and create the *impulse*, defining an image size
+    of 96x96 and squashing them (squared form, without cropping). Select Image and
+    Transfer Learning blocks. Save the Impulse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file386.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image Pre-Processing
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: All the input QVGA/RGB565 images will be converted to 27,640 features <semantics><mrow><mo
+    stretchy="true" form="prefix">(</mo><mn>96</mn><mo>×</mo><mn>96</mn><mo>×</mo><mn>3</mn><mo
+    stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(96\times
+    96\times 3)</annotation></semantics>.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file387.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Press `[Save parameters]` and Generate all features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file388.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model Design
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In 2007, Google introduced [MobileNetV1](https://research.googleblog.com/2017/06/mobilenets-open-source-models-for.html),
+    a family of general-purpose computer vision neural networks designed with mobile
+    devices in mind to support classification, detection, and more. MobileNets are
+    small, low-latency, low-power models parameterized to meet the resource constraints
+    of various use cases. in 2018, Google launched [MobileNetV2: Inverted Residuals
+    and Linear Bottlenecks](https://arxiv.org/abs/1801.04381).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MobileNet V1 and MobileNet V2 aim at mobile efficiency and embedded vision applications
+    but differ in architectural complexity and performance. While both use depthwise
+    separable convolutions to reduce the computational cost, MobileNet V2 introduces
+    Inverted Residual Blocks and Linear Bottlenecks to improve performance. These
+    new features allow V2 to capture more complex features using fewer parameters,
+    making it computationally more efficient and generally more accurate than its
+    predecessor. Additionally, V2 employs a non-linear activation in the intermediate
+    expansion layer. It still uses a linear activation for the bottleneck layer, a
+    design choice found to preserve important information through the network. MobileNet
+    V2 offers an optimized architecture for higher accuracy and efficiency and will
+    be used in this project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although the base MobileNet architecture is already tiny and has low latency,
+    many times, a specific use case or application may require the model to be even
+    smaller and faster. MobileNets introduces a straightforward parameter <semantics><mi>α</mi><annotation
+    encoding="application/x-tex">\alpha</annotation></semantics> (alpha) called width
+    multiplier to construct these smaller, less computationally expensive models.
+    The role of the width multiplier <semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics>
+    is that of thinning a network uniformly at each layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edge Impulse Studio can use both MobileNetV1 (<semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn></mrow><annotation
+    encoding="application/x-tex">96\times 96</annotation></semantics> images) and
+    V2 (<semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn></mrow><annotation encoding="application/x-tex">96\times
+    96</annotation></semantics> or <semantics><mrow><mn>160</mn><mo>×</mo><mn>160</mn></mrow><annotation
+    encoding="application/x-tex">160\times 160</annotation></semantics> images), with
+    several different **<semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics>**
+    values (from 0.05 to 1.0). For example, you will get the highest accuracy with
+    V2, <semantics><mrow><mn>160</mn><mo>×</mo><mn>160</mn></mrow><annotation encoding="application/x-tex">160\times
+    160</annotation></semantics> images, and <semantics><mrow><mi>α</mi><mo>=</mo><mn>1.0</mn></mrow><annotation
+    encoding="application/x-tex">\alpha=1.0</annotation></semantics>. Of course, there
+    is a trade-off. The higher the accuracy, the more memory (around 1.3 MB RAM and
+    2.6 MB ROM) will be needed to run the model, implying more latency. The smaller
+    footprint will be obtained at the other extreme with MobileNetV1 and <semantics><mrow><mi>α</mi><mo>=</mo><mn>0.10</mn></mrow><annotation
+    encoding="application/x-tex">\alpha=0.10</annotation></semantics> (around 53.2
+    K RAM and 101 K ROM).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file389.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We will use **MobileNetV2 96x96 0.1** ( **or 0.05**) for this project, with
+    an estimated memory cost of 265.3 KB in RAM. This model should be OK for the Nicla
+    Vision with 1MB of SRAM. On the Transfer Learning Tab, select this model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file390.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another valuable technique to be used with Deep Learning is **Data Augmentation**.
+    Data augmentation is a method to improve the accuracy of machine learning models
+    by creating additional artificial data. A data augmentation system makes small,
+    random changes to your training data during the training process (such as flipping,
+    cropping, or rotating the images).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looking under the hood, here you can see how Edge Impulse implements a data
+    Augmentation policy on your data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Exposure to these variations during training can help prevent your model from
+    taking shortcuts by “memorizing” superficial clues in your training data, meaning
+    it may better reflect the deep underlying patterns in your dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The final layer of our model will have 12 neurons with a 15% dropout for overfitting
+    prevention. Here is the Training result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file391.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The result is excellent, with 77 ms of latency (estimated), which should result
+    in around 13 fps (frames per second) during inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Testing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../media/file392.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now, we should take the data set put aside at the start of the project and
+    run the trained model using it as input:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file393.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The result is, again, excellent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file394.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Deploying the model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At this point, we can deploy the trained model as a firmware (FW) and use the
+    OpenMV IDE to run it using MicroPython, or we can deploy it as a C/C++ or an Arduino
+    library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file395.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Arduino Library
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'First, Let’s deploy it as an Arduino Library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file396.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We should install the library as.zip on the Arduino IDE and run the sketch *nicla_vision_camera.ino*
+    available in Examples under the library name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that Arduino Nicla Vision has, by default, 512 KB of RAM allocated for
+    the M7 core and an additional 244 KB on the M4 address space. In the code, this
+    allocation was changed to 288 kB to guarantee that the model will run on the device
+    (`malloc_addblock((void*)0x30000000, 288 * 1024);`).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The result is good, with 86 ms of measured latency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file397.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here is a short video showing the inference results: [https://youtu.be/bZPZZJblU-o](https://youtu.be/bZPZZJblU-o)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenMV
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'It is possible to deploy the trained model to be used with OpenMV in two ways:
+    as a library and as a firmware (FW). Choosing FW, the Edge Impulse Studio generates
+    optimized models, libraries, and frameworks needed to make the inference. Let’s
+    explore this option.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select `OpenMV Firmware` on the `Deploy Tab` and press `[Build]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file398.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'On the computer, we will find a ZIP file. Open it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file399.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Use the Bootloader tool on the OpenMV IDE to load the FW on your board (1):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file400.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Select the appropriate file (.bin for Nicla-Vision):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file401.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'After the download is finished, press OK:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file402.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If a message says that the FW is outdated, **DO NOT UPGRADE**. Select `[NO]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file403.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now, open the script **ei_image_classification.py** that was downloaded from
+    the Studio and the.bin file for the Nicla.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file404.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Run it. Pointing the camera to the objects we want to classify, the inference
+    result will be displayed on the Serial Terminal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file405.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The classification result will appear at the Serial Terminal. If it is difficult
+    to read the result, include a new line in the code to add some delay:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Changing the Code to add labels
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: The code provided by Edge Impulse can be modified so that we can see, for test
+    reasons, the inference result directly on the image displayed on the OpenMV IDE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Upload the code from GitHub,](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Micropython/nicla_image_classification.py)
+    or modify it as below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here you can see the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file406.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that the latency (136 ms) is almost double of what we got directly with
+    the Arduino IDE. This is because we are using the IDE as an interface and also
+    the time to wait for the camera to be ready. If we start the clock just before
+    the inference, the latency should drop to around 70 ms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The NiclaV runs about half as fast when connected to the IDE. The FPS should
+    increase once disconnected.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Post-Processing with LEDs
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: When working with embedded machine learning, we are looking for devices that
+    can continually proceed with the inference and result, taking some action directly
+    on the physical world and not displaying the result on a connected computer. To
+    simulate this, we will light up a different LED for each possible inference result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file407.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To accomplish that, we should [upload the code from GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Micropython/nicla_image_classification_LED.py)
+    or change the last code to include the LEDs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, each time that a class scores a result greater than 0.8, the correspondent
+    LED will be lit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Led Red 0n: Uncertain (no class is over 0.8)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Led Green 0n: Periquito > 0.8'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Led Blue 0n: Robot > 0.8'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'All LEDs Off: Background > 0.8'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here is the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file408.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In more detail
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file409.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image Classification (non-official) Benchmark
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Several development boards can be used for embedded machine learning (TinyML),
+    and the most common ones for Computer Vision applications (consuming low energy),
+    are the ESP32 CAM, the Seeed XIAO ESP32S3 Sense, the Arduino Nicla Vison, and
+    the Arduino Portenta.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file410.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Catching the opportunity, the same trained model was deployed on the ESP-CAM,
+    the XIAO, and the Portenta (in this one, the model was trained again, using grayscaled
+    images to be compatible with its camera). Here is the result, deploying the models
+    as Arduino’s Library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file411.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before we finish, consider that Computer Vision is more than just image classification.
+    For example, you can develop Edge Machine Learning projects around vision in several
+    areas, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Autonomous Vehicles**: Use sensor fusion, lidar data, and computer vision
+    algorithms to navigate and make decisions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Healthcare**: Automated diagnosis of diseases through MRI, X-ray, and CT
+    scan image analysis'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Retail**: Automated checkout systems that identify products as they pass
+    through a scanner.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Security and Surveillance**: Facial recognition, anomaly detection, and object
+    tracking in real-time video feeds.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Augmented Reality**: Object detection and classification to overlay digital
+    information in the real world.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Industrial Automation**: Visual inspection of products, predictive maintenance,
+    and robot and drone guidance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Agriculture**: Drone-based crop monitoring and automated harvesting.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Natural Language Processing**: Image captioning and visual question answering.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Gesture Recognition**: For gaming, sign language translation, and human-machine
+    interaction.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Content Recommendation**: Image-based recommendation systems in e-commerce.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Micropython codes](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Micropython)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Dataset](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/data)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Edge Impulse Project](https://studio.edgeimpulse.com/public/273858/latest)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

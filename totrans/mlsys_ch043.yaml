@@ -1,0 +1,946 @@
+- en: Motion Classification and Anomaly Detection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../media/file664.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: DALL·E prompt - 1950s style cartoon illustration set in a vintage audio lab.
+    Scientists, dressed in classic attire with white lab coats, are intently analyzing
+    audio data on large chalkboards. The boards display intricate FFT (Fast Fourier
+    Transform) graphs and time-domain curves. Antique audio equipment is scattered
+    around, but the data representations are clear and detailed, indicating their
+    focus on audio analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Transportation is the backbone of global commerce. Millions of containers are
+    transported daily via various means, such as ships, trucks, and trains, to destinations
+    worldwide. Ensuring the safe and efficient transit of these containers is a monumental
+    task that requires leveraging modern technology, and TinyML is undoubtedly one
+    of the key solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this hands-on lab, we will work to solve real-world problems related to transportation.
+    We will develop a Motion Classification and Anomaly Detection system using the
+    XIAOML Kit, the Arduino IDE, and the Edge Impulse Studio. This project will help
+    us understand how containers experience different forces and motions during various
+    phases of transportation, including terrestrial and maritime transit, vertical
+    movement via forklifts, and periods of stationary storage in warehouses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Learning Objectives**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up the XIAOML Kit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data Collection and Preprocessing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Building the Motion Classification Model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementing Anomaly Detection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Real-world Testing and Analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By the end of this lab, you’ll have a working prototype that can classify different
+    types of motion and detect anomalies during the transportation of containers.
+    This knowledge can serve as a stepping stone to more advanced projects in the
+    burgeoning field of TinyML, particularly those involving vibration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing the IMU
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The XIAOML Kit comes with a built-in LSM6DS3TR-C 6-axis IMU sensor on the expansion
+    board, eliminating the need for external sensor connections. This integrated approach
+    offers a clean and reliable platform for motion-based machine learning applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The LSM6DS3TR-C combines a 3-axis accelerometer and 3-axis gyroscope in a single
+    package, connected via I2C to the XIAO ESP32S3 at address 0x6A that provides:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Accelerometer ranges**: ±2/±4/±8/±16 g (we’ll use ±2g by default)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Gyroscope ranges**: ±125/±250/±500/±1000/±2000 dps (we’ll use ±250 dps by
+    default)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Resolution**: 16-bit ADC'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Communication**: I2C interface at address 0x6A'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Power**: Ultra-low power design'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file665.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Coordinate System:** The sensor operates within a right-handed coordinate
+    system. When looking at the expansion board from the bottom (where you can see
+    the IMU sensor with the point mark):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**X-axis**: Points to the right'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Y-axis**: Points forward (away from you)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Z-axis**: Points upward (out of the board)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Setting Up the Hardware
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Since the XIAOML Kit comes pre-assembled with the expansion board, no additional
+    hardware connections are required. The LSM6DS3TR-C IMU is already properly connected
+    via I2C.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What’s Already Connected:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LSM6DS3TR-C IMU → I2C (SDA/SCL) → XIAO ESP32S3
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'I2C Address: 0x6A'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Power: 3.3V from XIAO ESP32S3'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Required Library:** You should have the library installed during the Setup.
+    If not, install the Seeed Arduino LSM6DS3 library following the steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open Arduino IDE Library Manager
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Search for “LSM6DS3”
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Install **“Seeed Arduino LSM6DS3”** by Seeed Studio
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Important**: Do NOT install “Arduino_LSM6DS3 by Arduino” - that’s for different
+    boards!'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Testing the IMU Sensor
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s start with a simple test to verify the IMU is working correctly. Upload
+    this code to test the sensor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When the kit is resting flat on a table, you should see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Z-axis acceleration around +1.0g (gravity)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X and Y acceleration near 0.0g
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All gyroscope values near 0.0°/s
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Move the kit around to see the values change accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The TinyML Motion Classification Project
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will simulate container (or, more accurately, package) transportation through
+    various scenarios to make this tutorial more relatable and practical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file666.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using the accelerometer of the XIAOML Kit, we’ll capture motion data by manually
+    simulating the conditions of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Maritime** (pallets on boats) - Movement in all axes with wave-like patterns'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Terrestrial** (pallets on trucks/trains) - Primarily horizontal movement'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Lift** (pallets being moved by forklift) - Primarily vertical movement'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Idle** (pallets in storage) - Minimal movement'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: From the above image, we can define for our simulation that primarily horizontal
+    movements (<semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics>
+    or <semantics><mi>y</mi><annotation encoding="application/x-tex">y</annotation></semantics>
+    axis) should be associated with the “Terrestrial class.” Vertical movements (<semantics><mi>z</mi><annotation
+    encoding="application/x-tex">z</annotation></semantics>-axis) with the “Lift Class,”
+    no activity with the “Idle class,” and movement on all three axes to [Maritime
+    class.](https://www.containerhandbuch.de/chb_e/stra/index.html?/chb_e/stra/stra_02_03_03.htm)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file667.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data Collection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For data collection, we have several options available. In a real-world scenario,
+    we can have our device, for example, connected directly to one container, and
+    the collected data stored in a file (for example, CSV) on an SD card. Data can
+    also be sent remotely to a nearby repository, such as a mobile phone, using Wi-Fi
+    or Bluetooth (as demonstrated in this project: [Sensor DataLogger](https://www.hackster.io/mjrobot/sensor-datalogger-50e44d)).
+    Once your dataset is collected and stored as a .CSV file, it can be uploaded to
+    the Studio using the [CSV Wizard tool](https://docs.edgeimpulse.com/docs/edge-impulse-studio/data-acquisition/csv-wizard).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this [video](https://youtu.be/2KBPq_826WM), you can learn alternative ways
+    to send data to the Edge Impulse Studio.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Preparing the Data Collection Code
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In this lab, we will connect the Kit directly to the Edge Impulse Studio, which
+    will also be used for data pre-processing, model training, testing, and deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For data collection, we should first connect the Kit to Edge Impulse Studio,
+    which will also be used for data pre-processing, model training, testing, and
+    deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow the instructions [here](https://docs.edgeimpulse.com/docs/edge-impulse-cli/cli-installation)
+    to install [Node.js](https://nodejs.org/en/) and Edge Impulse CLI on your computer.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Once the XIAOML Kit is not a fully supported development board by Edge Impulse,
+    we should, for example, use the [CLI Data Forwarder](https://docs.edgeimpulse.com/docs/edge-impulse-cli/cli-data-forwarder)
+    to capture data from our sensor and send it to the Studio, as shown in this diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file668.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We’ll modify our test code to output data in a format suitable for Edge Impulse:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Upload the code to the Arduino IDE. We should see the accelerometer values
+    (converted to m/s²) at the Serial Monitor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file669.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Keep the code running, but **turn off the Serial Monitor**. The data generated
+    by the Kit will be sent to the Edge Impulse Studio via Serial Connection.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Connecting to Edge Impulse for Data Collection
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Create an Edge Impulse Project** - Go to Edge Impulse Studio and create a
+    new project - Choose a descriptive name (keep under 63 characters for Arduino
+    library compatibility)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file670.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Set up CLI Data Forwarder** - Install Edge Impulse CLI on your computer -
+    Confirm that the XIAOML Kit is connected to the computer, **the code is running
+    and the Serial Monitor is OFF**, otherwise we can get an error. - On the Computer
+    Terminal, run: `edge-impulse-data-forwarder --clean` - Enter your Edge Impulse
+    credentials - Select your project and configure device settings'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file671.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Go to the Edge Impulse Studio Project. On the `Device` section is possible to
+    verify if the kit is correctly connected (the dot should be green).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file672.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data Collection at the Studio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As discussed before, we should capture data from all four **Transportation
+    Classes.** Imagine that you have a container with a built-in accelerometer (In
+    this case, our XIAOML Kit). Now imagine your container is on a boat, facing an
+    angry ocean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file673.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Or in a Truck, travelling on a road, or being moved with a forklift, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Movement Simulation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Maritime Class:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hold the kit and simulate boat movement
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Move in all three axes with wave-like, undulating motions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Include gentle rolling and pitching movements
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Terrestrial Class:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Move the kit horizontally in straight lines (left to right and vice versa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Simulate truck/train vibrations with small horizontal shakes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Occasional gentle bumps and turns
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Lift Class:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Move the kit primarily in vertical directions (up and down)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Simulate forklift operations: up, pause, down'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Include some short horizontal positioning movements
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Idle Class:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Place the kit on a stable surface
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Minimal to no movement
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Capture environmental vibrations and sensor noise
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data Acquisition
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'On the `Data Acquisition` section, you should see that your board `[xiaoml-kit]`
+    is connected. The sensor is available: `[sensor with 3 axes (accX, accY, accZ)]`
+    with a sampling frequency of `[50 Hz]`. The Studio suggests a sample length of
+    `[10000]` ms (10 s). The last thing left is defining the sample label. Let’s start,
+    for example, with`[terrestrial]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Press `[Start Sample]`and move your kit horizontally (left to right), keeping
+    it in one direction. After 10 seconds, our data will be uploaded to the Studio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is one sample (raw data) of 10 seconds of collected data. It is notable
+    that the ondulatory movement predominantly occurs along the Y-axis (left-right).
+    The other axes are almost stationary (the X-axis is centered around zero, and
+    the Z-axis is centered around 9.8 ms² due to gravity).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file674.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'You should capture, for example, around 2 minutes (ten to twelve samples of
+    10 seconds each) for each of the four classes. Using the `3 dots` after each sample,
+    select two and move them to the **Test set**. Alternatively, you can use the Automatic
+    `Train/Test Split` tool on the **Danger Zone** of the `Dashboard` tab. Below,
+    it is possible to see the result datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file675.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data Pre-Processing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The raw data type captured by the accelerometer is a “time series” and should
+    be converted to “tabular data”. We can do this conversion using a sliding window
+    over the sample data. For example, in the below figure,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file676.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see 10 seconds of accelerometer data captured with a sample rate (SR)
+    of 50 Hz. A 2-second window will capture 300 data points (3 axes <semantics><mi>×</mi><annotation
+    encoding="application/x-tex">\times</annotation></semantics> 2 seconds <semantics><mi>×</mi><annotation
+    encoding="application/x-tex">\times</annotation></semantics> 50 samples). We will
+    slide this window every 200ms, creating a larger dataset where each instance has
+    300 raw features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You should use the best SR for your case, considering Nyquist’s theorem, which
+    states that a periodic signal must be sampled at more than twice the signal’s
+    highest frequency component.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Data preprocessing is a challenging area for embedded machine learning. Still,
+    Edge Impulse helps overcome this with its digital signal processing (DSP) preprocessing
+    step and, more specifically, the Spectral Features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the Studio, this dataset will be the input of a Spectral Analysis block,
+    which is excellent for analyzing repetitive motion, such as data from accelerometers.
+    This block will perform a DSP (Digital Signal Processing), extracting features
+    such as “FFT” or “Wavelets”. In the most common case, FFT, the **Time Domain Statistical
+    features** per axis/channel are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RMS
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Skewness
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Kurtosis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file677.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And the **Frequency Domain Spectral features** per axis/channel are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spectral Power
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Skewness
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Kurtosis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file678.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For example, for an FFT length of 32 points, the Spectral Analysis Block’s resulting
+    output will be 21 features per axis (a total of 63 features).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those 63 features will serve as the input tensor for a Neural Network Classifier
+    and the Anomaly Detection model (K-Means).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can learn more by digging into the lab [DSP Spectral Features](ch056.xhtml#sec-dsp-spectral-features-overview-a7be)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Model Design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our classifier will be a Dense Neural Network (DNN) that will have 63 neurons
+    on its input layer, two hidden layers with 20 and 10 neurons, and an output layer
+    with four neurons (one per each class), as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file679.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Impulse Design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An impulse takes raw data, uses signal processing to extract features, and then
+    uses a learning block (**Dense model**) to classify new data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also utilize a second model, the **K-means**, which can be used for Anomaly
+    Detection. If we imagine that we could have our known classes as clusters, any
+    sample that cannot fit into one of these clusters could be an outlier, an anomaly
+    (for example, a container rolling out of a ship on the ocean or being upside down
+    on the floor).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file680.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Imagine our XIAOML Kit rolling or moving upside-down, on a movement complement
+    different from the one trained on.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../media/file681.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Below the final Impulse design:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file682.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generating features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At this point in our project, we have defined the pre-processing method, and
+    the model has been designed. Now, it is time to have the job done. First, let’s
+    convert the raw data (time-series type) into tabular data. Go to the `Spectral
+    Features` tab and select `[Save Parameters]`. Alternatively, instead of using
+    the default values, we can select the `[Autotune parameters]` button. In this
+    case, the Studio will define new hyperparameters, as the filter design and FFT
+    length, based on the raw data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file683.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: At the top menu, select the `Generate features` tab, and there, select the options,
+    `Calculate feature importance`, `Normalize features,` and press the `[Generate
+    features]` button. Each 2-second window of data (300 datapoints) will be converted
+    into a single tabular data point with 63 features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Feature Explorer will display this data in 2D using [UMAP.](https://umap-learn.readthedocs.io/en/latest/)
+    Uniform Manifold Approximation and Projection (UMAP) is a dimensionality reduction
+    technique that can be used for visualization, similar to t-SNE, but also for general
+    non-linear dimensionality reduction.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The visualization enables one to verify that the classes present an excellent
+    separation, indicating that the classifier should perform well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file684.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Optionally, you can analyze the relative importance of each feature for one
+    class compared with other classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our classifier will be a Dense Neural Network (DNN) that will have 63 neurons
+    on its input layer, two hidden layers with 20 and 10 neurons, and an output layer
+    with four neurons (one per each class), as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file685.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As hyperparameters, we will use a Learning Rate of 0.005 and 20% of the data
+    for validation for 30 epochs. After training, we can see that the accuracy is
+    100%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file686.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For anomaly detection, we should choose the suggested features that are precisely
+    the most important in feature extraction. The number of clusters will be 32, as
+    suggested by the Studio. After training, we can select some data for testing,
+    such as maritime data. The resulting Anomaly score was `min: -0.1642, max: 0.0738,
+    avg: -0.0867`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When changing the data, it is possible to realize that small or negative Anomaly
+    Scores indicate that the data are normal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file687.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Testing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using 20% of the data left behind during the data capture phase, we can verify
+    how our model will behave with unknown data; if not 100% (what is expected), the
+    result was very good (8%).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file688.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'You should also use your kit (which is still connected to the Studio) and perform
+    some Live Classification. For example, let’s test some “terrestrial” movement:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file689.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Be aware that here, you will capture real data with your device and upload it
+    to the Studio, where an inference will be made using the trained model (note that
+    the model is not on your device).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deploy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now it is time for magic! The Studio will package all the needed libraries,
+    preprocessing functions, and trained models, downloading them to your computer.
+    You should select the Arduino Library option, and then, at the bottom, choose
+    Quantized (Int8) and click `[Build]`. A ZIP file will be created and downloaded
+    to your computer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file690.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'On your Arduino IDE, go to the Sketch tab, select the option Add.ZIP Library,
+    and Choose the.zip file downloaded by the Studio:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file691.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, it is time for a real test. We will make inferences that are wholly disconnected
+    from the Studio. Let’s change one of the code examples created when you deploy
+    the Arduino Library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In your Arduino IDE, go to the `File/Examples` tab and look for your project,
+    and in examples, select `nano_ble_sense_accelerometer`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, this is not your board, but we can have the code working with only
+    a few changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, at the beginning of the code, you have the library related to
+    Arduino Sense IMU:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Change the “includes” portion with the code related to the IMU:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Change the Constant Defines
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On the setup function, initiate the IMU:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'At the loop function, the buffers buffer[ix], buffer[ix + 1], and buffer[ix
+    + 2] will receive the 3-axis data captured by the accelerometer. In the original
+    code, you have the line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Change it with this block of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should reorder the following two blocks of code. First, you make the conversion
+    to raw data to “Meters per squared second (m/s²)”, followed by the test regarding
+    the maximum acceptance range (that here is in m/s², but on Arduino, was in Gs):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: And this is enough. We can also adjust how the inference is displayed in the
+    Serial Monitor. You can now upload the complete code below to your device and
+    proceed with the inferences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The complete code is available on the [Lab’s GitHub](https://github.com/Mjrovai/XIAO-ESP32S3-Sense/tree/main/XIAOML_Kit_code/motion_class_ad_inference).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Now you should try your movements, seeing the result of the inference of each
+    class on the images:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file692.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](../media/file693.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](../media/file694.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '![](../media/file695.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And, of course, some “anomaly”, for example, putting the XIAO upside-down.
+    The anomaly score will be over 0.5:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file696.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Post-Processing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we know the model is working, we suggest modifying the code to see
+    the result with the Kit completely offline (disconnected from the PC and powered
+    by a battery, a power bank, or an independent 5V power supply).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea is that if a specific movement is detected, a corresponding message
+    will appear on the OLED display.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file697.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The modified inference code to have the OLED display is available on the [Lab’s
+    GitHub](https://github.com/Mjrovai/XIAO-ESP32S3-Sense/tree/main/XIAOML_Kit_code/motion_class_ad_inference_oled).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This lab demonstrated how to build a complete motion classification system
+    using the XIAOML Kit’s built-in LSM6DS3TR-C IMU sensor. Key achievements include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Technical Implementation:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Utilized the integrated 6-axis IMU for motion sensing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Collected labeled training data for four transportation scenarios
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implemented spectral feature extraction for time-series analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Deployed a neural network classifier optimized for microcontroller inference
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Added anomaly detection for identifying unusual movements
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Machine Learning Pipeline:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data collection directly from embedded sensors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature engineering using frequency domain analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model training and optimization in Edge Impulse
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Real-time inference on resource-constrained hardware
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Performance monitoring and validation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Practical Applications:** The techniques learned apply directly to real-world
+    scenarios, including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Asset tracking and logistics monitoring
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Predictive maintenance for machinery
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Human activity recognition
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Vehicle and equipment monitoring
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: IoT sensor networks for smart cities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Key Learnings:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Working with IMU coordinate systems and sensor fusion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Balancing model accuracy with inference speed on edge devices
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementing robust data collection and preprocessing pipelines
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Deploying machine learning models to embedded systems
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Integrating multiple sensors (IMU + display) for complete solutions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The integration of motion classification with the XIAOML Kit demonstrates how
+    modern embedded systems can perform sophisticated AI tasks locally, enabling real-time
+    decision-making without reliance on the cloud. This approach is fundamental to
+    the future of edge AI in industrial IoT, autonomous systems, and smart device
+    applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[XIAOML KIT Code](https://github.com/Mjrovai/XIAO-ESP32S3-Sense/tree/main/XIAOML_Kit_code)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[DSP Spectral Features](ch056.xhtml#sec-dsp-spectral-features-overview-a7be)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Edge Impulse Project](https://studio.edgeimpulse.com/public/750061/live)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Edge Impulse Spectral Features Block Colab Notebook](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/Motion_Classification/Edge_Impulse_Spectral_Features_Block.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Edge Impulse Documentation](https://docs.edgeimpulse.com/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Edge Impulse Spectral Features](https://docs.edgeimpulse.com/docs/edge-impulse-studio/processing-blocks/spectral-features)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Seeed Studio LSM6DS3 Library](https://github.com/Seeed-Studio/Seeed_Arduino_LSM6DS3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

@@ -1,0 +1,747 @@
+- en: Object Detection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../media/file582.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*DALL·E prompt - Cartoon styled after 1950s animations, showing a detailed
+    board with sensors, particularly a camera, on a table with patterned cloth. Behind
+    the board, a computer with a large back showcases the Arduino IDE. The IDE’s content
+    hints at LED pin assignments and machine learning inference for detecting spoken
+    commands. The Serial Monitor, in a distinct window, reveals outputs for the commands
+    ‘yes’ and ‘no’.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the last section regarding Computer Vision (CV) and the XIAO ESP32S3, *Image
+    Classification,* we learned how to set up and classify images with this remarkable
+    development board. Continuing our CV journey, we will explore **Object Detection**
+    on microcontrollers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Object Detection versus Image Classification
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The main task with Image Classification models is to identify the most probable
+    object category present on an image, for example, to classify between a cat or
+    a dog, dominant “objects” in an image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file583.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: But what happens if there is no dominant category in the image?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file584.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An image classification model identifies the above image utterly wrong as an
+    “ashcan,” possibly due to the color tonalities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model used in the previous images is MobileNet, which is trained with a
+    large dataset, *ImageNet*, running on a Raspberry Pi.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To solve this issue, we need another type of model, where not only **multiple
+    categories** (or labels) can be found but also **where** the objects are located
+    on a given image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we can imagine, such models are much more complicated and bigger, for example,
+    the **MobileNetV2 SSD FPN-Lite 320x320, trained with the COCO dataset.** This
+    pre-trained object detection model is designed to locate up to 10 objects within
+    an image, outputting a bounding box for each object detected. The below image
+    is the result of such a model running on a Raspberry Pi:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file585.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Those models used for object detection (such as the MobileNet SSD or YOLO) usually
+    have several MB in size, which is OK for use with Raspberry Pi but unsuitable
+    for use with embedded devices, where the RAM usually has, at most, a few MB as
+    in the case of the XIAO ESP32S3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An Innovative Solution for Object Detection: FOMO'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[Edge Impulse launched in 2022, **FOMO** (Faster Objects, More Objects),](https://docs.edgeimpulse.com/docs/edge-impulse-studio/learning-blocks/object-detection/fomo-object-detection-for-constrained-devices)
+    a novel solution to perform object detection on embedded devices, such as the
+    Nicla Vision and Portenta (Cortex M7), on Cortex M4F CPUs (Arduino Nano33 and
+    OpenMV M4 series) as well the Espressif ESP32 devices (ESP-CAM, ESP-EYE and XIAO
+    ESP32S3 Sense).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this Hands-On project, we will explore Object Detection using FOMO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To understand more about FOMO, you can go into the [official FOMO announcement](https://www.edgeimpulse.com/blog/announcing-fomo-faster-objects-more-objects)
+    by Edge Impulse, where Louis Moreau and Mat Kelcey explain in detail how it works.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The Object Detection Project Goal
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All Machine Learning projects need to start with a detailed goal. Let’s assume
+    we are in an industrial or rural facility and must sort and count **oranges (fruits)**
+    and particular **frogs (bugs)**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file586.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In other words, we should perform a multi-label classification, where each
+    image can have three classes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background (No objects)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fruit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bug
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here are some not labeled image samples that we should use to detect the objects
+    (fruits and bugs):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file587.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: We are interested in which object is in the image, its location (centroid),
+    and how many we can find on it. The object’s size is not detected with FOMO, as
+    with MobileNet SSD or YOLO, where the Bounding Box is one of the model outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will develop the project using the XIAO ESP32S3 for image capture and model
+    inference. The ML project will be developed using the Edge Impulse Studio. But
+    before starting the object detection project in the Studio, let’s create a *raw
+    dataset* (not labeled) with images that contain the objects to be detected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Collection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You can capture images using the XIAO, your phone, or other devices. Here, we
+    will use the XIAO with code from the Arduino IDE ESP32 library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collecting Dataset with the XIAO ESP32S3
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Open the Arduino IDE and select the XIAO_ESP32S3 board (and the port where it
+    is connected). On `File > Examples > ESP32 > Camera`, select `CameraWebServer`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the BOARDS MANAGER panel, confirm that you have installed the latest “stable”
+    package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ⚠️ **Attention**
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Alpha versions (for example, 3.x-alpha) do not work correctly with the XIAO
+    and Edge Impulse. Use the last stable version (for example, 2.0.11) instead.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'You also should comment on all cameras’ models, except the XIAO model pins:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`#define CAMERA_MODEL_XIAO_ESP32S3 // Has PSRAM`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And on `Tools`, enable the PSRAM. Enter your wifi credentials and upload the
+    code to the device:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file588.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If the code is executed correctly, you should see the address on the Serial
+    Monitor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file589.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Copy the address on your browser and wait for the page to be uploaded. Select
+    the camera resolution (for example, QVGA) and select `[START STREAM]`. Wait for
+    a few seconds/minutes, depending on your connection. You can save an image on
+    your computer download area using the [Save] button.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file590.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Edge impulse suggests that the objects should be similar in size and not overlapping
+    for better performance. This is OK in an industrial facility, where the camera
+    should be fixed, keeping the same distance from the objects to be detected. Despite
+    that, we will also try using mixed sizes and positions to see the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We do not need to create separate folders for our images because each contains
+    multiple labels.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We suggest using around 50 images to mix the objects and vary the number of
+    each appearing on the scene. Try to capture different angles, backgrounds, and
+    light conditions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The stored images use a QVGA frame size of <semantics><mrow><mn>320</mn><mo>×</mo><mn>240</mn></mrow><annotation
+    encoding="application/x-tex">320\times 240</annotation></semantics> and RGB565
+    (color pixel format).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: After capturing your dataset, `[Stop Stream]` and move your images to a folder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edge Impulse Studio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Setup the project
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Go to [Edge Impulse Studio,](https://www.edgeimpulse.com/) enter your credentials
+    at **Login** (or create an account), and start a new project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file591.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here, you can clone the project developed for this hands-on: [XIAO-ESP32S3-Sense-Object_Detection](https://studio.edgeimpulse.com/public/315759/latest)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'On your Project Dashboard, go down and on **Project info** and select **Bounding
+    boxes (object detection)** and **Espressif ESP-EYE** (most similar to our board)
+    as your Target Device:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file592.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Uploading the unlabeled data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: On Studio, go to the `Data acquisition` tab, and on the `UPLOAD DATA` section,
+    upload files captured as a folder from your computer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file593.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can leave for the Studio to split your data automatically between Train
+    and Test or do it manually. We will upload all of them as training.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../media/file594.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All the not-labeled images (47) were uploaded but must be labeled appropriately
+    before being used as a project dataset. The Studio has a tool for that purpose,
+    which you can find in the link Labeling queue (47).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two ways you can use to perform AI-assisted labeling on the Edge
+    Impulse Studio (free version):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using yolov5
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tracking objects between frames
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Edge Impulse launched an [auto-labeling feature](https://docs.edgeimpulse.com/docs/edge-impulse-studio/data-acquisition/auto-labeler)
+    for Enterprise customers, easing labeling tasks in object detection projects.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Ordinary objects can quickly be identified and labeled using an existing library
+    of pre-trained object detection models from YOLOv5 (trained with the COCO dataset).
+    But since, in our case, the objects are not part of COCO datasets, we should select
+    the option of tracking objects. With this option, once you draw bounding boxes
+    and label the images in one frame, the objects will be tracked automatically from
+    frame to frame, *partially* labeling the new ones (not all are correctly labeled).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can use the [EI uploader](https://docs.edgeimpulse.com/docs/tools/edge-impulse-cli/cli-uploader#bounding-boxes)
+    to import your data if you already have a labeled dataset containing bounding
+    boxes.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Labeling the Dataset
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Starting with the first image of your unlabeled data, use your mouse to drag
+    a box around an object to add a label. Then click **Save labels** to advance to
+    the next item.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file595.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Continue with this process until the queue is empty. At the end, all images
+    should have the objects labeled as those samples below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file596.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, review the labeled samples on the `Data acquisition` tab. If one of the
+    labels is wrong, you can edit it using the *three dots* menu after the sample
+    name:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file597.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You will be guided to replace the wrong label and correct the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file598.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Balancing the dataset and split Train/Test
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: After labeling all data, it was realized that the class fruit had many more
+    samples than the bug. So, 11 new and additional bug images were collected (ending
+    with 58 images). After labeling them, it is time to select some images and move
+    them to the test dataset. You can do it using the three-dot menu after the image
+    name. I selected six images, representing 13% of the total dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file599.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Impulse Design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this phase, you should define how to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-processing** consists of resizing the individual images from <semantics><mrow><mn>320</mn><mo>×</mo><mn>240</mn></mrow><annotation
+    encoding="application/x-tex">320\times 240</annotation></semantics> to <semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn></mrow><annotation
+    encoding="application/x-tex">96\times 96</annotation></semantics> and squashing
+    them (squared form, without cropping). Afterward, the images are converted from
+    RGB to Grayscale.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Design a Model,** in this case, “Object Detection.”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file600.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preprocessing all dataset
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In this section, select **Color depth** as Grayscale, suitable for use with
+    FOMO models and Save parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file601.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Studio moves automatically to the next section, Generate features, where
+    all samples will be pre-processed, resulting in a dataset with individual <semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn><mo>×</mo><mn>1</mn></mrow><annotation
+    encoding="application/x-tex">96\times 96\times 1</annotation></semantics> images
+    or 9,216 features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file602.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The feature explorer shows that all samples evidence a good separation after
+    the feature generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some samples seem to be in the wrong space, but clicking on them confirms the
+    correct labeling.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Model Design, Training, and Test
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will use FOMO, an object detection model based on MobileNetV2 (alpha 0.35)
+    designed to coarsely segment an image into a grid of **background** vs **objects
+    of interest** (here, *boxes* and *wheels*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: FOMO is an innovative machine learning model for object detection, which can
+    use up to 30 times less energy and memory than traditional models like Mobilenet
+    SSD and YOLOv5\. FOMO can operate on microcontrollers with less than 200 KB of
+    RAM. The main reason this is possible is that while other models calculate the
+    object’s size by drawing a square around it (bounding box), FOMO ignores the size
+    of the image, providing only the information about where the object is located
+    in the image through its centroid coordinates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How FOMO works?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: FOMO takes the image in grayscale and divides it into blocks of pixels using
+    a factor of 8\. For the input of <semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn></mrow><annotation
+    encoding="application/x-tex">96\times 96</annotation></semantics>, the grid would
+    be <semantics><mrow><mn>12</mn><mo>×</mo><mn>12</mn></mrow><annotation encoding="application/x-tex">12\times
+    12</annotation></semantics> <semantics><mrow><mo stretchy="true" form="prefix">(</mo><mn>96</mn><mi>/</mi><mn>8</mn><mo>=</mo><mn>12</mn><mo
+    stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(96/8=12)</annotation></semantics>.
+    Next, FOMO will run a classifier through each pixel block to calculate the probability
+    that there is a box or a wheel in each of them and, subsequently, determine the
+    regions that have the highest probability of containing the object (If a pixel
+    block has no objects, it will be classified as *background*). From the overlap
+    of the final region, the FOMO provides the coordinates (related to the image dimensions)
+    of the centroid of this region.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file603.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For training, we should select a pre-trained model. Let’s use the **FOMO (Faster
+    Objects, More Objects) MobileNetV2 0.35.** This model uses around 250 KB of RAM
+    and 80 KB of ROM (Flash), which suits well with our board.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file604.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Regarding the training hyper-parameters, the model will be trained with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Epochs: 60'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Batch size: 32'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Learning Rate: 0.001.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For validation during training, 20% of the dataset (*validation_dataset*) will
+    be spared. For the remaining 80% (*train_dataset*), we will apply Data Augmentation,
+    which will randomly flip, change the size and brightness of the image, and crop
+    them, artificially increasing the number of samples on the dataset for training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, the model ends with an overall F1 score of 85%, similar to the
+    result when using the test data (83%).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that FOMO automatically added a 3rd label background to the two previously
+    defined (*box* and *wheel*).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../media/file605.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In object detection tasks, accuracy is generally not the primary [evaluation
+    metric.](https://learnopencv.com/mean-average-precision-map-object-detection-model-evaluation-metric/)
+    Object detection involves classifying objects and providing bounding boxes around
+    them, making it a more complex problem than simple classification. The issue is
+    that we do not have the bounding box, only the centroids. In short, using accuracy
+    as a metric could be misleading and may not provide a complete understanding of
+    how well the model is performing. Because of that, we will use the F1 score.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Test model with “Live Classification”
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Once our model is trained, we can test it using the Live Classification tool.
+    On the correspondent section, click on Connect a development board icon (a small
+    MCU) and scan the QR code with your phone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file606.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once connected, you can use the smartphone to capture actual images to be tested
+    by the trained model on Edge Impulse Studio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file607.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: One thing to be noted is that the model can produce false positives and negatives.
+    This can be minimized by defining a proper Confidence Threshold (use the Three
+    dots menu for the setup). Try with 0.8 or more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying the Model (Arduino IDE)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Select the Arduino Library and Quantized (int8) model, enable the EON Compiler
+    on the Deploy Tab, and press [Build].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file608.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Open your Arduino IDE, and under Sketch, go to Include Library and add.ZIP Library.
+    Select the file you download from Edge Impulse Studio, and that’s it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file609.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Under the Examples tab on Arduino IDE, you should find a sketch code (`esp32
+    > esp32_camera`) under your project name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file610.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'You should change lines 32 to 75, which define the camera model and pins, using
+    the data related to our model. Copy and paste the below lines, replacing the lines
+    32-75:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here you can see the resulting code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file611.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Upload the code to your XIAO ESP32S3 Sense, and you should be OK to start detecting
+    fruits and bugs. You can check the result on Serial Monitor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '![](../media/file612.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fruits
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '![](../media/file613.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bugs
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '![](../media/file614.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that the model latency is 143 ms, and the frame rate per second is around
+    7 fps (similar to what we got with the Image Classification project). This happens
+    because FOMO is cleverly built over a CNN model, not with an object detection
+    model like the SSD MobileNet. For example, when running a MobileNetV2 SSD FPN-Lite
+    <semantics><mrow><mn>320</mn><mo>×</mo><mn>320</mn></mrow><annotation encoding="application/x-tex">320\times
+    320</annotation></semantics> model on a Raspberry Pi 4, the latency is around
+    five times higher (around 1.5 fps).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying the Model (SenseCraft-Web-Toolkit)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As discussed in the Image Classification chapter, verifying inference with Image
+    models on Arduino IDE is very challenging because we can not see what the camera
+    focuses on. Again, let’s use the **SenseCraft-Web Toolkit**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Follow the following steps to start the SenseCraft-Web-Toolkit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open the [SenseCraft-Web-Toolkit website.](https://seeed-studio.github.io/SenseCraft-Web-Toolkit/#/setup/process)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Connect the XIAO to your computer:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Having the XIAO connected, select it as below:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file615.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Select the device/Port and press `[Connect]`:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file616.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can try several Computer Vision models previously uploaded by Seeed Studio.
+    Try them and have fun!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In our case, we will use the blue button at the bottom of the page: `[Upload
+    Custom AI Model]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But first, we must download from Edge Impulse Studio our **quantized .tflite**
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Go to your project at Edge Impulse Studio, or clone this one:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[XIAO-ESP32S3-CAM-Fruits-vs-Veggies-v1-ESP-NN](https://studio.edgeimpulse.com/public/228516/live)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'On `Dashboard`, download the model (“block output”): `Object Detection model
+    - TensorFlow Lite (int8 quantized)`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../media/file617.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'On SenseCraft-Web-Toolkit, use the blue button at the bottom of the page: `[Upload
+    Custom AI Model]`. A window will pop up. Enter the Model file that you downloaded
+    to your computer from Edge Impulse Studio, choose a Model Name, and enter with
+    labels (ID: Object):'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../media/file618.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that you should use the labels trained on EI Studio and enter them in alphabetic
+    order (in our case, background, bug, fruit).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'After a few seconds (or minutes), the model will be uploaded to your device,
+    and the camera image will appear in real-time on the Preview Sector:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file619.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The detected objects will be marked (the centroid). You can select the Confidence
+    of your inference cursor `Confidence` and `IoU`, which is used to assess the accuracy
+    of predicted bounding boxes compared to truth bounding boxes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clicking on the top button (Device Log), you can open a Serial Monitor to follow
+    the inference, as we did with the Arduino IDE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file620.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'On Device Log, you will get information as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Preprocess time (image capture and Crop): 3 ms,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Inference time (model latency): 115 ms,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Postprocess time (display of the image and marking objects): 1 ms.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Output tensor (boxes), for example, one of the boxes: [[30,150, 20, 20,97,
+    2]]; where 30,150, 20, 20 are the coordinates of the box (around the centroid);
+    97 is the inference result, and 2 is the class (in this case 2: fruit).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that in the above example, we got 5 boxes because none of the fruits got
+    3 centroids. One solution will be post-processing, where we can aggregate close
+    centroids in one.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Here are other screenshots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file621.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'FOMO is a significant leap in the image processing space, as Louis Moreau and
+    Mat Kelcey put it during its launch in 2022:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: FOMO is a ground-breaking algorithm that brings real-time object detection,
+    tracking, and counting to microcontrollers for the first time.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Multiple possibilities exist for exploring object detection (and, more precisely,
+    counting them) on embedded devices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Edge Impulse Project](https://studio.edgeimpulse.com/public/315759/latest)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

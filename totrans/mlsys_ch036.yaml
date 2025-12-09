@@ -1,0 +1,918 @@
+- en: Motion Classification and Anomaly Detection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../media/file470.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*DALL·E 3 Prompt: 1950s style cartoon illustration depicting a movement research
+    room. In the center of the room, there’s a simulated container used for transporting
+    goods on trucks, boats, and forklifts. The container is detailed with rivets and
+    markings typical of industrial cargo boxes. Around the container, the room is
+    filled with vintage equipment, including an oscilloscope, various sensor arrays,
+    and large paper rolls of recorded data. The walls are adorned with educational
+    posters about transportation safety and logistics. The overall ambiance of the
+    room is nostalgic and scientific, with a hint of industrial flair.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Transportation is the backbone of global commerce. Millions of containers are
+    transported daily via various means, such as ships, trucks, and trains, to destinations
+    worldwide. Ensuring these containers’ safe and efficient transit is a monumental
+    task that requires leveraging modern technology, and TinyML is undoubtedly one
+    of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this hands-on tutorial, we will work to solve real-world problems related
+    to transportation. We will develop a Motion Classification and Anomaly Detection
+    system using the Arduino Nicla Vision board, the Arduino IDE, and the Edge Impulse
+    Studio. This project will help us understand how containers experience different
+    forces and motions during various phases of transportation, such as terrestrial
+    and maritime transit, vertical movement via forklifts, and stationary periods
+    in warehouses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Learning Objectives**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up the Arduino Nicla Vision Board
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data Collection and Preprocessing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Building the Motion Classification Model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementing Anomaly Detection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Real-world Testing and Analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By the end of this tutorial, you’ll have a working prototype that can classify
+    different types of motion and detect anomalies during the transportation of containers.
+    This knowledge can be a stepping stone to more advanced projects in the burgeoning
+    field of TinyML involving vibration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: IMU Installation and testing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For this project, we will use an accelerometer. As discussed in the Hands-On
+    Tutorial, *Setup Nicla Vision*, the Nicla Vision Board has an onboard **6-axis
+    IMU**: 3D gyroscope and 3D accelerometer, the [LSM6DSOX](https://www.st.com/en/mems-and-sensors/lsm6dsox.html).
+    Let’s verify if the [LSM6DSOX IMU library](https://github.com/arduino-libraries/Arduino_LSM6DSOX)
+    is installed. If not, install it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file471.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Next, go to `Examples > Arduino_LSM6DSOX > SimpleAccelerometer` and run the
+    accelerometer test. You can check if it works by opening the IDE Serial Monitor
+    or Plotter. The values are in g (earth gravity), with a default range of +/- 4g:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file472.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Defining the Sampling frequency:'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Choosing an appropriate sampling frequency is crucial for capturing the motion
+    characteristics you’re interested in studying. The Nyquist-Shannon sampling theorem
+    states that the sampling rate should be at least twice the highest frequency component
+    in the signal to reconstruct it properly. In the context of motion classification
+    and anomaly detection for transportation, the choice of sampling frequency would
+    depend on several factors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nature of the Motion**: Different types of transportation (terrestrial, maritime,
+    etc.) may involve different ranges of motion frequencies. Faster movements may
+    require higher sampling frequencies.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Hardware Limitations**: The Arduino Nicla Vision board and any associated
+    sensors may have limitations on how fast they can sample data.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Computational Resources**: Higher sampling rates will generate more data,
+    which might be computationally intensive, especially critical in a TinyML environment.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Battery Life**: A higher sampling rate will consume more power. If the system
+    is battery-operated, this is an important consideration.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Data Storage**: More frequent sampling will require more storage space, another
+    crucial consideration for embedded systems with limited memory.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In many human activity recognition tasks, **sampling rates of around 50 Hz to
+    100 Hz** are commonly used. Given that we are simulating transportation scenarios,
+    which are generally not high-frequency events, a sampling rate in that range (50-100
+    Hz) might be a reasonable starting point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s define a sketch that will allow us to capture our data with a defined
+    sampling frequency (for example, 50 Hz):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Uploading the sketch and inspecting the Serial Monitor, we can see that we are
+    capturing 50 samples per second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file473.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that with the Nicla board resting on a table (with the camera facing down),
+    the <semantics><mi>z</mi><annotation encoding="application/x-tex">z</annotation></semantics>-axis
+    measures around 9.8 m/s<semantics><msup><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics>,
+    the expected earth acceleration.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The Case Study: Simulated Container Transportation'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will simulate container (or better package) transportation through different
+    scenarios to make this tutorial more relatable and practical. Using the built-in
+    accelerometer of the Arduino Nicla Vision board, we’ll capture motion data by
+    manually simulating the conditions of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Terrestrial** Transportation (by road or train)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Maritime**-associated Transportation'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Vertical Movement via Fork-**Lift**
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Stationary **(Idle**) period in a Warehouse
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../media/file474.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the above images, we can define for our simulation that primarily horizontal
+    movements (<semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics>
+    or <semantics><mi>y</mi><annotation encoding="application/x-tex">y</annotation></semantics>
+    axis) should be associated with the “Terrestrial class,” Vertical movements (<semantics><mi>z</mi><annotation
+    encoding="application/x-tex">z</annotation></semantics>-axis) with the “Lift Class,”
+    no activity with the “Idle class,” and movement on all three axes to [Maritime
+    class.](https://www.containerhandbuch.de/chb_e/stra/index.html?/chb_e/stra/stra_02_03_03.htm)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file475.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data Collection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For data collection, we can have several options. In a real case, we can have
+    our device, for example, connected directly to one container, and the data collected
+    on a file (for example .CSV) and stored on an SD card (Via SPI connection) or
+    an offline repo in your computer. Data can also be sent remotely to a nearby repository,
+    such as a mobile phone, using Bluetooth (as done in this project: [Sensor DataLogger](https://www.hackster.io/mjrobot/sensor-datalogger-50e44d)).
+    Once your dataset is collected and stored as a .CSV file, it can be uploaded to
+    the Studio using the [CSV Wizard tool](https://docs.edgeimpulse.com/docs/edge-impulse-studio/data-acquisition/csv-wizard).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this [video](https://youtu.be/2KBPq_826WM), you can learn alternative ways
+    to send data to the Edge Impulse Studio.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Connecting the device to Edge Impulse
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We will connect the Nicla directly to the Edge Impulse Studio, which will also
+    be used for data pre-processing, model training, testing, and deployment. For
+    that, you have two options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download the latest firmware and connect it directly to the `Data Collection`
+    section.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the [CLI Data Forwarder](https://docs.edgeimpulse.com/docs/edge-impulse-cli/cli-data-forwarder)
+    tool to capture sensor data from the sensor and send it to the Studio.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Option 1 is more straightforward, as we saw in the *Setup Nicla Vision* hands-on,
+    but option 2 will give you more flexibility regarding capturing your data, such
+    as sampling frequency definition. Let’s do it with the last one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Please create a new project on the Edge Impulse Studio (EIS) and connect the
+    Nicla to it, following these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install the [Edge Impulse CLI](https://docs.edgeimpulse.com/docs/edge-impulse-cli/cli-installation)
+    and the [Node.js](https://nodejs.org/en/) into your computer.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Upload a sketch for data capture (the one discussed previously in this tutorial).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Use the [CLI Data Forwarder](https://docs.edgeimpulse.com/docs/edge-impulse-cli/cli-data-forwarder)
+    to capture data from the Nicla’s accelerometer and send it to the Studio, as shown
+    in this diagram:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../media/file476.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Start the [CLI Data Forwarder](https://docs.edgeimpulse.com/docs/edge-impulse-cli/cli-data-forwarder)
+    on your terminal, entering (if it is the first time) the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, enter your EI credentials and choose your project, variables (for example,
+    *accX,* *accY*, and *accZ*), and device name (for example, *NiclaV*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file477.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Go to the `Devices` section on your EI Project and verify if the device is
+    connected (the dot should be green):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file478.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'You can clone the project developed for this hands-on: [NICLA Vision Movement
+    Classification](https://studio.edgeimpulse.com/public/302078/latest).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Data Collection
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'On the `Data Acquisition` section, you should see that your board `[NiclaV]`
+    is connected. The sensor is available: `[sensor with 3 axes (accX, accY, accZ)]`
+    with a sampling frequency of `[50 Hz]`. The Studio suggests a sample length of
+    `[10000]` ms (10 s). The last thing left is defining the sample label. Let’s start
+    with`[terrestrial]`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file479.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Terrestrial** (palettes in a Truck or Train), moving horizontally. Press
+    `[Start Sample]`and move your device horizontally, keeping one direction over
+    your table. After 10 s, your data will be uploaded to the studio. Here is how
+    the sample was collected:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file480.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As expected, the movement was captured mainly in the <semantics><mi>Y</mi><annotation
+    encoding="application/x-tex">Y</annotation></semantics>-axis (green). In the blue,
+    we see the <semantics><mi>Z</mi><annotation encoding="application/x-tex">Z</annotation></semantics>
+    axis, around -10 m/s<semantics><msup><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics>
+    (the Nicla has the camera facing up).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As discussed before, we should capture data from all four Transportation Classes.
+    So, imagine that you have a container with a built-in accelerometer facing the
+    following situations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Maritime** (pallets in boats into an angry ocean). The movement is captured
+    on all three axes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file481.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Lift** (Palettes being handled vertically by a Forklift). Movement captured
+    only in the <semantics><mi>Z</mi><annotation encoding="application/x-tex">Z</annotation></semantics>-axis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file482.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Idle** (Palettes in a warehouse). No movement detected by the accelerometer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file483.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'You can capture, for example, 2 minutes (twelve samples of 10 seconds) for
+    each of the four classes (a total of 8 minutes of data). Using the `three dots`
+    menu after each one of the samples, select 2 of them, reserving them for the Test
+    set. Alternatively, you can use the automatic `Train/Test Split tool` on the `Danger
+    Zone` of `Dashboard` tab. Below, you can see the resulting dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file484.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once you have captured your dataset, you can explore it in more detail using
+    the [Data Explorer](https://docs.edgeimpulse.com/docs/edge-impulse-studio/data-acquisition/data-explorer),
+    a visual tool to find outliers or mislabeled data (helping to correct them). The
+    data explorer first tries to extract meaningful features from your data (by applying
+    signal processing and neural network embeddings) and then uses a dimensionality
+    reduction algorithm such as [PCA](https://en.wikipedia.org/wiki/Principal_component_analysis)
+    or [t-SNE](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding)
+    to map these features to a 2D space. This gives you a one-look overview of your
+    complete dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file485.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In our case, the dataset seems OK (good separation). But the PCA shows we can
+    have issues between maritime (green) and lift (orange). This is expected, once
+    on a boat, sometimes the movement can be only “vertical”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Impulse Design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next step is the definition of our Impulse, which takes the raw data and
+    uses signal processing to extract features, passing them as the input tensor of
+    a *learning block* to classify new data. Go to `Impulse Design` and `Create Impulse`.
+    The Studio will suggest the basic design. Let’s also add a second *Learning Block*
+    for `Anomaly Detection`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file486.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: This second model uses a K-means model. If we imagine that we could have our
+    known classes as clusters, any sample that could not fit on that could be an outlier,
+    an anomaly such as a container rolling out of a ship on the ocean or falling from
+    a Forklift.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file487.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The sampling frequency should be automatically captured, if not, enter it:
+    `[50]`Hz. The Studio suggests a *Window Size* of 2 seconds (`[2000]` ms) with
+    a *sliding window* of `[20]`ms. What we are defining in this step is that we will
+    pre-process the captured data (Time-Seres data), creating a tabular dataset features)
+    that will be the input for a Neural Networks Classifier (DNN) and an Anomaly Detection
+    model (K-Means), as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file488.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s dig into those steps and parameters to understand better what we are doing
+    here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Pre-Processing Overview
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Data pre-processing is extracting features from the dataset captured with the
+    accelerometer, which involves processing and analyzing the raw data. Accelerometers
+    measure the acceleration of an object along one or more axes (typically three,
+    denoted as <semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics>,
+    <semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics>,
+    and <semantics><mi>Z</mi><annotation encoding="application/x-tex">Z</annotation></semantics>).
+    These measurements can be used to understand various aspects of the object’s motion,
+    such as movement patterns and vibrations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Raw accelerometer data can be noisy and contain errors or irrelevant information.
+    Preprocessing steps, such as filtering and normalization, can clean and standardize
+    the data, making it more suitable for feature extraction. In our case, we should
+    divide the data into smaller segments or **windows**. This can help focus on specific
+    events or activities within the dataset, making feature extraction more manageable
+    and meaningful. The **window size** and overlap (**window increase**) choice depend
+    on the application and the frequency of the events of interest. As a thumb rule,
+    we should try to capture a couple of “cycles of data”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With a sampling rate (SR) of 50 Hz and a window size of 2 seconds, we will get
+    100 samples per axis, or 300 in total (3 axis <semantics><mi>×</mi><annotation
+    encoding="application/x-tex">\times</annotation></semantics> 2 seconds <semantics><mi>×</mi><annotation
+    encoding="application/x-tex">\times</annotation></semantics> 50 samples). We will
+    slide this window every 200 ms, creating a larger dataset where each instance
+    has 300 raw features.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../media/file489.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Once the data is preprocessed and segmented, you can extract features that
+    describe the motion’s characteristics. Some typical features extracted from accelerometer
+    data include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Time-domain** features describe the data’s statistical properties within
+    each segment, such as mean, median, standard deviation, skewness, kurtosis, and
+    zero-crossing rate.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Frequency-domain** features are obtained by transforming the data into the
+    frequency domain using techniques like the Fast Fourier Transform (FFT). Some
+    typical frequency-domain features include the power spectrum, spectral energy,
+    dominant frequencies (amplitude and frequency), and spectral entropy.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Time-frequency** domain features combine the time and frequency domain information,
+    such as the Short-Time Fourier Transform (STFT) or the Discrete Wavelet Transform
+    (DWT). They can provide a more detailed understanding of how the signal’s frequency
+    content changes over time.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In many cases, the number of extracted features can be large, which may lead
+    to overfitting or increased computational complexity. Feature selection techniques,
+    such as mutual information, correlation-based methods, or principal component
+    analysis (PCA), can help identify the most relevant features for a given application
+    and reduce the dimensionality of the dataset. The Studio can help with such feature
+    importance calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: EI Studio Spectral Features
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Data preprocessing is a challenging area for embedded machine learning, still,
+    Edge Impulse helps overcome this with its digital signal processing (DSP) preprocessing
+    step and, more specifically, the [Spectral Features Block](https://docs.edgeimpulse.com/docs/edge-impulse-studio/processing-blocks/spectral-features).
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the Studio, the collected raw dataset will be the input of a Spectral Analysis
+    block, which is excellent for analyzing repetitive motion, such as data from accelerometers.
+    This block will perform a DSP (Digital Signal Processing), extracting features
+    such as [FFT](https://en.wikipedia.org/wiki/Fast_Fourier_transform) or [Wavelets](https://en.wikipedia.org/wiki/Digital_signal_processing#Wavelet).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For our project, once the time signal is continuous, we should use FFT with,
+    for example, a length of `[32]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The per axis/channel **Time Domain Statistical features** are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[RMS](https://en.wikipedia.org/wiki/Root_mean_square): 1 feature'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Skewness](https://colab.research.google.com/corgiredirector?site=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FSkewness):
+    1 feature'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Kurtosis](https://colab.research.google.com/corgiredirector?site=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FKurtosis):
+    1 feature'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The per axis/channel **Frequency Domain Spectral features** are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Spectral Power](https://en.wikipedia.org/wiki/Spectral_density): 16 features
+    (FFT Length/2)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Skewness: 1 feature'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Kurtosis: 1 feature'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So, for an FFT length of 32 points, the resulting output of the Spectral Analysis
+    Block will be 21 features per axis (a total of 63 features).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can learn more about how each feature is calculated by downloading the
+    notebook [Edge Impulse - Spectral Features Block Analysis](https://github.com/Mjrovai/Arduino_Nicla_Vision/blob/main/Motion_Classification/Edge_Impulse_Spectral_Features_Block.ipynb)
+    [TinyML under the hood: Spectral Analysis](https://www.hackster.io/mjrobot/tinyml-under-the-hood-spectral-analysis-94676c)
+    or [opening it directly on Google CoLab](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/Motion_Classification/Edge_Impulse_Spectral_Features_Block.ipynb).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Generating features
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Once we understand what the pre-processing does, it is time to finish the job.
+    So, let’s take the raw data (time-series type) and convert it to tabular data.
+    For that, go to the `Spectral Features` section on the `Parameters` tab, define
+    the main parameters as discussed in the previous section (`[FFT]` with `[32]`
+    points), and select`[Save Parameters]`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file490.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: At the top menu, select the `Generate Features` option and the `Generate Features`
+    button. Each 2-second window data will be converted into one data point of 63
+    features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Feature Explorer will show those data in 2D using [UMAP.](https://umap-learn.readthedocs.io/en/latest/)
+    Uniform Manifold Approximation and Projection (UMAP) is a dimension reduction
+    technique that can be used for visualization similarly to t-SNE but is also applicable
+    for general non-linear dimension reduction.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The visualization makes it possible to verify that after the feature generation,
+    the classes present keep their excellent separation, which indicates that the
+    classifier should work well. Optionally, you can analyze how important each one
+    of the features is for one class compared with others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file491.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Models Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our classifier will be a Dense Neural Network (DNN) that will have 63 neurons
+    on its input layer, two hidden layers with 20 and 10 neurons, and an output layer
+    with four neurons (one per each class), as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file492.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: As hyperparameters, we will use a Learning Rate of `[0.005]`, a Batch size of
+    `[32]`, and `[20]`% of data for validation for `[30]` epochs. After training,
+    we can see that the accuracy is 98.5%. The cost of memory and latency is meager.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file493.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For Anomaly Detection, we will choose the suggested features that are precisely
+    the most important ones in the Feature Extraction, plus the accZ RMS. The number
+    of clusters will be `[32]`, as suggested by the Studio:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file494.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Testing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can verify how our model will behave with unknown data using 20% of the data
+    left behind during the data capture phase. The result was almost 95%, which is
+    good. You can always work to improve the results, for example, to understand what
+    went wrong with one of the wrong results. If it is a unique situation, you can
+    add it to the training dataset and then repeat it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The default minimum threshold for a considered uncertain result is `[0.6]` for
+    classification and `[0.3]` for anomaly. Once we have four classes (their output
+    sum should be 1.0), you can also set up a lower threshold for a class to be considered
+    valid (for example, 0.4). You can `Set confidence thresholds` on the `three dots`
+    menu, besides the `Classify all` button.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file495.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can also perform Live Classification with your device (which should still
+    be connected to the Studio).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be aware that here, you will capture real data with your device and upload it
+    to the Studio, where an inference will be taken using the trained model (But the
+    **model is NOT in your device**).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deploy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is time to deploy the preprocessing block and the trained model to the Nicla.
+    The Studio will package all the needed libraries, preprocessing functions, and
+    trained models, downloading them to your computer. You should select the option
+    `Arduino Library`, and at the bottom, you can choose `Quantized (Int8)` or `Unoptimized
+    (float32)` and `[Build]`. A Zip file will be created and downloaded to your computer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file496.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'On your Arduino IDE, go to the `Sketch` tab, select `Add.ZIP Library`, and
+    Choose the.zip file downloaded by the Studio. A message will appear in the IDE
+    Terminal: `Library installed`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inference
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now, it is time for a real test. We will make inferences wholly disconnected
+    from the Studio. Let’s change one of the code examples created when you deploy
+    the Arduino Library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In your Arduino IDE, go to the `File/Examples` tab and look for your project,
+    and on examples, select `Nicla_vision_fusion`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file497.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Note that the code created by Edge Impulse considers a *sensor fusion* approach
+    where the IMU (Accelerometer and Gyroscope) and the ToF are used. At the beginning
+    of the code, you have the libraries related to our project, IMU and ToF:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can keep the code this way for testing because the trained model will use
+    only features pre-processed from the accelerometer. But consider that you will
+    write your code only with the needed libraries for a real project.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: And that is it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can now upload the code to your device and proceed with the inferences.
+    Press the Nicla `[RESET]` button twice to put it on boot mode (disconnect from
+    the Studio if it is still connected), and upload the sketch to your board.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now you should try different movements with your board (similar to those done
+    during data capture), observing the inference result of each class on the Serial
+    Monitor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Idle and lift classes**:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file498.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Maritime and terrestrial**:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file499.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Note that in all situations above, the value of the `anomaly score` was smaller
+    than 0.0\. Try a new movement that was not part of the original dataset, for example,
+    “rolling” the Nicla, facing the camera upside-down, as a container falling from
+    a boat or even a boat accident:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Anomaly detection**:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file500.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this case, the anomaly is much bigger, over 1.00
+  prefs: []
+  type: TYPE_NORMAL
+- en: Post-processing
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now that we know the model is working since it detects the movements, we suggest
+    that you modify the code to see the result with the NiclaV completely offline
+    (disconnected from the PC and powered by a battery, a power bank, or an independent
+    5 V power supply).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The idea is to do the same as with the KWS project: if one specific movement
+    is detected, a specific LED could be lit. For example, if *terrestrial* is detected,
+    the Green LED will light; if *maritime*, the Red LED will light, if it is a *lift,*
+    the Blue LED will light; and if no movement is detected *(idle*), the LEDs will
+    be OFF. You can also add a condition when an anomaly is detected, in this case,
+    for example, a white color can be used (all e LEDs light simultaneously).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The notebooks and codeused in this hands-on tutorial will be found on the [GitHub](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Motion_Classification)
+    repository.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Before we finish, consider that Movement Classification and Object Detection
+    can be utilized in many applications across various domains. Here are some of
+    the potential applications:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Case Applications
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Industrial and Manufacturing
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '**Predictive Maintenance**: Detecting anomalies in machinery motion to predict
+    failures before they occur.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Quality Control**: Monitoring the motion of assembly lines or robotic arms
+    for precision assessment and deviation detection from the standard motion pattern.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Warehouse Logistics**: Managing and tracking the movement of goods with automated
+    systems that classify different types of motion and detect anomalies in handling.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Healthcare
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '**Patient Monitoring**: Detecting falls or abnormal movements in the elderly
+    or those with mobility issues.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Rehabilitation**: Monitoring the progress of patients recovering from injuries
+    by classifying motion patterns during physical therapy sessions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Activity Recognition**: Classifying types of physical activity for fitness
+    applications or patient monitoring.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Consumer Electronics
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '**Gesture Control**: Interpreting specific motions to control devices, such
+    as turning on lights with a hand wave.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Gaming**: Enhancing gaming experiences with motion-controlled inputs.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Transportation and Logistics
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '**Vehicle Telematics**: Monitoring vehicle motion for unusual behavior such
+    as hard braking, sharp turns, or accidents.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Cargo Monitoring**: Ensuring the integrity of goods during transport by detecting
+    unusual movements that could indicate tampering or mishandling.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Smart Cities and Infrastructure
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '**Structural Health Monitoring**: Detecting vibrations or movements within
+    structures that could indicate potential failures or maintenance needs.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Traffic Management**: Analyzing the flow of pedestrians or vehicles to improve
+    urban mobility and safety.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Security and Surveillance
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '**Intruder Detection**: Detecting motion patterns typical of unauthorized access
+    or other security breaches.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Wildlife Monitoring**: Detecting poachers or abnormal animal movements in
+    protected areas.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Agriculture
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '**Equipment Monitoring**: Tracking the performance and usage of agricultural
+    machinery.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Animal Behavior Analysis**: Monitoring livestock movements to detect behaviors
+    indicating health issues or stress.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Environmental Monitoring
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '**Seismic Activity**: Detecting irregular motion patterns that precede earthquakes
+    or other geologically relevant events.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Oceanography**: Studying wave patterns or marine movements for research and
+    safety purposes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Nicla 3D case
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'For real applications, as some described before, we can add a case to our device,
+    and Eoin Jordan, from Edge Impulse, developed a great wearable and machine health
+    case for the Nicla range of boards. It works with a 10mm magnet, 2M screws, and
+    a 16mm strap for human and machine health use case scenarios. Here is the link:
+    [Arduino Nicla Voice and Vision Wearable Case](https://www.thingiverse.com/thing:5923305).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file501.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: The applications for motion classification and anomaly detection are extensive,
+    and the Arduino Nicla Vision is well-suited for scenarios where low power consumption
+    and edge processing are advantageous. Its small form factor and efficiency in
+    processing make it an ideal choice for deploying portable and remote applications
+    where real-time processing is crucial and connectivity may be limited.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Arduino Code](https://github.com/Mjrovai/Arduino_Nicla_Vision/tree/main/Motion_Classification/Niclav_Acc_Data_Capture)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Edge Impulse Spectral Features Block Colab Notebook](https://colab.research.google.com/github/Mjrovai/Arduino_Nicla_Vision/blob/main/Motion_Classification/Edge_Impulse_Spectral_Features_Block.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Edge Impulse Project](https://studio.edgeimpulse.com/public/302078/latest)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

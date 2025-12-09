@@ -1,0 +1,1905 @@
+- en: Small Language Models (SLM)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../media/file908.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*DALL·E prompt - A 1950s-style cartoon illustration showing a Raspberry Pi
+    running a small language model at the edge. The Raspberry Pi is stylized in a
+    retro-futuristic way with rounded edges and chrome accents, connected to playful
+    cartoonish sensors and devices. Speech bubbles are floating around, representing
+    language processing, and the background has a whimsical landscape of interconnected
+    devices with wires and small gadgets, all drawn in a vintage cartoon style. The
+    color palette uses soft pastel colors and bold outlines typical of 1950s cartoons,
+    giving a fun and nostalgic vibe to the scene.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the fast-growing area of artificial intelligence, edge computing presents
+    an opportunity to decentralize capabilities traditionally reserved for powerful,
+    centralized servers. This lab explores the practical integration of small versions
+    of traditional large language models (LLMs) into a Raspberry Pi 5, transforming
+    this edge device into an AI hub capable of real-time, on-site data processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As large language models grow in size and complexity, Small Language Models
+    (SLMs) offer a compelling alternative for edge devices, striking a balance between
+    performance and resource efficiency. By running these models directly on Raspberry
+    Pi, we can create responsive, privacy-preserving applications that operate even
+    in environments with limited or no internet connectivity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This lab will guide you through setting up, optimizing, and leveraging SLMs
+    on Raspberry Pi. We will explore the installation and utilization of [Ollama](https://ollama.com/).
+    This open-source framework allows us to run LLMs locally on our machines (our
+    desktops or edge devices such as the Raspberry Pis or NVidia Jetsons). Ollama
+    is designed to be efficient, scalable, and easy to use, making it a good option
+    for deploying AI models such as Microsoft Phi, Google Gemma, Meta Llama, and LLaVa
+    (Multimodal). We will integrate some of those models into projects using Python’s
+    ecosystem, exploring their potential in real-world scenarios (or at least point
+    in this direction).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file909.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We could use any Raspi model in the previous labs, but here, the choice must
+    be the Raspberry Pi 5 (Raspi-5). It is a robust platform that substantially upgrades
+    the last version 4, equipped with the Broadcom BCM2712, a 2.4 GHz quad-core 64-bit
+    Arm Cortex-A76 CPU featuring Cryptographic Extension and enhanced caching capabilities.
+    It boasts a VideoCore VII GPU, dual 4Kp60 HDMI® outputs with HDR, and a 4Kp60
+    HEVC decoder. Memory options include 4 GB and 8 GB of high-speed LPDDR4X SDRAM,
+    with 8GB being our choice to run SLMs. It also features expandable storage via
+    a microSD card slot and a PCIe 2.0 interface for fast peripherals such as M.2
+    SSDs (Solid State Drives).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For real SSL applications, SSDs are a better option than SD cards.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: By the way, as [Alasdair Allan](https://www.hackster.io/aallan) discussed, inferencing
+    directly on the Raspberry Pi 5 CPU—with no GPU acceleration—is now on par with
+    the performance of the Coral TPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file910.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For more info, please see the complete article: [Benchmarking TensorFlow and
+    TensorFlow Lite on Raspberry Pi 5](https://www.hackster.io/news/benchmarking-tensorflow-and-tensorflow-lite-on-raspberry-pi-5-b9156d58a6a2?mc_cid=0cab3d08f4&mc_eid=e96256ccba).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Raspberry Pi Active Cooler
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We suggest installing an Active Cooler, a dedicated clip-on cooling solution
+    for Raspberry Pi 5 (Raspi-5), for this lab. It combines an aluminum heat sink
+    with a temperature-controlled blower fan to keep the Raspi-5 operating comfortably
+    under heavy loads, such as running SLMs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file911.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The Active Cooler has pre-applied thermal pads for heat transfer and is mounted
+    directly to the Raspberry Pi 5 board using spring-loaded push pins. The Raspberry
+    Pi firmware actively manages it: at 60°C, the blower’s fan will be turned on;
+    at 67.5°C, the fan speed will be increased; and finally, at 75°C, the fan increases
+    to full speed. The blower’s fan will spin down automatically when the temperature
+    drops below these limits.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file912.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To prevent overheating, all Raspberry Pi boards begin to throttle the processor
+    when the temperature reaches 80°Cand throttle even further when it reaches the
+    maximum temperature of 85°C (more detail [here](https://www.raspberrypi.com/news/heating-and-cooling-raspberry-pi-5/)).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Generative AI (GenAI)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Generative AI is an artificial intelligence system capable of creating new,
+    original content across various mediums such as **text, images, audio, and video**.
+    These systems learn patterns from existing data and use that knowledge to generate
+    novel outputs that didn’t previously exist. **Large Language Models (LLMs)**,
+    **Small Language Models (SLMs)**, and **multimodal models** can all be considered
+    types of GenAI when used for generative tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GenAI provides the conceptual framework for AI-driven content creation, with
+    LLMs serving as powerful general-purpose text generators. SLMs adapt this technology
+    for edge computing, while multimodal models extend GenAI capabilities across different
+    data types. Together, they represent a spectrum of generative AI technologies,
+    each with its strengths and applications, collectively driving AI-powered content
+    creation and understanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large Language Models (LLMs)
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Large Language Models (LLMs) are advanced artificial intelligence systems that
+    understand, process, and generate human-like text. These models are characterized
+    by their massive scale in terms of the amount of data they are trained on and
+    the number of parameters they contain. Critical aspects of LLMs include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Size**: LLMs typically contain billions of parameters. For example, GPT-3
+    has 175 billion parameters, while some newer models exceed a trillion parameters.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Training Data**: They are trained on vast amounts of text data, often including
+    books, websites, and other diverse sources, amounting to hundreds of gigabytes
+    or even terabytes of text.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Architecture**: Most LLMs use [transformer-based architectures](https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)),
+    which allow them to process and generate text by paying attention to different
+    parts of the input simultaneously.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Capabilities**: LLMs can perform a wide range of language tasks without specific
+    fine-tuning, including:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Text generation
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Translation
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Summarization
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Question answering
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Code generation
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Logical reasoning
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Few-shot Learning**: They can often understand and perform new tasks with
+    minimal examples or instructions.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Resource-Intensive**: Due to their size, LLMs typically require significant
+    computational resources to run, often needing powerful GPUs or TPUs.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Continual Development**: The field of LLMs is rapidly evolving, with new
+    models and techniques constantly emerging.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Ethical Considerations**: The use of LLMs raises important questions about
+    bias, misinformation, and the environmental impact of training such large models.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Applications**: LLMs are used in various fields, including content creation,
+    customer service, research assistance, and software development.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Limitations**: Despite their power, LLMs can produce incorrect or biased
+    information and lack true understanding or reasoning capabilities.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We must note that we use large models beyond text, calling them *multi-modal
+    models*. These models integrate and process information from multiple types of
+    input simultaneously. They are designed to understand and generate content across
+    various forms of data, such as text, images, audio, and video.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Closed vs Open Models:'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Closed models**, also called proprietary models, are AI models whose internal
+    workings, code, and training data are not publicly disclosed. Examples: GPT-4
+    (by OpenAI), Claude (by Anthropic), Gemini (by Google).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Open models**, also known as open-source models, are AI models whose underlying
+    code, architecture, and often training data are publicly available and accessible.
+    Examples: Gemma (by Google), LLaMA (by Meta) and Phi (by Microsoft).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open models are particularly relevant for running models on edge devices like
+    Raspberry Pi as they can be more easily adapted, optimized, and deployed in resource-constrained
+    environments. Still, it is crucial to verify their Licenses. Open models come
+    with various open-source licenses that may affect their use in commercial applications,
+    while closed models have clear, albeit restrictive, terms of service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file913.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adapted from [arXiv](images/2304.13712)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Small Language Models (SLMs)
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In the context of edge computing on devices like Raspberry Pi, full-scale LLMs
+    are typically too large and resource-intensive to run directly. This limitation
+    has driven the development of smaller, more efficient models, such as the Small
+    Language Models (SLMs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: SLMs are compact versions of LLMs designed to run efficiently on resource-constrained
+    devices such as smartphones, IoT devices, and single-board computers like the
+    Raspberry Pi. These models are significantly smaller in size and computational
+    requirements than their larger counterparts while still retaining impressive language
+    understanding and generation capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Key characteristics of SLMs include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Reduced parameter count**: Typically ranging from a few hundred million to
+    a few billion parameters, compared to two-digit billions in larger models.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Lower memory footprint**: Requiring, at most, a few gigabytes of memory rather
+    than tens or hundreds of gigabytes.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Faster inference time**: Can generate responses in milliseconds to seconds
+    on edge devices.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Energy efficiency**: Consuming less power, making them suitable for battery-powered
+    devices.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Privacy-preserving**: Enabling on-device processing without sending data
+    to cloud servers.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Offline functionality**: Operating without an internet connection.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: SLMs achieve their compact size through various techniques such as knowledge
+    distillation, model pruning, and quantization. While they may not match the broad
+    capabilities of larger models, SLMs excel in specific tasks and domains, making
+    them ideal for targeted applications on edge devices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will generally consider SLMs, language models with less than 5 billion parameters
+    quantized to 4 bits.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Examples of SLMs include compressed versions of models like Meta Llama, Microsoft
+    PHI, and Google Gemma. These models enable a wide range of natural language processing
+    tasks directly on edge devices, from text classification and sentiment analysis
+    to question answering and limited text generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For more information on SLMs, the paper, [LLM Pruning and Distillation in Practice:
+    The Minitron Approach](https://arxiv.org/pdf/2408.11796), provides an approach
+    applying pruning and distillation to obtain SLMs from LLMs. And, [SMALL LANGUAGE
+    MODELS: SURVEY, MEASUREMENTS, AND INSIGHTS](https://arxiv.org/pdf/2409.15790),
+    presents a comprehensive survey and analysis of Small Language Models (SLMs),
+    which are language models with 100 million to 5 billion parameters designed for
+    resource-constrained devices.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ollama
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../media/file914.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ollama logo
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Ollama](https://ollama.com/) is an open-source framework that allows us to
+    run language models (LMs), large or small, locally on our machines. Here are some
+    critical points about Ollama:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Local Model Execution**: Ollama enables running LMs on personal computers
+    or edge devices such as the Raspi-5, eliminating the need for cloud-based API
+    calls.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Ease of Use**: It provides a simple command-line interface for downloading,
+    running, and managing different language models.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Model Variety**: Ollama supports various LLMs, including Phi, Gemma, Llama,
+    Mistral, and other open-source models.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Customization**: Users can create and share custom models tailored to specific
+    needs or domains.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Lightweight**: Designed to be efficient and run on consumer-grade hardware.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**API Integration**: Offers an API that allows integration with other applications
+    and services.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Privacy-Focused**: By running models locally, it addresses privacy concerns
+    associated with sending data to external servers.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Cross-Platform**: Available for macOS, Windows, and Linux systems (our case,
+    here).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Active Development**: Regularly updated with new features and model support.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Community-Driven**: Benefits from community contributions and model sharing.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'To learn more about what Ollama is and how it works under the hood, you should
+    see this short video from [Matt Williams](https://www.youtube.com/@technovangelist),
+    one of the founders of Ollama:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.youtube.com/embed/90ozfdsQOKo](https://www.youtube.com/embed/90ozfdsQOKo)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Matt has an entirely free course about Ollama that we recommend: [https://youtu.be/9KEUFe4KQAI?si=D_-q3CMbHiT-twuy](https://youtu.be/9KEUFe4KQAI?si=D_-q3CMbHiT-twuy)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Installing Ollama
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s set up and activate a Virtual Environment for working with Ollama:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And run the command to install Ollama:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As a result, an API will run in the background on `127.0.0.1:11434`. From now
+    on, we can run Ollama via the terminal. For starting, let’s verify the Ollama
+    version, which will also tell us that it is correctly installed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file915.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: On the [Ollama Library page](https://ollama.com/library), we can find the models
+    Ollama supports. For example, by filtering by `Most popular`, we can see Meta
+    Llama, Google Gemma, Microsoft Phi, LLaVa, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Meta Llama 3.2 1B/3B
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '![](../media/file916.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s install and run our first small language model, [Llama 3.2](https://ai.meta.com/blog/llama-3-2-connect-2024-vision-edge-mobile-devices/)
+    1B (and 3B). The Meta Llama 3.2 series comprises a set of multilingual generative
+    language models available in 1 billion and 3 billion parameter sizes. These models
+    are designed to process text input and generate text output. The instruction-tuned
+    variants within this collection are specifically optimized for multilingual conversational
+    applications, including tasks involving information retrieval and summarization
+    with an agentic approach. When compared to many existing open-source and proprietary
+    chat models, the Llama 3.2 instruction-tuned models demonstrate superior performance
+    on widely-used industry benchmarks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The 1B and 3B models were pruned from the Llama 8B, and then logits from the
+    8B and 70B models were used as token-level targets (token-level distillation).
+    Knowledge distillation was used to recover performance (they were trained with
+    9 trillion tokens). The 1B model has 1,24B, quantized to integer (Q8_0), and the
+    3B, 3.12B parameters, with a Q4_0 quantization, which ends with a size of 1.3
+    GB and 2 GB, respectively. Its context window is 131,072 tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file917.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Install and run the** **Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Running the model with the command before, we should have the Ollama prompt
+    available for us to input a question and start chatting with the LLM model; for
+    example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`>>> What is the capital of France?`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Almost immediately, we get the correct answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`The capital of France is Paris.`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the option `--verbose` when calling the model will generate several statistics
+    about its performance (The model will be polling only the first time we run the
+    command).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file918.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Each metric gives insights into how the model processes inputs and generates
+    outputs. Here’s a breakdown of what each metric means:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Total Duration (2.620170326 s)**: This is the complete time taken from the
+    start of the command to the completion of the response. It encompasses loading
+    the model, processing the input prompt, and generating the response.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Load Duration (39.947908 ms)**: This duration indicates the time to load
+    the model or necessary components into memory. If this value is minimal, it can
+    suggest that the model was preloaded or that only a minimal setup was required.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Prompt Eval Count (32 tokens)**: The number of tokens in the input prompt.
+    In NLP, tokens are typically words or subwords, so this count includes all the
+    tokens that the model evaluated to understand and respond to the query.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Prompt Eval Duration (1.644773 s)**: This measures the model’s time to evaluate
+    or process the input prompt. It accounts for the bulk of the total duration, implying
+    that understanding the query and preparing a response is the most time-consuming
+    part of the process.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Prompt Eval Rate (19.46 tokens/s)**: This rate indicates how quickly the
+    model processes tokens from the input prompt. It reflects the model’s speed in
+    terms of natural language comprehension.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Eval Count (8 token(s))**: This is the number of tokens in the model’s response,
+    which in this case was, “The capital of France is Paris.”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Eval Duration (889.941 ms)**: This is the time taken to generate the output
+    based on the evaluated input. It’s much shorter than the prompt evaluation, suggesting
+    that generating the response is less complex or computationally intensive than
+    understanding the prompt.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Eval Rate (8.99 tokens/s)**: Similar to the prompt eval rate, this indicates
+    the speed at which the model generates output tokens. It’s a crucial metric for
+    understanding the model’s efficiency in output generation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This detailed breakdown can help understand the computational demands and performance
+    characteristics of running SLMs like Llama on edge devices like the Raspberry
+    Pi 5\. It shows that while prompt evaluation is more time-consuming, the actual
+    generation of responses is relatively quicker. This analysis is crucial for optimizing
+    performance and diagnosing potential bottlenecks in real-time applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading and running the 3B model, we can see the difference in performance for
+    the same prompt;
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file919.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The eval rate is lower, 5.3 tokens/s versus 9 tokens/s with the smaller model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When question about
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`>>> What is the distance between Paris and Santiago, Chile?`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The 1B model answered `9,841 kilometers (6,093 miles)`, which is inaccurate,
+    and the 3B model answered `7,300 miles (11,700 km)`, which is close to the correct
+    (11,642 km).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s ask for the Paris’s coordinates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`>>> what is the latitude and longitude of Paris?`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file920.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Both 1B and 3B models gave correct answers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Google Gemma 2 2B
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s install [Gemma 2](https://ollama.com/library/gemma2:2b), a high-performing
+    and efficient model available in three sizes: 2B, 9B, and 27B. We will install
+    [**Gemma 2 2B**](https://huggingface.co/collections/google/gemma-2-2b-release-66a20f3796a2ff2a7c76f98f),
+    a lightweight model trained with 2 trillion tokens that produces outsized results
+    by learning from larger models through distillation. The model has 2.6 billion
+    parameters and a Q4_0 quantization, which ends with a size of 1.6 GB. Its context
+    window is 8,192 tokens.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file921.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Install and run the** **Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Running the model with the command before, we should have the Ollama prompt
+    available for us to input a question and start chatting with the LLM model; for
+    example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`>>> What is the capital of France?`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Almost immediately, we get the correct answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`The capital of France is **Paris**. 🗼`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And it’ statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file922.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that Gemma 2:2B has around the same performance as Llama 3.2:3B,
+    but having less parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Other examples**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Also, a good response but less accurate than Llama3.2:3B.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: A good and accurate answer (a little more verbose than the Llama answers).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Microsoft Phi3.5 3.8B
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s pull a bigger (but still tiny) model, the [PHI3.5,](https://ollama.com/library/phi3.5)
+    a 3.8B lightweight state-of-the-art open model by Microsoft. The model belongs
+    to the Phi-3 model family and supports `128K token` context length and the languages:
+    Arabic, Chinese, Czech, Danish, Dutch, English, Finnish, French, German, Hebrew,
+    Hungarian, Italian, Japanese, Korean, Norwegian, Polish, Portuguese, Russian,
+    Spanish, Swedish, Thai, Turkish and Ukrainian.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model size, in terms of bytes, will depend on the specific quantization
+    format used. The size can go from 2-bit quantization (`q2_k`) of 1.4 GB (higher
+    performance/lower quality) to 16-bit quantization (fp-16) of 7.6 GB (lower performance/higher
+    quality).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s run the 4-bit quantization (`Q4_0`), which will need 2.2 GB of RAM, with
+    an intermediary trade-off regarding output quality and performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can use `run` or `pull` to download the model. What happens is that Ollama
+    keeps note of the pulled models, and once the PHI3 does not exist, before running
+    it, Ollama pulls it.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Let’s enter with the same prompt used before:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The answer was very “verbose”, let’s specify a better prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file923.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this case, the answer was still longer than we expected, with an eval rate
+    of 2.25 tokens/s, more than double that of Gemma and Llama.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing the most appropriate prompt is one of the most important skills to
+    be used with LLMs, no matter its size.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: When we asked the same questions about distance and Latitude/Longitude, we did
+    not get a good answer for a distance of `13,507 kilometers (8,429 miles)`, but
+    it was OK for coordinates. Again, it could have been less verbose (more than 200
+    tokens for each answer).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use any model as an assistant since their speed is relatively decent,
+    but on September 24 (2023), the Llama2:3B is a better choice. You should try other
+    models, depending on your needs. [🤗 Open LLM Leaderboard](https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard)
+    can give you an idea about the best models in size, benchmark, license, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best model to use is the one fit for your specific necessity. Also, take
+    into consideration that this field evolves with new models everyday.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Multimodal Models
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Multimodal models are artificial intelligence (AI) systems that can process
+    and understand information from multiple sources, such as images, text, audio,
+    and video. In our context, multimodal LLMs can process various inputs, including
+    text, images, and audio, as prompts and convert those prompts into various outputs,
+    not just the source type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will work here with [LLaVA-Phi-3](https://ollama.com/library/llava-phi3:3.8b),
+    a fine-tuned LLaVA model from Phi 3 Mini 4k. It has strong performance benchmarks
+    that are on par with the original [LLaVA](https://llava-vl.github.io/) (Large
+    Language and Vision Assistant) model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The LLaVA-Phi-3 is an end-to-end trained large multimodal model designed to
+    understand and generate content based on visual inputs (images) and textual instructions.
+    It combines the capabilities of a visual encoder and a language model to process
+    and respond to multimodal inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s install the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s start with a text input:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The response took around 30 s, with an eval rate of 3.93 tokens/s! Not bad!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But let us know to enter with an image as input. For that, let’s create a directory
+    for working:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s download a <semantics><mrow><mn>640</mn><mo>×</mo><mn>320</mn></mrow><annotation
+    encoding="application/x-tex">640\times 320</annotation></semantics> image from
+    the internet, for example (Wikipedia: [Paris, France)](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg/640px-La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file924.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using FileZilla, for example, let’s upload the image to the OLLAMA folder at
+    the Raspi-5 and name it `image_test_1.jpg`. We should have the whole image path
+    (we can use `pwd` to get it).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`/home/mjrovai/Documents/OLLAMA/image_test_1.jpg`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you use a desktop, you can copy the image path by clicking the image with
+    the mouse’s right button.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file925.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s enter with this prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result was great, but the overall latency was significant; almost 4 minutes
+    to perform the inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file926.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inspecting local resources
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Using htop, we can monitor the resources running on our device.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'During the time that the model is running, we can inspect the resources:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file927.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All four CPUs run at almost 100% of their capacity, and the memory used with
+    the model loaded is `3.24 GB`. Exiting Ollama, the memory goes down to around
+    `377 MB` (with no desktop).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is also essential to monitor the temperature. When running the Raspberry
+    with a desktop, you can have the temperature shown on the taskbar:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file928.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If you are “headless”, the temperature can be monitored with the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you are doing nothing, the temperature is around `50°C` for CPUs running
+    at 1%. During inference, with the CPUs at 100%, the temperature can rise to almost
+    `70°C`. This is OK and means the active cooler is working, keeping the temperature
+    below 80°C / 85°C (its limit).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ollama Python Library
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So far, we have explored SLMs’ chat capability using the command line on a terminal.
+    However, we want to integrate those models into our projects, so Python seems
+    to be the right path. The good news is that Ollama has such a library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [Ollama Python library](https://github.com/ollama/ollama-python) simplifies
+    interaction with advanced LLM models, enabling more sophisticated responses and
+    capabilities, besides providing the easiest way to integrate Python 3.8+ projects
+    with [Ollama.](https://github.com/ollama/ollama)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a better understanding of how to create apps using Ollama with Python,
+    we can follow [Matt Williams’s videos](https://www.youtube.com/@technovangelist),
+    as the one below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.youtube.com/embed/_4K20tOsXK8](https://www.youtube.com/embed/_4K20tOsXK8)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Installation**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the terminal, run the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will need a text editor or an IDE to create a Python script. If you run the
+    Raspberry OS on a desktop, several options, such as Thonny and Geany, have already
+    been installed by default (accessed by `[Menu][Programming]`). You can download
+    other IDEs, such as Visual Studio Code, from `[Menu][Recommended Software]`. When
+    the window pops up, go to `[Programming]`, select the option of your choice, and
+    press `[Apply]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file929.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If you prefer using Jupyter Notebook for development:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To run Jupyter Notebook, run the command (change the IP address for yours):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On the terminal, you can see the local URL address to open the notebook:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file930.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can access it from another computer by entering the Raspberry Pi’s IP address
+    and the provided token in a web browser (we should copy it from the terminal).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our working directory in the Raspi, we will create a new Python 3 notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s enter with a very simple script to verify the installed models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'All the models will be printed as a dictionary, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s repeat one of the questions that we did before, but now using `ollama.generate()`
+    from Ollama python library. This API will generate a response for the given prompt
+    with the provided model. This is a streaming endpoint, so there will be a series
+    of responses. The final response object will include statistics and additional
+    data from the request.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: In case you are running the code as a Python script, you should save it, for
+    example, test_ollama.py. You can use the IDE to run it or do it directly on the
+    terminal. Also, remember that you should always call the model and define it when
+    running a stand-alone script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As a result, we will have the model response in a JSON format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As we can see, several pieces of information are generated, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**response**: the main output text generated by the model in response to our
+    prompt.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`The capital of France is **Paris**. 🇫🇷`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**context**: the token IDs representing the input and context used by the model.
+    Tokens are numerical representations of text used for processing by the language
+    model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[106, 1645, 108, 1841, 603, 573, 6037, 576, 6081, 235336, 107, 108, 106, 2516,
+    108, 651, 6037, 576, 6081, 603, 5231, 29437, 168428, 235248, 244304, 241035, 235248,
+    108]`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The Performance Metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**total_duration**: The total time taken for the operation in nanoseconds.
+    In this case, approximately 24.26 seconds.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**load_duration**: The time taken to load the model or components in nanoseconds.
+    About 19.83 seconds.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**prompt_eval_duration**: The time taken to evaluate the prompt in nanoseconds.
+    Around 16 nanoseconds.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**eval_count**: The number of tokens evaluated during the generation. Here,
+    14 tokens.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**eval_duration**: The time taken for the model to generate the response in
+    nanoseconds. Approximately 2.5 seconds.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'But, what we want is the plain ‘response’ and, perhaps for analysis, the total
+    duration of the inference, so let’s change the code to extract it from the dictionary:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we got:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Using Ollama.chat()**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another way to get our response is to use `ollama.chat()`, which generates
+    the next message in a chat with a provided model. This is a streaming endpoint,
+    so a series of responses will occur. Streaming can be disabled using `"stream":
+    false`. The final response object will also include statistics and additional
+    data from the request.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: The answer is the same as before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An important consideration is that by using `ollama.generate()`, the response
+    is “clear” from the model’s “memory” after the end of inference (only used once),
+    but If we want to keep a conversation, we must use `ollama.chat()`. Let’s see
+    it in action:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the above code, we are running two queries, and the second prompt considers
+    the result of the first one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is how the model responded:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Getting an image description**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the same way that we have used the `LlaVa-PHI-3` model with the command
+    line to analyze an image, the same can be done here with Python. Let’s use the
+    same image of Paris, but now with the `ollama.generate()`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: The model took about 4 minutes (256.45 s) to return with a detailed image description.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the [10-Ollama_Python_Library](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/10-Ollama_Python_Library.ipynb)
+    notebook, it is possible to find the experiments with the Ollama Python library.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Function Calling
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: So far, we can observe that by using the model’s response into a variable, we
+    can effectively incorporate it into real-world projects. However, a major issue
+    arises when the model provides varying responses to the same input. For instance,
+    let’s assume that we only need the name of a country’s capital and its coordinates
+    as the model’s response in the previous examples, without any additional information,
+    even when utilizing verbose models like Microsoft Phi. To ensure consistent responses,
+    we can employ the ‘Ollama function call,’ which is fully compatible with the OpenAI
+    API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what exactly is “function calling”?
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: In modern artificial intelligence, function calling with Large Language Models
+    (LLMs) allows these models to perform actions beyond generating text. By integrating
+    with external functions or APIs, LLMs can access real-time data, automate tasks,
+    and interact with various systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, instead of merely responding to a query about the weather, an
+    LLM can call a weather API to fetch the current conditions and provide accurate,
+    up-to-date information. This capability enhances the relevance and accuracy of
+    the model’s responses and makes it a powerful tool for driving workflows and automating
+    processes, transforming it into an active participant in real-world applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For more details about Function Calling, please see this video made by [Marvin
+    Prison](https://www.youtube.com/@MervinPraison):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.youtube.com/embed/eHfMCtlsb1o](https://www.youtube.com/embed/eHfMCtlsb1o)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s create a project.
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: We want to create an *app* where the user enters a country’s name and gets,
+    as an output, the distance in km from the capital city of such a country and the
+    app’s location (for simplicity, We will use Santiago, Chile, as the app location).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file931.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once the user enters a country name, the model will return the name of its capital
+    city (as a string) and the latitude and longitude of such city (in float). Using
+    those coordinates, we can use a simple Python library ([haversine](https://pypi.org/project/haversine/))
+    to calculate the distance between those 2 points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea of this project is to demonstrate a combination of language model interaction,
+    structured data handling with Pydantic, and geospatial calculations using the
+    Haversine formula (traditional computing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, let us install some libraries. Besides *Haversine*, the main one is the
+    [OpenAI Python library](https://github.com/openai/openai-python), which provides
+    convenient access to the OpenAI REST API from any Python 3.7+ application. The
+    other one is [Pydantic](https://docs.pydantic.dev/latest/) (and instructor), a
+    robust data validation and settings management library engineered by Python to
+    enhance the robustness and reliability of our codebase. In short, *Pydantic* will
+    help ensure that our model’s response will always be consistent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we should create a Python script designed to interact with our model (LLM)
+    to determine the coordinates of a country’s capital city and calculate the distance
+    from Santiago de Chile to that capital.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s go over the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Importing Libraries
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**sys**: Provides access to system-specific parameters and functions. It’s
+    used to get command-line arguments.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**haversine**: A function from the haversine library that calculates the distance
+    between two geographic points using the Haversine formula.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**openAI**: A module for interacting with the OpenAI API (although it’s used
+    in conjunction with a local setup, Ollama). Everything is off-line here.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**pydantic**: Provides data validation and settings management using Python-type
+    annotations. It’s used to define the structure of expected response data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**instructor**: A module is used to patch the OpenAI client to work in a specific
+    mode (likely related to structured data handling).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2\. Defining Input and Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**country**: On a Python script, getting the country name from command-line
+    arguments is possible. On a Jupyter notebook, we can enter its name, for example,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`country = "France"`'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**MODEL**: Specifies the model being used, which is, in this example, the phi3.5.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**mylat** **and** **mylon**: Coordinates of Santiago de Chile, used as the
+    starting point for the distance calculation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3\. Defining the Response Data Structure
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**CityCoord**: A Pydantic model that defines the expected structure of the
+    response from the LLM. It expects three fields: city (name of the city), lat (latitude),
+    and lon (longitude).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4\. Setting Up the OpenAI Client
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**OpenAI**: This setup initializes an OpenAI client with a local base URL and
+    an API key (ollama). It uses a local server.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**instructor.patch**: Patches the OpenAI client to work in JSON mode, enabling
+    structured output that matches the Pydantic model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 5\. Generating the Response
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**client.chat.completions.create**: Calls the LLM to generate a response.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**model**: Specifies the model to use (llava-phi3).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**messages**: Contains the prompt for the LLM, asking for the latitude and
+    longitude of the capital city of the specified country.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**response_model**: Indicates that the response should conform to the CityCoord
+    model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**max_retries**: The maximum number of retry attempts if the request fails.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 6\. Calculating the Distance
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**haversine**: Calculates the distance between Santiago de Chile and the capital
+    city returned by the LLM using their respective coordinates.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**(mylat, mylon)**: Coordinates of Santiago de Chile.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**resp.city**: Name of the country’s capital'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**(resp.lat, resp.lon)**: Coordinates of the capital city are provided by the
+    LLM response.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**unit = ‘km’**: Specifies that the distance should be calculated in kilometers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**print**: Outputs the distance, rounded to the nearest 10 kilometers, with
+    thousands of separators for readability.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Running the code**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we enter different countries, for example, France, Colombia, and the United
+    States, We can note that we always receive the same structured information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you run the code as a script, the result will be printed on the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file932.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: And the calculations are pretty good!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file933.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the [20-Ollama_Function_Calling](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/20-Ollama_Function_Calling.ipynb)
+    notebook, it is possible to find experiments with all models installed.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Adding images
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now it is time to wrap up everything so far! Let’s modify the script so that
+    instead of entering the country name (as a text), the user enters an image, and
+    the application (based on SLM) returns the city in the image and its geographic
+    location. With those data, we can calculate the distance as before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file934.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For simplicity, we will implement this new code in two steps. First, the LLM
+    will analyze the image and create a description (text). This text will be passed
+    on to another instance, where the model will extract the information needed to
+    pass along.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will start importing the libraries
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can see the image if you run the code on the Jupyter Notebook. For that
+    we need also import:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: Those libraries are unnecessary if we run the code as a script.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Now, we define the model and the local coordinates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can download a new image, for example, Machu Picchu from Wikipedia. On the
+    Notebook we can see it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file935.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now, let’s define a function that will receive the image and will `return the
+    decimal latitude and decimal longitude of the city in the image, its name, and
+    what country it is located`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can print the entire response for debug purposes.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The image description generated for the function will be passed as a prompt
+    for the model again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we print the image description , we will get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the second response from the model (`resp`) will be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we can do a “Post-Processing”, calculating the distance and preparing
+    the final answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And we will get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the [30-Function_Calling_with_images](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/30-Function_Calling_with_images.ipynb)
+    notebook, it is possible to find the experiments with multiple images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now download the script `calc_distance_image.py` from the GitHub and
+    run it on the terminal with the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Enter with the Machu Picchu image full patch as an argument. We will get the
+    same previous result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file936.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*How* about Paris?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file937.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Of course, there are many ways to optimize the code used here. Still, the idea
+    is to explore the considerable potential of *function calling* with SLMs at the
+    edge, allowing those models to integrate with external functions or APIs. Going
+    beyond text generation, SLMs can access real-time data, automate tasks, and interact
+    with various systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'SLMs: Optimization Techniques'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Large Language Models (LLMs) have revolutionized natural language processing,
+    but their deployment and optimization come with unique challenges. One significant
+    issue is the tendency for LLMs (and more, the SLMs) to generate plausible-sounding
+    but factually incorrect information, a phenomenon known as **hallucination**.
+    This occurs when models produce content that seems coherent but is not grounded
+    in truth or real-world facts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other challenges include the immense computational resources required for training
+    and running these models, the difficulty in maintaining up-to-date knowledge within
+    the model, and the need for domain-specific adaptations. Privacy concerns also
+    arise when handling sensitive data during training or inference. Additionally,
+    ensuring consistent performance across diverse tasks and maintaining ethical use
+    of these powerful tools present ongoing challenges. Addressing these issues is
+    crucial for the effective and responsible deployment of LLMs in real-world applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fundamental techniques for enhancing LLM (and SLM) performance and efficiency
+    are Fine-tuning, Prompt engineering, and Retrieval-Augmented Generation (RAG).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Fine-tuning**, while more resource-intensive, offers a way to specialize
+    LLMs for particular domains or tasks. This process involves further training the
+    model on carefully curated datasets, allowing it to adapt its vast general knowledge
+    to specific applications. Fine-tuning can lead to substantial improvements in
+    performance, especially in specialized fields or for unique use cases.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Prompt engineering** is at the forefront of LLM optimization. By carefully
+    crafting input prompts, we can guide models to produce more accurate and relevant
+    outputs. This technique involves structuring queries that leverage the model’s
+    pre-trained knowledge and capabilities, often incorporating examples or specific
+    instructions to shape the desired response.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Retrieval-Augmented Generation (RAG)** represents another powerful approach
+    to improving LLM performance. This method combines the vast knowledge embedded
+    in pre-trained models with the ability to access and incorporate external, up-to-date
+    information. By retrieving relevant data to supplement the model’s decision-making
+    process, RAG can significantly enhance accuracy and reduce the likelihood of generating
+    outdated or false information.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For edge applications, it is more beneficial to focus on techniques like RAG
+    that can enhance model performance without needing on-device fine-tuning. Let’s
+    explore it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAG Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In a basic interaction between a user and a language model, the user asks a
+    question, which is sent as a prompt to the model. The model generates a response
+    based solely on its pre-trained knowledge. In a RAG process, there’s an additional
+    step between the user’s question and the model’s response. The user’s question
+    triggers a retrieval process from a knowledge base.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file938.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A simple RAG project
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Here are the steps to implement a basic Retrieval Augmented Generation (RAG):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Determine the type of documents you’ll be using**: The best types are documents
+    from which we can get clean and unobscured text. PDFs can be problematic because
+    they are designed for printing, not for extracting sensible text. To work with
+    PDFs, we should get the source document or use tools to handle it.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Chunk the text**: We can’t store the text as one long stream because of context
+    size limitations and the potential for confusion. Chunking involves splitting
+    the text into smaller pieces. Chunk text has many ways, such as character count,
+    tokens, words, paragraphs, or sections. It is also possible to overlap chunks.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Create embeddings**: Embeddings are numerical representations of text that
+    capture semantic meaning. We create embeddings by passing each chunk of text through
+    a particular embedding model. The model outputs a vector, the length of which
+    depends on the embedding model used. We should pull one (or more) [embedding models](https://ollama.com/blog/embedding-models)
+    from Ollama, to perform this task. Here are some examples of embedding models
+    available at Ollama.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '| Model | Parameter Size | Embedding Size |'
+  prefs:
+  - PREF_IND
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs:
+  - PREF_IND
+  type: TYPE_TB
+- en: '| mxbai-embed-large | 334M | 1024 |'
+  prefs:
+  - PREF_IND
+  type: TYPE_TB
+- en: '| nomic-embed-text | 137M | 768 |'
+  prefs:
+  - PREF_IND
+  type: TYPE_TB
+- en: '| all-minilm | 23M | 384 |'
+  prefs:
+  - PREF_IND
+  type: TYPE_TB
+- en: Generally, larger embedding sizes capture more nuanced information about the
+    input. Still, they also require more computational resources to process, and a
+    higher number of parameters should increase the latency (but also the quality
+    of the response).
+  prefs:
+  - PREF_IND
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Store the chunks and embeddings in a vector database**: We will need a way
+    to efficiently find the most relevant chunks of text for a given prompt, which
+    is where a vector database comes in. We will use [Chromadb](https://www.trychroma.com/),
+    an AI-native open-source vector database, which simplifies building RAGs by creating
+    knowledge, facts, and skills pluggable for LLMs. Both the embedding and the source
+    text for each chunk are stored.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Build the prompt**: When we have a question, we create an embedding and query
+    the vector database for the most similar chunks. Then, we select the top few results
+    and include their text in the prompt.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The goal of RAG is to provide the model with the most relevant information from
+    our documents, allowing it to generate more accurate and informative responses.
+    So, let’s implement a simple example of an SLM incorporating a particular set
+    of facts about bees (“Bee Facts”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inside the `ollama` env, enter the command in the terminal for Chromadb installation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s pull an intermediary embedding model, `nomic-embed-text`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And create a working directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s create a new Jupyter notebook, [40-RAG-simple-bee](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/40-RAG-simple-bee.ipynb)
+    for some exploration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the needed libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And define aor models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Initially, a knowledge base about bee facts should be created. This involves
+    collecting relevant documents and converting them into vector embeddings. These
+    embeddings are then stored in a vector database, allowing for efficient similarity
+    searches later. Enter with the “document,” a base of “bee facts” as a list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: We do not need to “chunk” the document here because we will use each element
+    of the list and a chunk.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Now, we will create our vector embedding database `bee_facts` and store the
+    document in it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that we have our “Knowledge Base” created, we can start making queries,
+    retrieving data from it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file939.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**User Query**: The process begins when a user asks a question, such as “How
+    many bees are in a colony? Who lays eggs, and how much? How about common pests
+    and diseases?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Query Embedding**: The user’s question is converted into a vector embedding
+    using **the same embedding model** used for the knowledge base.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Relevant Document Retrieval**: The system searches the knowledge base using
+    the query embedding to find the most relevant documents (in this case, the 5 more
+    probable). This is done using a similarity search, which compares the query embedding
+    to the document embeddings in the database.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Prompt Augmentation**: The retrieved relevant information is combined with
+    the original user query to create an augmented prompt. This prompt now contains
+    the user’s question and pertinent facts from the knowledge base.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Answer Generation**: The augmented prompt is then fed into a language model,
+    in this case, the `llama3.2:3b` model. The model uses this enriched context to
+    generate a comprehensive answer. Parameters like temperature, top_k, and top_p
+    are set to control the randomness and quality of the generated response.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Response Delivery**: Finally, the system returns the generated answer to
+    the user.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s create a function to help answer new questions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now create queries and call the function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'By the way, if the model used supports multiple languages, we can use it (for
+    example, Portuguese), even if the dataset was created in English:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: Going Further
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The small LLM models tested worked well at the edge, both in text and with images,
+    but of course, they had high latency regarding the last one. A combination of
+    specific and dedicated models can lead to better results; for example, in real
+    cases, an Object Detection model (such as YOLO) can get a general description
+    and count of objects on an image that, once passed to an LLM, can help extract
+    essential insights and actions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: According to Avi Baum, CTO at Hailo,
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the vast landscape of artificial intelligence (AI), one of the most intriguing
+    journeys has been the evolution of AI on the edge. This journey has taken us from
+    classic machine vision to the realms of discriminative AI, enhancive AI, and now,
+    the groundbreaking frontier of generative AI. Each step has brought us closer
+    to a future where intelligent systems seamlessly integrate with our daily lives,
+    offering an immersive experience of not just perception but also creation at the
+    palm of our hand.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../media/file940.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This lab has demonstrated how a Raspberry Pi 5 can be transformed into a potent
+    AI hub capable of running large language models (LLMs) for real-time, on-site
+    data analysis and insights using Ollama and Python. The Raspberry Pi’s versatility
+    and power, coupled with the capabilities of lightweight LLMs like Llama 3.2 and
+    LLaVa-Phi-3-mini, make it an excellent platform for edge computing applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The potential of running LLMs on the edge extends far beyond simple data processing,
+    as in this lab’s examples. Here are some innovative suggestions for using this
+    project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1\. Smart Home Automation**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Integrate SLMs to interpret voice commands or analyze sensor data for intelligent
+    home automation. This could include real-time monitoring and control of home devices,
+    security systems, and energy management, all processed locally without relying
+    on cloud services.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**2\. Field Data Collection and Analysis**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploy SLMs on Raspberry Pi in remote or mobile setups for real-time data collection
+    and analysis. This can be used in agriculture to monitor crop health, in environmental
+    studies for wildlife tracking, or in disaster response for situational awareness
+    and resource management.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**3\. Educational Tools**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create interactive educational tools that leverage SLMs to provide instant feedback,
+    language translation, and tutoring. This can be particularly useful in developing
+    regions with limited access to advanced technology and internet connectivity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**4\. Healthcare Applications**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use SLMs for medical diagnostics and patient monitoring. They can provide real-time
+    analysis of symptoms and suggest potential treatments. This can be integrated
+    into telemedicine platforms or portable health devices.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**5\. Local Business Intelligence**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implement SLMs in retail or small business environments to analyze customer
+    behavior, manage inventory, and optimize operations. The ability to process data
+    locally ensures privacy and reduces dependency on external services.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**6\. Industrial IoT**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Integrate SLMs into industrial IoT systems for predictive maintenance, quality
+    control, and process optimization. The Raspberry Pi can serve as a localized data
+    processing unit, reducing latency and improving the reliability of automated systems.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**7\. Autonomous Vehicles**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use SLMs to process sensory data from autonomous vehicles, enabling real-time
+    decision-making and navigation. This can be applied to drones, robots, and self-driving
+    cars for enhanced autonomy and safety.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**8\. Cultural Heritage and Tourism**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implement SLMs to provide interactive and informative cultural heritage sites
+    and museum guides. Visitors can use these systems to get real-time information
+    and insights, enhancing their experience without internet connectivity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**9\. Artistic and Creative Projects**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use SLMs to analyze and generate creative content, such as music, art, and literature.
+    This can foster innovative projects in the creative industries and allow for unique
+    interactive experiences in exhibitions and performances.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**10\. Customized Assistive Technologies**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Develop assistive technologies for individuals with disabilities, providing
+    personalized and adaptive support through real-time text-to-speech, language translation,
+    and other accessible tools.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[10-Ollama_Python_Library notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/10-Ollama_Python_Library.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[20-Ollama_Function_Calling notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/20-Ollama_Function_Calling.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[30-Function_Calling_with_images notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/30-Function_Calling_with_images.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[40-RAG-simple-bee notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/40-RAG-simple-bee.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[calc_distance_image python script](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OLLAMA_SLMs/calc_distance_image.py)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

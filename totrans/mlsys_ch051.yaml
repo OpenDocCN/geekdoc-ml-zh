@@ -1,0 +1,2424 @@
+- en: Object Detection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../media/file848.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*DALL·E prompt - A cover image for an ‘Object Detection’ chapter in a Raspberry
+    Pi tutorial, designed in the same vintage 1950s electronics lab style as previous
+    covers. The scene should prominently feature wheels and cubes, similar to those
+    provided by the user, placed on a workbench in the foreground. A Raspberry Pi
+    with a connected camera module should be capturing an image of these objects.
+    Surround the scene with classic lab tools like soldering irons, resistors, and
+    wires. The lab background should include vintage equipment like oscilloscopes
+    and tube radios, maintaining the detailed and nostalgic feel of the era. No text
+    or logos should be included.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Building upon our exploration of image classification, we now turn our attention
+    to a more advanced computer vision task: object detection. While image classification
+    assigns a single label to an entire image, object detection goes further by identifying
+    and locating multiple objects within a single image. This capability opens up
+    many new applications and challenges, particularly in edge computing and IoT devices
+    like the Raspberry Pi.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Object detection combines the tasks of classification and localization. It not
+    only determines what objects are present in an image but also pinpoints their
+    locations by, for example, drawing bounding boxes around them. This added complexity
+    makes object detection a more powerful tool for understanding visual scenes, but
+    it also requires more sophisticated models and training techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In edge AI, where we work with constrained computational resources, implementing
+    efficient object detection models becomes crucial. The challenges we faced with
+    image classification—balancing model size, inference speed, and accuracy—are amplified
+    in object detection. However, the rewards are also more significant, as object
+    detection enables more nuanced and detailed visual data analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some applications of object detection on edge devices include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Surveillance and security systems
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Autonomous vehicles and drones
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Industrial quality control
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Wildlife monitoring
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Augmented reality applications
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'As we put our hands into object detection, we’ll build upon the concepts and
+    techniques we explored in image classification. We’ll examine popular object detection
+    architectures designed for efficiency, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Single Stage Detectors, such as MobileNet and EfficientDet,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: FOMO (Faster Objects, More Objects), and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: YOLO (You Only Look Once).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To learn more about object detection models, follow the tutorial [A Gentle Introduction
+    to Object Recognition With Deep Learning](https://machinelearningmastery.com/object-recognition-with-deep-learning/).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We will explore those object detection models using
+  prefs: []
+  type: TYPE_NORMAL
+- en: TensorFlow Lite Runtime (now changed to [LiteRT](https://ai.google.dev/edge/litert)),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Edge Impulse Linux Python SDK and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ultralytics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file849.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Throughout this lab, we’ll cover the fundamentals of object detection and how
+    it differs from image classification. We’ll also learn how to train, fine-tune,
+    test, optimize, and deploy popular object detection architectures using a dataset
+    created from scratch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Object Detection Fundamentals
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Object detection builds upon the foundations of image classification but extends
+    its capabilities significantly. To understand object detection, it’s crucial first
+    to recognize its key differences from image classification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image Classification vs. Object Detection
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '**Image Classification**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assigns a single label to an entire image
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Answers the question: “What is this image’s primary object or scene?”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Outputs a single class prediction for the whole image
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Object Detection**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Identifies and locates multiple objects within an image
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Answers the questions: “What objects are in this image, and where are they
+    located?”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Outputs multiple predictions, each consisting of a class label and a bounding
+    box
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To visualize this difference, let’s consider an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file850.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This diagram illustrates the critical difference: image classification provides
+    a single label for the entire image, while object detection identifies multiple
+    objects, their classes, and their locations within the image.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Key Components of Object Detection
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'Object detection systems typically consist of two main components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Object Localization: This component identifies where objects are located in
+    the image. It typically outputs bounding boxes, rectangular regions encompassing
+    each detected object.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Object Classification: This component determines the class or category of each
+    detected object, similar to image classification but applied to each localized
+    region.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Challenges in Object Detection
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'Object detection presents several challenges beyond those of image classification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Multiple objects: An image may contain multiple objects of various classes,
+    sizes, and positions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Varying scales: Objects can appear at different sizes within the image.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Occlusion: Objects may be partially hidden or overlapping.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Background clutter: Distinguishing objects from complex backgrounds can be
+    challenging.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Real-time performance: Many applications require fast inference times, especially
+    on edge devices.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Approaches to Object Detection
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'There are two main approaches to object detection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Two-stage detectors: These first propose regions of interest and then classify
+    each region. Examples include R-CNN and its variants (Fast R-CNN, Faster R-CNN).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Single-stage detectors: These predict bounding boxes (or centroids) and class
+    probabilities in one forward pass of the network. Examples include YOLO (You Only
+    Look Once), EfficientDet, SSD (Single Shot Detector), and FOMO (Faster Objects,
+    More Objects). These are often faster and more suitable for edge devices like
+    Raspberry Pi.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Evaluation Metrics
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: 'Object detection uses different metrics compared to image classification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Intersection over Union (IoU)**: Measures the overlap between predicted and
+    ground truth bounding boxes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Mean Average Precision (mAP)**: Combines precision and recall across all
+    classes and IoU thresholds.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Frames Per Second (FPS)**: Measures detection speed, crucial for real-time
+    applications on edge devices.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pre-Trained Object Detection Models Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we saw in the introduction, given an image or a video stream, an object detection
+    model can identify which of a known set of objects might be present and provide
+    information about their positions within the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can test some common models online by visiting [Object Detection - MediaPipe
+    Studio](https://mediapipe-studio.webapps.google.com/studio/demo/object_detector)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: On [Kaggle](https://www.kaggle.com/models?id=298,130,299), we can find the most
+    common pre-trained tflite models to use with the Raspi, [ssd_mobilenet_v1,](https://www.kaggle.com/models/tensorflow/ssd-mobilenet-v1/tfLite)
+    and [EfficientDet](https://www.kaggle.com/models/tensorflow/efficientdet/tfLite).
+    Those models were trained on the COCO (Common Objects in Context) dataset, with
+    over 200,000 labeled images in 91 categories. Go, download the models, and upload
+    them to the `./models` folder in the Raspi.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alternatively[,](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/tree/main/OBJ_DETEC/models)
+    you can find the models and the COCO labels on [GitHub](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/tree/main/OBJ_DETEC/models).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: For the first part of this lab, we will focus on a pre-trained <semantics><mrow><mn>300</mn><mo>×</mo><mn>300</mn></mrow><annotation
+    encoding="application/x-tex">300\times 300</annotation></semantics> SSD-Mobilenet
+    V1 model and compare it with the <semantics><mrow><mn>320</mn><mo>×</mo><mn>320</mn></mrow><annotation
+    encoding="application/x-tex">320\times 320</annotation></semantics> EfficientDet-lite0,
+    also trained using the COCO 2017 dataset. Both models were converted to a TensorFlow
+    Lite format (4.2 MB for the SSD Mobilenet and 4.6 MB for the EfficientDet).
+  prefs: []
+  type: TYPE_NORMAL
+- en: SSD-Mobilenet V2 or V3 is recommended for transfer learning projects, but once
+    the V1 TFLite model is publicly available, we will use it for this overview.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../media/file851.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Setting Up the TFLite Environment
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We should confirm the steps done on the last Hands-On Lab, Image Classification,
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Updating the Raspberry Pi
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Installing Required Libraries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Setting up a Virtual Environment (Optional but Recommended)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Installing TensorFlow Lite Runtime
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Installing Additional Python Libraries (inside the environment)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Creating a Working Directory:'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Considering that we have created the `Documents/TFLITE` folder in the last
+    Lab, let’s now create the specific folders for this object detection lab:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Inference and Post-Processing
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s start a new [notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/notebooks/SSD_MobileNetV1.ipynb)
+    to follow all the steps to detect objects on an image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the needed libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Load the TFLite model and allocate tensors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Get input and output tensors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Input details** will inform us how the model should be fed with an image.
+    The shape of `(1, 300, 300, 3)` with a dtype of `uint8` tells us that a non-normalized
+    (pixel value range from 0 to 255) image with dimensions <semantics><mrow><mo stretchy="true"
+    form="prefix">(</mo><mn>300</mn><mo>×</mo><mn>300</mn><mo>×</mo><mn>3</mn><mo
+    stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(300\times
+    300\times 3)</annotation></semantics> should be input one by one (Batch Dimension:
+    1).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **output details** include not only the labels (“classes”) and probabilities
+    (“scores”) but also the relative window position of the bounding boxes (“boxes”)
+    about where the object is located on the image and the number of detected objects
+    (“num_detections”). The output details also tell us that the model can detect
+    a **maximum of 10 objects** in the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file852.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, for the above example, using the same cat image used with the *Image Classification
+    Lab* looking for the output, we have a **76% probability** of having found an
+    object with a **class ID of 16** on an area delimited by a **bounding box of [0.028011084,
+    0.020121813, 0.9886069, 0.802299]**. Those four numbers are related to `ymin`,
+    `xmin`, `ymax` and `xmax`, the box coordinates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Taking into consideration that **y** goes from the top `(ymin`) to the bottom
+    (`ymax`) and **x** goes from left (`xmin`) to the right (`xmax`), we have, in
+    fact, the coordinates of the top/left corner and the bottom/right one. With both
+    edges and knowing the shape of the picture, it is possible to draw a rectangle
+    around the object, as shown in the figure below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file853.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Next, we should find what class ID equal to 16 means. Opening the file `coco_labels.txt`,
+    as a list, each element has an associated index, and inspecting index 16, we get,
+    as expected, `cat`. The probability is the value returning from the score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now upload some images with multiple objects on it for testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file854.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Based on the input details, let’s pre-process the image, changing its shape
+    and expanding its dimension:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The new input_data shape is`(1, 300, 300, 3)` with a dtype of `uint8`, which
+    is compatible with what the model expects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the input_data, let’s run the interpreter, measure the latency, and get
+    the output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With a latency of around 800 ms, we can get 4 distinct outputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On a quick inspection, we can see that the model detected 2 objects with a
+    score over 0.5:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file855.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And we can also visualize the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file856.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: EfficientDet
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'EfficientDet is not technically an SSD (Single Shot Detector) model, but it
+    shares some similarities and builds upon ideas from SSD and other object detection
+    architectures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'EfficientDet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Developed by Google researchers in 2019
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Uses EfficientNet as the backbone network
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Employs a novel bi-directional feature pyramid network (BiFPN)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It uses compound scaling to scale the backbone network and the object detection
+    components efficiently.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Similarities to SSD:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Both are single-stage detectors, meaning they perform object localization and
+    classification in a single forward pass.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Both use multi-scale feature maps to detect objects at different scales.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Key differences:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Backbone: SSD typically uses VGG or MobileNet, while EfficientDet uses EfficientNet.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Feature fusion: SSD uses a simple feature pyramid, while EfficientDet uses
+    the more advanced BiFPN.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Scaling method: EfficientDet introduces compound scaling for all components
+    of the network'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Advantages of EfficientDet:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Generally achieves better accuracy-efficiency trade-offs than SSD and many other
+    object detection models.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: More flexible scaling allows for a family of models with different size-performance
+    trade-offs.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While EfficientDet is not an SSD model, it can be seen as an evolution of single-stage
+    detection architectures, incorporating more advanced techniques to improve efficiency
+    and accuracy. When using EfficientDet, we can expect similar output structures
+    to SSD (e.g., bounding boxes and class scores).
+  prefs: []
+  type: TYPE_NORMAL
+- en: On GitHub, you can find another [notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/notebooks/SSD_EfficientDet.ipynb)
+    exploring the EfficientDet model that we did with SSD MobileNet.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Object Detection Project
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, we will develop a complete Image Classification project from data collection
+    to training and deployment. As we did with the Image Classification project, the
+    trained and converted model will be used for inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will use the same dataset to train 3 models: SSD-MobileNet V2, FOMO, and
+    YOLO.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Goal
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: All Machine Learning projects need to start with a goal. Let’s assume we are
+    in an industrial facility and must sort and count **wheels** and special **boxes**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file857.jpg)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In other words, we should perform a multi-label classification, where each
+    image can have three classes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background (no objects)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Box
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Wheel
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Raw Data Collection
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Once we have defined our Machine Learning project goal, the next and most crucial
+    step is collecting the dataset. We can use a phone, the Raspi, or a mix to create
+    the raw dataset (with no labels). Let’s use the simple web app on our Raspberry
+    Pi to view the `QVGA (320 x 240)` captured images in a browser.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From GitHub, get the Python script [get_img_data.py](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/IMG_CLASS/python_scripts/get_img_data.py)
+    and open it in the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Access the web interface:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the Raspberry Pi itself (if you have a GUI): Open a web browser and go to
+    `http://localhost:5000`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'From another device on the same network: Open a web browser and go to `http://<raspberry_pi_ip>:5000`
+    (Replace `<raspberry_pi_ip>` with your Raspberry Pi’s IP address). For example:
+    `http://192.168.4.210:5000/`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file858.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Python script creates a web-based interface for capturing and organizing
+    image datasets using a Raspberry Pi and its camera. It’s handy for machine learning
+    projects that require labeled image data or not, as in our case here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Access the web interface from a browser, enter a generic label for the images
+    you want to capture, and press `Start Capture`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file859.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that the images to be captured will have multiple labels that should be
+    defined later.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Use the live preview to position the camera and click `Capture Image` to save
+    images under the current label (in this case, `box-wheel`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file860.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'When we have enough images, we can press `Stop Capture`. The captured images
+    are saved on the folder dataset/box-wheel:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file861.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Get around 60 images. Try to capture different angles, backgrounds, and light
+    conditions. Filezilla can transfer the created raw dataset to your main computer.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Labeling Data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The next step in an Object Detect project is to create a labeled dataset. We
+    should label the raw dataset images, creating bounding boxes around each picture’s
+    objects (box and wheel). We can use labeling tools like [LabelImg,](https://pypi.org/project/labelImg/)
+    [CVAT,](https://www.cvat.ai/) [Roboflow,](https://roboflow.com/annotate) or even
+    the [Edge Impulse Studio.](https://edgeimpulse.com/) Once we have explored the
+    Edge Impulse tool in other labs, let’s use Roboflow here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are using Roboflow (free version) here for two main reasons. 1) We can have
+    auto-labeler, and 2) The annotated dataset is available in several formats and
+    can be used both on Edge Impulse Studio (we will use it for MobileNet V2 and FOMO
+    train) and on CoLab (YOLOv8 train), for example. Having the annotated dataset
+    on Edge Impulse (Free account), it is not possible to use it for training on other
+    platforms.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We should upload the raw dataset to [Roboflow.](https://roboflow.com/) Create
+    a free account there and start a new project, for example, (“box-versus-wheel”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file862.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We will not enter in deep details about the Roboflow process once many tutorials
+    are available.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Annotate
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: Once the project is created and the dataset is uploaded, you should make the
+    annotations using the “Auto-Label” Tool. Note that you can also upload images
+    with only a background, which should be saved w/o any annotations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file863.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once all images are annotated, you should split them into training, validation,
+    and testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file864.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data Pre-Processing
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: The last step with the dataset is preprocessing to generate a final version
+    for training. Let’s resize all images to <semantics><mrow><mn>320</mn><mo>×</mo><mn>320</mn></mrow><annotation
+    encoding="application/x-tex">320\times 320</annotation></semantics> and generate
+    augmented versions of each image (augmentation) to create new training examples
+    from which our model can learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For augmentation, we will rotate the images (+/-15^o), crop, and vary the brightness
+    and exposure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file865.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: At the end of the process, we will have 153 images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file866.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now, you should export the annotated dataset in a format that Edge Impulse,
+    Ultralytics, and other frameworks/tools understand, for example, `YOLOv8`. Let’s
+    download a zipped version of the dataset to our desktop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file867.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, it is possible to review how the dataset was structured
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file868.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There are 3 separate folders, one for each split (`train`/`test`/`valid`). For
+    each of them, there are 2 subfolders, `images`, and `labels`. The pictures are
+    stored as **image_id.jpg** and **images_id.txt**, where “image_id” is unique for
+    every picture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The labels file format will be `class_id` `bounding box coordinates`, where
+    in our case, class_id will be `0` for `box` and `1` for `wheel`. The numerical
+    id (o, 1, 2…) will follow the alphabetical order of the class name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `data.yaml` file has info about the dataset as the classes’ names (`names:
+    [''box'', ''wheel'']`) following the YOLO format.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s it! We are ready to start training using the Edge Impulse Studio
+    (as we will do in the following step), Ultralytics (as we will when discussing
+    YOLO), or even training from scratch on CoLab (as we did with the Cifar-10 dataset
+    on the Image Classification lab).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The pre-processed dataset can be found at the [Roboflow site](https://universe.roboflow.com/marcelo-rovai-riila/box-versus-wheel-auto-dataset).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Training an SSD MobileNet Model on Edge Impulse Studio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Go to [Edge Impulse Studio,](https://www.edgeimpulse.com/) enter your credentials
+    at **Login** (or create an account), and start a new project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, you can clone the project developed for this hands-on lab: [Raspi - Object
+    Detection](https://studio.edgeimpulse.com/public/515477/live).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: On the Project `Dashboard` tab, go down and on **Project info,** and for Labeling
+    method select `Bounding boxes (object detection)`
+  prefs: []
+  type: TYPE_NORMAL
+- en: Uploading the annotated data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: On Studio, go to the `Data acquisition` tab, and on the `UPLOAD DATA` section,
+    upload from your computer the raw dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use the option `Select a folder`, choosing, for example, the folder `train`
+    in your computer, which contains two sub-folders, `images`, and `labels`. Select
+    the `Image label format`, “YOLO TXT”, upload into the category `Training`, and
+    press `Upload data`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file869.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Repeat the process for the test data (upload both folders, test, and validation).
+    At the end of the upload process, you should end with the annotated dataset of
+    153 images split in the train/test (84%/16%).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that labels will be stored at the labels files `0` and `1` , which are
+    equivalent to `box` and `wheel`.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../media/file870.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Impulse Design
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The first thing to define when we enter the `Create impulse` step is to describe
+    the target device for deployment. A pop-up window will appear. We will select
+    Raspberry 4, an intermediary device between the Raspi-Zero and the Raspi-5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This choice will not interfere with the training; it will only give us an idea
+    about the latency of the model on that specific target.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../media/file871.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In this phase, you should define how to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-processing** consists of resizing the individual images. In our case,
+    the images were pre-processed on Roboflow, to `320x320` , so let’s keep it. The
+    resize will not matter here because the images are already squared. If you upload
+    a rectangular image, squash it (squared form, without cropping). Afterward, you
+    could define if the images are converted from RGB to Grayscale or not.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Design a Model,** in this case, “Object Detection.”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file872.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Preprocessing all dataset
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In the section `Image`, select **Color depth** as `RGB`, and press `Save parameters`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file873.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The Studio moves automatically to the next section, `Generate features`, where
+    all samples will be pre-processed, resulting in 480 objects: 207 boxes and 273
+    wheels.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file874.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The feature explorer shows that all samples evidence a good separation after
+    the feature generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Design, Training, and Test
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: For training, we should select a pre-trained model. Let’s use the **MobileNetV2
+    SSD FPN-Lite (320x320 only)** . It is a pre-trained object detection model designed
+    to locate up to 10 objects within an image, outputting a bounding box for each
+    object detected. The model is around 3.7 MB in size. It supports an RGB input
+    at <semantics><mrow><mn>320</mn><mo>×</mo><mn>320</mn></mrow><annotation encoding="application/x-tex">320\times
+    320</annotation></semantics> px.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Regarding the training hyper-parameters, the model will be trained with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Epochs: 25'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Batch size: 32'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Learning Rate: 0.15.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For validation during training, 20% of the dataset (*validation_dataset*) will
+    be spared.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file875.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As a result, the model ends with an overall precision score (based on COCO mAP)
+    of 88.8%, higher than the result when using the test data (83.3%).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying the model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We have two ways to deploy our model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**TFLite model**, which lets deploy the trained model as `.tflite` for the
+    Raspi to run it using Python.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Linux (AARCH64)**, a binary for Linux (AARCH64), implements the Edge Impulse
+    Linux protocol, which lets us run our models on any Linux-based development board,
+    with SDKs for Python, for example. See the documentation for more information
+    and [setup instructions](https://docs.edgeimpulse.com/docs/edge-impulse-for-linux).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let’s deploy the **TFLite model**. On the `Dashboard` tab, go to Transfer learning
+    model (int8 quantized) and click on the download icon:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file876.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transfer the model from your computer to the Raspi folder`./models` and capture
+    or get some images for inference and save them in the folder `./images`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inference and Post-Processing
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The inference can be made as discussed in the *Pre-Trained Object Detection
+    Models Overview*. Let’s start a new [notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/notebooks/EI-SSD-MobileNetV2.ipynb)
+    to follow all the steps to detect cubes and wheels on an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the needed libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Define the model path and labels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Remember that the model will output the class ID as values (0 and 1), following
+    an alphabetic order regarding the class names.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Load the model, allocate the tensors, and get the input and output tensor details:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'One crucial difference to note is that the `dtype` of the input details of
+    the model is now `int8`, which means that the input values go from –128 to +127,
+    while each pixel of our raw image goes from 0 to 256\. This means that we should
+    pre-process the image to match it. We can check here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So, let’s open the image and show it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file877.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And perform the pre-processing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Checking the input data, we can verify that the input tensor is compatible
+    with what is expected by the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, it is time to perform the inference. Let’s also calculate the latency
+    of the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: The model will take around 600ms to perform the inference in the Raspi-Zero,
+    which is around 5 times longer than a Raspi-5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we can get the output classes of objects detected, its bounding boxes coordinates,
+    and probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file878.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From the results, we can see that 4 objects were detected: two with class ID
+    0 (`box`)and two with class ID 1 (`wheel`), what is correct!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize the result for a `threshold` of 0.5
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file879.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: But what happens if we reduce the threshold to 0.3, for example?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file880.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We start to see false positives and **multiple detections**, where the model
+    detects the same object multiple times with different confidence levels and slightly
+    different bounding boxes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Commonly, sometimes, we need to adjust the threshold to smaller values to capture
+    all objects, avoiding false negatives, which would lead to multiple detections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To improve the detection results, we should implement **Non-Maximum Suppression
+    (NMS**), which helps eliminate overlapping bounding boxes and keeps only the most
+    confident detection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For that, let’s create a general function named `non_max_suppression()`, with
+    the role of refining object detection results by eliminating redundant and overlapping
+    bounding boxes. It achieves this by iteratively selecting the detection with the
+    highest confidence score and removing other significantly overlapping detections
+    based on an Intersection over Union (IoU) threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'How it works:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sorting: It starts by sorting all detections by their confidence scores, highest
+    to lowest.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Selection: It selects the highest-scoring box and adds it to the final list
+    of detections.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Comparison: This selected box is compared with all remaining lower-scoring
+    boxes.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Elimination: Any box that overlaps significantly (above the IoU threshold)
+    with the selected box is eliminated.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Iteration: This process repeats with the next highest-scoring box until all
+    boxes are processed.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Now, we can define a more precise visualization function that will take into
+    consideration an IoU threshold, detecting only the objects that were selected
+    by the `non_max_suppression` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we can create a function that will call the others, performing inference
+    on any image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, running the code, having the same image again with a confidence threshold
+    of 0.3, but with a small IoU:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file881.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training a FOMO Model at Edge Impulse Studio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The inference with the SSD MobileNet model worked well, but the latency was
+    significantly high. The inference varied from 0.5 to 1.3 seconds on a Raspi-Zero,
+    which means around or less than 1 FPS (1 frame per second). One alternative to
+    speed up the process is to use FOMO (Faster Objects, More Objects).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This novel machine learning algorithm lets us count multiple objects and find
+    their location in an image in real-time using up to <semantics><mrow><mn>30</mn><mo>×</mo></mrow><annotation
+    encoding="application/x-tex">30\times</annotation></semantics> less processing
+    power and memory than MobileNet SSD or YOLO. The main reason this is possible
+    is that while other models calculate the object’s size by drawing a square around
+    it (bounding box), FOMO ignores the size of the image, providing only the information
+    about where the object is located in the image through its centroid coordinates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How FOMO works?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In a typical object detection pipeline, the first stage is extracting features
+    from the input image. **FOMO leverages MobileNetV2 to perform this task**. MobileNetV2
+    processes the input image to produce a feature map that captures essential characteristics,
+    such as textures, shapes, and object edges, in a computationally efficient way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file882.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once these features are extracted, FOMO’s simpler architecture, focused on center-point
+    detection, interprets the feature map to determine where objects are located in
+    the image. The output is a grid of cells, where each cell represents whether or
+    not an object center is detected. The model outputs one or more confidence scores
+    for each cell, indicating the likelihood of an object being present.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see how it works on an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: FOMO divides the image into blocks of pixels using a factor of 8\. For the input
+    of <semantics><mrow><mn>96</mn><mo>×</mo><mn>96</mn></mrow><annotation encoding="application/x-tex">96\times
+    96</annotation></semantics>, the grid would be <semantics><mrow><mn>12</mn><mo>×</mo><mn>12</mn></mrow><annotation
+    encoding="application/x-tex">12\times 12</annotation></semantics> <semantics><mrow><mo
+    stretchy="true" form="prefix">(</mo><mn>96</mn><mi>/</mi><mn>8</mn><mo>=</mo><mn>12</mn><mo
+    stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(96/8=12)</annotation></semantics>.
+    For a <semantics><mrow><mn>160</mn><mo>×</mo><mn>160</mn></mrow><annotation encoding="application/x-tex">160\times
+    160</annotation></semantics>, the grid will be <semantics><mrow><mn>20</mn><mo>×</mo><mn>20</mn></mrow><annotation
+    encoding="application/x-tex">20\times 20</annotation></semantics>, and so on.
+    Next, FOMO will run a classifier through each pixel block to calculate the probability
+    that there is a box or a wheel in each of them and, subsequently, determine the
+    regions that have the highest probability of containing the object (If a pixel
+    block has no objects, it will be classified as *background*). From the overlap
+    of the final region, the FOMO provides the coordinates (related to the image dimensions)
+    of the centroid of this region.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file883.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Trade-off Between Speed and Precision**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Grid Resolution**: FOMO uses a grid of fixed resolution, meaning each cell
+    can detect if an object is present in that part of the image. While it doesn’t
+    provide high localization accuracy, it makes a trade-off by being fast and computationally
+    light, which is crucial for edge devices.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Multi-Object Detection**: Since each cell is independent, FOMO can detect
+    multiple objects simultaneously in an image by identifying multiple centers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Impulse Design, new Training and Testing
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Return to Edge Impulse Studio, and in the `Experiments` tab, create another
+    impulse. Now, the input images should be <semantics><mrow><mn>160</mn><mo>×</mo><mn>160</mn></mrow><annotation
+    encoding="application/x-tex">160\times 160</annotation></semantics> (this is the
+    expected input size for MobilenetV2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file884.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: On the `Image` tab, generate the features and go to the `Object detection` tab.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should select a pre-trained model for training. Let’s use the **FOMO (Faster
+    Objects, More Objects) MobileNetV2 0.35.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file885.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Regarding the training hyper-parameters, the model will be trained with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Epochs: 30'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Batch size: 32'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Learning Rate: 0.001.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For validation during training, 20% of the dataset (*validation_dataset*) will
+    be spared. We will not apply Data Augmentation for the remaining 80% (*train_dataset*)
+    because our dataset was already augmented during the labeling phase at Roboflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, the model ends with an overall F1 score of 93.3% with an impressive
+    latency of 8 ms (Raspi-4), around <semantics><mrow><mn>60</mn><mo>×</mo></mrow><annotation
+    encoding="application/x-tex">60\times</annotation></semantics> less than we got
+    with the SSD MovileNetV2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file886.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that FOMO automatically added a third label background to the two previously
+    defined *boxes* (0) and *wheels* (1).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'On the `Model testing` tab, we can see that the accuracy was 94%. Here is one
+    of the test sample results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file887.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In object detection tasks, accuracy is generally not the primary [evaluation
+    metric.](https://learnopencv.com/mean-average-precision-map-object-detection-model-evaluation-metric/)
+    Object detection involves classifying objects and providing bounding boxes around
+    them, making it a more complex problem than simple classification. The issue is
+    that we do not have the bounding box, only the centroids. In short, using accuracy
+    as a metric could be misleading and may not provide a complete understanding of
+    how well the model is performing.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deploying the model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: As we did in the previous section, we can deploy the trained model as TFLite
+    or Linux (AARCH64). Let’s do it now as **Linux (AARCH64)**, a binary that implements
+    the [Edge Impulse Linux](https://docs.edgeimpulse.com/docs/tools/edge-impulse-for-linux)
+    protocol.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edge Impulse for Linux models is delivered in `.eim` format. This [executable](https://docs.edgeimpulse.com/docs/run-inference/linux-eim-executable)
+    contains our “full impulse” created in Edge Impulse Studio. The impulse consists
+    of the signal processing block(s) and any learning and anomaly block(s) we added
+    and trained. It is compiled with optimizations for our processor or GPU (e.g.,
+    NEON instructions on ARM cores), plus a straightforward IPC layer (over a Unix
+    socket).
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the `Deploy` tab, select the option `Linux (AARCH64)`, the `int8`model and
+    press `Build`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file888.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The model will be automatically downloaded to your computer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On our Raspi, let’s create a new working area:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Rename the model for easy identification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, `raspi-object-detection-linux-aarch64-FOMO-int8.eim` and transfer
+    it to the new Raspi folder`./models` and capture or get some images for inference
+    and save them in the folder `./images`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inference and Post-Processing
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The inference will be made using the [Linux Python SDK](https://docs.edgeimpulse.com/docs/tools/edge-impulse-for-linux/linux-python-sdk).
+    This library lets us run machine learning models and collect sensor data on [Linux](https://docs.edgeimpulse.com/docs/tools/edge-impulse-for-linux)
+    machines using Python. The SDK is open source and hosted on GitHub: [edgeimpulse/linux-sdk-python](https://github.com/edgeimpulse/linux-sdk-python).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s set up a Virtual Environment for working with the Linux Python SDK
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And Install the all the libraries needed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Permit our model to be executable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Install the Jupiter Notebook on the new environment
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Run a notebook locally (on the Raspi-4 or 5 with desktop)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'or on the browser on your computer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s start a new [notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/notebooks/EI-Linux-FOMO.ipynb)
+    by following all the steps to detect cubes and wheels on an image using the FOMO
+    model and the Edge Impulse Linux Python SDK.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Import the needed libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Define the model path and labels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: Remember that the model will output the class ID as values (0 and 1), following
+    an alphabetic order regarding the class names.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Load and initialize the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `model_info` will contain critical information about our model. However,
+    unlike the TFLite interpreter, the EI Linux Python SDK library will now prepare
+    the model for inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, let’s open the image and show it (Now, for compatibility, we will use OpenCV,
+    the CV Library used internally by EI. OpenCV reads the image as BGR, so we will
+    need to convert it to RGB :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file889.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now we will get the features and the preprocessed image (`cropped`) using the
+    `runner`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And perform the inference. Let’s also calculate the latency of the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s get the output classes of objects detected, their bounding boxes centroids,
+    and probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results show that two objects were detected: one with class ID 0 (`box`)
+    and one with class ID 1 (`wheel`), which is correct!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize the result (The `threshold` is 0.5, the default value set during
+    the model testing on the Edge Impulse Studio).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file890.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Exploring a YOLO Model using Ultralytics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this lab, we will explore YOLOv8\. [Ultralytics](https://ultralytics.com/)
+    [YOLOv8](https://github.com/ultralytics/ultralytics) is a version of the acclaimed
+    real-time object detection and image segmentation model, YOLO. YOLOv8 is built
+    on cutting-edge advancements in deep learning and computer vision, offering unparalleled
+    performance in terms of speed and accuracy. Its streamlined design makes it suitable
+    for various applications and easily adaptable to different hardware platforms,
+    from edge devices to cloud APIs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Talking about the YOLO Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The YOLO (You Only Look Once) model is a highly efficient and widely used object
+    detection algorithm known for its real-time processing capabilities. Unlike traditional
+    object detection systems that repurpose classifiers or localizers to perform detection,
+    YOLO frames the detection problem as a single regression task. This innovative
+    approach enables YOLO to simultaneously predict multiple bounding boxes and their
+    class probabilities from full images in one evaluation, significantly boosting
+    its speed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Key Features:'
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: '**Single Network Architecture**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: YOLO employs a single neural network to process the entire image. This network
+    divides the image into a grid and, for each grid cell, directly predicts bounding
+    boxes and associated class probabilities. This end-to-end training improves speed
+    and simplifies the model architecture.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Real-Time Processing**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: One of YOLO’s standout features is its ability to perform object detection in
+    real-time. Depending on the version and hardware, YOLO can process images at high
+    frames per second (FPS). This makes it ideal for applications requiring quick
+    and accurate object detection, such as video surveillance, autonomous driving,
+    and live sports analysis.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Evolution of Versions**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Over the years, YOLO has undergone significant improvements, from YOLOv1 to
+    the latest YOLOv10\. Each iteration has introduced enhancements in accuracy, speed,
+    and efficiency. YOLOv8, for instance, incorporates advancements in network architecture,
+    improved training methodologies, and better support for various hardware, ensuring
+    a more robust performance.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Although YOLOv10 is the family’s newest member with an encouraging performance
+    based on its paper, it was just released (May 2024) and is not fully integrated
+    with the Ultralytics library. Conversely, the precision-recall curve analysis
+    suggests that YOLOv8 generally outperforms YOLOv9, capturing a higher proportion
+    of true positives while minimizing false positives more effectively (for more
+    details, see this [article](https://encord.com/blog/performanceyolov9-vs-yolov8-custom-dataset/)).
+    So, this lab is based on the YOLOv8n.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file891.jpg)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: '**Accuracy and Efficiency**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While early versions of YOLO traded off some accuracy for speed, recent versions
+    have made substantial strides in balancing both. The newer models are faster and
+    more accurate, detecting small objects (such as bees) and performing well on complex
+    datasets.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Wide Range of Applications**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: YOLO’s versatility has led to its adoption in numerous fields. It is used in
+    traffic monitoring systems to detect and count vehicles, security applications
+    to identify potential threats and agricultural technology to monitor crops and
+    livestock. Its application extends to any domain requiring efficient and accurate
+    object detection.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Community and Development**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: YOLO continues to evolve and is supported by a strong community of developers
+    and researchers (being the YOLOv8 very strong). Open-source implementations and
+    extensive documentation have made it accessible for customization and integration
+    into various projects. Popular deep learning frameworks like Darknet, TensorFlow,
+    and PyTorch support YOLO, further broadening its applicability.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics?tab=readme-ov-file)
+    can not only [Detect](https://docs.ultralytics.com/tasks/detect) (our case here)
+    but also [Segment](https://docs.ultralytics.com/tasks/segment) and [Pose](https://docs.ultralytics.com/tasks/pose)
+    models pre-trained on the [COCO](https://docs.ultralytics.com/datasets/detect/coco)
+    dataset and YOLOv8 [Classify](https://docs.ultralytics.com/tasks/classify) models
+    pre-trained on the [ImageNet](https://docs.ultralytics.com/datasets/classify/imagenet)
+    dataset. [Track](https://docs.ultralytics.com/modes/track) mode is available for
+    all Detect, Segment, and Pose models.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../media/file892.png)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: Ultralytics YOLO supported tasks
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Installation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'On our Raspi, let’s deactivate the current environment to create a new working
+    area:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s set up a Virtual Environment for working with the Ultralytics YOLOv8
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: And install the Ultralytics packages for local inference on the Raspi
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Update the packages list, install pip, and upgrade to the latest:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Install the `ultralytics` pip package with optional dependencies:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Reboot the device:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Testing the YOLO
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: After the Raspi-Zero booting, let’s activate the `yolo` env, go to the working
+    directory,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and run inference on an image that will be downloaded from the Ultralytics
+    website, using the YOLOV8n model (the smallest in the family) at the Terminal
+    (CLI):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: The YOLO model family is pre-trained with the COCO dataset.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The inference result will appear in the terminal. In the image (bus.jpg), 4
+    `persons`, 1 `bus,` and 1 `stop signal` were detected:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file893.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Also, we got a message that `Results saved to runs/detect/predict`. Inspecting
+    that directory, we can see a new image saved (bus.jpg). Let’s download it from
+    the Raspi-Zero to our desktop for inspection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file894.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, the Ultralytics YOLO is correctly installed on our Raspi. But, on the Raspi-Zero,
+    an issue is the high latency for this inference, around 18 seconds, even with
+    the most miniature model of the family (YOLOv8n).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Export Model to NCNN format
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Deploying computer vision models on edge devices with limited computational
+    power, such as the Raspi-Zero, can cause latency issues. One alternative is to
+    use a format optimized for optimal performance. This ensures that even devices
+    with limited processing power can handle advanced computer vision tasks well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of all the model export formats supported by Ultralytics, the [NCNN](https://docs.ultralytics.com/integrations/ncnn)
+    is a high-performance neural network inference computing framework optimized for
+    mobile platforms. From the beginning of the design, NCNN was deeply considerate
+    about deployment and use on mobile phones and did not have third-party dependencies.
+    It is cross-platform and runs faster than all known open-source frameworks (such
+    as TFLite).
+  prefs: []
+  type: TYPE_NORMAL
+- en: NCNN delivers the best inference performance when working with Raspberry Pi
+    devices. NCNN is highly optimized for mobile embedded platforms (such as ARM architecture).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, let’s convert our model and rerun the inference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Export a YOLOv8n PyTorch model to NCNN format, creating: ‘/yolov8n_ncnn_model’'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Run inference with the exported model (now the source could be the bus.jpg
+    image that was downloaded from the website to the current directory on the last
+    inference):'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first inference, when the model is loaded, usually has a high latency (around
+    17s), but from the 2nd, it is possible to note that the inference goes down to
+    around 2s.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Exploring YOLO with Python
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'To start, let’s call the Python Interpreter so we can explore how the YOLO
+    model works, line by line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we should call the YOLO library from Ultralytics and load the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, run inference over an image (let’s use again `bus.jpg`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file895.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can verify that the result is almost identical to the one we get running
+    the inference at the terminal level (CLI), except that the bus stop was not detected
+    with the reduced NCNN model. Note that the latency was reduced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s analyze the “result” content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, we can see `result[0].boxes.data`, showing us the main inference
+    result, which is a tensor shape (4, 6). Each line is one of the objects detected,
+    being the 4 first columns, the bounding boxes coordinates, the 5th, the confidence,
+    and the 6th, the class (in this case, `0: person` and `5: bus`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file896.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can access several inference results separately, as the inference time,
+    and have it printed in a better format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Or we can have the total number of objects detected:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file897.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'With Python, we can create a detailed output that meets our needs (See [Model
+    Prediction with Ultralytics YOLO](https://docs.ultralytics.com/modes/predict/)
+    for more details). Let’s run a Python script instead of manually entering it line
+    by line in the interpreter, as shown below. Let’s use `nano` as our text editor.
+    First, we should create an empty Python script named, for example, `yolov8_tests.py`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Enter with the code lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../media/file898.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'And enter with the commands: `[CTRL+O]` + `[ENTER]` +`[CTRL+X]` to save the
+    Python script.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Run the script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result is the same as running the inference at the terminal level (CLI)
+    and with the built-in Python interpreter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calling the YOLO library and loading the model for inference for the first time
+    takes a long time, but the inferences after that will be much faster. For example,
+    the first single inference can take several seconds, but after that, the inference
+    time should be reduced to less than 1 second.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Training YOLOv8 on a Customized Dataset
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Return to our “Box versus Wheel” dataset, labeled on [Roboflow](https://universe.roboflow.com/marcelo-rovai-riila/box-versus-wheel-auto-dataset).
+    On the `Download Dataset`, instead of `Download a zip to computer` option done
+    for training on Edge Impulse Studio, we will opt for `Show download code`. This
+    option will open a pop-up window with a code snippet that should be pasted into
+    our training notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file899.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For training, let’s adapt one of the public examples available from Ultralytics
+    and run it on Google Colab. Below, you can find mine to be adapted in your project:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: YOLOv8 Box versus Wheel Dataset Training [[Open In Colab]](https://colab.research.google.com/github/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/notebooks/yolov8_box_vs_wheel.ipynb)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Critical points on the Notebook:'
+  prefs:
+  - PREF_H4
+  type: TYPE_NORMAL
+- en: Run it with GPU (the NVidia T4 is free)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Install Ultralytics using PIP.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../media/file900.png)'
+  prefs:
+  - PREF_IND
+  type: TYPE_IMG
+- en: 'Now, you can import the YOLO and upload your dataset to the CoLab, pasting
+    the Download code that we get from Roboflow. Note that our dataset will be mounted
+    under `/content/datasets/`:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../media/file901.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is essential to verify and change the file `data.yaml` with the correct path
+    for the images (copy the path on each `images` folder).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Define the main hyperparameters that you want to change from default, for example:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Run the training (using CLI):'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![](../media/file902.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image-20240910111319804
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model took a few minutes to be trained and has an excellent result (mAP50
+    of 0.995). At the end of the training, all results are saved in the folder listed,
+    for example: `/runs/detect/train/`. There, you can find, for example, the confusion
+    matrix.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file903.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that the trained model (`best.pt`) is saved in the folder `/runs/detect/train/weights/`.
+    Now, you should validate the trained model with the `valid/images`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: The results were similar to training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we should perform inference on the images left aside for testing
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The inference results are saved in the folder `runs/detect/predict`. Let’s
+    see some of them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file904.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is advised to export the train, validation, and test results for a Drive
+    at Google. To do so, we should mount the drive.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'and copy the content of `/runs` folder to a folder that you should create in
+    your Drive, for example:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Inference with the trained model, using the Raspi
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Download the trained model `/runs/detect/train/weights/best.pt` to your computer.
+    Using the FileZilla FTP, let’s transfer the `best.pt` to the Raspi models folder
+    (before the transfer, you may change the model name, for example, `box_wheel_320_yolo.pt`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the FileZilla FTP, let’s transfer a few images from the test dataset
+    to `.\YOLO\images`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s return to the YOLO folder and use the Python Interpreter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As before, we will import the YOLO library and define our converted model to
+    detect bees:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let’s define an image and call the inference (we will save the image result
+    this time to external verification):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s repeat for several images. The inference result is saved on the variable
+    `result,` and the processed image on `runs/detect/predict8`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file905.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using FileZilla FTP, we can send the inference result to our Desktop for verification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file906.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that the inference result is excellent! The model was trained based
+    on the smaller base model of the YOLOv8 family (YOLOv8n). The issue is the latency,
+    around 1 second (or 1 FPS on the Raspi-Zero). Of course, we can reduce this latency
+    and convert the model to TFLite or NCNN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Object Detection on a live stream
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All the models explored in this lab can detect objects in real-time using a
+    camera. The captured image should be the input for the trained and converted model.
+    For the Raspi-4 or 5 with a desktop, OpenCV can capture the frames and display
+    the inference result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, creating a live stream with a webcam to detect objects in real-time
+    is also possible. For example, let’s start with the script developed for the Image
+    Classification app and adapt it for a *Real-Time Object Detection Web Application
+    Using TensorFlow Lite and Flask*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This app version will work for all TFLite models. Verify if the model is in
+    its correct folder, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: Download the Python script `object_detection_app.py` from [GitHub](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/python_scripts/object_detection_app.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And on the terminal, run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And access the web interface:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the Raspberry Pi itself (if you have a GUI): Open a web browser and go to
+    `http://localhost:5000`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'From another device on the same network: Open a web browser and go to `http://<raspberry_pi_ip>:5000`
+    (Replace `<raspberry_pi_ip>` with your Raspberry Pi’s IP address). For example:
+    `http://192.168.4.210:` `5000/`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here are some screenshots of the app running on an external desktop
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../media/file907.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s see a technical description of the key modules used in the object detection
+    application:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**TensorFlow Lite (tflite_runtime)**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Purpose: Efficient inference of machine learning models on edge devices.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Why: TFLite offers reduced model size and optimized performance compared to
+    full TensorFlow, which is crucial for resource-constrained devices like Raspberry
+    Pi. It supports hardware acceleration and quantization, further improving efficiency.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Key functions: `Interpreter` for loading and running the model, `get_input_details(),`
+    and `get_output_details()` for interfacing with the model.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Flask**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Purpose: Lightweight web framework for creating the backend server.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Why: Flask’s simplicity and flexibility make it ideal for rapidly developing
+    and deploying web applications. It’s less resource-intensive than larger frameworks
+    suitable for edge devices.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Key components: route decorators for defining API endpoints, `Response` objects
+    for streaming video, `render_template_string` for serving dynamic HTML.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Picamera2**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Purpose: Interface with the Raspberry Pi camera module.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Why: Picamera2 is the latest library for controlling Raspberry Pi cameras,
+    offering improved performance and features over the original Picamera library.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Key functions: `create_preview_configuration()` for setting up the camera,
+    `capture_file()` for capturing frames.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**PIL (Python Imaging Library)**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Purpose: Image processing and manipulation.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Why: PIL provides a wide range of image processing capabilities. It’s used
+    here to resize images, draw bounding boxes, and convert between image formats.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Key classes: `Image` for loading and manipulating images, `ImageDraw` for drawing
+    shapes and text on images.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**NumPy**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Purpose: Efficient array operations and numerical computing.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Why: NumPy’s array operations are much faster than pure Python lists, which
+    is crucial for efficiently processing image data and model inputs/outputs.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Key functions: `array()` for creating arrays, `expand_dims()` for adding dimensions
+    to arrays.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Threading**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Purpose: Concurrent execution of tasks.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Why: Threading allows simultaneous frame capture, object detection, and web
+    server operation, crucial for maintaining real-time performance.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Key components: `Thread` class creates separate execution threads, and Lock
+    is used for thread synchronization.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**io.BytesIO**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Purpose: In-memory binary streams.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Why: Allows efficient handling of image data in memory without needing temporary
+    files, improving speed and reducing I/O operations.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**time**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Purpose: Time-related functions.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Why: Used for adding delays (`time.sleep()`) to control frame rate and for
+    performance measurements.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**jQuery (client-side)**:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Purpose: Simplified DOM manipulation and AJAX requests.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Why: It makes it easy to update the web interface dynamically and communicate
+    with the server without page reloads.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Key functions: `.get()` and `.post()` for AJAX requests, DOM manipulation methods
+    for updating the UI.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Regarding the main app system architecture:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Main Thread**: Runs the Flask server, handling HTTP requests and serving
+    the web interface.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Camera Thread**: Continuously captures frames from the camera.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Detection Thread**: Processes frames through the TFLite model for object
+    detection.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Frame Buffer**: Shared memory space (protected by locks) storing the latest
+    frame and detection results.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'And the app data flow, we can describe in short:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Camera captures frame → Frame Buffer
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Detection thread reads from Frame Buffer → Processes through TFLite model →
+    Updates detection results in Frame Buffer
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Flask routes access Frame Buffer to serve the latest frame and detection results
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Web client receives updates via AJAX and updates UI
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This architecture allows for efficient, real-time object detection while maintaining
+    a responsive web interface running on a resource-constrained edge device like
+    a Raspberry Pi. Threading and efficient libraries like TFLite and PIL enable the
+    system to process video frames in real-time, while Flask and jQuery provide a
+    user-friendly way to interact with them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can test the app with another pre-processed model, such as the EfficientDet,
+    changing the app line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE74]'
+  prefs: []
+  type: TYPE_PRE
+- en: If we want to use the app for the SSD-MobileNetV2 model, trained on Edge Impulse
+    Studio with the “Box versus Wheel” dataset, the code should also be adapted depending
+    on the input details, as we have explored on its [notebook](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/notebooks/EI-SSD-MobileNetV2.ipynb).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This lab has explored the implementation of object detection on edge devices
+    like the Raspberry Pi, demonstrating the power and potential of running advanced
+    computer vision tasks on resource-constrained hardware. We’ve covered several
+    vital aspects:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Model Comparison**: We examined different object detection models, including
+    SSD-MobileNet, EfficientDet, FOMO, and YOLO, comparing their performance and trade-offs
+    on edge devices.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Training and Deployment**: Using a custom dataset of boxes and wheels (labeled
+    on Roboflow), we walked through the process of training models using Edge Impulse
+    Studio and Ultralytics and deploying them on Raspberry Pi.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Optimization Techniques**: To improve inference speed on edge devices, we
+    explored various optimization methods, such as model quantization (TFLite int8)
+    and format conversion (e.g., to NCNN).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Real-time Applications**: The lab exemplified a real-time object detection
+    web application, demonstrating how these models can be integrated into practical,
+    interactive systems.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Performance Considerations**: Throughout the lab, we discussed the balance
+    between model accuracy and inference speed, a critical consideration for edge
+    AI applications.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The ability to perform object detection on edge devices opens up numerous possibilities
+    across various domains, from precision agriculture, industrial automation, and
+    quality control to smart home applications and environmental monitoring. By processing
+    data locally, these systems can offer reduced latency, improved privacy, and operation
+    in environments with limited connectivity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looking ahead, potential areas for further exploration include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing multi-model pipelines for more complex tasks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Exploring hardware acceleration options for Raspberry Pi
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Integrating object detection with other sensors for more comprehensive edge
+    AI systems
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Developing edge-to-cloud solutions that leverage both local processing and cloud
+    resources
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Object detection on edge devices can create intelligent, responsive systems
+    that bring the power of AI directly into the physical world, opening up new frontiers
+    in how we interact with and understand our environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Dataset (“Box versus Wheel”)](https://universe.roboflow.com/marcelo-rovai-riila/box-versus-wheel-auto-dataset)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[SSD-MobileNet Notebook on a Raspi](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/notebooks/SSD_MobileNetV1.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[EfficientDet Notebook on a Raspi](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/notebooks/SSD_EfficientDet.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[FOMO - EI Linux Notebook on a Raspi](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/notebooks/EI-Linux-FOMO.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[YOLOv8 Box versus Wheel Dataset Training on CoLab](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/blob/main/OBJ_DETEC/notebooks/yolov8_box_vs_wheel.ipynb)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Edge Impulse Project - SSD MobileNet and FOMO](https://studio.edgeimpulse.com/public/515477/live)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Python Scripts](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/tree/main/OBJ_DETEC/python_scripts)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Models](https://github.com/Mjrovai/EdgeML-with-Raspberry-Pi/tree/main/OBJ_DETEC/models)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
