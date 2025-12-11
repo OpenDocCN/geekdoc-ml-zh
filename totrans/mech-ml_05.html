@@ -1,0 +1,822 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>5 Exploring and Denoising Your Data Set</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>5 Exploring and Denoising Your Data Set</h1>
+<blockquote>原文：<a href="https://mlbook.explained.ai/prep.html">https://mlbook.explained.ai/prep.html</a></blockquote>
+
+
+
+
+<p><a href="http://parrt.cs.usfca.edu">Terence Parr</a> and <a href="http://www.fast.ai/about/#jeremy">Jeremy Howard</a></p>
+
+<p/>
+
+<p style="font-size: 80%">Copyright © 2018-2019 Terence Parr.  All rights reserved.<br/><i>Please don't replicate on web or redistribute in any way.</i><br/>This book generated from markup+markdown+python+latex source with <a href="https://github.com/parrt/bookish">Bookish</a>.
+</p><p>
+</p><p>
+You can make <b>comments or annotate</b> this page by going to the <a id="annotatelink" href="">annotated version of this page</a>. You'll see existing annotated bits highlighted in yellow. They are <i>PUBLICLY VISIBLE</i>. Or, you can send comments, suggestions, or fixes directly to <a href="mailto:parrt@cs.usfca.edu">Terence</a>.
+</p>
+
+
+
+
+
+
+<div id="toc">
+<p class="toc_title">Contents</p>
+<ul>
+	<li><a href="#sec:5.1">Getting a quick sniff of the data</a>
+	<ul>
+	</ul>
+	</li>
+	<li><a href="#sec:initial-model">Training and evaluating an initial model</a>
+	<ul>
+	</ul>
+	</li>
+	<li><a href="#sec:5.3">Exploring and denoising the apartment rent data</a>
+	<ul>
+			<li><a href="#sec:5.3.1">Examining the data distributions</a></li>
+			<li><a href="#sec:5.3.2">Excising the anomalies</a></li>
+
+	</ul>
+	</li>
+	<li><a href="#sec:5.4">Comparing models trained on denoised data</a>
+	<ul>
+	</ul>
+	</li>
+	<li><a href="#logtarget">Log in, exp out</a>
+	<ul>
+	</ul>
+	</li>
+
+</ul>
+</div>
+
+<p>“<i>It is a capital mistake to theorize before one has data. Insensibly one begins to twist facts to suit theories, instead of theories to suit facts.</i>” — Arthur Conan Doyle (1891) in <i>A Scandal in Bohemia</i></p>
+<p>	In <b>Chapter 3</b> <i>A First Taste of Applied Machine Learning</i>, we successfully trained a random forest (RF) model to predict New York City rent prices but under ideal conditions: the data was already in a form acceptable to a model and was mostly free of errors, outliers, and other noise.  The unfortunate reality is that real data sets are messy and so, in this chapter, we're going to learn how to process the original data from Kaggle bit-by-bit until it looks like that ideal data set.  The dirty little secret of the machine learning world is that practitioners spend roughly 75% of their time acquiring, cleaning, and otherwise preparing data for training. (We won't learn about the acquisition piece in this book, but you can check out Terence's free <a href="https://github.com/parrt/msan692">Data Acquisition course notes</a>.)</p>
+
+<p>To train a model, the data set must follow two fundamental rules: all data must be numeric and there can't be any missing values. We must derive numeric features from the nonnumeric features such as strings, dates, and categorical variables like <span class="inlinecode">SalesID</span>. Or, we can simply delete the nonnumeric features. That preparation work is a big topic unto itself, which we'll address in <b>Chapter 6</b> <i>Categorically Speaking</i> and <b>Chapter 7</b> <i>Exploring and Cleaning the Bulldozer Dataset</i>.  In this chapter, we'll stick with the numeric fields (bathrooms, bedrooms, longitude, latitude) we used before.</p>
+
+<p>Even with purely numeric data, there is potential cleanup work to do. The data could have outliers, errors, or contradictory information.  For example, in our apartment data, one place claims to have 2 bedrooms but 10 bathrooms, while other apartments claim to be on the equator!  Armed with graphs or statistics from the data set, we turn to someone with domain expertise to interpret what we observe. (Terence's sister lives in New York City and confirms that New York is not on the equator, though typically feels that way in August.)</p>
+
+<p>We also have to view all data cleaning operations through the lens of what exactly we want the model to do. In our case, we want a model that predicts apartment prices but just for New York City and just for the reasonably priced apartments.  Unfortunately, our data set has a number of records that don't fit the constraints. For example, the data set has an outlier apartment costing $4,490,000/month (it must have parking) and an apartment whose longitude and latitude place it in Boston. We're going to delete these and a few other similar records for the simple reason that they exceed our focus. As we learned in <b>Chapter 3</b> <i>A First Taste of Applied Machine Learning</i>, models can only make predictions based upon the training data provided to them and we should avoid training them on inappropriate samples.</p>
+
+<p>In this chapter we're going to explore the original apartment data set from Kaggle, <a href="https://www.kaggle.com/c/two-sigma-connect-rental-listing-inquiries">Two Sigma Connect: Rental Listing Inquiries</a>, looking for and correcting suspicious records and elements. To do that, we'll learn a multitude of useful techniques to examine and manipulate pandas dataframes. Along the way, we'll also use matplotlib to generate some cool looking graphs and use sklearn to consider how data cleanup affects model accuracy.</p>
+
+
+
+<h2 id="sec:5.1">5.1 Getting a quick sniff of the data</h2>
+
+
+<p>Once were certain we've nailed down the exact problem to solve, the first step in a machine learning project is to look at the data, but just for a quick sniff. (Use a Jupyter notebook, Excel, an editor, or any other convenient tool.) We need to know what the data looks like so our first inspection of the data should yield the column names, their datatypes, and whether the target column has numeric values or categories. (If we're creating a regressor, those values must be numeric; if we're classifying, those values must be categories.)</p>
+
+<p>	</p>
+
+<p>To get started, make sure that you have file <span class="inlinecode">rent.csv</span> in your <span class="inlinecode">data</span> directory underneath where you are running Jupyter. (See <b>Section 3.2.1</b> <i>Loading and sniffing the training data</i> for instructions on downloading JSON rent data from Kaggle and creating the CSV files.) Then, create a new Jupyter notebook by clicking on the “+” button and selecting “Python 3” under the “Notebook” tab. This will create a file in the same directory where you started <span class="inlinecode">jupyter lab</span> (unless you have jumped around using the “Files” tab on the left side of the lab browser window). It's probably a good idea to give the file a decent name like <span class="inlinecode">clean.ipynb</span> by right clicking on the notebook tab that currently says <span class="inlinecode">Untitled.ipynb</span>.  You might also find it convenient to cut/paste from the <a href="https://mlbook.explained.ai/notebooks/">notebooks</a> that were automatically derived from the code snippets from the various chapters.</p>
+
+<p>Now, let's enter some code into the notebook to read in the CSV data using pandas to get our first look at the original data:</p>
+
+
+<div class="codeblk">import pandas as pd
+df = pd.read_csv("data/rent.csv")
+print(df.shape) # print rows, columns
+df.head(2)       # dump first 2 rows</div>
+<p class="stdout">(49352, 15)
+</p>
+<div class="scrollbar_wrapper">
+<table class="dataframe dataframe-indexed">
+<thead>
+	<tr><th> </th><th>bathrooms</th><th>bedrooms</th><th>building_id</th><th>created</th><th>description</th><th>display_address</th><th>features</th><th>latitude</th><th>listing_id</th><th>longitude</th><th>manager_id</th><th>photos</th><th>price</th><th>street_address</th><th>interest_level</th></tr>
+    <tr><td/></tr>
+</thead>
+<tbody>
+	<tr>
+	<td>0</td><td>1.5000</td><td>3</td><td>53a5b119ba8f7b61d4e010512...</td><td>2016-06-24 07:54:24</td><td>A Brand New 3 Bedroom 1.5...</td><td>Metropolitan Avenue</td><td>[]</td><td>40.7145</td><td>7211212</td><td>-73.9425</td><td>5ba989232d0489da1b5f2c45f...</td><td>['https://photos.renthop....</td><td>3000</td><td>792 Metropolitan Avenue</td><td>medium</td>
+	</tr>
+	<tr>
+	<td>1</td><td>1.0000</td><td>2</td><td>c5c8a357cba207596b04d1afd...</td><td>2016-06-12 12:19:27</td><td>        </td><td>Columbus Avenue</td><td>['Doorman', 'Elevator', '...</td><td>40.7947</td><td>7150865</td><td>-73.9667</td><td>7533621a882f71e25173b27e3...</td><td>['https://photos.renthop....</td><td>5465</td><td>808 Columbus Avenue</td><td>low</td>
+	</tr>
+</tbody>
+</table>
+</div>
+<p>	There are many columns and some of them are very wide, so let's transpose the display so that the columns are vertical (<span class="inlinecode">.T</span> performs a transpose on the data frame, flipping rows and columns):</p>
+
+
+<div class="codeblk">
+df.head(2).T</div>
+<div class="scrollbar_wrapper">
+<table class="dataframe dataframe-indexed">
+<thead>
+	<tr><th> </th><th>0</th><th>1</th></tr>
+    <tr><td/></tr>
+</thead>
+<tbody>
+	<tr>
+	<td>bathrooms</td><td>1.5000</td><td>1.0000</td>
+	</tr>
+	<tr>
+	<td>bedrooms</td><td>3</td><td>2</td>
+	</tr>
+	<tr>
+	<td>building_id</td><td>53a5b119ba8f7b61d4e010512...</td><td>c5c8a357cba207596b04d1afd...</td>
+	</tr>
+	<tr>
+	<td>created</td><td>2016-06-24 07:54:24</td><td>2016-06-12 12:19:27</td>
+	</tr>
+	<tr>
+	<td>description</td><td>A Brand New 3 Bedroom 1.5...</td><td>        </td>
+	</tr>
+	<tr>
+	<td>display_address</td><td>Metropolitan Avenue</td><td>Columbus Avenue</td>
+	</tr>
+	<tr>
+	<td>features</td><td>[]</td><td>['Doorman', 'Elevator', '...</td>
+	</tr>
+	<tr>
+	<td>latitude</td><td>40.7145</td><td>40.7947</td>
+	</tr>
+	<tr>
+	<td>listing_id</td><td>7211212</td><td>7150865</td>
+	</tr>
+	<tr>
+	<td>longitude</td><td>-73.9425</td><td>-73.9667</td>
+	</tr>
+	<tr>
+	<td>manager_id</td><td>5ba989232d0489da1b5f2c45f...</td><td>7533621a882f71e25173b27e3...</td>
+	</tr>
+	<tr>
+	<td>photos</td><td>['https://photos.renthop....</td><td>['https://photos.renthop....</td>
+	</tr>
+	<tr>
+	<td>price</td><td>3000</td><td>5465</td>
+	</tr>
+	<tr>
+	<td>street_address</td><td>792 Metropolitan Avenue</td><td>808 Columbus Avenue</td>
+	</tr>
+	<tr>
+	<td>interest_level</td><td>medium</td><td>low</td>
+	</tr>
+</tbody>
+</table>
+</div>
+<p>	This makes it easier to see the column names, column datatypes, and a sample data value for each column.  We see a bunch of nonnumeric fields, including some columns that actually look like lists of things packed together into a single string, such as <span class="inlinecode">photos</span> and <span class="inlinecode">features</span>. The <span class="inlinecode">description</span> seems to be free text in a string.  Pandas can tell us more specifically about the data types if we ask for <span class="inlinecode">info()</span>:</p>
+
+
+<div class="codeblk">df.info()
+</div>
+
+<p class="stdout">&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 49352 entries, 0 to 49351
+Data columns (total 15 columns):
+bathrooms          49352 non-null float64
+bedrooms           49352 non-null int64
+building_id        49352 non-null object
+created            49352 non-null object
+description        47906 non-null object
+display_address    49217 non-null object
+features           49352 non-null object
+latitude           49352 non-null float64
+listing_id         49352 non-null int64
+longitude          49352 non-null float64
+manager_id         49352 non-null object
+photos             49352 non-null object
+price              49352 non-null int64
+street_address     49342 non-null object
+interest_level     49352 non-null object
+dtypes: float64(3), int64(3), object(9)
+memory usage: 5.6+ MB
+</p>
+
+<p>	The datatypes are in the last column, such as <span class="inlinecode">float64</span> which means “floating-point number using 64-bits (8 bytes) of memory”. The <span class="inlinecode">object</span> data type  is pandas' equivalent of a string datatype. Anything other than <span class="inlinecode">float</span> and <span class="inlinecode">int</span> are nonnumeric datatypes. Because we don't know how to deal with nonnumeric datatypes at this point, we can just drop those columns. All we care about are the numeric fields: bathrooms, bedrooms, longitude, latitude, price.</p>
+
+<p>	To get a subset of the data frame, we could drop columns from <span class="inlinecode">df</span>, but it's more explicit to grab a subset of the columns by indexing with a list of column names:</p>
+
+
+<div class="codeblk">df_num = df[['bathrooms', 'bedrooms', 'longitude', 'latitude', 'price']]
+df_num.head(2)</div>
+<div class="scrollbar_wrapper">
+<table class="dataframe dataframe-indexed">
+<thead>
+	<tr><th> </th><th>bathrooms</th><th>bedrooms</th><th>longitude</th><th>latitude</th><th>price</th></tr>
+    <tr><td/></tr>
+</thead>
+<tbody>
+	<tr>
+	<td>0</td><td>1.5000</td><td>3</td><td>-73.9425</td><td>40.7145</td><td>3000</td>
+	</tr>
+	<tr>
+	<td>1</td><td>1.0000</td><td>2</td><td>-73.9667</td><td>40.7947</td><td>5465</td>
+	</tr>
+</tbody>
+</table>
+</div>
+<p>	Indexing on a data frame expects a column name or list of column names, so  <span class="inlinecode">df['price']</span> gets just the price column.  Because Python list literals use square brackets, <span class="inlinecode">['bathrooms',</span>...<span class="inlinecode">]</span>, just like indexing, the double-bracket notation looks a little funny.  Data frame <span class="inlinecode">df_num</span> acts like a copy of <span class="inlinecode">df</span> with just those five columns but <span class="inlinecode">df_num</span> is actually a view or perspective of <span class="inlinecode">df</span> restricted to five columns. At this point, we've got the data looking, structurally, very similar to what we had in <span class="inlinecode">rent-idea.csv</span> from <b>Chapter 3</b> <i>A First Taste of Applied Machine Learning</i>.</p>
+
+<p>	Because models cannot handle missing values, another standard check is to see if there are missing values in the data set:</p>
+
+
+<div class="codeblk">print(df_num.isnull().any())</div>
+
+<p class="stdout">bathrooms    False
+bedrooms     False
+longitude    False
+latitude     False
+price        False
+dtype: bool</p>
+
+
+<p>There are no missing values to deal with in this data set, but we won't be so lucky in <span style="color: red">[chp:feateng]</span>.</p>
+
+<div class="p_wrapper">
+<div class="callout">The more you look at the data the more you risk overfitting.</div>
+<p class="p_left">	We could explore the data some more, but what exactly would we be looking for? As a general principle, try to avoid looking too much at the data values. There is an awful temptation to make judgments or prematurely manipulate the data based upon our flawed human observations. Remember that we wouldn't need machine learning if a human could just look at a big data set and make correct, unbiased predictions. For example, if we see a column with lots of missing values, it's tempting to remove that from consideration as a feature. Instead, let the model tell you what features are important.</p>
+</div>
+
+<p>	 </p>
+
+
+
+<h2 id="sec:initial-model">5.2 Training and evaluating an initial model</h2>
+
+
+<div class="p_wrapper">
+<p class="sidenote"><span class="sup">2</span> The cool kids say things like, “there's no signal there” to indicate no relationship exists between features and target.</p>
+<p class="p_left">	 We haven't looked at the training data very intensely other than to know all of the columns in the data frame are numeric.  The next step is to train a model to see if there is a relationship between the features and the target and how strong that “signal” is.<span class="sup">2</span></p>
+</div>
+
+<p>	 </p>
+
+<p>	 Here's the procedure for training a model, once we have a properly-prepared data frame, <span class="inlinecode">df_num</span>, that consists only of numeric values and has no missing values:</p>
+<ol>
+<li>Separate the features and target columns.
+
+
+<div class="codeblk">X_train = df_num.drop('price', axis=1)
+y_train = df_num['price']
+</div>
+
+</li>
+<li>Create an appropriate model with suitable hyper-parameters.
+
+
+<div class="codeblk">from sklearn.ensemble import RandomForestRegressor
+rf = RandomForestRegressor(n_estimators=100,
+                           n_jobs=-1)        # train w/all CPU core
+</div>
+
+</li>
+<li>Fit model to the training data.
+
+
+<div class="codeblk">rf.fit(X_train, y_train)
+</div>
+
+</li>
+</ol>
+<p>Now, let's get a measure of how well the model fits the training data using <span class="inlinecode">score()</span>, which returns a common error metric called <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> (literally pronounced “<a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R squared</a>”):</p>
+
+
+<div class="codeblk">r2 = rf.score(X_train, y_train)
+print( f"{r2:.4f}" )
+</div>
+
+<p class="stdout">0.8649
+</p>
+
+<p>A perfect training <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score is 1.0, meaning that the model perfectly recalls the training data. An <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score of 0 means the model performs no better than always just returning the average price.  Unfortunately, a high training <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score (low error) doesn't tell us much. A high score just means that it's <i>possible</i> there is a relationship between features and target and captured by the model. If, however, we can't get a high <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score, it's an indication that there is no relationship or the model is simply unable to capture it. RFs are very powerful and can capture relationships even between random variables, so expect RF training <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> scores to be high.</p>
+<div class="aside"><b>Interpreting R^2 Scores</b><br/>
+Think about the <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score as measuring how well our model performs compared to a trivial model that always returns the average of the target (apartment price) for any requested prediction.  Any value less than that, all away down to negative infinity, indicates the model performs imperfectly to some degree. Because a model can be arbitrarily bad, the <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score can be arbitrarily negative.  A nice feature of the <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score is that it is normalized: scores are always in the range of 1.0 down to negative infinity, rather than in units of apartment rent price or average rainfall in Nairobi. Just remember that 1.0 means perfect and 0.0 means no better than returning the average value. More on this in <b>Chapter 12</b> <i>Evaluating Regressor Performance</i>.
+</div>
+<p>As we discussed in <b>Section 3.2.4</b> <i>Checking model generality</i>, we care about the prediction error on validation or test vectors, not the training error.  We used the hold out method to assess model performance on validation data that was not used for training purposes. Writing code to split out the validation set is a hassle and reduces the training set size, however.</p>
+
+<p>Another reason to favor RFs, is that they can efficiently estimate the prediction error while training the model, completely avoiding the need for separate validation sets. The error score is called the <i>out-of-bag score</i> and <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> is the typical metric computed. (<i>Bag</i> is an abbreviation of <i>bootstrap aggregation</i>, which we'll look at in detail in <b>Chapter 17</b> <i>Forests of Randomized Decision Trees</i>.) Recall that RFs are a collection of decision trees, each of which is trained on a subset of the training data. The out-of-bag (<i>OOB</i>) score looks at the prediction accuracy for a particular record using only those trees that did not train on that record. Statisticians have shown that the out-of-bag score gives an excellent estimate of a model's generality, its true prediction error.</p>
+
+<p>The out-of-bag score is still not free computationally and we have to ask for the computation with an argument, <span class="inlinecode">oob_score=True</span>, to the constructor of the RF. Here's how to train a model that computes and prints the OOB score:</p>
+
+
+<div class="codeblk">rf = RandomForestRegressor(n_estimators=100,
+                           n_jobs=-1,
+                           oob_score=True)   # get error estimate
+rf.fit(X_train, y_train)
+noisy_oob_r2 = rf.oob_score_
+print(f"OOB score {noisy_oob_r2:.4f}")
+</div>
+
+<p class="stdout">OOB score -0.0076
+</p>
+
+<p>That score is terrible, approximately as bad as just predicting the average apartment rent price.  Because this is our first exposure to <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/>, let's get more comfortable with it by verifying that the average absolute error (MAE) in dollars is also terrible. To get a validation set, we have to hold out a random 20% subset. In noisy data sets, the range of values in the 20% we select could vary significantly from run to run, so let's get a few MAE numbers for comparison.  Here's a simple test rig with the model-related code emphasized:</p>
+
+
+<div class="codeblk">from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error
+import numpy as np
+
+<span class="highlight">X, y = df_num.drop('price', axis=1), df_num['price']</span>
+
+errors = []
+print(f"Validation MAE trials:", end='')
+for i in range(7):
+<span class="highlight">    X_train, X_test, y_train, y_test = \</span>
+<span class="highlight">        train_test_split(X, y, test_size=0.20)</span>
+<span class="highlight">    rf = RandomForestRegressor(n_estimators=100, n_jobs=-1)</span>
+<span class="highlight">    rf.fit(X_train, y_train)</span>
+<span class="highlight">    y_predicted = rf.predict(X_test)</span>
+<span class="highlight">    e = mean_absolute_error(y_test, y_predicted)</span>
+    print(f" ${e:.0f}", end='')
+    errors.append(e)
+print()
+<span class="highlight">noisy_avg_mae = np.mean(errors)</span>
+print(f"Average validation MAE ${noisy_avg_mae:.0f}")
+</div>
+
+<p class="stdout">Validation MAE trials: $411 $872 $851 $498 $901 $395 $425
+Average validation MAE $622
+</p>
+
+<p>Those validation errors are definitely worse than the roughly $300 average error we saw on the clean data set from <b>Chapter 3</b> <i>A First Taste of Applied Machine Learning</i>. Also, the error values bounce around significantly, which means that different subsamples of the data set have different characteristics. This behavior is consistent with the low OOB <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score coming from the RF, indicating a model trained on the raw data set gets poor results.</p>
+
+<p>Given the strength of RFs, poor performance could indicate there is little to no relationship to capture between apartment characteristics and rent price, or it could mean the data is inconsistent or has outliers.  The variability of the hold out validation error hints that the data is inconsistent or has outliers, so let's take another look at the data set.</p>
+
+
+
+<h2 id="sec:5.3">5.3 Exploring and denoising the apartment rent data</h2>
+
+
+<p>	 As we've mentioned, we want to avoid doing excessive snooping around in the data because it's tempting to start making judgments that negatively impact the generality of our model.  But, in this case, the poor <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score and unstable validation error is a legitimate reason. The general concept of snooping around is called <i>exploratory data analysis</i> (EDA).  We're going to explore the data with the explicit purpose of finding anomalies. The focus of our model is on typically-priced apartments and only within New York City proper, which means we're going to look for extreme rent values and apartments outside of New York City.</p>
+
+<p>	  It's critical that we decide what these bounds are before looking at the data. Don't look at the data first and then decide on a definition of anomalous. You risk removing or altering data simply because it looks inconvenient or looks like it might confuse the model. For the apartment data, it's safe to say that an apartment for less than $1,000 in New York City is probably missing some key elements like windows and doors, so that should be our lowest price. At the high-end, let's call $10,000 outside the range of “reasonably priced.” </p>
+
+<p>	 With those bounds established, let's take get a high-level look at the complete data set. Here's how to get some basic statistics:</p>
+
+
+<div class="codeblk">
+df_num.describe()</div>
+<div class="scrollbar_wrapper">
+<table class="dataframe dataframe-indexed">
+<thead>
+	<tr><th> </th><th>bathrooms</th><th>bedrooms</th><th>longitude</th><th>latitude</th><th>price</th></tr>
+    <tr><td/></tr>
+</thead>
+<tbody>
+	<tr>
+	<td>count</td><td>49352.0000</td><td>49352.0000</td><td>49352.0000</td><td>49352.0000</td><td>49352.0000</td>
+	</tr>
+	<tr>
+	<td>mean</td><td>1.2122</td><td>1.5416</td><td>-73.9557</td><td>40.7415</td><td>3830.1740</td>
+	</tr>
+	<tr>
+	<td>std</td><td>0.5014</td><td>1.1150</td><td>1.1779</td><td>0.6385</td><td>22066.8659</td>
+	</tr>
+	<tr>
+	<td>min</td><td>0.0000</td><td>0.0000</td><td>-118.2710</td><td>0.0000</td><td>43.0000</td>
+	</tr>
+	<tr>
+	<td>25%</td><td>1.0000</td><td>1.0000</td><td>-73.9917</td><td>40.7283</td><td>2500.0000</td>
+	</tr>
+	<tr>
+	<td>50%</td><td>1.0000</td><td>1.0000</td><td>-73.9779</td><td>40.7518</td><td>3150.0000</td>
+	</tr>
+	<tr>
+	<td>75%</td><td>1.0000</td><td>2.0000</td><td>-73.9548</td><td>40.7743</td><td>4100.0000</td>
+	</tr>
+	<tr>
+	<td>max</td><td>10.0000</td><td>8.0000</td><td>0.0000</td><td>44.8835</td><td>4490000.0000</td>
+	</tr>
+</tbody>
+</table>
+</div>
+<p>	 A number of anomalies pop out from the minimum and maximum for each column. There's a place with 10 bathrooms and another with 8 bedrooms.  There is a reference to longitude 0, which is the prime meridian (Greenwich, England), and a reference to latitude zero, the equator. Oh, and let's not forget the apartment that costs $4,490,000 per month or the intriguing place that costs $43 per month (probably an abandoned vehicle or an apartment that is currently on fire). </p>
+
+<p>	 </p>
+
+
+
+<h3 id="sec:5.3.1">5.3.1 Examining the data distributions</h3>
+
+
+<p>	 Before we start slashing and burning the data set, let's look more closely at the <i>distribution</i> of the features.   The distribution of a feature is a term that, loosely speaking, describes how the values of that feature are spread across the range of that feature.  (Statisticians call the distribution a <i>density function</i>, which maps a feature value to the probability of occurrence.) There are number of ways we can examine the distribution, such as sorting the prices in reverse order and looking at the top price values:</p>
+
+
+<div class="codeblk">print(df_num.price.sort_values(ascending=False).head(10))</div>
+
+<p class="stdout">19558    4490000
+9590     1150000
+30689    1070000
+29665    1070000
+10581     135000
+25538     111111
+45674     100000
+29082      90000
+7336       85000
+47995      80000
+Name: price, dtype: int64</p>
+
+
+<p>	 Wow, it looks like there are a number of very expensive apartments (values in the right column). Values that are very different in magnitude from the others in the feature or target space (range) are called <i>outliers</i>.  Outliers could be the result of noise, but some data sets have outliers that are correct values, as is the case here.  In New York City, it's certain that there are some hyper-expensive apartments and a smattering of apartments from there down to the merely very-expensive apartments. (Evaluating <span class="inlinecode">len(df[df.price&gt;10_000])</span> shows 878 apartments that rent for more than $10,000.)</p>
+
+<p>	 Another exploratory technique is to ask pandas for the count of each unique value in a particular column, such as the counts of apartments with specific numbers of bathrooms and bedrooms.</p>
+<center>
+<table style="">
+<thead>
+</thead>
+<tbody>
+<tr>
+<td align="center" valign="top">
+
+
+<div class="codeblk">print(df_num.bathrooms.value_counts())</div>
+
+<p class="stdout">1.0     39422
+2.0      7660
+3.0       745
+1.5       645
+0.0       313
+2.5       277
+4.0       159
+3.5        70
+4.5        29
+5.0        20
+5.5         5
+6.0         4
+6.5         1
+10.0        1
+7.0         1
+Name: bathrooms, dtype: int64</p>
+
+</td><td align="center" valign="top">
+
+
+<div class="codeblk">print(df_num.bedrooms.value_counts())</div>
+
+<p class="stdout">1    15752
+2    14623
+0     9475
+3     7276
+4     1929
+5      247
+6       46
+8        2
+7        2
+Name: bedrooms, dtype: int64</p>
+
+</td>
+</tr>
+</tbody>
+</table>
+</center>
+<p>	 It looks like there are only a few outlier apartments listed as having more than six bathrooms (out of 44,416) and only a few having more than six bedrooms. We can also look at this data visually as a <a href="https://en.wikipedia.org/wiki/Histogram">histogram</a>, which breaks up the range of values into fixed-size bins and then counts how many values fall into each range:</p>
+<div class="p_wrapper">
+<span class="sidenote">
+» <i>Generated by code to left</i><br/>
+<a href="images/prep/prep_sniff_16.svg"><img src="../Images/697a27b8b8fa55635ff45ea348106849.png" width="100%" data-original-src="https://mlbook.explained.ai/images/prep/prep_sniff_16.svg"/></a>
+</span>
+
+
+<div class="codeblk">bookcolors = { # our usual book color palette
+         'crimson': '#a50026', 'red': '#d73027',
+         'redorange': '#f46d43', 'orange': '#fdae61',
+         'yellow': '#fee090', 'sky': '#e0f3f8',
+         'babyblue': '#abd9e9', 'lightblue': '#74add1',
+         'blue': '#4575b4', 'purple': '#313695'}
+fig,ax = plt.subplots()
+ax.set_xlabel('Num Bedrooms')
+ax.set_ylabel('Num Apts')
+ax.hist(df_num.bedrooms, color=bookcolors['blue'])
+plt.show()</div>
+</div> <!-- end div for p_wrapper -->
+
+<p>(See the aside on color palettes for more on the <span class="inlinecode">bookcolors['blue']</span> expression.)</p>
+
+<p>	 </p>
+<div class="aside"><b>Using a consistent color palette</b><br/>
+
+<p>	 A common mistake we see among our students is to use essentially random colors or at least inconsistent colors across graphs.  In one graph, feature price is purple and in the next graph the same feature is green. Humans are very sensitive to color and attach meaning to the various colors subconsciously, so it's important to be consistent across visualizations.  When drawing diagrams manually, it's a good idea to choose from a consistent color palette as well.  For this book, we selected </p><center>
+<img src="../Images/5677b947e832f35db92b8f19e47e3e75.png" width="20%" data-original-src="https://mlbook.explained.ai/images/prep/color-palette.png"/>
+</center> as our palette and choose from  those colors when drawing diagrams.  Python code used in the remainder of the book will select colors from this pallet using a simple dictionary mechanism:
+
+<p>	 </p>
+
+
+<div class="codeblk">bookcolors = {
+         'crimson': '#a50026', 'red': '#d73027',
+         'redorange': '#f46d43', 'orange': '#fdae61',
+         'yellow': '#fee090', 'sky': '#e0f3f8',
+         'babyblue': '#abd9e9', 'lightblue': '#74add1',
+         'blue': '#4575b4', 'purple': '#313695'
+     }
+</div>
+
+
+<p>	 We will look up our shade of blue using <span class="inlinecode">bookcolors['blue']</span> rather than relying on whatever the default blue color is for matplotlib.</p>
+
+<p>	 The color palette you choose should also be accessible to those with forms of colorblindness and make sure the contrast between text and its background is high enough contrast for the visually impaired. Chrome's Accessibility Developer Tools run an excellent audit for you. A nice site for selecting color pallets is <a href="http://colorbrewer2.org/#type=sequential&amp;scheme=BuGn&amp;n=3">colorbrewer2.org</a>; make sure to check the “colorblind safe” box so it only shows you colorblind safe pallets.   When you do draw a diagram, you can also check what it looks like to colorblind individuals by uploading that image to <a href="http://www.vischeck.com/vischeck/vischeckImage.php">vischeck</a>.</p>
+
+</div>
+<p>There are also strange things going on with the longitude and latitude features, which also popped out from the <span class="inlinecode">df_num.describe()</span> (see min, max for longitude and latitude). There are 12 apartments at location 0,0:</p>
+
+
+<div class="codeblk">print(len(df[(df.longitude==0.0) &amp; (df.latitude==0.0)]))</div>
+
+<p class="stdout">12</p>
+
+
+<p>Instead of the literal interpretation of 0,0 as apartments floating off the west coast of Africa, those values probably represent missing data (manager too lazy to look it up). On the other hand, actual values of 0 are technically not missing so we could also think of these values erroneous or, more commonly, <i>noise</i>.  Other sources of noise include typos entered by humans or physical devices, such as faulty temperature sensors.</p>
+
+<p>Noise and outliers are potential problems because they can lead to inconsistencies. An <i>inconsistency</i> is a set of similar or identical feature vectors with much different target values.  For example, if we zero in on the region of New York City containing two apartments over $1,000,000, we see other apartments with the same characteristics but with reasonable prices:</p>
+
+
+<div class="codeblk">df_local = df[(df.latitude&gt;40.764) &amp; (df.latitude&lt;40.7678) &amp;
+              (df.longitude&gt;=-73.9844) &amp; (df.longitude&lt;=-73.9842) &amp;
+           (df.bathrooms==1) &amp; (df.bedrooms==1)]
+df_local[['bedrooms','bathrooms','street_address','price']].sort_values('price')</div>
+<div class="scrollbar_wrapper">
+<table class="dataframe dataframe-indexed">
+<thead>
+	<tr><th> </th><th>bedrooms</th><th>bathrooms</th><th>street_address</th><th>price</th></tr>
+    <tr><td/></tr>
+</thead>
+<tbody>
+	<tr>
+	<td>39939</td><td>1</td><td>1.0000</td><td>west 54 st &amp; 8 ave </td><td>2300</td>
+	</tr>
+	<tr>
+	<td>21711</td><td>1</td><td>1.0000</td><td>300 West 55th Street</td><td>2400</td>
+	</tr>
+	<tr>
+	<td>15352</td><td>1</td><td>1.0000</td><td>300 West 55th Street</td><td>3350</td>
+	</tr>
+	<tr>
+	<td>48274</td><td>1</td><td>1.0000</td><td>300 West 55th Street</td><td>3400</td>
+	</tr>
+	<tr>
+	<td>29665</td><td>1</td><td>1.0000</td><td>333 West 57th Street</td><td>1070000</td>
+	</tr>
+	<tr>
+	<td>30689</td><td>1</td><td>1.0000</td><td>333 West 57th Street</td><td>1070000</td>
+	</tr>
+</tbody>
+</table>
+</div>
+<p>Those ridiculously-priced apartments could be errors or simply outliers, but no matter how powerful a machine learning model is, such inconsistent data leads to inaccurate predictions. RFs predict the average price for all apartments whose features cluster them together (<span class="inlinecode">np.mean(local.price)</span>=$358575.000 in this case), meaning that predictions for all apartments will be hundreds of thousands of dollars off.</p>
+
+<p>Now that we have some idea about the outliers and noise in the data set, let's do some cleanup work.</p>
+
+<p>	 </p>
+
+
+
+<h3 id="sec:5.3.2">5.3.2 Excising the anomalies</h3>
+
+
+<p>	We can either leave noisy or outlier records as-is, delete, or “fix” the records, but you should err on the side of leaving records as-is. Which alternative we choose depends on knowledge about this domain, the goals of the model, how numerous the anomalies are, and even what we see in the individual records with anomalous values. (Missing data adds another wrinkle.) </p>
+
+<p>	 </p>
+
+<div class="p_wrapper">
+<div class="callout"> There is no substitute for domain knowledge when building a model.</div>
+<p class="p_left">	 The most important filter to apply relates to the goals of our model, in this case, reasonably-priced apartments just in New York City. We can delete with confidence any records outside of these bounds. Pandas has excellent facilities to select subsets of the records. For example, <span class="inlinecode">df_num.price&gt;1_000</span> gives a column of true and false values computed by looking at each value in the price column.  We can then use that column of boolean values as a multi-valued index into the data frame, which selects only those rows associated with true values. So, <span class="inlinecode">df_num[df_num.price&gt;1_000]</span> returns a subset of the records in <span class="inlinecode">df_num</span> whose price is greater than $1,000. We can also do both comparisons at once and assign the dataframe back to a new <span class="inlinecode">df_clean</span> variable:</p>
+</div>
+
+
+<div class="codeblk"># filter all records (training/testing)
+df_clean = df_num[(df_num.price&gt;1_000) &amp; (df_num.price&lt;10_000)]
+</div>
+
+
+<p>	 Selecting a subset of rows is an example of a pandas “view,” which returns a filtered perspective on the original data, rather than making a copy. </p>
+
+<p>	 To visualize the distribution of cleaned-up prices, let's use a histogram again:</p>
+<div class="p_wrapper">
+<span class="sidenote">
+» <i>Generated by code to left</i><br/>
+<a href="images/prep/prep_sniff_22.svg"><img src="../Images/961ad42a641f85c9b5c6b9f4b0c733b9.png" width="100%" data-original-src="https://mlbook.explained.ai/images/prep/prep_sniff_22.svg"/></a>
+</span>
+
+
+<div class="codeblk">fig,ax = plt.subplots()
+ax.set_xlabel('Clipped Price')
+ax.set_ylabel('Num Apts at that price')
+ax.hist(df_clean.price, bins=45, color=bookcolors['blue'])
+plt.show()</div>
+</div> <!-- end div for p_wrapper -->
+
+<p>	 It's always best to use domain knowledge when identifying outliers, but if we are uncertain about an appropriate range, we can always clip out the bottom and top 1% using a bit of NumPy code.  The distribution of the middle 98% of the prices looks pretty similar to the clipped version:</p>
+<div class="p_wrapper">
+<span class="sidenote">
+» <i>Generated by code to left</i><br/>
+<a href="images/prep/prep_sniff_23.svg"><img src="../Images/2d2163ad31508092537f71db99fb16f8.png" width="100%" data-original-src="https://mlbook.explained.ai/images/prep/prep_sniff_23.svg"/></a>
+</span>
+
+
+<div class="codeblk">upper, lower = np.percentile(df.price, [1,99]) # find middle 98% of prices
+clipped = np.clip(df.price, upper, lower)
+fig,ax = plt.subplots()
+ax.set_xlabel('Prices in middle 98% range')
+ax.set_ylabel('Num Apts at that price')
+ax.hist(clipped, bins=45, color=bookcolors['blue'])
+plt.show()</div>
+</div> <!-- end div for p_wrapper -->
+
+<p>	 It looks like we have the prices under control now, so let's turn to deleting records outside of New York City proper.  We saw previously that there are records with longitude and latitude values of zero. These likely represent missing values and missing values should normally be handled using techniques from <span style="color: red">[chp:feateng]</span>. In this case, however, we find that there are only a few of such records:</p>
+
+
+<div class="codeblk">df_missing = df_clean[(df_clean.longitude==0) | (df_clean.latitude==0)]
+print(len(df_missing))</div>
+
+<p class="stdout">11</p>
+
+
+<p>	 We can delete those 11 records without significantly affecting the training set:</p>
+
+
+<div class="codeblk">df_clean = df_clean[(df_clean.longitude!=0) | (df_clean.latitude!=0)]
+</div>
+
+
+<p>A few apartments have GPS coordinates that put them in Boston, not New York City (for example,  latitude, longitude of 40.5813, -74.5343). These coordinates could be typos or just erroneous lookups done by apartment managers.  By scrutinizing the records, we could probably figure out whether it's a typo, but there are so few, we can just delete them. New York City does not fit neatly in a square, but we can still decide on a bounding box around it and then delete records outside of that box.  A quick check at <a href="https://gps-coordinates.org/new-york-city-latitude.php">gps-coordinates.org</a>, gives a rough outline for New York City of latitude, longitude 40.55, -74.1 on the lower left and 40.94, -73.67 on the upper right. We can filter <span class="inlinecode">df_clean</span> for this bounding box using another query:</p>
+
+
+<div class="codeblk">df_clean = df_clean[(df_clean['latitude']&gt;40.55) &amp;
+                    (df_clean['latitude']&lt;40.94) &amp;
+                    (df_clean['longitude']&gt;-74.1) &amp;
+                    (df_clean['longitude']&lt;-73.67)]
+</div>
+
+
+<p>	 Stripping these records is “legal” because they don't fit within the goal previously established for the model. We are not arbitrarily deleting records.</p>
+
+<p>	 The next step could be to examine the few records with extreme numbers of bedrooms or bathrooms, but there are so few, it's unlikely they would skew the data set. This is particularly true after we've removed price outliers, so let's leave those records as-is.</p>
+
+
+
+
+<h2 id="sec:5.4">5.4 Comparing models trained on denoised data</h2>
+
+
+<p>	 At this point, we've cleaned up the data set so that it falls within the focus of our model, reasonably-price departments in New York City. We've achieved the same data set as file <span class="inlinecode">rent-idea.csv</span> used in <b>Chapter 3</b> <i>A First Taste of Applied Machine Learning</i>. We're ready to train a model on this denoised data set to see if the model performance has improved:	 </p>
+
+
+<div class="codeblk">X, y = df_clean.drop('price', axis=1), df_clean['price']
+rf = RandomForestRegressor(n_estimators=100,
+                           n_jobs=-1,        # parallelize
+                           oob_score=True)   # get error estimate
+rf.fit(X, y)
+clean_oob_r2 = rf.oob_score_
+print(f"Validation OOB score {clean_oob_r2:.4f}")
+</div>
+
+<p class="stdout">Validation OOB score 0.8677
+</p>
+
+<p>Let's also verify that the MAE is the same as we saw for the ideal data set (only the output is shown for brevity):</p>
+<p class="stdout">Validation MAE trials: $293 $293 $296 $290 $293 $300 $296
+Average clean validation MAE $294
+</p>
+
+<p>Great! We've now got a prediction model that gets a decent <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> estimated prediction error.  Are we done yet? That depends on the definition of “good enough” and whether we think we can do better. Imagine a website that used our model to predictor rent prices using apartment features entered by a user. There is likely a threshold below which users don't find the predictions useful. If we have a suitable way to test “good enough,” this should guide whether we keep looking for improvements. </p>
+
+<div class="p_wrapper">
+<div class="callout">Don't try out too many models because it's a form of overfitting. Eventually, you'll find a model that spuriously finds a relationship.</div>
+<p class="p_left">Let's assume that we'd like to improve the model's accuracy.  We can try different models, but it's unlikely they would perform significantly better and many would perform worse.   For example, a linear prediction model called <a href="https://goo.gl/A9C1Sf">Lasso Regression</a> is often a good baseline, but it can't compute an <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score as a result of training so we have to hold out a validation set. Here's a snippet to train the model and print the <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> scores for the training and test sets:</p>
+</div>
+
+
+<div class="codeblk">from sklearn.linear_model import Lasso
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+lm = Lasso(alpha=0.5) # create linear model
+lm.fit(X_train, y_train)
+print(f"LM Training score {lm.score(X_train, y_train):.4f}")
+print(f"LM Validation score {lm.score(X_test, y_test):.4f}")
+</div>
+
+<p class="stdout">LM Training score 0.5764
+LM Validation score 0.5740
+</p>
+
+<p>Even the linear model's <i>training</i> <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> is significantly worse than the RF's validation score.  The linear model is unable to capture the relationship between features and apartment price even for training data.</p>
+
+<div class="p_wrapper">
+<p class="sidenote"><span class="sup">5</span>Normally, a grid search over the hyper parameters is required to tune the model and get the best accuracy, but with default parameters gradient boosting does not perform as well as an RF for this data set.</p>
+<p class="p_left">The <a href="file:///Users/parrt/github/website-explained.ai/gradient-boosting/index.html">gradient boosting</a> model is another popular and powerful model (based upon decision trees like RFs), but it also fails to capture the relationship as well as an RF:<span class="sup">5</span></p>
+</div>
+
+
+<div class="codeblk">from sklearn.ensemble import GradientBoostingRegressor
+
+gbr = GradientBoostingRegressor(n_estimators = 2000)
+gbr.fit(X_train, y_train)
+print(f"GB Training score {gbr.score(X_train, y_train):.4f}")
+print(f"GB Validation score {gbr.score(X_test, y_test):.4f}")
+</div>
+
+<p class="stdout">GB Training score 0.8425
+GB Validation score 0.8046
+</p>
+
+<p>Given the <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> and MAE scores from our RF model and that model's favorable comparison to other models, it's reasonable to declare victory over this problem.  Our solution comes from cleaning the data to make life easier on the model, rather than choosing the right model on the raw data set.</p>
+
+<p>How much we care about cleaning up the data depends on the model we're using and whether the offending values are in predictor variables (features) or the target.  One of the advantages of RFs is that they deal gracefully with errors and outliers in the predictor variables.  RFs behave like nearest-neighbor models and feature outliers are partitioned off into lonely corners of the feature space automatically. Anomalous values in the target variable are also not a problem, unless they lead to inconsistencies, samples with the same or similar feature vectors but huge variation in the target values. No model deals well with inconsistent training data.</p>
+
+<p>The inconsistencies in this apartment data set stem from the outliers: the extreme apartment rent prices seen in the target variable. That's why snipping out those records as “don't cares” improves model performance, but there's a final trick that you should know about that hammers down those extreme values. </p>
+
+
+
+<h2 id="logtarget">5.5 Log in, exp out</h2>
+
+
+<div class="p_wrapper">
+<div class="callout">Taking the log of a predictor or target variable is useful when there are outliers that can't be filtered out because they are important to the model.</div>
+<p class="p_left">Transforming the target variable (using the mathematical <i>log</i> function) into a tighter, more uniform space makes life easier for any model. In some sense, the log trick is the opposite of the technique we've done so far in this chapter, where we've examined the data and done a lot a little “nip and tuck” operations. Now, we're going to perform a single cleaning transformation and get decent accuracy, all without having to look at the data and without New York City apartment domain expertise.</p>
+</div>
+
+<p>The only problem is that, while easy to execute, understanding why taking the log of the target variable works and how it affects the training/testing process is intellectually challenging. (Both Terence and Jeremy agree that, at the beginning, this transformation added nontrivial cognitive load for us.)  You can skip this section for now, if you like, but just remember that this technique exists and check back here if needed in the future.</p>
+
+<div class="p_wrapper">
+<span class="sidenote">
+<center>
+<a href="images/prep/prep_logs_2.svg"><img src="../Images/164565eaf6423d588107a3a5159303fe.png" width="100%" data-original-src="https://mlbook.explained.ai/images/prep/prep_logs_2.svg"/></a>
+</center>
+<br/><b>Figure 5.1</b>. Histogram of prices clipped to less than $20,000 and zoomed in to make the long right tail more apparent; the triangle marks the average price.</span><p class="sidenote"><span class="sup">7</span>Averages are highly sensitive to outliers; consider the average salary of 10 of your friends and then add Bill Gates' salary, which would drive the average up tremendously.</p>
+<p class="p_left">To arrive at the log trick, let's look at the distribution of prices again. <b>Figure 5.1</b> shows the distribution of prices clipped to less than $20,000 and zoomed in to show part of the long right tail. Long tails are not necessarily a problem themselves; it's the inconsistencies caused by the outliers that lead to inaccurate models. During training, RFs combine the prices of identical or nearly-identical apartments by averaging them together, thus, forming the prediction for those apartments. But, outlier prices wildly skew average prices, so the model's predictions could be very far off.<span class="sup">7</span></p>
+</div>
+
+<div class="p_wrapper">
+<span class="sidenote">
+<center>
+<a href="images/prep/prep_logs_3.svg"><img src="../Images/bcaa95a0d7a7b0c814748bb793c4cdf4.png" width="90%%" data-original-src="https://mlbook.explained.ai/images/prep/prep_logs_3.svg"/></a>
+</center>
+ <br/><b>Figure 5.2</b>. Histogram of natural log(prices) without clipping outliers; the triangle marks the average log price.</span>
+<p class="p_left">Optimally, the distribution of prices would be a narrow “bell curve” distribution without a tail. This would make predictions based upon average prices more accurate. We need a mathematical operation that transforms the widely-distributed target prices into a new space. The “price in dollars space” has a long right tail because of outliers and we want to squeeze that space into a new space that is normally distributed (“bell curved”).  More specifically, we need to shrink large values a lot and smaller values a little. That magic operation is called the <i>logarithm</i> or log for short. <b>Figure 5.2</b> shows the histogram resulting from taking the log of <i>all</i> prices in the data set. We get a nice normally-shaped distribution of prices without having to clip outliers. (See <b>Section 19.3</b> <i>Log, orders of magnitude, and Euler's number</i> for more on log.) The max price has dropped from millions to about 10.</p>
+</div>
+
+<p>That's a cool trick to reshape the price distribution, but let's look at the actual effect on some prices. Previously, we looked at the records from a tiny patch of New York City that had some extreme outlier prices. Here are those records again (in variable <span class="inlinecode">df_local</span>), but with a new column that shows the log of the price to see how it shrinks the values:</p>
+<div class="scrollbar_wrapper">
+<table class="dataframe dataframe-indexed">
+<thead>
+	<tr><th> </th><th>bedrooms</th><th>bathrooms</th><th>street_address</th><th>price</th><th>log(price)</th></tr>
+    <tr><td/></tr>
+</thead>
+<tbody>
+	<tr>
+	<td>39939</td><td>1</td><td>1</td><td>west 54 st &amp; 8 ave </td><td>2300</td><td>7.7407</td>
+	</tr>
+	<tr>
+	<td>21711</td><td>1</td><td>1</td><td>300 West 55th Street</td><td>2400</td><td>7.7832</td>
+	</tr>
+	<tr>
+	<td>15352</td><td>1</td><td>1</td><td>300 West 55th Street</td><td>3350</td><td>8.1167</td>
+	</tr>
+	<tr>
+	<td>48274</td><td>1</td><td>1</td><td>300 West 55th Street</td><td>3400</td><td>8.1315</td>
+	</tr>
+	<tr>
+	<td>29665</td><td>1</td><td>1</td><td>333 West 57th Street</td><td>1070000</td><td>13.8832</td>
+	</tr>
+	<tr>
+	<td>30689</td><td>1</td><td>1</td><td>333 West 57th Street</td><td>1070000</td><td>13.8832</td>
+	</tr>
+</tbody>
+</table>
+</div>
+<p>An RF trained on the raw prices, would predict a terrible average price of <span class="inlinecode">np.mean(df_local.price)</span>=$358575.000 whereas an RF trained on the log of the prices predicts an average of <span class="inlinecode">np.mean(np.log(df_local.price))</span>=9.923.  At least in the log-of-price space, predicting the average seems like a good bet because that average log price is closer to the log price of the reasonably-price apartments. To transform prices back to the dollars space, we use the inverse of the log, which is the <i>exp</i> (exponential) function and get a prediction of $20395.690.  By taking the average in the log price space rather than raw prices, the average is less sensitive to outliers because we have scrunched the space (outliers are brought close in).</p>
+
+<p>Ok, so it makes sense to take the log because it transforms a skewed distribution to a normal distribution and it seems useful on one piece of the data.  Let's see if taking the log of the target variable affects the overall accuracy of a model trained on the original, noisy data set.</p>
+
+
+<div class="codeblk">X, y = df_num.drop('price', axis=1), df_num['price']
+<span class="highlight">y_log = np.log(y) # apply log to each price</span>
+
+rf = RandomForestRegressor(n_estimators=100, n_jobs=-1, oob_score=True)
+rf.fit(X, y_log)
+log_oob_r2 = rf.oob_score_
+print(f"OOB R^2 score for log(price) {log_oob_r2:.4f}")
+</div>
+
+<p class="stdout">OOB R^2 score for log(price) 0.8767
+</p>
+
+<p>Recall the poor <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> of -0.008 for the model trained on the raw prices.  By taking the log of the prices, our model's OOB <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> matches the <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> of 0.868 from the model trained on just the apartments less than $10,000.  Without having to clean the data or know anything about the domain, we achieved the same score as the model trainined on the clean data set! </p>
+
+<p>To make actual predictions for some <span class="inlinecode">X_test</span>, though, we have to take the exp of model predictions to get prices in dollars instead of log dollars (<img style="vertical-align: -3.4125pt;" src="../Images/c983abfa22704f82b36242d1637f9869.png" data-original-src="https://mlbook.explained.ai/images/eqn-DDA3CE43CD62B33E39753A16C3C4F160-depth003.25.svg"/> = <span class="eqn">x</span>):</p>
+
+
+<div class="codeblk">y_predicted_log = rf.predict(X_test)
+y_predicted = np.exp(y_predicted_log)</div>
+
+
+<p>If you are using the <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score as the metric to assess model performance, then you're done.  But, the <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score isn't the only way to measure performance. We've already seen the MAE and there are many others, each one measuring something different related to actual versus predicted prices.  For example, despite getting a good <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/>, the MAE score for a model trained on the log of prices is not nearly as good as the MAE for a model trained on clean data.  If we care more about MAE than <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/>, then cleaning the data gets us a better model than simply taking the log of the prices. In the next chapter, we'll learn more about assessing regressor performance and how we have to carefully choose an appropriate metric according to the needs of our application.</p>
+
+
+
+    
+</body>
+</html>
