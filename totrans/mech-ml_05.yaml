@@ -1,0 +1,1104 @@
+- en: 5 Exploring and Denoising Your Data Set
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://mlbook.explained.ai/prep.html](https://mlbook.explained.ai/prep.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[Terence Parr](http://parrt.cs.usfca.edu) and [Jeremy Howard](http://www.fast.ai/about/#jeremy)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Copyright © 2018-2019 Terence Parr. All rights reserved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Please don''t replicate on web or redistribute in any way.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This book generated from markup+markdown+python+latex source with [Bookish](https://github.com/parrt/bookish).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can make **comments or annotate** this page by going to the annotated version
+    of this page. You'll see existing annotated bits highlighted in yellow. They are
+    *PUBLICLY VISIBLE*. Or, you can send comments, suggestions, or fixes directly
+    to [Terence](mailto:parrt@cs.usfca.edu).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contents
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Getting a quick sniff of the data](#sec:5.1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Training and evaluating an initial model](#sec:initial-model)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Exploring and denoising the apartment rent data](#sec:5.3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Examining the data distributions](#sec:5.3.1)'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Excising the anomalies](#sec:5.3.2)'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Comparing models trained on denoised data](#sec:5.4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Log in, exp out](#logtarget)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “*It is a capital mistake to theorize before one has data. Insensibly one begins
+    to twist facts to suit theories, instead of theories to suit facts.*” — Arthur
+    Conan Doyle (1891) in *A Scandal in Bohemia*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In **Chapter 3** *A First Taste of Applied Machine Learning*, we successfully
+    trained a random forest (RF) model to predict New York City rent prices but under
+    ideal conditions: the data was already in a form acceptable to a model and was
+    mostly free of errors, outliers, and other noise. The unfortunate reality is that
+    real data sets are messy and so, in this chapter, we''re going to learn how to
+    process the original data from Kaggle bit-by-bit until it looks like that ideal
+    data set. The dirty little secret of the machine learning world is that practitioners
+    spend roughly 75% of their time acquiring, cleaning, and otherwise preparing data
+    for training. (We won''t learn about the acquisition piece in this book, but you
+    can check out Terence''s free [Data Acquisition course notes](https://github.com/parrt/msan692).)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To train a model, the data set must follow two fundamental rules: all data
+    must be numeric and there can''t be any missing values. We must derive numeric
+    features from the nonnumeric features such as strings, dates, and categorical
+    variables like SalesID. Or, we can simply delete the nonnumeric features. That
+    preparation work is a big topic unto itself, which we''ll address in **Chapter
+    6** *Categorically Speaking* and **Chapter 7** *Exploring and Cleaning the Bulldozer
+    Dataset*. In this chapter, we''ll stick with the numeric fields (bathrooms, bedrooms,
+    longitude, latitude) we used before.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even with purely numeric data, there is potential cleanup work to do. The data
+    could have outliers, errors, or contradictory information. For example, in our
+    apartment data, one place claims to have 2 bedrooms but 10 bathrooms, while other
+    apartments claim to be on the equator! Armed with graphs or statistics from the
+    data set, we turn to someone with domain expertise to interpret what we observe.
+    (Terence's sister lives in New York City and confirms that New York is not on
+    the equator, though typically feels that way in August.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also have to view all data cleaning operations through the lens of what exactly
+    we want the model to do. In our case, we want a model that predicts apartment
+    prices but just for New York City and just for the reasonably priced apartments.
+    Unfortunately, our data set has a number of records that don't fit the constraints.
+    For example, the data set has an outlier apartment costing $4,490,000/month (it
+    must have parking) and an apartment whose longitude and latitude place it in Boston.
+    We're going to delete these and a few other similar records for the simple reason
+    that they exceed our focus. As we learned in **Chapter 3** *A First Taste of Applied
+    Machine Learning*, models can only make predictions based upon the training data
+    provided to them and we should avoid training them on inappropriate samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter we''re going to explore the original apartment data set from
+    Kaggle, [Two Sigma Connect: Rental Listing Inquiries](https://www.kaggle.com/c/two-sigma-connect-rental-listing-inquiries),
+    looking for and correcting suspicious records and elements. To do that, we''ll
+    learn a multitude of useful techniques to examine and manipulate pandas dataframes.
+    Along the way, we''ll also use matplotlib to generate some cool looking graphs
+    and use sklearn to consider how data cleanup affects model accuracy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.1 Getting a quick sniff of the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once were certain we've nailed down the exact problem to solve, the first step
+    in a machine learning project is to look at the data, but just for a quick sniff.
+    (Use a Jupyter notebook, Excel, an editor, or any other convenient tool.) We need
+    to know what the data looks like so our first inspection of the data should yield
+    the column names, their datatypes, and whether the target column has numeric values
+    or categories. (If we're creating a regressor, those values must be numeric; if
+    we're classifying, those values must be categories.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get started, make sure that you have file rent.csv in your data directory
+    underneath where you are running Jupyter. (See **Section 3.2.1** *Loading and
+    sniffing the training data* for instructions on downloading JSON rent data from
+    Kaggle and creating the CSV files.) Then, create a new Jupyter notebook by clicking
+    on the “+” button and selecting “Python 3” under the “Notebook” tab. This will
+    create a file in the same directory where you started jupyter lab (unless you
+    have jumped around using the “Files” tab on the left side of the lab browser window).
+    It's probably a good idea to give the file a decent name like clean.ipynb by right
+    clicking on the notebook tab that currently says Untitled.ipynb. You might also
+    find it convenient to cut/paste from the [notebooks](https://mlbook.explained.ai/notebooks/)
+    that were automatically derived from the code snippets from the various chapters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let''s enter some code into the notebook to read in the CSV data using
+    pandas to get our first look at the original data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'import pandas as pd df = pd.read_csv("data/rent.csv") print(df.shape) # print
+    rows, columns df.head(2) # dump first 2 rows'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (49352, 15)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|   | bathrooms | bedrooms | building_id | created | description | display_address
+    | features | latitude | listing_id | longitude | manager_id | photos | price |
+    street_address | interest_level |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.5000 | 3 | 53a5b119ba8f7b61d4e010512... | 2016-06-24 07:54:24 | A Brand
+    New 3 Bedroom 1.5... | Metropolitan Avenue | [] | 40.7145 | 7211212 | -73.9425
+    | 5ba989232d0489da1b5f2c45f... | [''https://photos.renthop.... | 3000 | 792 Metropolitan
+    Avenue | medium |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 1.0000 | 2 | c5c8a357cba207596b04d1afd... | 2016-06-12 12:19:27 |  |
+    Columbus Avenue | [''Doorman'', ''Elevator'', ''... | 40.7947 | 7150865 | -73.9667
+    | 7533621a882f71e25173b27e3... | [''https://photos.renthop.... | 5465 | 808 Columbus
+    Avenue | low |'
+  prefs: []
+  type: TYPE_TB
+- en: 'There are many columns and some of them are very wide, so let''s transpose
+    the display so that the columns are vertical (.T performs a transpose on the data
+    frame, flipping rows and columns):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: df.head(2).T
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|   | 0 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| bathrooms | 1.5000 | 1.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| bedrooms | 3 | 2 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| building_id | 53a5b119ba8f7b61d4e010512... | c5c8a357cba207596b04d1afd...
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| created | 2016-06-24 07:54:24 | 2016-06-12 12:19:27 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| description | A Brand New 3 Bedroom 1.5... |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| display_address | Metropolitan Avenue | Columbus Avenue |'
+  prefs: []
+  type: TYPE_TB
+- en: '| features | [] | [''Doorman'', ''Elevator'', ''... |'
+  prefs: []
+  type: TYPE_TB
+- en: '| latitude | 40.7145 | 40.7947 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| listing_id | 7211212 | 7150865 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| longitude | -73.9425 | -73.9667 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| manager_id | 5ba989232d0489da1b5f2c45f... | 7533621a882f71e25173b27e3...
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| photos | [''https://photos.renthop.... | [''https://photos.renthop.... |'
+  prefs: []
+  type: TYPE_TB
+- en: '| price | 3000 | 5465 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| street_address | 792 Metropolitan Avenue | 808 Columbus Avenue |'
+  prefs: []
+  type: TYPE_TB
+- en: '| interest_level | medium | low |'
+  prefs: []
+  type: TYPE_TB
+- en: 'This makes it easier to see the column names, column datatypes, and a sample
+    data value for each column. We see a bunch of nonnumeric fields, including some
+    columns that actually look like lists of things packed together into a single
+    string, such as photos and features. The description seems to be free text in
+    a string. Pandas can tell us more specifically about the data types if we ask
+    for info():'
+  prefs: []
+  type: TYPE_NORMAL
+- en: df.info()
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<class ''pandas.core.frame.DataFrame''> RangeIndex: 49352 entries, 0 to 49351
+    Data columns (total 15 columns): bathrooms 49352 non-null float64 bedrooms 49352
+    non-null int64 building_id 49352 non-null object created 49352 non-null object
+    description 47906 non-null object display_address 49217 non-null object features
+    49352 non-null object latitude 49352 non-null float64 listing_id 49352 non-null
+    int64 longitude 49352 non-null float64 manager_id 49352 non-null object photos
+    49352 non-null object price 49352 non-null int64 street_address 49342 non-null
+    object interest_level 49352 non-null object dtypes: float64(3), int64(3), object(9)
+    memory usage: 5.6+ MB'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The datatypes are in the last column, such as float64 which means “floating-point
+    number using 64-bits (8 bytes) of memory”. The object data type is pandas'' equivalent
+    of a string datatype. Anything other than float and int are nonnumeric datatypes.
+    Because we don''t know how to deal with nonnumeric datatypes at this point, we
+    can just drop those columns. All we care about are the numeric fields: bathrooms,
+    bedrooms, longitude, latitude, price.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To get a subset of the data frame, we could drop columns from df, but it''s
+    more explicit to grab a subset of the columns by indexing with a list of column
+    names:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: df_num = df[['bathrooms', 'bedrooms', 'longitude', 'latitude', 'price']] df_num.head(2)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|   | bathrooms | bedrooms | longitude | latitude | price |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.5000 | 3 | -73.9425 | 40.7145 | 3000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 1.0000 | 2 | -73.9667 | 40.7947 | 5465 |'
+  prefs: []
+  type: TYPE_TB
+- en: Indexing on a data frame expects a column name or list of column names, so df['price']
+    gets just the price column. Because Python list literals use square brackets,
+    ['bathrooms',...], just like indexing, the double-bracket notation looks a little
+    funny. Data frame df_num acts like a copy of df with just those five columns but
+    df_num is actually a view or perspective of df restricted to five columns. At
+    this point, we've got the data looking, structurally, very similar to what we
+    had in rent-idea.csv from **Chapter 3** *A First Taste of Applied Machine Learning*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Because models cannot handle missing values, another standard check is to see
+    if there are missing values in the data set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: print(df_num.isnull().any())
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'bathrooms False bedrooms False longitude False latitude False price False dtype:
+    bool'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are no missing values to deal with in this data set, but we won't be so
+    lucky in [chp:feateng].
+  prefs: []
+  type: TYPE_NORMAL
+- en: The more you look at the data the more you risk overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could explore the data some more, but what exactly would we be looking for?
+    As a general principle, try to avoid looking too much at the data values. There
+    is an awful temptation to make judgments or prematurely manipulate the data based
+    upon our flawed human observations. Remember that we wouldn't need machine learning
+    if a human could just look at a big data set and make correct, unbiased predictions.
+    For example, if we see a column with lots of missing values, it's tempting to
+    remove that from consideration as a feature. Instead, let the model tell you what
+    features are important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.2 Training and evaluating an initial model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 2 The cool kids say things like, “there's no signal there” to indicate no relationship
+    exists between features and target.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We haven't looked at the training data very intensely other than to know all
+    of the columns in the data frame are numeric. The next step is to train a model
+    to see if there is a relationship between the features and the target and how
+    strong that “signal” is.2
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here''s the procedure for training a model, once we have a properly-prepared
+    data frame, df_num, that consists only of numeric values and has no missing values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Separate the features and target columns.X_train = df_num.drop('price', axis=1)
+    y_train = df_num['price']
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Create an appropriate model with suitable hyper-parameters.from sklearn.ensemble
+    import RandomForestRegressor rf = RandomForestRegressor(n_estimators=100, n_jobs=-1)
+    # train w/all CPU core'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Fit model to the training data.rf.fit(X_train, y_train)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Now, let''s get a measure of how well the model fits the training data using
+    score(), which returns a common error metric called ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    (literally pronounced “[R squared](https://en.wikipedia.org/wiki/Coefficient_of_determination)”):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: r2 = rf.score(X_train, y_train) print( f"{r2:.4f}" )
+  prefs: []
+  type: TYPE_NORMAL
+- en: '0.8649'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A perfect training ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score
+    is 1.0, meaning that the model perfectly recalls the training data. An ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    score of 0 means the model performs no better than always just returning the average
+    price. Unfortunately, a high training ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    score (low error) doesn't tell us much. A high score just means that it's *possible*
+    there is a relationship between features and target and captured by the model.
+    If, however, we can't get a high ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    score, it's an indication that there is no relationship or the model is simply
+    unable to capture it. RFs are very powerful and can capture relationships even
+    between random variables, so expect RF training ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    scores to be high.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Interpreting R^2 Scores**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Think about the ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score as
+    measuring how well our model performs compared to a trivial model that always
+    returns the average of the target (apartment price) for any requested prediction.
+    Any value less than that, all away down to negative infinity, indicates the model
+    performs imperfectly to some degree. Because a model can be arbitrarily bad, the
+    ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score can be arbitrarily negative.
+    A nice feature of the ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score
+    is that it is normalized: scores are always in the range of 1.0 down to negative
+    infinity, rather than in units of apartment rent price or average rainfall in
+    Nairobi. Just remember that 1.0 means perfect and 0.0 means no better than returning
+    the average value. More on this in **Chapter 12** *Evaluating Regressor Performance*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we discussed in **Section 3.2.4** *Checking model generality*, we care about
+    the prediction error on validation or test vectors, not the training error. We
+    used the hold out method to assess model performance on validation data that was
+    not used for training purposes. Writing code to split out the validation set is
+    a hassle and reduces the training set size, however.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another reason to favor RFs, is that they can efficiently estimate the prediction
+    error while training the model, completely avoiding the need for separate validation
+    sets. The error score is called the *out-of-bag score* and ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    is the typical metric computed. (*Bag* is an abbreviation of *bootstrap aggregation*,
+    which we'll look at in detail in **Chapter 17** *Forests of Randomized Decision
+    Trees*.) Recall that RFs are a collection of decision trees, each of which is
+    trained on a subset of the training data. The out-of-bag (*OOB*) score looks at
+    the prediction accuracy for a particular record using only those trees that did
+    not train on that record. Statisticians have shown that the out-of-bag score gives
+    an excellent estimate of a model's generality, its true prediction error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The out-of-bag score is still not free computationally and we have to ask for
+    the computation with an argument, oob_score=True, to the constructor of the RF.
+    Here''s how to train a model that computes and prints the OOB score:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'rf = RandomForestRegressor(n_estimators=100, n_jobs=-1, oob_score=True) # get
+    error estimate rf.fit(X_train, y_train) noisy_oob_r2 = rf.oob_score_ print(f"OOB
+    score {noisy_oob_r2:.4f}")'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OOB score -0.0076
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That score is terrible, approximately as bad as just predicting the average
+    apartment rent price. Because this is our first exposure to ![](../Images/ec985123b9b52e80981e6500795e8d16.png),
+    let''s get more comfortable with it by verifying that the average absolute error
+    (MAE) in dollars is also terrible. To get a validation set, we have to hold out
+    a random 20% subset. In noisy data sets, the range of values in the 20% we select
+    could vary significantly from run to run, so let''s get a few MAE numbers for
+    comparison. Here''s a simple test rig with the model-related code emphasized:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'from sklearn.model_selection import train_test_split from sklearn.metrics import
+    mean_absolute_error import numpy as np X, y = df_num.drop(''price'', axis=1),
+    df_num[''price''] errors = [] print(f"Validation MAE trials:", end='''') for i
+    in range(7): X_train, X_test, y_train, y_test = \ train_test_split(X, y, test_size=0.20)
+    rf = RandomForestRegressor(n_estimators=100, n_jobs=-1) rf.fit(X_train, y_train)
+    y_predicted = rf.predict(X_test) e = mean_absolute_error(y_test, y_predicted)
+    print(f" ${e:.0f}", end='''') errors.append(e) print() noisy_avg_mae = np.mean(errors)
+    print(f"Average validation MAE ${noisy_avg_mae:.0f}")'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Validation MAE trials: $411 $872 $851 $498 $901 $395 $425 Average validation
+    MAE $622'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those validation errors are definitely worse than the roughly $300 average error
+    we saw on the clean data set from **Chapter 3** *A First Taste of Applied Machine
+    Learning*. Also, the error values bounce around significantly, which means that
+    different subsamples of the data set have different characteristics. This behavior
+    is consistent with the low OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    score coming from the RF, indicating a model trained on the raw data set gets
+    poor results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given the strength of RFs, poor performance could indicate there is little to
+    no relationship to capture between apartment characteristics and rent price, or
+    it could mean the data is inconsistent or has outliers. The variability of the
+    hold out validation error hints that the data is inconsistent or has outliers,
+    so let's take another look at the data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.3 Exploring and denoising the apartment rent data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we've mentioned, we want to avoid doing excessive snooping around in the
+    data because it's tempting to start making judgments that negatively impact the
+    generality of our model. But, in this case, the poor ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    score and unstable validation error is a legitimate reason. The general concept
+    of snooping around is called *exploratory data analysis* (EDA). We're going to
+    explore the data with the explicit purpose of finding anomalies. The focus of
+    our model is on typically-priced apartments and only within New York City proper,
+    which means we're going to look for extreme rent values and apartments outside
+    of New York City.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It's critical that we decide what these bounds are before looking at the data.
+    Don't look at the data first and then decide on a definition of anomalous. You
+    risk removing or altering data simply because it looks inconvenient or looks like
+    it might confuse the model. For the apartment data, it's safe to say that an apartment
+    for less than $1,000 in New York City is probably missing some key elements like
+    windows and doors, so that should be our lowest price. At the high-end, let's
+    call $10,000 outside the range of “reasonably priced.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With those bounds established, let''s take get a high-level look at the complete
+    data set. Here''s how to get some basic statistics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: df_num.describe()
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|   | bathrooms | bedrooms | longitude | latitude | price |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 49352.0000 | 49352.0000 | 49352.0000 | 49352.0000 | 49352.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 1.2122 | 1.5416 | -73.9557 | 40.7415 | 3830.1740 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 0.5014 | 1.1150 | 1.1779 | 0.6385 | 22066.8659 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 0.0000 | 0.0000 | -118.2710 | 0.0000 | 43.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 25% | 1.0000 | 1.0000 | -73.9917 | 40.7283 | 2500.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 50% | 1.0000 | 1.0000 | -73.9779 | 40.7518 | 3150.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 75% | 1.0000 | 2.0000 | -73.9548 | 40.7743 | 4100.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 10.0000 | 8.0000 | 0.0000 | 44.8835 | 4490000.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: A number of anomalies pop out from the minimum and maximum for each column.
+    There's a place with 10 bathrooms and another with 8 bedrooms. There is a reference
+    to longitude 0, which is the prime meridian (Greenwich, England), and a reference
+    to latitude zero, the equator. Oh, and let's not forget the apartment that costs
+    $4,490,000 per month or the intriguing place that costs $43 per month (probably
+    an abandoned vehicle or an apartment that is currently on fire).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.3.1 Examining the data distributions
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Before we start slashing and burning the data set, let''s look more closely
+    at the *distribution* of the features. The distribution of a feature is a term
+    that, loosely speaking, describes how the values of that feature are spread across
+    the range of that feature. (Statisticians call the distribution a *density function*,
+    which maps a feature value to the probability of occurrence.) There are number
+    of ways we can examine the distribution, such as sorting the prices in reverse
+    order and looking at the top price values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: print(df_num.price.sort_values(ascending=False).head(10))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '19558 4490000 9590 1150000 30689 1070000 29665 1070000 10581 135000 25538 111111
+    45674 100000 29082 90000 7336 85000 47995 80000 Name: price, dtype: int64'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wow, it looks like there are a number of very expensive apartments (values in
+    the right column). Values that are very different in magnitude from the others
+    in the feature or target space (range) are called *outliers*. Outliers could be
+    the result of noise, but some data sets have outliers that are correct values,
+    as is the case here. In New York City, it's certain that there are some hyper-expensive
+    apartments and a smattering of apartments from there down to the merely very-expensive
+    apartments. (Evaluating len(df[df.price>10_000]) shows 878 apartments that rent
+    for more than $10,000.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another exploratory technique is to ask pandas for the count of each unique
+    value in a particular column, such as the counts of apartments with specific numbers
+    of bathrooms and bedrooms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| print(df_num.bathrooms.value_counts())1.0 39422 2.0 7660 3.0 745 1.5 645
+    0.0 313 2.5 277 4.0 159 3.5 70 4.5 29 5.0 20 5.5 5 6.0 4 6.5 1 10.0 1 7.0 1 Name:
+    bathrooms, dtype: int64 | print(df_num.bedrooms.value_counts())1 15752 2 14623
+    0 9475 3 7276 4 1929 5 247 6 46 8 2 7 2 Name: bedrooms, dtype: int64 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'It looks like there are only a few outlier apartments listed as having more
+    than six bathrooms (out of 44,416) and only a few having more than six bedrooms.
+    We can also look at this data visually as a [histogram](https://en.wikipedia.org/wiki/Histogram),
+    which breaks up the range of values into fixed-size bins and then counts how many
+    values fall into each range:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: » *Generated by code to left*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/697a27b8b8fa55635ff45ea348106849.png)](images/prep/prep_sniff_16.svg)
+    bookcolors = { # our usual book color palette ''crimson'': ''#a50026'', ''red'':
+    ''#d73027'', ''redorange'': ''#f46d43'', ''orange'': ''#fdae61'', ''yellow'':
+    ''#fee090'', ''sky'': ''#e0f3f8'', ''babyblue'': ''#abd9e9'', ''lightblue'': ''#74add1'',
+    ''blue'': ''#4575b4'', ''purple'': ''#313695''} fig,ax = plt.subplots() ax.set_xlabel(''Num
+    Bedrooms'') ax.set_ylabel(''Num Apts'') ax.hist(df_num.bedrooms, color=bookcolors[''blue''])
+    plt.show()'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (See the aside on color palettes for more on the bookcolors['blue'] expression.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Using a consistent color palette**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A common mistake we see among our students is to use essentially random colors
+    or at least inconsistent colors across graphs. In one graph, feature price is
+    purple and in the next graph the same feature is green. Humans are very sensitive
+    to color and attach meaning to the various colors subconsciously, so it's important
+    to be consistent across visualizations. When drawing diagrams manually, it's a
+    good idea to choose from a consistent color palette as well. For this book, we
+    selected
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5677b947e832f35db92b8f19e47e3e75.png)as our palette and choose
+    from those colors when drawing diagrams. Python code used in the remainder of
+    the book will select colors from this pallet using a simple dictionary mechanism:bookcolors
+    = { ''crimson'': ''#a50026'', ''red'': ''#d73027'', ''redorange'': ''#f46d43'',
+    ''orange'': ''#fdae61'', ''yellow'': ''#fee090'', ''sky'': ''#e0f3f8'', ''babyblue'':
+    ''#abd9e9'', ''lightblue'': ''#74add1'', ''blue'': ''#4575b4'', ''purple'': ''#313695''
+    }'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will look up our shade of blue using bookcolors['blue'] rather than relying
+    on whatever the default blue color is for matplotlib.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The color palette you choose should also be accessible to those with forms of
+    colorblindness and make sure the contrast between text and its background is high
+    enough contrast for the visually impaired. Chrome's Accessibility Developer Tools
+    run an excellent audit for you. A nice site for selecting color pallets is [colorbrewer2.org](http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3);
+    make sure to check the “colorblind safe” box so it only shows you colorblind safe
+    pallets. When you do draw a diagram, you can also check what it looks like to
+    colorblind individuals by uploading that image to [vischeck](http://www.vischeck.com/vischeck/vischeckImage.php).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are also strange things going on with the longitude and latitude features,
+    which also popped out from the df_num.describe() (see min, max for longitude and
+    latitude). There are 12 apartments at location 0,0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: print(len(df[(df.longitude==0.0) & (df.latitude==0.0)]))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '12'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of the literal interpretation of 0,0 as apartments floating off the
+    west coast of Africa, those values probably represent missing data (manager too
+    lazy to look it up). On the other hand, actual values of 0 are technically not
+    missing so we could also think of these values erroneous or, more commonly, *noise*.
+    Other sources of noise include typos entered by humans or physical devices, such
+    as faulty temperature sensors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Noise and outliers are potential problems because they can lead to inconsistencies.
+    An *inconsistency* is a set of similar or identical feature vectors with much
+    different target values. For example, if we zero in on the region of New York
+    City containing two apartments over $1,000,000, we see other apartments with the
+    same characteristics but with reasonable prices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: df_local = df[(df.latitude>40.764) & (df.latitude<40.7678) & (df.longitude>=-73.9844)
+    & (df.longitude<=-73.9842) & (df.bathrooms==1) & (df.bedrooms==1)] df_local[['bedrooms','bathrooms','street_address','price']].sort_values('price')
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|   | bedrooms | bathrooms | street_address | price |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 39939 | 1 | 1.0000 | west 54 st & 8 ave | 2300 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 21711 | 1 | 1.0000 | 300 West 55th Street | 2400 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 15352 | 1 | 1.0000 | 300 West 55th Street | 3350 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 48274 | 1 | 1.0000 | 300 West 55th Street | 3400 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 29665 | 1 | 1.0000 | 333 West 57th Street | 1070000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 30689 | 1 | 1.0000 | 333 West 57th Street | 1070000 |'
+  prefs: []
+  type: TYPE_TB
+- en: Those ridiculously-priced apartments could be errors or simply outliers, but
+    no matter how powerful a machine learning model is, such inconsistent data leads
+    to inaccurate predictions. RFs predict the average price for all apartments whose
+    features cluster them together (np.mean(local.price)=$358575.000 in this case),
+    meaning that predictions for all apartments will be hundreds of thousands of dollars
+    off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have some idea about the outliers and noise in the data set, let's
+    do some cleanup work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.3.2 Excising the anomalies
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We can either leave noisy or outlier records as-is, delete, or “fix” the records,
+    but you should err on the side of leaving records as-is. Which alternative we
+    choose depends on knowledge about this domain, the goals of the model, how numerous
+    the anomalies are, and even what we see in the individual records with anomalous
+    values. (Missing data adds another wrinkle.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is no substitute for domain knowledge when building a model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The most important filter to apply relates to the goals of our model, in this
+    case, reasonably-priced apartments just in New York City. We can delete with confidence
+    any records outside of these bounds. Pandas has excellent facilities to select
+    subsets of the records. For example, df_num.price>1_000 gives a column of true
+    and false values computed by looking at each value in the price column. We can
+    then use that column of boolean values as a multi-valued index into the data frame,
+    which selects only those rows associated with true values. So, df_num[df_num.price>1_000]
+    returns a subset of the records in df_num whose price is greater than $1,000\.
+    We can also do both comparisons at once and assign the dataframe back to a new
+    df_clean variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: filter all records (training/testing) df_clean = df_num[(df_num.price>1_000)
+    & (df_num.price<10_000)]
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Selecting a subset of rows is an example of a pandas “view,” which returns a
+    filtered perspective on the original data, rather than making a copy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To visualize the distribution of cleaned-up prices, let''s use a histogram
+    again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: » *Generated by code to left*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/961ad42a641f85c9b5c6b9f4b0c733b9.png)](images/prep/prep_sniff_22.svg)
+    fig,ax = plt.subplots() ax.set_xlabel(''Clipped Price'') ax.set_ylabel(''Num Apts
+    at that price'') ax.hist(df_clean.price, bins=45, color=bookcolors[''blue''])
+    plt.show()'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It''s always best to use domain knowledge when identifying outliers, but if
+    we are uncertain about an appropriate range, we can always clip out the bottom
+    and top 1% using a bit of NumPy code. The distribution of the middle 98% of the
+    prices looks pretty similar to the clipped version:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: » *Generated by code to left*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/2d2163ad31508092537f71db99fb16f8.png)](images/prep/prep_sniff_23.svg)
+    upper, lower = np.percentile(df.price, [1,99]) # find middle 98% of prices clipped
+    = np.clip(df.price, upper, lower) fig,ax = plt.subplots() ax.set_xlabel(''Prices
+    in middle 98% range'') ax.set_ylabel(''Num Apts at that price'') ax.hist(clipped,
+    bins=45, color=bookcolors[''blue'']) plt.show()'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It looks like we have the prices under control now, so let''s turn to deleting
+    records outside of New York City proper. We saw previously that there are records
+    with longitude and latitude values of zero. These likely represent missing values
+    and missing values should normally be handled using techniques from [chp:feateng].
+    In this case, however, we find that there are only a few of such records:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: df_missing = df_clean[(df_clean.longitude==0) | (df_clean.latitude==0)] print(len(df_missing))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '11'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can delete those 11 records without significantly affecting the training
+    set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: df_clean = df_clean[(df_clean.longitude!=0) | (df_clean.latitude!=0)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A few apartments have GPS coordinates that put them in Boston, not New York
+    City (for example, latitude, longitude of 40.5813, -74.5343). These coordinates
+    could be typos or just erroneous lookups done by apartment managers. By scrutinizing
+    the records, we could probably figure out whether it''s a typo, but there are
+    so few, we can just delete them. New York City does not fit neatly in a square,
+    but we can still decide on a bounding box around it and then delete records outside
+    of that box. A quick check at [gps-coordinates.org](https://gps-coordinates.org/new-york-city-latitude.php),
+    gives a rough outline for New York City of latitude, longitude 40.55, -74.1 on
+    the lower left and 40.94, -73.67 on the upper right. We can filter df_clean for
+    this bounding box using another query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: df_clean = df_clean[(df_clean['latitude']>40.55) & (df_clean['latitude']<40.94)
+    & (df_clean['longitude']>-74.1) & (df_clean['longitude']<-73.67)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stripping these records is “legal” because they don't fit within the goal previously
+    established for the model. We are not arbitrarily deleting records.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step could be to examine the few records with extreme numbers of bedrooms
+    or bathrooms, but there are so few, it's unlikely they would skew the data set.
+    This is particularly true after we've removed price outliers, so let's leave those
+    records as-is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.4 Comparing models trained on denoised data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'At this point, we''ve cleaned up the data set so that it falls within the focus
+    of our model, reasonably-price departments in New York City. We''ve achieved the
+    same data set as file rent-idea.csv used in **Chapter 3** *A First Taste of Applied
+    Machine Learning*. We''re ready to train a model on this denoised data set to
+    see if the model performance has improved:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'X, y = df_clean.drop(''price'', axis=1), df_clean[''price''] rf = RandomForestRegressor(n_estimators=100,
+    n_jobs=-1, # parallelize oob_score=True) # get error estimate rf.fit(X, y) clean_oob_r2
+    = rf.oob_score_ print(f"Validation OOB score {clean_oob_r2:.4f}")'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Validation OOB score 0.8677
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s also verify that the MAE is the same as we saw for the ideal data set
+    (only the output is shown for brevity):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Validation MAE trials: $293 $293 $296 $290 $293 $300 $296 Average clean validation
+    MAE $294'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great! We've now got a prediction model that gets a decent ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    estimated prediction error. Are we done yet? That depends on the definition of
+    “good enough” and whether we think we can do better. Imagine a website that used
+    our model to predictor rent prices using apartment features entered by a user.
+    There is likely a threshold below which users don't find the predictions useful.
+    If we have a suitable way to test “good enough,” this should guide whether we
+    keep looking for improvements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don't try out too many models because it's a form of overfitting. Eventually,
+    you'll find a model that spuriously finds a relationship.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s assume that we''d like to improve the model''s accuracy. We can try
+    different models, but it''s unlikely they would perform significantly better and
+    many would perform worse. For example, a linear prediction model called [Lasso
+    Regression](https://goo.gl/A9C1Sf) is often a good baseline, but it can''t compute
+    an ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score as a result of training
+    so we have to hold out a validation set. Here''s a snippet to train the model
+    and print the ![](../Images/ec985123b9b52e80981e6500795e8d16.png) scores for the
+    training and test sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'from sklearn.linear_model import Lasso X_train, X_test, y_train, y_test = train_test_split(X,
+    y, test_size=0.20) lm = Lasso(alpha=0.5) # create linear model lm.fit(X_train,
+    y_train) print(f"LM Training score {lm.score(X_train, y_train):.4f}") print(f"LM
+    Validation score {lm.score(X_test, y_test):.4f}")'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LM Training score 0.5764 LM Validation score 0.5740
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even the linear model's *training* ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    is significantly worse than the RF's validation score. The linear model is unable
+    to capture the relationship between features and apartment price even for training
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5Normally, a grid search over the hyper parameters is required to tune the model
+    and get the best accuracy, but with default parameters gradient boosting does
+    not perform as well as an RF for this data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [gradient boosting](file:///Users/parrt/github/website-explained.ai/gradient-boosting/index.html)
+    model is another popular and powerful model (based upon decision trees like RFs),
+    but it also fails to capture the relationship as well as an RF:5
+  prefs: []
+  type: TYPE_NORMAL
+- en: from sklearn.ensemble import GradientBoostingRegressor gbr = GradientBoostingRegressor(n_estimators
+    = 2000) gbr.fit(X_train, y_train) print(f"GB Training score {gbr.score(X_train,
+    y_train):.4f}") print(f"GB Validation score {gbr.score(X_test, y_test):.4f}")
+  prefs: []
+  type: TYPE_NORMAL
+- en: GB Training score 0.8425 GB Validation score 0.8046
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given the ![](../Images/ec985123b9b52e80981e6500795e8d16.png) and MAE scores
+    from our RF model and that model's favorable comparison to other models, it's
+    reasonable to declare victory over this problem. Our solution comes from cleaning
+    the data to make life easier on the model, rather than choosing the right model
+    on the raw data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How much we care about cleaning up the data depends on the model we're using
+    and whether the offending values are in predictor variables (features) or the
+    target. One of the advantages of RFs is that they deal gracefully with errors
+    and outliers in the predictor variables. RFs behave like nearest-neighbor models
+    and feature outliers are partitioned off into lonely corners of the feature space
+    automatically. Anomalous values in the target variable are also not a problem,
+    unless they lead to inconsistencies, samples with the same or similar feature
+    vectors but huge variation in the target values. No model deals well with inconsistent
+    training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The inconsistencies in this apartment data set stem from the outliers: the
+    extreme apartment rent prices seen in the target variable. That''s why snipping
+    out those records as “don''t cares” improves model performance, but there''s a
+    final trick that you should know about that hammers down those extreme values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.5 Log in, exp out
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Taking the log of a predictor or target variable is useful when there are outliers
+    that can't be filtered out because they are important to the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transforming the target variable (using the mathematical *log* function) into
+    a tighter, more uniform space makes life easier for any model. In some sense,
+    the log trick is the opposite of the technique we've done so far in this chapter,
+    where we've examined the data and done a lot a little “nip and tuck” operations.
+    Now, we're going to perform a single cleaning transformation and get decent accuracy,
+    all without having to look at the data and without New York City apartment domain
+    expertise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The only problem is that, while easy to execute, understanding why taking the
+    log of the target variable works and how it affects the training/testing process
+    is intellectually challenging. (Both Terence and Jeremy agree that, at the beginning,
+    this transformation added nontrivial cognitive load for us.) You can skip this
+    section for now, if you like, but just remember that this technique exists and
+    check back here if needed in the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/164565eaf6423d588107a3a5159303fe.png)](images/prep/prep_logs_2.svg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 5.1**. Histogram of prices clipped to less than $20,000 and zoomed
+    in to make the long right tail more apparent; the triangle marks the average price.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7Averages are highly sensitive to outliers; consider the average salary of 10
+    of your friends and then add Bill Gates' salary, which would drive the average
+    up tremendously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To arrive at the log trick, let's look at the distribution of prices again.
+    **Figure 5.1** shows the distribution of prices clipped to less than $20,000 and
+    zoomed in to show part of the long right tail. Long tails are not necessarily
+    a problem themselves; it's the inconsistencies caused by the outliers that lead
+    to inaccurate models. During training, RFs combine the prices of identical or
+    nearly-identical apartments by averaging them together, thus, forming the prediction
+    for those apartments. But, outlier prices wildly skew average prices, so the model's
+    predictions could be very far off.7
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/bcaa95a0d7a7b0c814748bb793c4cdf4.png)](images/prep/prep_logs_3.svg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 5.2**. Histogram of natural log(prices) without clipping outliers;
+    the triangle marks the average log price.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimally, the distribution of prices would be a narrow “bell curve” distribution
+    without a tail. This would make predictions based upon average prices more accurate.
+    We need a mathematical operation that transforms the widely-distributed target
+    prices into a new space. The “price in dollars space” has a long right tail because
+    of outliers and we want to squeeze that space into a new space that is normally
+    distributed (“bell curved”). More specifically, we need to shrink large values
+    a lot and smaller values a little. That magic operation is called the *logarithm*
+    or log for short. **Figure 5.2** shows the histogram resulting from taking the
+    log of *all* prices in the data set. We get a nice normally-shaped distribution
+    of prices without having to clip outliers. (See **Section 19.3** *Log, orders
+    of magnitude, and Euler's number* for more on log.) The max price has dropped
+    from millions to about 10.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That''s a cool trick to reshape the price distribution, but let''s look at
+    the actual effect on some prices. Previously, we looked at the records from a
+    tiny patch of New York City that had some extreme outlier prices. Here are those
+    records again (in variable df_local), but with a new column that shows the log
+    of the price to see how it shrinks the values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|   | bedrooms | bathrooms | street_address | price | log(price) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 39939 | 1 | 1 | west 54 st & 8 ave | 2300 | 7.7407 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 21711 | 1 | 1 | 300 West 55th Street | 2400 | 7.7832 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 15352 | 1 | 1 | 300 West 55th Street | 3350 | 8.1167 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 48274 | 1 | 1 | 300 West 55th Street | 3400 | 8.1315 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 29665 | 1 | 1 | 333 West 57th Street | 1070000 | 13.8832 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 30689 | 1 | 1 | 333 West 57th Street | 1070000 | 13.8832 |'
+  prefs: []
+  type: TYPE_TB
+- en: An RF trained on the raw prices, would predict a terrible average price of np.mean(df_local.price)=$358575.000
+    whereas an RF trained on the log of the prices predicts an average of np.mean(np.log(df_local.price))=9.923\.
+    At least in the log-of-price space, predicting the average seems like a good bet
+    because that average log price is closer to the log price of the reasonably-price
+    apartments. To transform prices back to the dollars space, we use the inverse
+    of the log, which is the *exp* (exponential) function and get a prediction of
+    $20395.690\. By taking the average in the log price space rather than raw prices,
+    the average is less sensitive to outliers because we have scrunched the space
+    (outliers are brought close in).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ok, so it makes sense to take the log because it transforms a skewed distribution
+    to a normal distribution and it seems useful on one piece of the data. Let's see
+    if taking the log of the target variable affects the overall accuracy of a model
+    trained on the original, noisy data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'X, y = df_num.drop(''price'', axis=1), df_num[''price''] y_log = np.log(y)
+    # apply log to each price rf = RandomForestRegressor(n_estimators=100, n_jobs=-1,
+    oob_score=True) rf.fit(X, y_log) log_oob_r2 = rf.oob_score_ print(f"OOB R^2 score
+    for log(price) {log_oob_r2:.4f}")'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OOB R^2 score for log(price) 0.8767
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall the poor ![](../Images/ec985123b9b52e80981e6500795e8d16.png) of -0.008
+    for the model trained on the raw prices. By taking the log of the prices, our
+    model's OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png) matches the ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    of 0.868 from the model trained on just the apartments less than $10,000\. Without
+    having to clean the data or know anything about the domain, we achieved the same
+    score as the model trainined on the clean data set!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To make actual predictions for some X_test, though, we have to take the exp
+    of model predictions to get prices in dollars instead of log dollars (![](../Images/c983abfa22704f82b36242d1637f9869.png)
+    = x):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: y_predicted_log = rf.predict(X_test) y_predicted = np.exp(y_predicted_log)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are using the ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score
+    as the metric to assess model performance, then you're done. But, the ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    score isn't the only way to measure performance. We've already seen the MAE and
+    there are many others, each one measuring something different related to actual
+    versus predicted prices. For example, despite getting a good ![](../Images/ec985123b9b52e80981e6500795e8d16.png),
+    the MAE score for a model trained on the log of prices is not nearly as good as
+    the MAE for a model trained on clean data. If we care more about MAE than ![](../Images/ec985123b9b52e80981e6500795e8d16.png),
+    then cleaning the data gets us a better model than simply taking the log of the
+    prices. In the next chapter, we'll learn more about assessing regressor performance
+    and how we have to carefully choose an appropriate metric according to the needs
+    of our application.
+  prefs: []
+  type: TYPE_NORMAL
