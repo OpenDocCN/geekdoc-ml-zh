@@ -1,64 +1,97 @@
 - en: 8 Bulldozer Feature Engineering
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 8 推土机特征工程
 - en: 原文：[https://mlbook.explained.ai/bulldozer-feateng.html](https://mlbook.explained.ai/bulldozer-feateng.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://mlbook.explained.ai/bulldozer-feateng.html](https://mlbook.explained.ai/bulldozer-feateng.html)
 - en: '[Terence Parr](http://parrt.cs.usfca.edu) and [Jeremy Howard](http://www.fast.ai/about/#jeremy)'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[特伦斯·帕尔](http://parrt.cs.usfca.edu) 和 [杰里米·豪沃德](http://www.fast.ai/about/#jeremy)'
 - en: Copyright © 2018-2019 Terence Parr. All rights reserved.
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 版权 © 2018-2019 特伦斯·帕尔。保留所有权利。
 - en: '*Please don''t replicate on web or redistribute in any way.*'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '*请勿在网络上复制或以任何方式重新分发。*'
 - en: This book generated from markup+markdown+python+latex source with [Bookish](https://github.com/parrt/bookish).
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 这本书由 markup+markdown+python+latex 源代码生成，使用 [Bookish](https://github.com/parrt/bookish)。
 - en: You can make **comments or annotate** this page by going to the annotated version
     of this page. You'll see existing annotated bits highlighted in yellow. They are
     *PUBLICLY VISIBLE*. Or, you can send comments, suggestions, or fixes directly
     to [Terence](mailto:parrt@cs.usfca.edu).
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以通过访问此页面的注释版本来**评论或注释**此页。您会看到现有的注释部分以黄色突出显示。它们是**公开可见的**。或者，您可以直接向 [特伦斯](mailto:parrt@cs.usfca.edu)
+    发送评论、建议或修正。
 - en: Contents
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 目录
 - en: '[Synthesizing date-related features](#sec:8.1)'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[合成日期相关特征](#sec:8.1)'
 - en: '[ProductSize is an ordinal variable](#sec:8.2)'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[ProductSize 是一个有序变量](#sec:8.2)'
 - en: '[One-hot encoding Hydraulics_Flow](#onehot-hf)'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[独热编码 Hydraulics_Flow](#onehot-hf)'
 - en: '[One-hot encoding Enclosure](#sec:8.4)'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[独热编码 Enclosure](#sec:8.4)'
 - en: '[Splitting apart fiProductClassDesc](#sec:8.5)'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[拆分 fiProductClassDesc](#sec:8.5)'
 - en: '[Training with log(price)](#sec:8.6)'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[使用对数价格进行训练](#sec:8.6)'
 - en: '[The effect of feature engineering on model performance](#sec:8.7)'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[特征工程对模型性能的影响](#sec:8.7)'
 - en: '[Summary](#sec:8.8)'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[摘要](#sec:8.8)'
 - en: 'In the last chapter, we cleaned up the bulldozer dataset and fixed missing
     values. The resulting model''s OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
     score was good, but we can improve on that score by transforming some existing
@@ -66,56 +99,83 @@
     upon the feature engineering we did in **Chapter 6** *Categorically Speaking*.
     The features to focus on are derived from the feature importance graph from the
     last chapter, and our engineering process will look like this:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上一章中，我们清理了推土机数据集并修复了缺失值。结果模型的OOB ![图片](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    分数不错，但我们可以通过转换一些现有列和合成其他列来提高这个分数。本章中的技术扩展并改进了我们在**第6章** *按类别说话*中进行的特征工程。要关注的特征来自上一章的特征重要性图，我们的工程过程将如下所示：
 - en: Shatter the `saledate` feature into its constituent components
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将`saledate`特征分解为其组成部分
 - en: Convert `ProductSize` to an ordered categorical variable
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将 `ProductSize` 转换为有序分类变量
 - en: '*One hot encode* `Hydraulics_Flow` and `Enclosure`'
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*独热编码* `Hydraulics_Flow` 和 `Enclosure`'
 - en: Split `fiProductClassDesc` into its constituent components
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将 `fiProductClassDesc` 分解为其组成部分
 - en: Take the logarithm of `SalePrice` target variable
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对目标变量 `SalePrice` 取对数
 - en: As we go along, we'll examine the change in the model's OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
     score and see what pops up in the feature importance graph. At the end, we'll
     plot the feature transformations versus model scores to visualize the improvements
     gained from our handiwork.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着我们的进行，我们将检查模型OOB ![图片](../Images/ec985123b9b52e80981e6500795e8d16.png) 分数的改变，并查看特征重要性图中出现的内容。最后，我们将绘制特征转换与模型分数的关系图，以可视化我们手工操作带来的改进。
 - en: '1If you get an error “`read_feather() got an unexpected keyword argument ''nthreads''`,”
     then try:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 1如果您遇到错误“`read_feather() got an unexpected keyword argument 'nthreads'`”，请尝试：
 - en: '`import feather`'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '`import feather`'
 - en: '`feather.read_dataframe("data/bulldozer-train.feather")`'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '`feather.read_dataframe("data/bulldozer-train.feather")`'
 - en: Let's get started by loading the cleaned up dataframe we computed in the last
     chapter. We'll also load the original dataset so that we apply different transformations
     to `ProductSize`, `Hydraulics_Flow`, `fiProductClassDesc`, and `Enclosure`.1
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从加载我们在上一章中计算过的清理后的数据框开始。我们还将加载原始数据集，以便我们对`ProductSize`、`Hydraulics_Flow`、`fiProductClassDesc`和`Enclosure`应用不同的转换。1
 - en: '[PRE0]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 2Don't forget the [notebooks](https://mlbook.explained.ai/notebooks/) aggregating
     the code snippets from the various chapters.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 2不要忘记汇总了各个章节代码片段的[笔记本](https://mlbook.explained.ai/notebooks/)。
 - en: We should get a new baseline OOB score, this time using a model with 150 trees
     in the forest, rather than the 50 we used previously. As we increase the number
     of trees, the accuracy of an RF tends to improve but only up to a certain point.
@@ -127,22 +187,32 @@
     of the overall OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png) scores.
     Here's how to get a stable baseline using the `test()` function used in previous
     chapters:2
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该得到一个新的基线OOB得分，这次使用森林中有150棵树的模型，而不是之前使用的50棵。随着树木数量的增加，随机森林的准确性往往会提高，但仅限于某个程度。更重要的是，在评估模型改进时，当我们增加树木数量时，另一个有趣的现象发生了。从更大和更大的模型中得到的分数开始收敛到相同的OOB测试集分数，无论运行多少次。随着随机森林平均越来越多的单个树的预测，其综合预测的方差下降，因此整体OOB得分的方差也相应下降。这里是如何使用前几章中使用的`test()`函数来获得稳定基线的方法：2
 - en: '[PRE1]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: OOB R^2 0.90318 using 15,454,126 tree nodes with 43.0 median tree height
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用15,454,126个树节点，中值树高为43.0，得到OOB R^2 0.90318
 - en: You'll notice that the OOB score of 0.903 slightly higher than the score we
     got at the end of the last chapter, due to the increased number of trees in the
     forest. Now let's dive into feature engineering.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 你会注意到，由于森林中树木数量的增加，OOB得分为0.903略高于上一章末尾得到的分数。现在让我们深入探讨特征工程。
 - en: '**Bias and variance**'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '**偏差与方差**'
 - en: Statisticians use the words *bias* and *variance* when evaluating the effect
     of model complexity on model accuracy. A model that systematically predicts values
     that differ from known true values is said to be *biased*. The larger that difference,
@@ -151,8 +221,10 @@
     widely fluctuating results, depending on the test set, the model has high variance
     and is *overfit*. The simple way to think of these terms is that bias is accuracy
     and variance is generality.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 统计学家在评估模型复杂度对模型准确性的影响时，会使用“偏差”和“方差”这两个词。如果一个模型系统性地预测的值与已知的真实值存在差异，那么这个模型就被认为是“有偏差”的。差异越大，偏差就越高。高偏差模型不够复杂，无法捕捉特征与目标变量之间的关系——它们是“欠拟合”的。如果模型给出的结果波动很大，取决于测试集，那么模型具有高方差，并且是“过拟合”的。简单来说，这些术语可以这样理解：偏差是准确性，方差是一般性。
 - en: The use of “variance” in this way is suboptimal, particularly when “overfit”
     is available and more explicit, because variance is used in so many contexts.
     For example, the term variance is also applicable when discussing the effect of
@@ -161,26 +233,34 @@
     will be different. That means the prediction of these models on the exact same
     test set or OOB set will also be different. It's appropriate to describe the variation
     in the models' predictions as, well, variance.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 以这种方式使用“方差”是不太理想的，尤其是当“过拟合”可用且更明确时，因为方差在许多情况下都会被使用。例如，当讨论增加随机森林中树木数量对效果的影响时，方差这个术语也适用。构建随机森林是一个本质上随机的进程，因此，在完全相同的训练集上训练的多个随机森林模型将会有所不同。这意味着这些模型在完全相同的测试集或OOB集上的预测也将不同。将模型预测的变化描述为“方差”是恰当的。
 - en: Imagine that we build a model with, say, 10 trees and get an OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
     score. Repeat that train-and-score process many times, and you will find lots
     of variation in the scores. Now, increase the number of trees to 100 and repeat
     the trials. You will notice that the variation between model OOB scores is significantly
     lower than models trained with only 10 trees. (The [central limit theorem](https://en.wikipedia.org/wiki/Central_limit_theorem)
     comes into play when we average the predictions of multiple trees.)
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们构建了一个包含10棵树的模型，并得到了一个OOB分数。重复这个训练和评分过程多次，你会发现分数有很大的变化。现在，将树木数量增加到100并重复试验。你会注意到，模型OOB分数之间的变化显著低于仅用10棵树训练的模型。（当我们平均多个树的预测时，[中心极限定理](https://en.wikipedia.org/wiki/Central_limit_theorem)就会发挥作用。）
 - en: So some people use variance to mean generality when comparing multiple test
     sets but also use variance to mean reduced prediction fluctuations on the same
     test set but larger forests. We recommend that you shy away from bias and variance,
     in favor of the more explicit accuracy and generality or underfit and overfit.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，有些人比较多个测试集时，将方差视为泛化，同时在同一测试集上使用方差表示预测波动减少，但在更大的森林中。我们建议您避免偏差和方差，而更明确地关注准确性和泛化或欠拟合和过拟合。
 - en: 8.1 Synthesizing date-related features
+  id: totrans-38
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 8.1 合成日期相关特征
 - en: 'Date columns in datasets are often predictive of target variables, such as
     the `saledate` in the bulldozer dataset. The date of sale and the year of manufacture
     together are strongly predictive of the sale price. As a general rule, we recommend
@@ -191,48 +271,78 @@
     convert the `datetime64` to an integer with the number of seconds since 1970 (the
     usual UNIX time measurement). Here''s a basic function that illustrates how to
     synthesize date-related features:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据集中的日期列通常是目标变量的预测指标，例如推土机数据集中的 `saledate`。销售日期和制造年份一起对销售价格有很强的预测性。作为一般规则，我们建议将日期列分解为其组成部分，包括：年、月、日、星期几（1..7）、一年中的天数（1..365），甚至像“季度末”和“月末”这样的东西。Pandas
+    提供了方便的函数，可以从单个 `datetime64` 实体中提取所有这些信息。提取组件后，将 `datetime64` 转换为自 1970 年以来的秒数（这是常用的
+    UNIX 时间测量）。以下是一个基本函数，说明了如何合成与日期相关的特征：
 - en: '[PRE2]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'After using the function, we can use Pandas'' `filter()` to examine the newly-created
     columns:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用函数后，我们可以使用 Pandas 的 `filter()` 函数来检查新创建的列：
 - en: '[PRE3]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '|   | 0 | 1 |'
+  id: totrans-43
   prefs: []
   type: TYPE_TB
+  zh: '|   | 0 | 1 |'
 - en: '| --- | --- | --- |'
+  id: totrans-44
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- |'
 - en: '|  |'
+  id: totrans-45
   prefs: []
   type: TYPE_TB
+  zh: '|  |'
 - en: '| --- |'
+  id: totrans-46
   prefs: []
   type: TYPE_TB
+  zh: '| --- |'
 - en: '| saledate | 1232668800000000000 | 1232668800000000000 |'
+  id: totrans-47
   prefs: []
   type: TYPE_TB
+  zh: '| saledate | 1232668800000000000 | 1232668800000000000 |'
 - en: '| saleyear | 2009 | 2009 |'
+  id: totrans-48
   prefs: []
   type: TYPE_TB
+  zh: '| saleyear | 2009 | 2009 |'
 - en: '| salemonth | 1 | 1 |'
+  id: totrans-49
   prefs: []
   type: TYPE_TB
+  zh: '| salemonth | 1 | 1 |'
 - en: '| saleday | 23 | 23 |'
+  id: totrans-50
   prefs: []
   type: TYPE_TB
+  zh: '| saleday | 23 | 23 |'
 - en: '| saledayofweek | 4 | 4 |'
+  id: totrans-51
   prefs: []
   type: TYPE_TB
+  zh: '| saledayofweek | 4 | 4 |'
 - en: '| saledayofyear | 23 | 23 |'
+  id: totrans-52
   prefs: []
   type: TYPE_TB
+  zh: '| saledayofyear | 23 | 23 |'
 - en: 'Since we don''t know which components, if any, will be predictive it''s a good
     idea to just add whatever you can derive from the date. For example, you might
     want to add a column indicating that a day was a business holiday or even whether
@@ -241,109 +351,164 @@
     get confused by the extra columns and we can excise useless features later, after
     finishing feature engineering. Let''s check the effect of date-splitting on model
     accuracy:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们不知道哪些组件（如果有的话）将是预测性的，因此最好添加您可以从日期中推导出的任何内容。例如，您可能希望添加一个列，表明某天是商业假日，甚至是否有大风暴。除了通常的年/月/日和其他数值组件之外，您合成的新的列将是特定于应用的。RF
+    模型不会因为额外的列而混淆，我们可以在特征工程完成后删除无用的特征。让我们检查日期拆分对模型准确性的影响：
 - en: '[PRE4]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: OOB R^2 0.91315 using 14,917,750 tree nodes with 43.0 median tree height
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 14,917,750 个树节点和 43.0 个中值树高，OOB R^2 为 0.91315
 - en: We get a nice bump from our clean baseline score of 0.903 to 0.913 and the number
     of nodes is smaller.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们从干净的基线分数 0.903 提高到 0.913，节点数量更少。
 - en: 'Now that we have a `saleyear` column in addition to the `YearMade`, let''s
     create an `age` feature that explicitly states the age of a bulldozer for sale.
     The age of a vehicle is obviously important and, while the model has access to
     both fields already, it''s a good idea to make life as easy as possible on the
     model:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们除了 `YearMade` 之外还有 `saleyear` 列，让我们创建一个 `age` 特征，明确说明出售的推土机的年龄。车辆的年龄显然很重要，尽管模型已经可以访问这两个字段，但让模型的生活尽可能简单是个好主意：
 - en: '[PRE5]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: OOB R^2 0.91281 using 14,896,494 tree nodes with 43.0 median tree height
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 14,896,494 个树节点和 43.0 个中值树高，OOB R^2 为 0.91281
 - en: The OOB score is roughly the same after we add `age`, but the number of nodes
     is a little smaller.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 添加 `age` 后，OOB 分数大致相同，但节点数量略小。
 - en: Looking at the feature importance graph, none of the date-related features we
     added appear to be important, other than the converted `saledate`. `YearMade`
     is still very important, but `age` appears to be not that important.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 观察特征重要性图，除了转换后的 `saledate` 外，我们添加的与日期相关的特征似乎都不重要。`YearMade` 仍然非常重要，但 `age` 似乎并不那么重要。
 - en: » *Generated by code to left*
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由代码生成左侧*
 - en: '[![](../Images/0b244dc0ef692025f47870f54222537c.png)](images/bulldozer-feateng/bulldozer-feateng_eng_11.svg)'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '![bulldozer-feateng](images/bulldozer-feateng/bulldozer-feateng_eng_11.svg)'
 - en: '[PRE6]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'The reason for this is subtle but has to do with the fact that all of the date-related
     features are highly correlated, meaning that if we dropped one of them, the other
     features would “cover” for it. It''s better to treat all of those date-related
     features as a meta-feature for feature importance graphs:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种原因微妙，但与所有日期相关特征高度相关的事实有关，这意味着如果我们删除其中一个，其他特征就会“填补”它的空缺。最好将这些日期相关特征视为特征重要性图的元特征：
 - en: » *Generated by code to left*
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: » 由代码向左生成
 - en: '[![](../Images/d572c4140938a42d6074db3751782939.png)](images/bulldozer-feateng/bulldozer-feateng_eng_12.svg)'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '![bulldozer-feateng](images/bulldozer-feateng/bulldozer-feateng_eng_12.svg)'
 - en: '[PRE7]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: While `age` might not individually pop up in the importance graph, a graph of
     age in years versus sale price confirms our belief that older vehicles sell for
     less on average. That correlation (relationship between the age feature and target
     price) implies at least some predictability for `age`.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然`age`可能在重要性图中不会单独突出，但年龄与销售价格的关系图证实了我们的信念，即老旧车辆的平均售价较低。这种相关性（年龄特征与目标价格之间的关系）意味着`age`至少有一定的可预测性。
 - en: » *Generated by code to left*
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: » 由代码向左生成
 - en: '[![](../Images/83fa5acb2086a22751da878cece7f956.png)](images/bulldozer-feateng/bulldozer-feateng_eng_13.svg)'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: '![bulldozer-feateng](images/bulldozer-feateng/bulldozer-feateng_eng_13.svg)'
 - en: '[PRE8]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Let's keep all of these features for now and move on to the next task.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们暂时保留所有这些特征，继续进行下一个任务。
 - en: 8.2 ProductSize is an ordinal variable
+  id: totrans-74
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 8.2 ProductSize是一个有序变量
 - en: 'The `ProductSize` feature is important according to the feature importance
     graph so it''s worth revisiting the feature to see if we can improve upon the
     default label encoding. To get corroborating evidence of its importance, we can
     also look at the relationship between product size and sale price using Pandas''
     `groupby`. By grouping the data by `ProductSize` then calling `mean()`, we get
     the average `SalePrice` (and other columns) across product sizes:'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据特征重要性图，`ProductSize`特征很重要，因此值得重新审视该特征，看看我们是否可以改进默认的标签编码。为了获得其重要性的证实证据，我们还可以通过使用Pandas的`groupby`来查看产品大小与销售价格之间的关系。通过按`ProductSize`对数据进行分组，然后调用`mean()`，我们可以得到产品大小跨度的平均`SalePrice`（和其他列）：
 - en: » *Generated by code to left*
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: » 由代码向左生成
 - en: '[![](../Images/732d1e2f7afad8e6b1d40c2db712dd88.png)](images/bulldozer-feateng/bulldozer-feateng_eng_14.svg)'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '![bulldozer-feateng](images/bulldozer-feateng/bulldozer-feateng_eng_14.svg)'
 - en: '[PRE9]'
+  id: totrans-78
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 3When copying a column from one dataframe to another, `df_raw` to `df`, using
     the assignment operator, Pandas can silently do weird things depending on how
     the two dataframes are indexed. The safest approach is to copy over the NumPy
     version of the column by using `.values`, as we have done here.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 3当从一个数据框复制列到另一个数据框时，`df_raw`到`df`，使用赋值运算符，Pandas会根据两个数据框的索引方式静默地执行奇怪的操作。最安全的方法是使用`.values`复制列的NumPy版本，就像我们在这里所做的那样。
 - en: '(Here we''re using the built-in Pandas shortcut to matplotlib''s bar chart:
     `.plot.barh()`.) There''s a clear relationship between the size of the product
     and the sale price, as we would expect. Since `Large` is bigger than `Small`,
@@ -351,32 +516,48 @@
     That just means that we assign numbers to the category values according to their
     size. A quick web search also shows that `Mini` and `Compact` bulldozers are the
     same size, leading to the following encoding:3'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: （在这里，我们使用Pandas内置的matplotlib条形图快捷方式：`.plot.barh()`。）产品大小与销售价格之间存在明显的相关性，正如我们所预期的那样。由于`Large`比`Small`大，因此`ProductSize`特征是有序的，这意味着我们可以使用序数编码。这仅仅意味着我们根据大小为类别值分配数字。快速网络搜索还显示，`Mini`和`Compact`推土机大小相同，导致以下编码：3
 - en: '[PRE10]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '[0 2 4 3 1 5]'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '[0 2 4 3 1 5]'
 - en: 'By using an ordinal encoding rather than a label encoding, we get a small bump
     in OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过使用序数编码而不是标签编码，我们在OOB得分上获得了一小点提升![bulldozer-feateng](images/bulldozer-feateng/bulldozer-feateng_eng_11.svg)：
 - en: '[PRE11]'
+  id: totrans-84
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: OOB R^2 0.91526 using 14,873,450 tree nodes with 45.0 median tree height
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用14,873,450个树节点和45.0的中位树高，OOB R^2为0.91526
 - en: There are two other important features, `Hydraulics_Flow` and `Enclosure`, that
     we can easily encode in a more structured way than label encoding.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 有两个其他重要特征，`Hydraulics_Flow`和`Enclosure`，我们可以比标签编码更结构化地编码。
 - en: 8.3 One-hot encoding Hydraulics_Flow
+  id: totrans-87
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 8.3 One-hot encoding Hydraulics_Flow
 - en: When in doubt, we encode categorical variables using label encoding. As we saw
     in the last section, however, if we notice that the variable is ordinal, we use
     that type of encoding. When the number of category levels is small, say, 10 or
@@ -385,153 +566,243 @@
     from a categorical variable where exactly one of the dummy variables is true for
     a given record. There is a new column for every categorical level. Missing category
     values yield 0 in each dummy variable.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 当不确定时，我们使用标签编码来编码分类变量。然而，正如我们在上一节中看到的，如果我们注意到变量是有序的，我们就使用那种类型的编码。当类别级别数量较少时，比如说10个或更少，我们假设类别很重要，对变量进行
+    one-hot 编码。One-hot 编码产生人们所说的 *虚拟变量*，这是从分类变量派生出来的布尔变量，其中对于给定的记录，恰好有一个虚拟变量为真。每个分类级别都有一个新列。缺失的分类值在每个虚拟变量中产生0。
 - en: '**One-hot encoding**'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: '**One-hot 编码**'
 - en: 'The easiest way to pickup the idea behind one-hot encoding is through a trivial
     example. Imagine we have a categorical variable with three levels (three departments).
     We start out with a dataframe like this:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 理解 one-hot 编码背后的想法最简单的方法是通过一个简单的例子。想象我们有一个有三个级别（三个学院）的分类变量。我们从一个像这样的数据框开始：
 - en: '[PRE12]'
+  id: totrans-91
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '|   | Dept |'
+  id: totrans-92
   prefs: []
   type: TYPE_TB
+  zh: '|   | 学院 |'
 - en: '| --- | --- |'
+  id: totrans-93
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- |'
 - en: '|  |'
+  id: totrans-94
   prefs: []
   type: TYPE_TB
+  zh: '|  |'
 - en: '| --- |'
+  id: totrans-95
   prefs: []
   type: TYPE_TB
+  zh: '| --- |'
 - en: '| 0 | Math |'
+  id: totrans-96
   prefs: []
   type: TYPE_TB
+  zh: '| 0 | 数学 |'
 - en: '| 1 | CS |'
+  id: totrans-97
   prefs: []
   type: TYPE_TB
+  zh: '| 1 | CS |'
 - en: '| 2 | Physics |'
+  id: totrans-98
   prefs: []
   type: TYPE_TB
+  zh: '| 2 | 物理 |'
 - en: '| 3 |  |'
+  id: totrans-99
   prefs: []
   type: TYPE_TB
+  zh: '| 3 |  |'
 - en: 'Pandas can give us the dummy variables for that column and concatenate them
     onto the existing dataframe:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: Pandas 可以为我们提供该列的虚拟变量，并将它们连接到现有的数据框中：
 - en: '[PRE13]'
+  id: totrans-101
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: '|   | Dept | CS | Math | Physics |'
+  id: totrans-102
   prefs: []
   type: TYPE_TB
+  zh: '|   | 学院 | CS | 数学 | 物理 |'
 - en: '| --- | --- | --- | --- | --- |'
+  id: totrans-103
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- |'
 - en: '|  |'
+  id: totrans-104
   prefs: []
   type: TYPE_TB
+  zh: '|  |'
 - en: '| --- |'
+  id: totrans-105
   prefs: []
   type: TYPE_TB
+  zh: '| --- |'
 - en: '| 0 | Math | 0 | 1 | 0 |'
+  id: totrans-106
   prefs: []
   type: TYPE_TB
+  zh: '| 0 | 数学 | 0 | 1 | 0 |'
 - en: '| 1 | CS | 1 | 0 | 0 |'
+  id: totrans-107
   prefs: []
   type: TYPE_TB
+  zh: '| 1 | CS | 1 | 0 | 0 |'
 - en: '| 2 | Physics | 0 | 0 | 1 |'
+  id: totrans-108
   prefs: []
   type: TYPE_TB
+  zh: '| 2 | 物理 | 0 | 0 | 1 |'
 - en: '| 3 |  | 0 | 0 | 0 |'
+  id: totrans-109
   prefs: []
   type: TYPE_TB
+  zh: '| 3 |  | 0 | 0 | 0 |'
 - en: Now, instead of a number, the “hot” position indicates the category. Notice
     how the missing value ends up with none hot. If you're wondering what “hot” refers
     to, “one hot” is an electrical engineering term referring to multiple chip outputs
     where at most one output has a nonzero voltage at any given time.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，位置上的“热”值不再是一个数字，而是表示类别。注意缺失的值最终会变成没有“热”值。如果你想知道“热”指的是什么，“one-hot”是电气工程中的一个术语，指的是多个芯片输出，在任何给定时间最多只有一个输出有非零电压。
 - en: 'Feature `Hydraulics_Flow` has “High Flow” and “Standard” levels, but the vast
     majority of records are missing a value for this feature:'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征 `Hydraulics_Flow` 有“高流量”和“标准”级别，但绝大多数记录缺失了这个特征的值：
 - en: '[PRE14]'
+  id: totrans-112
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'NaN 86819 Standard 12761 High Flow 402 None or Unspecified 18 Name: Hydraulics_Flow,
     dtype: int64'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: NaN 86819 标准 12761 高流量 402 无或未指定 18 名称：Hydraulics_Flow，数据类型：int64
 - en: 'Before one-hot encoding let''s normalize the columns so string “None or Unspecified”
     is the same as missing (`np.nan`) then get dummy variables:'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 one-hot 编码之前，让我们规范化列，使字符串“无或未指定”与缺失值（`np.nan`）相同，然后获取虚拟变量：
 - en: '[PRE15]'
+  id: totrans-115
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: 'Next, we replace column `Hydraulics_Flow` with the dummy variables by concatenating
     them onto the `df` DataFrame and deleting the unused column:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们将列 `Hydraulics_Flow` 替换为虚拟变量，通过将它们连接到 `df` 数据框并删除未使用的列来实现：
 - en: '[PRE16]'
+  id: totrans-117
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: Checking the OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png), we see
     that it's about the same as before and the feature importance graph shows that
     the most predictive category is `Standard`. (See feature `Hydraulics_Flow_Standard`
     in the graph.)
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 检查 OOB ![../Images/ec985123b9b52e80981e6500795e8d16.png]，我们看到它与之前差不多，特征重要性图显示最预测性的类别是
+    `Standard`。（参见图中的特征 `Hydraulics_Flow_Standard`。）
 - en: '[PRE17]'
+  id: totrans-119
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: OOB R^2 0.91558 using 14,872,994 tree nodes with 45.0 median tree height
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 14,872,994 个树节点和 45.0 中值树高，OOB R^2 0.91558
 - en: '[![](../Images/9bb95a712bf0a082f161ed1d7be90d45.png)](images/bulldozer-feateng/bulldozer-feateng_eng_21.svg)'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/9bb95a712bf0a082f161ed1d7be90d45.png)](images/bulldozer-feateng/bulldozer-feateng_eng_21.svg)'
 - en: 8.4 One-hot encoding Enclosure
+  id: totrans-122
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 8.4 One-hot 编码 封装
 - en: 'Let''s follow this same one-hot procedure for `Enclosure` because it''s also
     a categorical variable with only a few levels:'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用同样的 one-hot 程序来处理 `Enclosure`，因为它也是一个只有几个级别的分类变量：
 - en: '[PRE18]'
+  id: totrans-124
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: 'OROPS 40904 EROPS w AC 34035 EROPS 24999 NaN 54 EROPS AC 6 NO ROPS 2 Name:
     Enclosure, dtype: int64'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: OROPS 40904 EROPS w AC 34035 EROPS 24999 NaN 54 EROPS AC 6 NO ROPS 2 名称：Enclosure，数据类型：int64
 - en: 'First, let''s normalize the categories:'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们规范化类别：
 - en: '[PRE19]'
+  id: totrans-127
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: 'Let''s also look at the relationship between this variable and the sale price:'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们也看看这个变量与销售价格之间的关系：
 - en: » *Generated by code to left*
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由代码生成左侧*
 - en: '[![](../Images/3b87629a700271ec8ec57a10832a885e.png)](images/bulldozer-feateng/bulldozer-feateng_eng_24.svg)'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/3b87629a700271ec8ec57a10832a885e.png)](images/bulldozer-feateng/bulldozer-feateng_eng_24.svg)'
 - en: '[PRE20]'
+  id: totrans-131
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: That's interesting, “EROPS AC” gets, on average, twice the price of the other
     bulldozers. A web search reveals that ROP means “Roll Over Protection Structure,”
     so EROPS is an enclosed ROPS (a cabin) and OROP is an open protective cage. AC
@@ -539,132 +810,204 @@
     cab gets a higher price and one with air conditioning gets the highest price,
     on average. Unfortunately, the OOB score drops a little bit but dummy variable
     `Enclosure_EROPS AC` is important per the importance graph.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 这很有趣，“EROPS AC”的平均价格是其他推土机的两倍。网络搜索显示ROP代表“翻滚保护结构”，因此EROPS是一个封闭的ROPS（驾驶室）和OROP是一个开放的防护笼。AC代表“空调”。模型表明，带有封闭驾驶室的推土机价格更高，而带有空调的推土机平均价格最高。不幸的是，OOB分数略有下降，但根据重要性图，虚拟变量`Enclosure_EROPS
+    AC`很重要。
 - en: '[PRE21]'
+  id: totrans-133
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: OOB R^2 0.91356 using 14,896,328 tree nodes with 44.0 median tree height
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: OOB R^2 0.91356 使用 14,896,328 个树节点，中值树高为 44.0
 - en: » *Generated by code to left*
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由代码生成左侧*
 - en: '[![](../Images/d4ca31a8f33d2a20dc751f16aa945cbf.png)](images/bulldozer-feateng/bulldozer-feateng_eng_26.svg)'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: '![图片](../Images/d4ca31a8f33d2a20dc751f16aa945cbf.png)(images/bulldozer-feateng/bulldozer-feateng_eng_26.svg)'
 - en: '[PRE22]'
+  id: totrans-137
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: There are other important categorical variables, such as `fiSecondaryDesc`,
     but it has 148 levels, which would create 148 new columns, which would more than
     triple the number of overall columns in the dataframe. We recommend label encoding
     such categorical variables.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有其他重要的分类变量，例如`fiSecondaryDesc`，但它有148个级别，这将创建148个新列，这将使数据框中的总列数增加超过三倍。我们建议对这些分类变量进行标签编码。
 - en: 8.5 Splitting apart fiProductClassDesc
+  id: totrans-139
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 8.5 拆分fiProductClassDesc
 - en: 'Feature `fiProductClassSpec` is string variable rather than a categorical variable.
     The values are descriptions of the product class and some components of the string
     appear to correlate with higher prices:'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征`fiProductClassSpec`是字符串变量而不是分类变量。值是产品类别的描述，并且字符串的一些组件似乎与更高的价格相关：
 - en: '[PRE23]'
+  id: totrans-141
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: '[![](../Images/983a2d4e06390a99351fcbed2edeac57.png)](images/bulldozer-feateng/bulldozer-feateng_eng_27.svg)'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: '![图片](../Images/983a2d4e06390a99351fcbed2edeac57.png)(images/bulldozer-feateng/bulldozer-feateng_eng_27.svg)'
 - en: 'The bulldozers with higher operating capacity values seem to fetch higher prices.
     The model is clearly getting some kind of predictive power out of this feature
     when label encoded (per the feature important graph). But, we can make the information
     more explicit by splitting the description into four pieces:'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 操作能力值较高的推土机似乎能卖出更高的价格。当对特征进行标签编码时（根据特征重要性图），模型显然从这一特征中获得了某种预测能力。但是，我们可以通过将描述分为四个部分来使信息更加明确：
 - en: '![](../Images/5312c2bf456281c7f30846ad789baff0.png)'
+  id: totrans-144
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/5312c2bf456281c7f30846ad789baff0.png)'
 - en: The description is a categorical variable, chosen from a finite set of categories
     such as “Skip Steer Loader.” The lower and upper components are numerical features
     and the units is a category, such as “Horsepower” or “Lb Operating Capacity.”
     We can call the latter three components the “spec”. Because the spec is sometimes
     `Unidentified`, the spec components could be missing.
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 描述是一个分类变量，从有限类别集合中选择，例如“跳过转向装载机”。下限和上限组件是数值特征，单位是一个类别，例如“马力”或“操作容量（磅）”。我们可以将后三个组件称为“规格”。因为规格有时是“未识别的”，所以规格组件可能缺失。
 - en: 'To pull apart the description string, let''s do it in two steps. First, copy
     the original non-label-encoded string from `df_raw` and split it at the hyphen:'
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了将描述字符串拆分，让我们分两步进行。首先，从`df_raw`中复制原始的非标签编码字符串，并在连字符处拆分它：
 - en: '[PRE24]'
+  id: totrans-147
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: '[''Track Type Tractor, Dozer'' ''Hydraulic Excavator, Track'' ''Wheel Loader''
     ''Skid Steer Loader'' ''Backhoe Loader'' ''Motorgrader'']'
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: '[''履带式拖拉机，推土机'' ''液压挖掘机，履带'' ''轮式装载机'' ''转向装载机'' ''后卸式装载机'' ''平地机'']'
 - en: 'This leaves the right-hand side of the string as the spec string:'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就留下了字符串的右侧作为规格字符串：
 - en: '[PRE25]'
+  id: totrans-150
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: '[''20.0 to 75.0 Horsepower'' ''12.0 to 14.0 Metric Tons'' ''14.0 to 16.0 Metric
     Tons'' ''33.0 to 40.0 Metric Tons'' ''225.0 to 250.0 Horsepower'']'
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: '[''20.0至75.0马力'' ''12.0至14.0公吨'' ''14.0至16.0公吨'' ''33.0至40.0公吨'' ''225.0至250.0马力'']'
 - en: 'Next, split that string using a regular expression that captures the two numbers
     and units to the right:'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，使用正则表达式拆分该字符串，以捕获右侧的两个数字和单位：
 - en: '[PRE26]'
+  id: totrans-153
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: '|   | fiProductClassSpec_lower | fiProductClassSpec_upper | fiProductClassSpec_units
     |'
+  id: totrans-154
   prefs: []
   type: TYPE_TB
+  zh: '|   | fiProductClassSpec_lower | fiProductClassSpec_upper | fiProductClassSpec_units
+    |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-155
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '|  |'
+  id: totrans-156
   prefs: []
   type: TYPE_TB
+  zh: '|'
 - en: '| --- |'
+  id: totrans-157
   prefs: []
   type: TYPE_TB
+  zh: '| --- |'
 - en: '| 0 | 20.0000 | 75.0000 | Horsepower |'
+  id: totrans-158
   prefs: []
   type: TYPE_TB
+  zh: '| 0 | 20.0000 | 75.0000 | 马力 |'
 - en: '| 1 | 12.0000 | 14.0000 | Metric Tons |'
+  id: totrans-159
   prefs: []
   type: TYPE_TB
+  zh: '| 1 | 12.0000 | 14.0000 | 公吨 |'
 - en: '| 2 | 14.0000 | 16.0000 | Metric Tons |'
+  id: totrans-160
   prefs: []
   type: TYPE_TB
+  zh: '| 2 | 14.0000 | 16.0000 | 公吨 |'
 - en: 'Because we have introduced columns with potentially missing values and new
     categorical variables, we have to prepare the dataset following our usual procedure:'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们引入了可能存在缺失值的列和新分类变量，我们必须按照我们通常的程序准备数据集：
 - en: '[PRE27]'
+  id: totrans-162
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: We see a small bump in model performance from the transformation of this feature
     and a feature importance graph shows that the individual components we synthesized
     are important.
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们看到模型性能因这个特征的转换而略有提升，一个特征重要性图显示我们合成的各个组成部分都很重要。
 - en: '[PRE28]'
+  id: totrans-164
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: OOB R^2 0.91429 using 14,873,080 tree nodes with 43.0 median tree height
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用14,873,080个树节点和43.0的中位树高度，OOB R^2为0.91429
 - en: 8.6 Training with log(price)
+  id: totrans-166
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 8.6 使用log(price)进行训练
 - en: 'The original Kaggle competition measured model performance based upon the logarithm
     of the price, so we should also do that because we''re going to compare our model''s
     performance to the competition leaders in the next chapter. Also, as we discussed
@@ -672,39 +1015,57 @@
     the target variable when dealing with prices. (We usually care more that two prices
     are different by 20% than by a fixed $20.) Transforming the target variable is
     a simple matter of calling the `log()` function:'
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 原始的Kaggle竞赛是根据价格的对数来衡量模型性能的，因此我们也应该这样做，因为我们将要在下一章中将我们的模型性能与竞赛领先者进行比较。此外，正如我们在**第5.5节**“登录，指数出”中讨论的，在处理价格时，通常将目标变量的对数取出来会有所帮助。（我们通常更关心两个价格相差20%，而不是固定的$20。）转换目标变量只是调用`log()`函数的一个简单问题：
 - en: '[PRE29]'
+  id: totrans-168
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: OOB R^2 0.91881 using 14,865,740 tree nodes with 44.0 median tree height
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用14,865,740个树节点和44.0的中位树高度，OOB R^2为0.91881
 - en: That 0.919 score is a nice bump in accuracy, all from a simple mathematical
     transformation.
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: 那个0.919的评分是一个很好的准确率提升，全部来自于一个简单的数学转换。
 - en: 8.7 The effect of feature engineering on model performance
+  id: totrans-171
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 8.7 特征工程对模型性能的影响
 - en: '[![](../Images/f0105091bb231aa27844a05f8860b28e.png)](images/bulldozer-feateng/bulldozer-feateng_eng_35.svg)'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/f0105091bb231aa27844a05f8860b28e.png)](images/bulldozer-feateng/bulldozer-feateng_eng_35.svg)'
 - en: We've done a lot of work in this chapter to improve the features presented to
     the RF model, so let's compare the effect of these changes on model performance.
     The following figure zooms in on the range of OOB scores from our baseline to
     the final log feature improvement. (Code for this figure is in the [notebook](https://mlbook.explained.ai/notebooks/bulldozer-feateng/eng.ipynb)
     for this chapter.)
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在本章中做了很多工作来改进提供给RF模型的特征，所以让我们比较这些变化对模型性能的影响。以下图放大了从基线到最终日志特征改进的OOB评分范围。（此图的代码位于本章的[notebook](https://mlbook.explained.ai/notebooks/bulldozer-feateng/eng.ipynb)中。）
 - en: '[![](../Images/bf64f46c8edc9e22d895d496e163b021.png)](images/bulldozer-feateng/bulldozer-feateng_eng_36.svg)'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/bf64f46c8edc9e22d895d496e163b021.png)](images/bulldozer-feateng/bulldozer-feateng_eng_36.svg)'
 - en: Overall the model OOB score has improved from 0.903 to 0.919, a 16.141% improvement;
     `(oob_log-oob_clean)*100/(1-oob_clean)`).
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 总体而言，模型的OOB评分从0.903提升到0.919，提高了16.141%；`(oob_log-oob_clean)*100/(1-oob_clean)`）。
 - en: For the most part, our feature engineering efforts have paid off. The one-hot
     encoding of `Hydraulics_Flow` and `Enclosure`, however, doesn't seem to have improved
     model performance. In fact, `Enclosure`'s one-hot encoding seems to have hurt
@@ -714,78 +1075,120 @@
     validation and other test sets. (While working on the next chapter, we compared
     scores from models with and without one-hot encoded `Enclosure` columns.) For
     the moment, it's best to keep all features available to the model.
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 大部分情况下，我们的特征工程努力都得到了回报。然而，`Hydraulics_Flow`和`Enclosure`的一热编码似乎并没有提高模型性能。实际上，`Enclosure`的一热编码似乎损害了性能。但记住，我们是在测量准确率，并使用训练集查看特征重要性图，而不是验证集。结果证明，一热编码`Enclosure`确实在验证集和其他测试集上提高了相关指标。（在撰写下一章时，我们比较了带有和不带一热编码`Enclosure`列的模型的分数。）目前，最好让模型能够访问所有特征。
 - en: 8.8 Summary
+  id: totrans-177
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 8.8 摘要
 - en: Let's summarize the techniques that we learned in this chapter.
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们总结一下本章学到的技术。
 - en: '**Dates**'
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: '**日期**'
 - en: 'As a general rule, break apart date columns into components such as day, month,
     year, day of week, day of year, and any other elements relevant to your application,
     such as “end of quarter” or “is holiday.” Synthesizing new columns based upon
     the date looks like this:'
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为一般规则，将日期列拆分为日、月、年、星期几、年中日以及与您的应用程序相关的任何其他元素，例如“季度末”或“是否假日”。基于日期合成新列的示例如下：
 - en: '[PRE30]'
+  id: totrans-181
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE30]'
 - en: 'Then convert the original date column to an integer representing the number
     of seconds since 1970 using:'
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后将原始日期列转换为自1970年以来的秒数的整数，使用以下方法：
 - en: '[PRE31]'
+  id: totrans-183
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE31]'
 - en: '**Ordinal encoding**'
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: '**顺序编码**'
 - en: 'Categorical variables whose elements have order should be ordinal encoded using
     integers that mirror the relationship between category levels. For example, if
     a column has low, medium, and high levels, an encoding such as the following would
     work where missing values become 0:'
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于具有有序元素的分类变量，应使用反映类别级别之间关系的整数进行顺序编码。例如，如果某列具有低、中、高等级，则以下编码方式可行，其中缺失值变为0：
 - en: '[PRE32]'
+  id: totrans-186
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE32]'
 - en: '**One-hot encoding**'
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: '**独热编码**'
 - en: 'Non-ordered (nominal) categorical variables with about 10 or fewer levels can
     be one-hot encoded. Here is the basic procedure to replace a column with multiple
     dummy columns that one-hot encode the column:'
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于大约有10个或更少级别的非有序（名义）分类变量，可以采用独热编码。以下是替换列以多个虚拟列替换的独热编码列的基本步骤：
 - en: '[PRE33]'
+  id: totrans-189
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE33]'
 - en: '**Split strings encoding**'
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: '**分割字符串编码**'
 - en: 'In this chapter, we split a string based upon the hyphen character using `split()`:'
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，我们使用`split()`根据连字符字符拆分字符串：
 - en: '[PRE34]'
+  id: totrans-192
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE34]'
 - en: 'and then used regular expressions to extract three components from the right-hand
     string using `extract()`:'
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后使用正则表达式通过`extract()`从右侧字符串中提取三个组件：
 - en: '[PRE35]'
+  id: totrans-194
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE35]'
 - en: We created new columns in `df` from the columns extracted in this way.
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们从这种方式提取的列中在`df`中创建了新的列。
 - en: There are lots of other kinds of strings (in other datasets) you might want
     to split apart, such as URLs. You can create new columns that indicate `https`
     vs `http`, the top level domain, domain, filename, file extension etc.
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: 在其他数据集中，您可能想要拆分许多其他类型的字符串，例如URL。您可以创建新的列来指示`https`与`http`、顶级域名、域名、文件名、文件扩展名等。

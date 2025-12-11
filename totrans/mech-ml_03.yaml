@@ -1,101 +1,147 @@
 - en: 3 A First Taste of Applied Machine Learning
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 3 初尝应用机器学习
 - en: 原文：[https://mlbook.explained.ai/first-taste.html](https://mlbook.explained.ai/first-taste.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://mlbook.explained.ai/first-taste.html](https://mlbook.explained.ai/first-taste.html)
 - en: '[Terence Parr](http://parrt.cs.usfca.edu) and [Jeremy Howard](http://www.fast.ai/about/#jeremy)'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[特伦斯·帕尔](http://parrt.cs.usfca.edu) 和 [杰里米·霍华德](http://www.fast.ai/about/#jeremy)'
 - en: Copyright © 2018-2019 Terence Parr. All rights reserved.
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 版权所有 © 2018-2019 特伦斯·帕尔。保留所有权利。
 - en: '*Please don''t replicate on web or redistribute in any way.*'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '*请勿在网络上复制或以任何方式分发。*'
 - en: This book generated from markup+markdown+python+latex source with [Bookish](https://github.com/parrt/bookish).
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 本书由 markup+markdown+python+latex 源代码生成，使用 [Bookish](https://github.com/parrt/bookish)。
 - en: You can make **comments or annotate** this page by going to the annotated version
     of this page. You'll see existing annotated bits highlighted in yellow. They are
     *PUBLICLY VISIBLE*. Or, you can send comments, suggestions, or fixes directly
     to [Terence](mailto:parrt@cs.usfca.edu).
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以通过访问此页面的注释版本来对此页进行**注释或标注**。您会看到现有的标注部分以黄色突出显示。它们是**公开可见的**。或者，您可以直接向[特伦斯](mailto:parrt@cs.usfca.edu)发送评论、建议或修正。
 - en: Contents
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 目录
 - en: '[Computer environment sanity check](#sec:3.1)'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[计算机环境检查](#sec:3.1)'
 - en: '[Predicting New York City Apartment Rent](#sec:3.2)'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[预测纽约市公寓租金](#sec:3.2)'
 - en: '[Loading and sniffing the training data](#get-rent-data)'
+  id: totrans-10
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[加载和嗅探训练数据](#get-rent-data)'
 - en: '[Training a random forest model](#sec:3.2.2)'
+  id: totrans-11
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[训练随机森林模型](#sec:3.2.2)'
 - en: '[Does the model capture training data relationships?](#sec:3.2.3)'
+  id: totrans-12
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[模型是否捕捉到训练数据关系？](#sec:3.2.3)'
 - en: '[Checking model generality](#sec:generality)'
+  id: totrans-13
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[检查模型泛化能力](#sec:generality)'
 - en: '[Fiddling with model hyper-parameters](#sec:3.2.5)'
+  id: totrans-14
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[调整模型超参数](#sec:3.2.5)'
 - en: '[What the model says about the data](#sec:3.2.6)'
+  id: totrans-15
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[模型对数据的描述](#sec:3.2.6)'
 - en: '[Predicting breast cancer](#sec:3.3)'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[预测乳腺癌](#sec:3.3)'
 - en: '[Classifying handwritten digits](#sec:3.4)'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[手写数字分类](#sec:3.4)'
 - en: '[Representing and loading image data](#sec:3.4.1)'
+  id: totrans-18
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[表示和加载图像数据](#sec:3.4.1)'
 - en: '[Classifying test digits 6-4-0](#sec:3.4.2)'
+  id: totrans-19
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[分类测试数字6-4-0](#sec:3.4.2)'
 - en: '[Comparing the digit classifier''s performance to a linear model](#sec:digit-linear)'
+  id: totrans-20
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[比较数字分类器的性能与线性模型](#sec:digit-linear)'
 - en: '[Summary](#sec:3.5)'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[总结](#sec:3.5)'
 - en: “*In God we trust; all others bring data.*” — [Attributed](https://blog.deming.org/w-edwards-deming-quotes/large-list-of-quotes-by-w-edwards-deming)
     to W. Edwards Deming and George Box
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: “*我们信仰上帝；其他人带来数据。*” —— 据说是W. 爱德华兹·戴明和乔治·博克斯所说 [Attributed](https://blog.deming.org/w-edwards-deming-quotes/large-list-of-quotes-by-w-edwards-deming)
 - en: Let's dig into the actual mechanics of applying machine learning to a few real
     problems. You might be surprised at how little code it takes! For the Python code
     snippets in this chapter, feel free to just cut-and-paste them blindly and don't
@@ -104,24 +150,35 @@
     and a rough idea of what machine learning code looks like. Before we get started,
     let's make sure that we all have the same version of Python 3 and the necessary
     libraries.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们深入了解将机器学习应用于几个实际问题的实际机制。你可能会惊讶于所需代码的少之又少！对于本章中的Python代码片段，请随意盲目地复制粘贴，不必担心细节。我们将在接下来的章节中再次讲解这些内容。主要收获是基本的回归和分类建模过程以及机器学习代码的大致样子。在我们开始之前，让我们确保我们都有相同的Python
+    3版本和必要的库。
 - en: 3.1 Computer environment sanity check
+  id: totrans-24
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3.1 计算机环境检查
 - en: Because we assume you know how to program in Python, we assume your machine
     is set up reasonably to edit and execute Python code. We need to make sure, however,
     that all of the machine learning libraries you'll need are installed and that
     Python 3 is the default on your systems. The easiest way is to download and install
     [Anaconda](https://anaconda.org) for Python 3.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们假设您知道如何用Python编程，我们假设您的机器已经合理地设置好了用于编辑和执行Python代码。然而，我们需要确保您需要的所有机器学习库都已安装，并且Python
+    3是您系统上的默认版本。最简单的方法是下载并安装[Anaconda](https://anaconda.org)用于Python 3。
 - en: 1During installation on Windows, make sure to check the box that adds Python
     to your `PATH` environment variable, for which you will need administrator privileges.
     Or, just go to the Start menu and execute the `Anaconda Prompt`.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 1 在Windows上安装时，请确保勾选将Python添加到`PATH`环境变量的复选框，您将需要管理员权限。或者，只需转到开始菜单并执行`Anaconda
+    Prompt`。
 - en: 'Download and install the Python 3.6 or higher version of Anaconda using the
     “64-bit graphical installer.” 1 Use the “just for me” option so that the installer
     puts Anaconda in your home directory so we all have it in the same spot: `C:\Users\YOURID\Anaconda3`
@@ -129,199 +186,297 @@
     The libraries are big and so you''ll need 2.4G of disk space. To verify everything
     is installed properly, you should try to import a library, as Terence demonstrates
     here on his computer from the Mac (UNIX) command line:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用“64位图形安装程序”下载并安装Python 3.6或更高版本的Anaconda。1 使用“仅为我”选项，以便安装程序将Anaconda放入您的家目录中，这样我们所有人都在同一个位置：Windows上的`C:\Users\YOURID\Anaconda3`和Mac（类似UNIX机器）上的`/Users/YOURID/anaconda3`。库很大，所以您需要2.4G的磁盘空间。为了验证一切安装正确，您应该尝试导入一个库，就像Terence在这里从Mac（UNIX）命令行演示的那样：
 - en: '[PRE0]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'On windows, you can start the Python 3 interpreter from the PowerShell (if
     `python` is in your `PATH`) or via the “anaconda prompt” launched from the start
     menu:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Windows上，您可以从PowerShell（如果`python`在您的`PATH`中）或通过从开始菜单启动的“anaconda prompt”启动Python
+    3解释器：
 - en: '[PRE1]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: If you get the `>>>` prompt back and don't get any errors, you are good to go!
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您收到`>>>`提示符并且没有错误，那么您就可以开始了！
 - en: 'We will also need a package called `rfpimp` that gives us a reliable way to
     compare the predictive power of the various apartment features:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还需要一个名为`rfpimp`的包，它为我们提供了一个可靠的方式来比较各种公寓特征的预测能力：
 - en: '[PRE2]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: In the next chapter, **Chapter 4** *Development Tools*, we'll introduce the
     right development environment, but for now you can use any old Python editing
     tool.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下一章，**第4章** *开发工具*中，我们将介绍合适的发展环境，但现在您可以使用任何旧的Python编辑工具。
 - en: 3.2 Predicting New York City Apartment Rent
+  id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3.2 预测纽约市公寓租金
 - en: As a first example, let's train a random forest model to predict apartment rent
     prices in New York City. The rent data set is an idealized version of data from
     a [Kaggle competition](https://www.kaggle.com/c/two-sigma-connect-rental-listing-inquiries).
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为第一个例子，让我们训练一个随机森林模型来预测纽约市的公寓租金。这个租金数据集是来自[Kaggle竞赛](https://www.kaggle.com/c/two-sigma-connect-rental-listing-inquiries)数据的理想化版本。
 - en: 3.2.1 Loading and sniffing the training data
+  id: totrans-37
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 3.2.1 加载和嗅探训练数据
 - en: 'Let''s get started by downloading our data set from Kaggle. (You must be a
     registered Kaggle user and must be logged in.) Go to the Kaggle [data page](https://www.kaggle.com/c/two-sigma-connect-rental-listing-inquiries/data)
     and save `train.json` into a data directory on your local machine. Then, from
     the command-line, execute the [prep-rent.py](https://mlbook.explained.ai/data/prep-rent.py)
     script (from this book''s [data](https://mlbook.explained.ai/data/index.html)
     directory) to create the CSV file you''ll need:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从在Kaggle上下载我们的数据集开始。（您必须是注册的Kaggle用户并且必须登录。）转到Kaggle的[数据页面](https://www.kaggle.com/c/two-sigma-connect-rental-listing-inquiries/data)，并将`train.json`保存到您本地机器上的数据目录中。然后，从命令行执行[prep-rent.py](https://mlbook.explained.ai/data/prep-rent.py)脚本（来自本书的[data](https://mlbook.explained.ai/data/index.html)目录），以创建您需要的CSV文件：
 - en: '[PRE3]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Now, we can load the `rent-ideal.csv` data set with the help of your new BFF
     (best friend forever) [Pandas](https://pandas.pydata.org/). Once we import the
     Pandas library, giving it the standard short alias `pd`, we can call function
     `read_csv()` to open a file of comma-separated value records (one apartment record
     per line and with a header row with column names):'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们可以借助您的新BFF（永远的朋友）[Pandas](https://pandas.pydata.org/)加载`rent-ideal.csv`数据集。一旦我们导入了Pandas库，给它一个标准的简短别名`pd`，我们就可以调用`read_csv()`函数来打开一个逗号分隔值记录的文件（每行一个公寓记录，并且有一个包含列名的标题行）：
 - en: '[PRE4]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'The result stored into variable `rent` is called a *data frame* and works like
     a spreadsheet or a database table, with rows and named columns. Here''s how to
     print out the first five records:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 存储到变量`rent`的结果被称为*数据框*，它就像电子表格或数据库表一样工作，有行和命名的列。以下是打印前五条记录的方法：
 - en: '[PRE5]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: bedrooms bathrooms latitude longitude price 0 3 1.5 40.7145 -73.9425 3000 1
     2 1.0 40.7947 -73.9667 5465 2 1 1.0 40.7388 -74.0018 2850 3 1 1.0 40.7539 -73.9677
     3275 4 4 1.0 40.8241 -73.9493 3350
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 卧室 浴室 纬度 经度 价格 0 3 1.5 40.7145 -73.9425 3000 1 2 1.0 40.7947 -73.9667 5465 2
+    1 1.0 40.7388 -74.0018 2850 3 1 1.0 40.7539 -73.9677 3275 4 4 1.0 40.8241 -73.9493
+    3350
 - en: You can literally just cut-and-paste those three lines into a Python file and
     run the file to get that output, assuming you give `read_csv()` the correct path
     to the data file. All of the code snippets in this section are pieces of the same
     large script.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以将这三行直接复制粘贴到Python文件中并运行该文件以获得该输出，前提是您给`read_csv()`提供正确的数据文件路径。本节中所有的代码片段都是同一个大型脚本的一部分。
 - en: 'Once we have a data frame, we can ask it all sorts of questions. For example,
     we can pull out the price column using `rent[''price'']` and then ask for the
     average (statisticians call the average the *mean*) rent:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们有一个数据框，我们就可以提出各种问题。例如，我们可以使用`rent['price']`提取价格列，然后询问平均值（统计学家称平均值为*均值*）：
 - en: '[PRE6]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Average rent is $3438
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 平均租金为$3438
 - en: 'Just like spreadsheet [pivot tables](https://en.wikipedia.org/wiki/Pivot_table)
     or the database [group by](https://www.w3schools.com/sql/sql_groupby.asp) operator,
     we can do some pretty fancy data aggregation with Pandas. The following code groups
     the training data by the number of bathrooms and computes the mean price (actually
     the mean of all of the other columns too):'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 就像电子表格中的[数据透视表](https://en.wikipedia.org/wiki/Pivot_table)或数据库中的[GROUP BY](https://www.w3schools.com/sql/sql_groupby.asp)运算符一样，我们可以使用Pandas进行一些相当复杂的数据聚合。以下代码按卫生间数量对训练数据进行分组，并计算平均价格（实际上是所有其他列的平均值）：
 - en: '[PRE7]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: bathrooms price 0 0.0 3144.870000 1 1.0 3027.007118 2 1.5 4226.336449 3 2.0
     5278.595739 4 2.5 6869.047368 5 3.0 6897.974576 6 3.5 7635.357143 7 4.0 7422.888889
     8 4.5 2050.000000 9 10.0 3600.000000
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 卫生间 价格 0 0.0 3144.870000 1 1.0 3027.007118 2 1.5 4226.336449 3 2.0 5278.595739
+    4 2.5 6869.047368 5 3.0 6897.974576 6 3.5 7635.357143 7 4.0 7422.888889 8 4.5
+    2050.000000 9 10.0 3600.000000
 - en: 'Pandas also has excellent graphing facilities, courtesy of your next best friend,
     a sophisticated plotting library called [matplotlib](https://matplotlib.org/).
     Here''s how to plot the price against the number of bathrooms:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: Pandas还拥有出色的图形功能，归功于您的下一个最佳朋友，一个复杂的绘图库，称为[matplotlib](https://matplotlib.org/)。以下是绘制价格与卫生间数量对比的示例：
 - en: » *Generated by code to left*
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: » 由代码生成的左侧
 - en: '[![](../Images/43b9e64847c072f96c86ce3ae3cce715.png)](images/first-taste/first-taste_go_5.svg)'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/43b9e64847c072f96c86ce3ae3cce715.png)](images/first-taste/first-taste_go_5.svg)'
 - en: '[PRE8]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 3.2.2 Training a random forest model
+  id: totrans-56
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 3.2.2 训练随机森林模型
 - en: 'To train a model, we split the data frame into the feature columns (the predictors)
     and the target (predicted) column, which practitioners typically call variables
     `X` and `y`. Let''s train a model using all apartment features to predict rent
     prices. Here''s how to extract the appropriate feature vectors and target column:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练模型时，我们将数据框分为特征列（预测因子）和目标（预测）列，从业者通常将这些变量称为`X`和`y`。让我们使用所有公寓特征来预测租金，看看如何提取适当的特征向量和目标列：
 - en: '[PRE9]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'Variable `X` is a data frame (list of columns) with the bathrooms column whereas
     `y` is the price column (`Series` in Pandas terminology):'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 变量`X`是一个包含卫生间列的数据框（列的列表），而`y`是价格列（在Pandas术语中称为`Series`）：
 - en: '[PRE10]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: <class 'pandas.core.frame.DataFrame'> <class 'pandas.core.series.Series'>
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: <class 'pandas.core.frame.DataFrame'> <class 'pandas.core.series.Series'>
 - en: 2The surface area of the Python libraries for machine learning is vast and it's
     difficult to tell where one library stops and the other starts, because they are
     so intertwined.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: Python机器学习库的表面面积非常庞大，很难判断一个库在哪里结束，另一个库在哪里开始，因为它们之间如此交织。
 - en: 'The RF implementation we''re going to use is from yet another awesome library
     called [scikit-learn](http://scikit-learn.org/stable/), which we''ll abbreviate
     as `sklearn`.2 In particular, we''ll use class `RandomForestRegressor`. Here is
     the simple incantation that trains an RF model on our apartment rent data:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将要使用的RF实现来自另一个非常棒的库，称为[scikit-learn](http://scikit-learn.org/stable/)，我们将简称为`sklearn`。2
+    我们将特别使用`RandomForestRegressor`类。以下是训练RF模型于我们的公寓租金数据的简单咒语：
 - en: '[PRE11]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'To actually make a prediction, we call `predict()` with a list of one or more
     feature vectors. Let''s make up an unknown apartment feature vector to make a
     single rent prediction:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 要进行实际预测，我们需要使用一个或多个特征向量的列表调用`predict()`。让我们编造一个未知的公寓特征向量来进行单个租金预测：
 - en: '[PRE12]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'Because `predict()` expects a list of feature vectors, we wrap `unknown_x`
     in a list before passing it to `predict()`:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为`predict()`期望一个特征向量的列表，所以在传递给`predict()`之前，我们将`unknown_x`包装在一个列表中：
 - en: '[PRE13]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: '[4442.17176527]'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4442.17176527]'
 - en: The `predict()` function returns a list of predicted rent prices, one per apartment
     passed in the list of apartments as the `X` parameter. The model predicts rent
     of about $4442 given the apartment characteristics in `unknown_x`.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '`predict()`函数返回一个预测租金价格的列表，每个列表中的公寓对应于作为`X`参数传递的公寓列表中的一个。模型根据`unknown_x`中的公寓特征预测租金约为$4442。'
 - en: 3.2.3 Does the model capture training data relationships?
+  id: totrans-71
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 3.2.3 模型是否捕捉到训练数据的关系？
 - en: Once we've trained a model, we have to test it, just like we do with software
     before deployment. There are two things to test. First, we verify that the model
     fits the training data well, meaning that the model captures the relationship
     in the training data between feature vectors and the targets. Second, we verify
     that the model generalizes, yielding reasonable rent predictions for feature vectors
     not in the training set.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们训练了一个模型，我们必须对其进行测试，就像我们在部署软件之前所做的那样。有两件事情需要测试。首先，我们验证模型是否很好地拟合了训练数据，这意味着模型捕捉到了训练数据中特征向量和目标之间的关系。其次，我们验证模型是否具有泛化能力，为不在训练集中的特征向量提供合理的租金预测。
 - en: To see how well the model fits the training data, we pass the feature vectors
     of the training data back into the model and compare the predictions to the known
     actual prices. At this point in our process, we don't care about generality. We're
@@ -329,8 +484,10 @@
     degree of accuracy. If the model can't make accurate predictions for apartments
     it trained on, then there's no hope the model will generalize to previously-unseen
     apartments.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了查看模型与训练数据的拟合程度，我们将训练数据的特征向量重新输入模型，并将预测值与已知的实际价格进行比较。在我们这个过程中，我们并不关心泛化能力。我们只是检查我们的模型能否以某种程度的准确性重现原始训练数据。如果模型无法对其训练的公寓做出准确预测，那么模型将无法泛化到之前未见过公寓的情况。
 - en: 'There are number of common error metrics that practitioners use, but in this
     case, measuring the average difference between predicted and actual prices is
     a good metric. In other words, we''ll make a prediction for every apartment and
@@ -339,52 +496,74 @@
     *MAE*, and sklearn provides a ready-made function to compute that. Here''s how
     to run the training data back into the model and print out how far off model is
     on average (and the percentage of the average that represents):'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 实践者使用了许多常见的误差度量，但在这个情况下，测量预测价格和实际价格之间的平均差异是一个好的指标。换句话说，我们将为每套公寓做出预测，并将其从训练数据中找到的实际价格中减去（并取绝对值）。这些差异的平均值是*平均绝对误差*，简称*MAE*，sklearn提供了一个现成的函数来计算它。以下是将训练数据重新输入模型并打印出模型平均偏差（以及占平均偏差的百分比）的方法：
 - en: '[PRE14]'
+  id: totrans-75
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: $189 average error; 5.51% error
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: $189平均误差；5.51%误差
 - en: That means a user of this model can expect the predicted price for an apartment
     in the training data to be off by about $189, which is pretty good! We call this
     the *training error*.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着使用这个模型的用户可以预期训练数据中公寓的预测价格将偏离大约$189，这相当不错！我们称之为*训练误差*。
 - en: 'They say that three most important property attributes in real estate are:
     location, location, location. Let''s test that hypothesis with our rental data,
     using just the two columns associated with map location:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们说，在房地产中最重要的三个属性是：位置，位置，位置。让我们用我们的租赁数据来测试这个假设，只使用与地图位置相关的两列：
 - en: '[PRE15]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: $519 average error; 15.10% error
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: $519平均误差；15.10%误差
 - en: Using just the location, and no information about the number of bedrooms or
     bathrooms, the average prediction error on the training set is $519\. That's more
     than the error with all features ($189) but is still not bad.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 仅使用位置信息，没有任何关于卧室数量或浴室数量的信息，训练集上的平均预测误差为$519。这比所有特征的平均误差（$189）要大，但仍然不错。
 - en: You might compare the difference between the 5.508% error for the model fit
     on all features and this 15.095% error and think “it's only 9%.” It's better to
     think of this as the ratio 5.51/15.10 is 36% rather than the difference 5.51-15.10\.
     The ratio indicates that dropping the number of bedrooms and bathrooms from the
     model reduces prediction accuracy by 36%. This information is extremely useful
     because it tells us something about the predictive power of those features.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能会比较所有特征模型拟合的5.508%误差和这个15.095%误差，并认为“这只是9%。”更好的思考方式是将5.51/15.10的比率视为36%，而不是5.51-15.10的差值。这个比率表明，从模型中删除卧室和浴室的数量将使预测精度降低36%。这个信息非常有用，因为它告诉我们关于这些特征预测能力的一些信息。
 - en: Alas, we shouldn't get too excited by the $189 training error because that just
     shows our model captures the relationships in the training data. We know nothing
     about the model's generality.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们不应该对$189的训练误差过于兴奋，因为这仅仅表明我们的模型捕捉到了训练数据中的关系。我们对模型的泛化能力一无所知。
 - en: 3.2.4 Checking model generality
+  id: totrans-84
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 3.2.4 检查模型泛化性
 - en: 'The true measure of model quality is its generality: how accurately it predicts
     prices for apartment feature vectors not found in the training data. Even a crappy
     model like a dictionary can memorize training data and spit back accurate prices
@@ -392,8 +571,10 @@
     strategy. This is a big, important topic and one that we''ll revisit throughout
     the book. For now, let''s look at a common validation strategies called the *hold
     out* method.'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型质量的真正衡量标准是其泛化能力：它如何准确地预测训练数据中未找到的公寓特征向量的价格。即使是一个糟糕的模型，如字典，也可以记住训练数据，并准确地为相同的训练数据提供价格。为了测试模型的泛化能力，我们需要一个验证策略。这是一个重要的大主题，我们将在整本书中回顾。现在，让我们看看一种常见的验证策略，称为*保留法*。
 - en: 'We were given a single data set: the training data. If we train on that entire
     data set, how can we measure accuracy on data not in the training set? We don''t
     have any other data to use for validation. The answer is to hold out, say, 20%
@@ -401,66 +582,93 @@
     set and a *validation set*. Validation set is data used only for generality testing
     of our model, not in training the model. Which 20% to hold out is sometimes nontrivial,
     but for the apartment data, a random subset is fine.'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们得到了一个单一的数据集：训练数据。如果我们在这个整个数据集上训练，我们如何衡量不在训练集中的数据的准确性？我们没有其他数据可用于验证。答案是保留，比如说，20%的训练数据，将原始数据集分成两个：一个较小的训练集和一个*验证集*。验证集仅用于我们模型的泛化测试，而不用于模型训练。保留哪20%有时并不简单，但对于公寓数据，随机子集是可行的。
 - en: 'Sklearn has a built-in function to split data sets, so let''s retrain our RF
     model using 80% of the data and check the average price error using the 20% in
     the validation set this time:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: Sklearn内置了一个用于分割数据集的函数，因此这次我们使用80%的数据重新训练RF模型，并使用验证集中的20%来检查平均价格误差：
 - en: '[PRE16]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: $303 average error; 8.80% error
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: $303平均误差；8.80%误差
 - en: Comparing the average error $302 from the validation set and the $189 training
     error, we see that the model performs much better on the training data. This is
     as we'd expect because the training error is our “do not exceed speed.” (The training
     error is analogous to the score we'd get on a quiz for which we'd seen the answers
     beforehand.) We want the validation error to be as close to the training error
     as possible.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 比较验证集的平均误差$302和训练误差$189，我们看到模型在训练数据上的表现要好得多。这正是我们所期望的，因为训练误差是我们的“不要超过速度”。（训练误差类似于我们在事先看到答案的测验中会得到的分数。）我们希望验证误差尽可能接近训练误差。
 - en: If you run that code multiple times, you'll notice that different runs get different
     validation errors because of the variability in selecting the validation subset.
     That's not a good characteristic, but we'll look at more stable metrics in **Section
     9.1.1** *Splitting time-insensitive datasets*, such as k-fold cross validation.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你多次运行该代码，你会注意到不同的运行得到不同的验证误差，因为选择验证子集的变异性。这不是一个好的特性，但我们将会在**第9.1.1节** *分割时间不敏感数据集*中查看更稳定的度量标准，例如k折交叉验证。
 - en: 3.2.5 Fiddling with model hyper-parameters
+  id: totrans-92
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 3.2.5 调整模型超参数
 - en: 'Now that we have a metric of model generality, we can use it to tweak model
     architecture in an effort to improve accuracy. The idea is to wiggle some aspect(s)
     of the model and see if the validation error goes up or down. For example, the
     number of trees in our forest affects accuracy and so let''s increase the number
     of trees to 100 from 10:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们有了模型泛化的度量标准，我们可以用它来调整模型架构，以期提高准确性。想法是调整模型的一些方面，看看验证误差是上升还是下降。例如，我们森林中的树的数量会影响准确性，所以让我们将树的数量从10增加到100：
 - en: '[PRE17]'
+  id: totrans-94
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: $296 average error; 8.61% error
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: $296平均误差；8.61%误差
 - en: The number of trees, and any other aspect of the model that affects its architecture,
     statisticians call a *hyper-parameter*. (I think we programmers would call this
     a meta-parameter.) The elements inside the model like the trees themselves are
     called the model parameters. As another example, the four w[i] weights and minimum
     rent value from a linear model (that we considererd briefly in **Section 2.1.3**
     *Drawing the line*) are the model parameters.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 树的数量以及影响模型架构的任何其他方面，统计学家称之为*超参数*。（我认为我们程序员会称之为元参数。）模型内部如树本身这样的元素被称为模型参数。作为另一个例子，线性模型中的四个w[i]权重和最小租金值（我们在**第2.1.3节**
+    *绘制线条*中简要讨论过）是模型参数。
 - en: At the cost of a little more computing power, the accuracy of our model improves
     just a little, but every little bit helps.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 以牺牲一点更多的计算能力为代价，我们模型的准确性只是略有提高，但每一点都很有帮助。
 - en: 3.2.6 What the model says about the data
+  id: totrans-98
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 3.2.6 模型对数据的说法
 - en: Machine learning models do much more for us than make predictions. Depending
     on the model, we can learn quite a bit about the data itself. The idea is that
     models trained on different data sets will have different guts (parameters) inside.
@@ -468,13 +676,18 @@
     by interrogating the model. For example, a key marketing question for real estate
     agents is “what do people care about in this market?” More generally, we'd like
     to know which features have the most predictive power.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 机器学习模型为我们做的不仅仅是做出预测。根据模型的不同，我们可以对数据本身了解很多。想法是，在各个数据集上训练的模型将具有不同的内部结构（参数）。然而，我们不必检查那些个别参数，通过询问模型我们可以学到更多。例如，对于房地产经纪人来说，一个关键的市场营销问题是“人们在这个市场上关心什么？”更普遍地说，我们想知道哪些特征具有最大的预测能力。
 - en: 3The sklearn Random Forest feature importance strategy is sometimes biased,
     so we use `rfpimp`. See [Beware Default Random Forest Importances](http://explained.ai/rf-importance/index.html)
     for more information.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 3sklearn随机森林特征重要性策略有时是有偏的，所以我们使用`rfpimp`。更多信息请参阅[Beware Default Random Forest
+    Importances](http://explained.ai/rf-importance/index.html)。
 - en: To compute such feature importance, we can compare the validation errors from
     a model trained using all features and the same model trained with a single feature
     removed. This difference tells us something about the relative importance of that
@@ -486,95 +699,141 @@
     it's more efficient to randomize a feature's column and retest rather than removing
     and retraining the model.) Here's how to print out feature importances with a
     little help from the `rfpimp` package:3
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 要计算这样的特征重要性，我们可以比较使用所有特征训练的模型和移除单个特征后相同模型训练的验证错误。这个差异告诉我们关于那个缺失特征的相对重要性的一些信息。如果验证错误大幅上升，我们知道这个特征很重要。但如果错误保持不变，我们可以得出结论，这个特征在孤立的情况下具有非常小的预测能力。从业者经常这样做RF，但这种方法查询特征重要性适用于任何模型。（这种暴力重新训练方法有效且说明了这个想法，但随机化特征列并重新测试比移除和重新训练模型更有效。）以下是使用`rfpimp`包打印特征重要性的方法：3
 - en: '[PRE18]'
+  id: totrans-102
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: '|   | Importance |'
+  id: totrans-103
   prefs: []
   type: TYPE_TB
+  zh: '|   | 重要性 |'
 - en: '| --- | --- |'
+  id: totrans-104
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- |'
 - en: '| Feature |'
+  id: totrans-105
   prefs: []
   type: TYPE_TB
+  zh: '| 特征 |'
 - en: '| --- |'
+  id: totrans-106
   prefs: []
   type: TYPE_TB
+  zh: '| --- |'
 - en: '| bedrooms | 0.5717 |'
+  id: totrans-107
   prefs: []
   type: TYPE_TB
+  zh: '| 卧室 | 0.5717 |'
 - en: '| longitude | 0.5307 |'
+  id: totrans-108
   prefs: []
   type: TYPE_TB
+  zh: '| 经度 | 0.5307 |'
 - en: '| latitude | 0.4943 |'
+  id: totrans-109
   prefs: []
   type: TYPE_TB
+  zh: '| 纬度 | 0.4943 |'
 - en: '| bathrooms | 0.4566 |'
+  id: totrans-110
   prefs: []
   type: TYPE_TB
+  zh: '| 卫生间 | 0.4566 |'
 - en: Notice that the RF model is trained using the training set, but the importances
     are computed using the validation set. Feature importances, therefore, measure
     the drop in the model's validation set accuracy when each feature is removed (or
     randomly permuted). It makes sense to examine the predictive power of features
     in this context because we care most about how well a model generalizes to test
     vectors outside of the training set.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，RF模型是使用训练集训练的，但重要性是使用验证集计算的。因此，特征重要性衡量的是当每个特征被移除（或随机排列）时，模型验证集准确性的下降。在这个背景下检查特征的预测能力是有意义的，因为我们最关心的是模型如何将测试向量泛化到训练集之外的测试集。
 - en: 'The actual value of each feature importance indicates the magnitude of its
     importance to model accuracy but most often we care about the relative differences
     between the feature importances. It''s easier to see their relative strengths
     if we get fancy and look at the importances visually:'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个特征重要性的实际值表示其对模型准确性的重要程度的大小，但大多数情况下我们关心特征重要性之间的相对差异。如果我们用一种花哨的方式来看这些重要性，就更容易看到它们的相对强度：
 - en: » *Generated by code to left*
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由代码生成左侧*
 - en: '[![](../Images/3ee1292d9187db6580aa88e674d99bee.png)](images/first-taste/first-taste_go_30.svg)'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/3ee1292d9187db6580aa88e674d99bee.png)](images/first-taste/first-taste_go_30.svg)'
 - en: '[PRE19]'
+  id: totrans-115
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: 'Using rfpimp, we can even ask it to group latitude and longitude together as
     a meta-feature when computing feature importances:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用rfpimp，我们甚至可以要求它在计算特征重要性时将纬度和经度一起作为一个元特征分组：
 - en: » *Generated by code to left*
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由代码生成左侧*
 - en: '[![](../Images/9e65891eaa821bc072031d0dfc98a249.png)](images/first-taste/first-taste_go_31.svg)'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: '![图片](../Images/9e65891eaa821bc072031d0dfc98a249.png)(images/first-taste/first-taste_go_31.svg)'
 - en: '[PRE20]'
+  id: totrans-119
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: From this, we can conclude that New Yorkers care the least about bathrooms because
     that feature has the least predictive power compared to the other features. Together,
     latitude and longitude have a great deal of predictive power (it's all about the
     location). Interrogating the model in this way gives us useful information about
     the New York City rental market, which we can pass on to the consumers of our
     model.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这一点，我们可以得出结论，纽约客最不关心洗手间，因为与其他特征相比，这个特征具有最少的预测能力。纬度和经度共同具有很大的预测能力（这完全关乎位置）。以这种方式对模型进行询问，我们可以获得关于纽约市租赁市场的有用信息，我们可以将这些信息传递给我们的模型消费者。
 - en: Often our training data has many more features and we can use a feature importance
     graph to drop unimportant features. Simpler models are easier to explain to end
     users and result in faster training times.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常我们的训练数据有更多的特征，我们可以使用特征重要性图来删除不重要的特征。简单的模型更容易向最终用户解释，并且会导致更快的训练时间。
 - en: Now that we've seen how to train a regression model, let's train a classifier
     model to see just how similar the process of training and testing is for regressors
     and classifiers. The only difference is that we use a `RandomForestClassifier`
     object instead of a `RandomForestRegressor` to handle the classifier's binary
     target variable (rather than the regressor's continuous target value).
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经看到了如何训练回归模型，让我们训练一个分类器模型来看看训练和测试回归器和分类器的过程有多么相似。唯一的区别是我们使用`RandomForestClassifier`对象而不是`RandomForestRegressor`来处理分类器的二元目标变量（而不是回归器的连续目标值）。
 - en: 3.3 Predicting breast cancer
+  id: totrans-123
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3.3 预测乳腺癌
 - en: To build our first classifier, we're going to train a model using the well-known
     [Wisconsin Breast Cancer data set](https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29).
     This is a good introductory data set because it readily surrenders to a number
@@ -585,15 +844,22 @@
     other characteristics of cell nuclei in digitized images; there are no missing
     feature values, which we'll learn how to deal with in **Chapter 5** *Exploring
     and Denoising Your Data Set*.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了构建我们的第一个分类器，我们将使用著名的[威斯康星乳腺癌数据集](https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29)来训练一个模型。这是一个很好的入门数据集，因为它很容易被多种机器学习模型所接受，包括RFs。乳腺癌数据集中有569个观测值（患者），每个观测值有30个数值预测特征。目标变量（诊断）是一个二元变量，表示恶性（糟糕）或良性（好！）。特征描述了数字化图像中细胞核的形状、大小和其他特征；没有缺失的特征值，我们将在**第5章**
+    *探索和去噪您的数据集*中学习如何处理这些缺失值。
 - en: 'Sklearn has a convenient function called `load_breast_cancer()`, so let''s
     get started by populating a data frame:'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: Sklearn有一个方便的函数叫做`load_breast_cancer()`，所以让我们开始填充一个数据框：
 - en: '[PRE21]'
+  id: totrans-126
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: 'Many of the cell nuclei features are redundant in the sense that they measure
     the same or almost the same thing. For example, if we know the radius of the circle,
     we also know the perimeter, so features such as `mean radius` and `mean perimeter`
@@ -604,59 +870,94 @@
     features. Using the analysis in that chapter, let''s restrict ourselves to 7 key
     features (out of 30) for simplicity reasons and display some of the data to get
     a sense of what it looks like:'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 许多细胞核特征在意义上是冗余的，因为它们测量的是相同或几乎相同的东西。例如，如果我们知道圆的半径，我们也知道周长，所以像`平均半径`和`平均周长`这样的特征很可能是非常相似的变量。不独立的特征被称为*共线性*，在实践中，特征很少是完全独立的。**第15章**
+    *理解变量之间的关系*考虑了这一乳腺癌数据集的共线性，并展示了如何选择最重要的特征。使用该章节中的分析，为了简化起见，让我们限制自己使用7个关键特征（30个特征中的）并显示一些数据以了解其外观：
 - en: '[PRE22]'
+  id: totrans-128
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: target[0:30] = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0]
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: target[0:30] = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0]
 - en: '|   | radius error | texture error | concave points error | symmetry error
     | worst texture | worst smoothness | worst symmetry |'
+  id: totrans-130
   prefs: []
   type: TYPE_TB
+  zh: '|   | 半径误差 | 纹理误差 | 凹点误差 | 对称性误差 | 最差纹理 | 最差平滑度 | 最差对称性 |'
 - en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  id: totrans-131
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- | --- | --- | --- |'
 - en: '|  |'
+  id: totrans-132
   prefs: []
   type: TYPE_TB
+  zh: '|  |'
 - en: '| --- |'
+  id: totrans-133
   prefs: []
   type: TYPE_TB
+  zh: '| --- |'
 - en: '| 0 | 1.0950 | 0.9053 | 0.0159 | 0.0300 | 17.3300 | 0.1622 | 0.4601 |'
+  id: totrans-134
   prefs: []
   type: TYPE_TB
+  zh: '| 0 | 1.0950 | 0.9053 | 0.0159 | 0.0300 | 17.3300 | 0.1622 | 0.4601 |'
 - en: '| 1 | 0.5435 | 0.7339 | 0.0134 | 0.0139 | 23.4100 | 0.1238 | 0.2750 |'
+  id: totrans-135
   prefs: []
   type: TYPE_TB
+  zh: '| 1 | 0.5435 | 0.7339 | 0.0134 | 0.0139 | 23.4100 | 0.1238 | 0.2750 |'
 - en: '| 2 | 0.7456 | 0.7869 | 0.0206 | 0.0225 | 25.5300 | 0.1444 | 0.3613 |'
+  id: totrans-136
   prefs: []
   type: TYPE_TB
+  zh: '| 2 | 0.7456 | 0.7869 | 0.0206 | 0.0225 | 25.5300 | 0.1444 | 0.3613 |'
 - en: '| 3 | 0.4956 | 1.1560 | 0.0187 | 0.0596 | 26.5000 | 0.2098 | 0.6638 |'
+  id: totrans-137
   prefs: []
   type: TYPE_TB
+  zh: '| 3 | 0.4956 | 1.1560 | 0.0187 | 0.0596 | 26.5000 | 0.2098 | 0.6638 |'
 - en: '| 4 | 0.7572 | 0.7813 | 0.0189 | 0.0176 | 16.6700 | 0.1374 | 0.2364 |'
+  id: totrans-138
   prefs: []
   type: TYPE_TB
+  zh: '| 4 | 0.7572 | 0.7813 | 0.0189 | 0.0176 | 16.6700 | 0.1374 | 0.2364 |'
 - en: 'Just as we did with rent price prediction, we need to split our data set into
     training and validation sets (using 15% not 20% for validation as the data set
     is very small):'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们在租金价格预测中所做的那样，我们需要将我们的数据集分为训练集和验证集（由于数据集非常小，验证集使用15%而不是20%）：
 - en: '[PRE23]'
+  id: totrans-140
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: 'Then, we''re ready to train and test our classifier:'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们就可以开始训练和测试我们的分类器了：
 - en: '[PRE24]'
+  id: totrans-142
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: 91.86% correct
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 91.86% 正确
 - en: For classifiers, the `score()` function returns the simplest metric for correctness
     (accuracy), which measures how many the model predicted correctly out of 569 observations
     divided by 569\. Testing classifiers is usually a lot more involved than testing
@@ -666,27 +967,39 @@
     of about 96%, but the validation accuracy fluctuates a lot because of the randomness
     inherent in splitting the data set into training and validation sets, not to mention
     the randomness used during RF construction.
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于分类器，`score()`函数返回最简单的正确性指标（准确率），它衡量模型在569个观测值中预测正确的数量占569的比例。测试分类器通常比测试回归器复杂得多，正如我们在第13章“评估分类器性能”中将会看到的，但准确率现在就足够了。鉴于我们只使用了7个特征，91.860%的准确率是非常好的。使用所有30个特征，我们看到了大约96%的平均验证准确率，但由于将数据集分为训练集和验证集的随机性以及RF构建过程中使用的随机性，验证准确率波动很大。
 - en: We can compute feature importances for classifiers just as we did for regressors.
     (In fact we can compute feature importances for any model.) In this case, we see
     that `radius error` is the most important feature for distinguishing between malignant
     versus benign masses based upon these 7 features.
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以像对回归器那样计算分类器的特征重要性。（实际上，我们可以为任何模型计算特征重要性。）在这种情况下，我们看到“半径误差”是区分恶性与良性肿块的最重要特征，基于这7个特征。
 - en: » *Generated by code to left*
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由左侧代码生成*
 - en: '[![](../Images/2de58e9e89aa2d95bbb83b8e0c66a099.png)](images/first-taste/first-taste_class_6.svg)'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/2de58e9e89aa2d95bbb83b8e0c66a099.png)](images/first-taste/first-taste_class_6.svg)'
 - en: '[PRE25]'
+  id: totrans-148
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: Such feature importance graphs suggest which cell characteristics pathologist
     should focus on.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样的特征重要性图表明病理学家应该关注哪些细胞特征路径。
 - en: At this point, we've trained both a regressor and a classifier on *structured
     data*. Structured data is what we normally see in spreadsheets or database tables.
     *Unstructured data* sets, on the other hand, contain things like images, documents,
@@ -697,24 +1010,34 @@
     do in the next section. It gives us an opportunity to internalize some important
     concepts about the applicability of models, while exploring a fun application
     of machine learning.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们已经在结构化数据上训练了一个回归器和分类器。结构化数据是我们通常在电子表格或数据库表中看到的数据。另一方面，非结构化数据集包含诸如图像、文档和推文等东西。由于本书专注于应用于结构化数据的RF模型，我们不会对非结构化数据做太多处理。（作为一个一般规则，我们建议使用神经网络处理非结构化数据。）尽管如此，RF可以应用于许多非结构化数据问题，例如光学字符识别，我们将在下一节中这样做。这为我们提供了一个机会，在探索机器学习的有趣应用的同时，内化一些关于模型适用性的重要概念。
 - en: 3.4 Classifying handwritten digits
+  id: totrans-151
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3.4 手写数字分类
 - en: '![](../Images/7e7c7cfcb2815d4daa43006ad2e72e33.png)'
+  id: totrans-152
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7e7c7cfcb2815d4daa43006ad2e72e33.png)'
 - en: '**Figure 3.1**. Letter carrier misinterpreted 640 as 690'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图3.1**. 邮递员误将640解读为690'
 - en: The other day, Terence received a letter in the US Mail addressed to number
     640, though he lives at 690, because the letter carrier (understandably) misclassified
     the digit “4” as a “9” (see **Figure 3.1**). Let's see if we can train a model
     to recognize digits more accurately than the letter carrier.
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 前几天，特伦斯收到了一封寄往 640 号的美国邮件，尽管他住在 690 号，因为信使（可以理解地）将数字“4”误分类为“9”（见 **图 3.1**）。让我们看看我们能否训练一个模型，使其识别数字的准确性高于信使。
 - en: To train the model we need some sample images of handwritten digits labeled
     properly with known digit values, which we can find in the well-known [MNIST](http://yann.lecun.com/exdb/mnist/)
     data set. Our strategy will be to train a RF classifier using the pixels of an
@@ -725,51 +1048,80 @@
     about the expected behavior of machine learning models. Next, we'll compare the
     performance of the RF to another kind of model then finish up by compressing the
     images and re-comparing the performance of the models.
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了训练模型，我们需要一些带有已知数字值的标签的手写数字样本图像，这些图像可以在著名的 [MNIST](http://yann.lecun.com/exdb/mnist/)
+    数据集中找到。我们的策略将是使用图像的像素作为特征，使用已知的数字标签作为目标值来训练一个 RF 分类器。然后我们将要求模型对从信封上写下的地址扫描的 6-4-0
+    数字图像进行分类。模型预测结果乍一看令人惊讶，但在仔细检查训练数据后，教给我们关于机器学习模型预期行为的重要教训。接下来，我们将比较 RF 与另一种模型的性能，然后通过压缩图像并重新比较模型的性能来完成。
 - en: 3.4.1 Representing and loading image data
+  id: totrans-156
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 3.4.1 表示和加载图像数据
 - en: The full data set has 60,000 images, but we extracted 10,000 images, converted
     them to comma-separated values (*CSV*) from binary, and compressed them into [mnist-10k-sample.csv.zip](https://mlbook.explained.ai/data/mnist-10k-sample.csv.zip)
     for use with this example. You can download and unzip that file into your data
     directory. Also grab [640.csv](https://mlbook.explained.ai/data/640.csv), which
     contains the image data of the three 6-4-0 digits in the same format as the MNIST
     data set.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 整个数据集有 60,000 张图像，但我们提取了 10,000 张图像，将它们从二进制转换为逗号分隔值（*CSV*），并将它们压缩成 [mnist-10k-sample.csv.zip](https://mlbook.explained.ai/data/mnist-10k-sample.csv.zip)
+    以用于本例。您可以下载并解压缩该文件到您的数据目录中。同时获取 [640.csv](https://mlbook.explained.ai/data/640.csv)，其中包含与
+    MNIST 数据集相同格式的三个 6-4-0 数字图像数据。
 - en: '![](../Images/a80dbd365eae1035aa0736612fabf983.png)'
+  id: totrans-158
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a80dbd365eae1035aa0736612fabf983.png)'
 - en: '**Figure 3.2**. Digits 6-4-0 scanned and scaled to 28x28 pixel images'
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图 3.2**. 扫描并缩放到 28x28 像素图像的 6-4-0 数字'
 - en: 'Let''s start by loading the 6-4-0 digits as 28x28 pixel images (**Figure 3.2**)
     into a data frame and see what we''ve got:'
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从将 6-4-0 数字作为 28x28 像素图像（**图 3.2**）加载到数据框中开始，看看我们得到了什么：
 - en: '[PRE26]'
+  id: totrans-161
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: '![](../Images/4375ff27a2682789721b174b234365ab.png)'
+  id: totrans-162
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4375ff27a2682789721b174b234365ab.png)'
 - en: '**Figure 3.3**. Images from 640.csv as data frame'
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图 3.3**. 640.csv 中的图像作为数据框'
 - en: 'Each row contains the complete set of pixels for a single image and, as the
     last column, the known digit value (0..9). (See **Figure 3.3**.) Let''s print
     the `digit` column values using `addr640.digit` then drop it as we know the digits
     are 6-4-0:'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 每一行包含单个图像的完整像素集，以及作为最后一列的已知数字值（0..9）。（见 **图 3.3**。）让我们使用 `addr640.digit` 打印
+    `digit` 列的值，然后删除它，因为我们知道数字是 6-4-0：
 - en: '[PRE27]'
+  id: totrans-165
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: '[6 4 0]'
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6 4 0]'
 - en: Each pixel is a floating-point value between 0 and 1 that represents the pixel
     intensity (greyscale), where 0 means white and 1 means black. For example, a blank
     image would be all zeros and an image someone scribbled all over would be mostly
@@ -777,33 +1129,48 @@
     frame has 784 columns of pixels as well as the known digit value column. The pixels
     of the visual rows of an image get concatenated together or “flattened” to form
     a single long row of numbers in the data set.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个像素是一个介于 0 和 1 之间的浮点值，表示像素强度（灰度），其中 0 表示白色，1 表示黑色。例如，一个空白图像将是全零，而一个人在图像上乱涂乱画的图像将是接近
+    1 的暗值。图像是 28 x 28 像素，因此数据框中的每一行都有 784 列像素以及已知的数字值列。图像的可视行像素被连接在一起或“展平”以形成一个数据集中的单个长数字行。
 - en: 'Because there are so many numbers, looking at the pixel values in the data
     frame is not as easy as just printing the data frame. It''s better to reverse
     the flattening by reshaping the 784-element one-dimensional pixel array into a
     28 x 28 two-dimensional array and then ask matplotlib to show the 2D array as
     an image:'
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于数字很多，在数据框中查看像素值并不像直接打印数据框那样容易。最好是通过重塑784个元素的二维像素数组为28 x 28的二维数组，然后让matplotlib显示这个二维数组作为图像：
 - en: » *Generated by code to left*
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由左侧代码生成*
 - en: '[![](../Images/670441d2ff3d0071d9251e36119e5267.png)](images/first-taste/first-taste_mnist_3.svg)'
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/670441d2ff3d0071d9251e36119e5267.png)](images/first-taste/first-taste_mnist_3.svg)'
 - en: '[PRE28]'
+  id: totrans-171
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: 'Another way to visualize the data representing a digit''s image is to print
     out the pixel values, 28 lines of 28 values per line. To reduce the size of the
     print out, let''s flip any value greater than 0 to be 1 and pixel values to integers.
     Then, we can just print the 2D matrix:'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种可视化表示数字图像的数据的方法是打印出像素值，每行28个值，每行28个值。为了减少打印输出的尺寸，让我们将任何大于0的值翻转为1，并将像素值转换为整数。然后，我们可以直接打印出2维矩阵：
 - en: '[PRE29]'
+  id: totrans-173
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: '[[0000000000000000000000000000] [0000000000000000000000000000] [0000000000000000000000000000]
     [0000000000000000000000000000] [0000000000000011111000000000] [0000000000000111101000000000]
     [0000000000001110000000000000] [0000000000011100000000000000] [0000000000011000000000000000]
@@ -814,58 +1181,95 @@
     [0000000000110000000100000000] [0000000000011000001100000000] [0000000000000111111100000000]
     [0000000000000111111000000000] [0000000000000000000000000000] [0000000000000000000000000000]
     [0000000000000000000000000000]]'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[0000000000000000000000000000] [0000000000000000000000000000] [0000000000000000000000000000]
+    [0000000000000000000000000000] [0000000000000011111000000000] [0000000000000111101000000000]
+    [0000000000001110000000000000] [0000000000011100000000000000] [0000000000011000000000000000]
+    [0000000000110000000000000000] [0000000000100000000000000000] [0000000001100000000000000000]
+    [0000000001100000000000000000] [0000000001100000000000000000] [0000000001100000000000000000]
+    [0000000011000011111100000000] [0000000011000111111100000000] [0000000011101100000110000000]
+    [0000000011101000000110000000] [0000000001100100000110000000] [0000000000100000000100000000]
+    [0000000000110000000100000000] [0000000000011000001100000000] [0000000000000111111100000000]
+    [0000000000000111111000000000] [0000000000000000000000000000] [0000000000000000000000000000]
+    [0000000000000000000000000000]]'
 - en: And, *voila*, the pattern of 0's and 1's visually forms a 6 digit! We'll dig
     deeper into such useful data manipulations in **Section 4.2** *Dataframe Dojo*.
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，*哇*，0和1的模式在视觉上形成了一个6位数！我们将在**第4.2节** *数据框道场*中深入探讨此类有用的数据处理。
 - en: 'Now, let''s load our training data into a data frame, just like we did for
     our 6-4-0 test images:'
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们将我们的训练数据加载到一个数据框中，就像我们为6-4-0测试图像所做的那样：
 - en: '[PRE30]'
+  id: totrans-177
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE30]'
 - en: 'Using the matplotlib `imshow()` function repeatedly, we can get a grid of images
     taken from the training data frame and annotate them with their true digit value.
     Here''s how to plot the first 50 images in a 10x5 grid:'
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过重复使用matplotlib的`imshow()`函数，我们可以从训练数据框中获取一个图像网格，并用它们的真实数字值进行注释。以下是如何在一个10x5网格中绘制前50个图像的方法：
 - en: » *Generated by code to left*
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由左侧代码生成*
 - en: '[![](../Images/6355c606c34d20782c61fc2b9b8d85e7.png)](images/first-taste/first-taste_mnist_6.svg)'
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/6355c606c34d20782c61fc2b9b8d85e7.png)](images/first-taste/first-taste_mnist_6.svg)'
 - en: '[PRE31]'
+  id: totrans-181
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE31]'
 - en: You can play around with the subplots grid to plot more images to get a feel
     for the training set. See **Section 4.3** *Generating plots with matplotlib* to
     learn the basics of the matplotlib graphics library.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以调整子图网格来绘制更多图像，以获得训练集的感觉。参见**第4.3节** *使用matplotlib生成绘图*，了解matplotlib图形库的基础知识。
 - en: 3.4.2 Classifying test digits 6-4-0
+  id: totrans-183
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 3.4.2 分类测试数字6-4-0
 - en: 4We chose hyper-parameter `n_estimators`=900 trees in our RF because we found,
     through experimentation, that fewer trees resulted in less consistent and accurate
     predictions.
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的随机森林（RF）中，我们选择了超参数 `n_estimators`=900棵树，因为我们通过实验发现，树的数量较少会导致预测结果一致性降低和准确性下降。
 - en: Now that we have a suitable training set of handwritten digits and their true
     digit values in `images` and `targets`, let's train an RF classifier and see what
     it predicts for the 6-4-0 images:4
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们有了合适的训练集，其中包含手写数字及其在`images`和`targets`中的真实数字值，让我们训练一个RF分类器，看看它对6-4-0图像的预测结果是什么：4
 - en: '[PRE32]'
+  id: totrans-186
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE32]'
 - en: '[6 7 0]'
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6 7 0]'
 - en: 'The model predicts that the first digit is 6, the second is 7, and the third
     is 0\. The letter carrier, the model, and we agree on the 6 and 0, but we all
     disagree on the second digit. The letter carrier thought it was 9, the model thinks
@@ -873,57 +1277,84 @@
     the second digit in **Figure 3.2** is clearly not a 7\. Something strange is going
     on, so let''s investigate. First, let''s see how confident the model is in its
     7 prediction using `predict_proba()` rather than just `predict()`:'
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型预测第一个数字是6，第二个是7，第三个是0。字母载体、模型和我们都同意6和0，但我们都不同意第二个数字。字母载体认为它是9，模型认为它是7，但我们认为第二个数字实际上是4。对我们人类来说，**图3.2**中的第二个数字显然不是7。有些奇怪的事情发生了，所以让我们调查一下。首先，让我们看看模型在7的预测上有多自信，使用`predict_proba()`而不是`predict()`：
 - en: '[PRE33]'
+  id: totrans-189
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE33]'
 - en: '[0.019 0.133 0.083 0.142 0.09 0.081 0.051 0.234 0.029 0.137]'
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: '[0.019 0.133 0.083 0.142 0.09 0.081 0.051 0.234 0.029 0.137]'
 - en: 'Function `predict_proba()` returns a probability for each possible target class,
     digits 0-9 in this case. The probability in position 7 (indexed from 0) is the
     highest, which is why the model predicts 7:'
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: 函数`predict_proba()`为每个可能的目标类别返回一个概率，在这个例子中是数字0-9。位置7（从0开始索引）的概率最高，这就是为什么模型预测7：
 - en: '[PRE34]'
+  id: totrans-192
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE34]'
 - en: predicted digit is 7
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: 预测数字是7
 - en: 'It''s easier to compare the different probabilities visually, so let''s generate
     bar graphs showing the prediction probabilities for each test image. Here''s the
     code to show one of the bar graphs, that for the second test digit:'
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过视觉比较不同的概率更容易，所以让我们生成条形图来显示每个测试图像的预测概率。以下是显示其中一个条形图的代码，即第二个测试数字的条形图：
 - en: '[![](../Images/39347181b330da538639ce5a0432e4cd.png)](images/first-taste/first-taste_mnist_10.svg)
     » *Generated by code to left*'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/39347181b330da538639ce5a0432e4cd.png)](images/first-taste/first-taste_mnist_10.svg)
+    » *由代码生成左侧*'
 - en: '[![](../Images/56c46afd79dc100b0d78d29134c76677.png)](images/first-taste/first-taste_mnist_11.svg)'
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/56c46afd79dc100b0d78d29134c76677.png)](images/first-taste/first-taste_mnist_11.svg)'
 - en: '[PRE35]'
+  id: totrans-197
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE35]'
 - en: '[![](../Images/3896a4e697bfdd56d08b425b070d6db8.png)](images/first-taste/first-taste_mnist_12.svg)'
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/3896a4e697bfdd56d08b425b070d6db8.png)](images/first-taste/first-taste_mnist_12.svg)'
 - en: The model predicts digit 7 for the second test digit by a wide margin. It does
     not consider digit 4 to be a likely choice at all. That prediction is concerning
     because it does not match our expectations. From a human perspective, the second
     digit is 4 or 9, definitely not a 7\.
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型以很大的差距预测第二个测试数字是7。它根本不考虑4是一个可能的选择。这个预测令人担忧，因为它不符合我们的预期。从人类的角度来看，第二个数字是4或9，绝对不是7。
 - en: Debugging machine learning code is often very challenging because so many issues
     can manifest themselves as poor models. There could be a bug in our code, we could
     have chosen an inappropriate model, we might not have enough data, the data might
     be noisy, and so on. We can assume that the MNIST training data set is okay and
     that 10,000 images is enough training data. The code to train and test the model
     is tiny so that's unlikely the problem.
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 调试机器学习代码通常非常具有挑战性，因为许多问题可能表现为模型表现不佳。我们的代码中可能存在错误，我们可能选择了不合适的模型，我们可能没有足够的数据，数据可能很嘈杂，等等。我们可以假设MNIST训练数据集是好的，并且10000张图像足够作为训练数据。训练和测试模型的代码非常小，因此不太可能是问题所在。
 - en: 'When confronted with misbehaving code, experienced programmers know that, because
     nothing mysterious is going on, the program is doing exactly what we told it to
     do. In a data science context, this principle might be: the model is making predictions
@@ -931,32 +1362,44 @@
     that we should take another look at the data, this time focusing on just the images
     known to be 4''s. The following code isolates the images for 4''s and displays
     the first 15*8=120 images in a grid.'
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 面对行为异常的代码时，经验丰富的程序员知道，因为没有发生任何神秘的事情，程序正在做我们告诉它做的事情。在数据科学背景下，这个原则可能是：模型正在根据我们给它提供的经验（训练数据）进行预测。这是一个很大的提示，我们应该再次检查数据，这次专注于已知为4的图像。以下代码将4的图像隔离出来，并在网格中显示前15*8=120个图像。
 - en: » *Generated by code to left*
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由代码生成左侧*
 - en: '[![](../Images/36e7dbabeb4ee1bd197af1fdc0307f90.png)](images/first-taste/first-taste_mnist_13.svg)'
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/36e7dbabeb4ee1bd197af1fdc0307f90.png)](images/first-taste/first-taste_mnist_13.svg)'
 - en: '[PRE36]'
+  id: totrans-204
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE36]'
 - en: If we compare those images with the 4 digit from the envelope in **Figure 3.2**,
     it's clear that none of the training images look like our 4 test image. A few
     of the images have a triangular top like the test image, but the horizontal lines
     in training images cross the vertical lines whereas the horizontal line in the
     test image terminates at the vertical line. Given the “experience” provided to
     the model, it's easy to see why it does not predict digit 4.
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们将这些图像与**图3.2**中的信封上的4位数字进行比较，很明显，没有任何训练图像看起来像我们的4个测试图像。其中一些图像顶部呈三角形，与测试图像相似，但训练图像中的水平线与垂直线相交，而测试图像中的水平线在垂直线上终止。考虑到模型所获得的“经验”，很容易理解为什么它没有预测数字4。
 - en: 'This brings us to an important lesson that''s worth emphasizing: models can
     only make predictions based upon the training data provided to them. They don''t
     necessarily have the same experience we do, so we have to match our prediction
     expectations to the training data when judging a model. Or, we can remedy the
     situation by providing a more extensive training set.'
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: 这引出了一个重要的教训，值得强调：模型只能根据提供给它们的训练数据进行预测。它们不一定有与我们相同的经验，因此我们在评估模型时必须将预测期望与训练数据相匹配。或者，我们可以通过提供更广泛的训练集来改善这种情况。
 - en: The lesson applies to regressors, not just classifiers. Imagine you're a real
     estate agent and that every two-bedroom one-bath apartment you've ever seen is
     about $4,000/month. Given that experience, clients should expect you to predict
@@ -964,50 +1407,70 @@
     In other words, machine learning models do the best they can, given the constraints
     placed on them by the training data, even if the model's predictions are wildly
     different than our expectations.
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个教训适用于回归器，而不仅仅是分类器。想象一下，你是一名房地产经纪人，你见过的每个两室一厅的公寓每月租金大约是4,000美元。基于这样的经验，客户应该期待你预测一个未知的两室一厅公寓的租金为4,000美元。换句话说，机器学习模型在给定的训练数据约束下尽力而为，即使模型的预测与我们的预期大相径庭。
 - en: In the end, our machine learning model did no better than the letter carrier;
     it just predicted a digit that a human would be less likely to pick. It would
     be interesting to measure the accuracy of the model in general, rather than on
     a single test case, so let's do that next.
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们的机器学习模型的表现并不比信差好；它只是预测了一个人类不太可能选择的数字。测量模型在一般情况下的准确率，而不仅仅是单个测试案例，将是有趣的，所以让我们接下来这么做。
 - en: 3.4.3 Comparing the digit classifier's performance to a linear model
+  id: totrans-209
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 3.4.3 比较数字分类器的性能与线性模型
 - en: 'As we did with the breast cancer data, let''s split (80/20) the MNIST data
     into training and validation sets, train an RF classifier, and measure the overall
     accuracy:'
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: 就像我们对乳腺癌数据所做的那样，让我们将MNIST数据分成训练集和验证集（80/20），训练一个RF分类器，并测量整体准确率：
 - en: '[PRE37]'
+  id: totrans-211
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE37]'
 - en: '0.9445'
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: '0.9445'
 - en: 'An accuracy of 94.450% sounds pretty good, and it could be entirely satisfactory
     from a business point of view for many applications. But, it''s still a good idea
     to compare the RF''s performance to that of another model as a gauge of quality.
     Practitioners commonly use a linear model as a lower bound benchmark and sklearn
     provides a linear classifier model called `LogisticRegression`:'
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: 94.450%的准确率听起来相当不错，从商业角度来看，对于许多应用来说可能已经足够满意。但是，将RF的性能与其他模型进行比较，作为质量的一个衡量标准，仍然是一个好主意。从业者通常使用线性模型作为下限基准，sklearn提供了一个名为`LogisticRegression`的线性分类器模型：
 - en: '[PRE38]'
+  id: totrans-214
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE38]'
 - en: '0.902'
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: '0.902'
 - en: While the linear model's accuracy of 90.200% is less than the RF's 94.450%,
     it is not too bad considering the difficulty of this image classification problem.
     Because RFs are generally more powerful than linear models, we'd expect the RF
     to perform better on average. If, on the other hand, a linear model trained on
     the same data performs better, that could indicate a bug or other problem with
     our RF.
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然线性模型的准确率为90.200%，低于RF的94.450%，但考虑到这个图像分类问题的难度，这并不太糟糕。因为RF通常比线性模型更强大，所以我们预计RF的平均性能会更好。另一方面，如果基于相同数据的线性模型表现更好，这可能表明我们的RF存在错误或其他问题。
 - en: 'While we won''t study them in this book, linear models are useful to know about
     for three other reasons. First, linear models compress the entire image training
     set down to a small collection of floating-point coefficients (on the order of
@@ -1015,25 +1478,37 @@
     say, a microcontroller in an autonomous vehicle. In contrast to the small footprint
     of the linear model, our RF has 900 large trees. Here''s how to sum up the number
     of nodes across all trees (estimators):'
+  id: totrans-217
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管我们不会在本书中研究它们，但了解线性模型有三个其他原因。首先，线性模型将整个图像训练集压缩成一小组浮点系数（对于784个特征，大约是784个）。如果模型必须在自动驾驶汽车的微控制器上运行，模型大小可能很重要。与线性模型的小型足迹相比，我们的RF有900棵大树。以下是总结所有树（估计器）中节点数的方法：
 - en: '[PRE39]'
+  id: totrans-218
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE39]'
 - en: 1,687,430
+  id: totrans-219
   prefs: []
   type: TYPE_NORMAL
+  zh: 1,687,430
 - en: That's a lot of tree nodes, so the RF requires a lot more memory than the linear
     model.
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
+  zh: 这有很多树节点，所以RF比线性模型需要更多的内存。
 - en: '[![](../Images/716514dec75155e4a06ef93898d4202d.png)](images/first-taste/first-taste_lm_vs_rf_1.svg)'
+  id: totrans-221
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/716514dec75155e4a06ef93898d4202d.png)](images/first-taste/first-taste_lm_vs_rf_1.svg)'
 - en: '**Figure 3.4**. Linear regression model versus random forest trained on linear
     relationship'
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
+  zh: '**图3.4**. 线性回归模型与基于线性关系的随机森林训练'
 - en: Second, linear models can be useful when we know there is a linear relationship
     between features and the target variable. For example, given the number sequence
     1, 2, 3, 4, 5 all of us would predict 6 as the 6th value. (That data follows the
@@ -1047,47 +1522,69 @@
     simple linear relationship and, in fact, we usually have no idea what the relationship
     is. That is one reason we recommend using RFs (because they don't require knowledge
     of the underlying feature-target relationship).
+  id: totrans-223
   prefs: []
   type: TYPE_NORMAL
+  zh: 其次，当我们知道特征和目标变量之间存在线性关系时，线性模型可能很有用。例如，给定数字序列1，2，3，4，5，我们都会预测6作为第6个值。（这些数据遵循由直线y=x描述的线性关系。）相比之下，随机森林（RF）会预测大约4.5，如**图3.4**所示。这种行为表明，至少有一个数据集更适合用线性模型而不是RF。RF的一个优点是，它们不需要对特征和目标变量之间的关系做出假设，这与线性模型不同。另一方面，这也意味着RF模型在经验范围之外的外推效果不佳。在实践中，特征和目标变量之间的关系很少是简单的线性关系，实际上，我们通常不知道这种关系是什么。这就是我们推荐使用RF（因为它们不需要了解底层特征-目标关系）的原因之一。
 - en: 5The notation to get 1..5 into a column matrix and a vector is a bit awkward
     because NumPy is designed to be convenient for more complicated data sets than
     these single-feature training sets and single-record test vectors.
+  id: totrans-224
   prefs: []
   type: TYPE_NORMAL
+  zh: 将1到5的数字放入列矩阵和向量中的表示方法有些笨拙，因为NumPy是为处理比这些单特征训练集和单记录测试向量更复杂的数据集而设计的。
 - en: For completeness, though, let's run through the code for the 1..5 sequence to
     see how the two models behave. Here's how to get the sequence 1..5 into some training
     vectors and a test element:5
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管如此，为了完整性，让我们运行一下1到5序列的代码，看看两个模型的表现如何。以下是将序列1到5放入一些训练向量和测试元素中的方法：
 - en: '[PRE40]'
+  id: totrans-226
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE40]'
 - en: 'Then, let''s train a linear regression model and predict a y target value for
     x=6:'
+  id: totrans-227
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，让我们训练一个线性回归模型，并预测当x=6时的y目标值：
 - en: '[PRE41]'
+  id: totrans-228
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE41]'
 - en: y = [6.]
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
+  zh: y = [6.]
 - en: 'A prediction of 6 is what we would expect because our human eye clearly sees
     the linear relationship. Let''s see what the RF model predicts:'
+  id: totrans-230
   prefs: []
   type: TYPE_NORMAL
+  zh: 预测6是我们预期的，因为我们的肉眼清楚地看到了线性关系。让我们看看RF模型会预测什么：
 - en: '[PRE42]'
+  id: totrans-231
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE42]'
 - en: y = [4.73]
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
+  zh: y = [4.73]
 - en: RF models are doing a kind of “average of the nearest neighbor” prediction.
     Here, the nearest neighbors are 4 and 5, which the RF averages to get its prediction.
     In this case, the linear model makes more sense but remember the poor linear fit
     we saw in **Figure 2.1** on some real data.
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
+  zh: RF模型正在进行一种“最近邻平均”预测。在这里，最近的邻居是4和5，RF将它们平均以得到其预测。在这种情况下，线性模型更有意义，但请记住我们在**图2.1**上看到的一些真实数据中的糟糕线性拟合。
 - en: The third reason to know about linear models is that logistic regression is
     the basic building block of neural networks. Logistic regression is equivalent
     to a neural network of limited depth (just input and output layers), while more
@@ -1096,8 +1593,10 @@
     above 99% but transform the pixels into higher-level features and use a 50,000
     image training set. (See the [MNIST database page](http://yann.lecun.com/exdb/mnist/)
     for more performance scores.)
+  id: totrans-234
   prefs: []
   type: TYPE_NORMAL
+  zh: 了解线性模型的第三个原因是逻辑回归是神经网络的基本构建块。逻辑回归相当于深度有限的神经网络（只有输入和输出层），而更精确的神经网络在输入和输出层之间有许多所谓的*隐藏层*。基于最佳神经网络分类器可以达到99%以上的准确率，但将像素转换为高级特征，并使用50,000个图像训练集。（更多性能分数请参阅[MNIST数据库页面](http://yann.lecun.com/exdb/mnist/)。）
 - en: There are a number of important lessons here. Different models can perform differently
     on the same data set, and a linear model is a good lower bound benchmark. Comparing
     an RF with a linear model gives us an idea of the difficulty of the problem and
@@ -1106,12 +1605,16 @@
     linear models, but have difficulty extrapolating beyond the training feature ranges.
     Different models also have different memory footprints and this must be weighed
     against model strength, according to your project requirements.
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有许多重要的教训。不同的模型在相同的数据集上可能表现不同，线性模型是一个好的下限基准。将RF与线性模型进行比较可以让我们了解问题的难度，并可能识别出RF模型的潜在问题。RF在一般情况下表现非常好，并且与线性模型不同，不假设底层特征-目标关系，但难以在训练特征范围之外进行外推。不同的模型也有不同的内存占用，这必须根据项目需求权衡模型强度。
 - en: 3.5 Summary
+  id: totrans-236
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3.5 摘要
 - en: 'In this chapter, we built and tested both regressor and classifier models,
     which are really just two sides of the same coin. Regressors learn the relationship
     between features and numeric target variables whereas classifiers learn the relationship
@@ -1120,23 +1623,36 @@
     of being in a particular target class.) Thanks to the uniformity of sklearn API,
     we can abstract from this chapter''s examples a basic code sequence for training
     any model:'
+  id: totrans-237
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，我们构建并测试了回归器和分类器模型，这实际上是同一枚硬币的两面。回归器学习特征与数值目标变量之间的关系，而分类器学习特征与一组目标类别或类别之间的关系。（关于分类器的一种思考方式是，分类器是预测特定目标类别概率的回归器。）得益于sklearn
+    API的统一性，我们可以从本章的示例中抽象出一个基本的代码序列，用于训练任何模型：
 - en: '`df` = `pd.read_csv`(*datafile*) # load dataframe'
+  id: totrans-238
   prefs: []
   type: TYPE_NORMAL
+  zh: '`df` = `pd.read_csv`(*数据文件*) # 加载数据框'
 - en: '`X` = `df[[`*feature column names of interest*`]]`'
+  id: totrans-239
   prefs: []
   type: TYPE_NORMAL
+  zh: '`X` = `df[[`*感兴趣的特征列名称*`]]`'
 - en: '`y` = `df[`*target column name*`]`'
+  id: totrans-240
   prefs: []
   type: TYPE_NORMAL
+  zh: '`y` = `df[`*目标列名称*`]`'
 - en: '`m` = *ChooseYourModel*(*hyper-parameters*)'
+  id: totrans-241
   prefs: []
   type: TYPE_NORMAL
+  zh: '`m` = *选择您的模型*(*超参数*)'
 - en: '`m.fit(X,y)`'
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
+  zh: '`m.fit(X,y)`'
 - en: We'll primarily be using `RandomForestRegressor` and `RandomForestClassifier`
     in the *ChooseYourModel* slot. The hyper-parameters of a model represent the key
     structural or mathematical arguments, such as the number of trees in a random
@@ -1144,32 +1660,48 @@
     `n_estimators`=100 to get 100 RF trees is a good default. For performance reasons,
     it's also a good idea to use `n_jobs`=-1, which says to use as many processor
     core as possible in parallel while training the RF.
+  id: totrans-243
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将主要在*选择您的模型*槽中使用`RandomForestRegressor`和`RandomForestClassifier`。模型超参数代表关键的结构或数学参数，例如随机森林中的树的数量或神经网络中的神经元层数。使用超参数`n_estimators`=100来获得100个RF树是一个好的默认值。出于性能考虑，使用`n_jobs`=-1也是一个好主意，这意味着在训练RF时尽可能多地使用处理器核心。
 - en: 'To make a prediction using model `m` for some test record, call method `predict()`:'
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
+  zh: 要使用模型`m`对某些测试记录进行预测，请调用`predict()`方法：
 - en: '`y_pred = m.predict(`*test record*`) # make predictions`'
+  id: totrans-245
   prefs: []
   type: TYPE_NORMAL
+  zh: '`y_pred = m.predict(`*测试记录*`) # 进行预测`'
 - en: 'For basic testing purposes, we split the data set into 80% training and 20%
     validation sets (the hold out method):'
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了基本测试目的，我们将数据集分为80%的训练集和20%的验证集（保留法）：
 - en: '[PRE43]'
+  id: totrans-247
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE43]'
 - en: Determining a good validation set is sometimes not as simple as taking a 20%
     random sample, as we'll see in **Chapter 12** *Evaluating Regressor Performance*
     and **Chapter 9** *Train, Validate, Test*, but that method is okay for now.
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
+  zh: 确定一个好的验证集有时并不像取一个20%的随机样本那样简单，正如我们在第12章“评估回归器性能”和第9章“训练、验证、测试”中将会看到的，但这种方法目前是可行的。
 - en: 'Computing a validation score for any sklearn model is as simple as:'
+  id: totrans-249
   prefs: []
   type: TYPE_NORMAL
+  zh: 计算任何sklearn模型的验证分数就像这样：
 - en: '[PRE44]'
+  id: totrans-250
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE44]'
 - en: Method `score()` returns accuracy (in range 0-1) for classifiers and a common
     metric called [R^2](https://en.wikipedia.org/wiki/Coefficient_of_determination)
     (“R squared”) for regressors. ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
@@ -1181,8 +1713,10 @@
     the next chapter.) Of course, we can also compute other metrics that are more
     meaningful to end-users when necessary, such as the mean absolute error we computed
     for apartment prices.
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
+  zh: 方法 `score()` 为分类器返回范围在0-1之间的准确率，为回归器返回一个称为 [R^2](https://en.wikipedia.org/wiki/Coefficient_of_determination)（“R平方”）的常用指标。![R^2](../Images/ec985123b9b52e80981e6500795e8d16.png)衡量回归器相对于总是返回目标平均值的简单模型（例如任何预测的公寓价格）的性能。1.0是完美分数，0表示模型预测的平均值不如预测平均值，而值小于0表示模型比仅仅预测平均值更差。（我们将在下一章中了解更多关于![R^2](../Images/ec985123b9b52e80981e6500795e8d16.png)的内容。）当然，在必要时，我们也可以计算其他对最终用户更有意义的指标，例如我们为公寓价格计算的均方误差。
 - en: As you can see from this simple recipe, the actual task of training and testing
     a model is straightforward, once you have appropriate training and testing data.
     Most of the work building a model involves data collection, data cleaning, filling
@@ -1190,8 +1724,10 @@
     all features fed to a model must be numeric, rather than strings like names or
     categorical variables like low/medium/high, so we have some data conversions to
     do. Much of this book is devoted to preparing data so that this code recipe applies.
+  id: totrans-252
   prefs: []
   type: TYPE_NORMAL
+  zh: 如您从这个简单的配方中可以看到，一旦有了适当的训练和测试数据，训练和测试模型的实际任务就很简单。构建模型的大部分工作涉及数据收集、数据清洗、填充缺失值、特征工程和适当的测试集识别。此外，提供给模型的所有特征必须是数值型的，而不是像名称这样的字符串或像低/中/高这样的分类变量，因此我们需要进行一些数据转换。本书的大部分内容都是关于准备数据，以便这个代码配方能够应用。
 - en: Even with perfect training data, remember that a model can only make predictions
     based on the training data we provide. Models don't necessarily have the same
     experience we do, and certainly don't have a human's modeling power. Some models
@@ -1204,5 +1740,7 @@
     such as feature importances. More on this in **Chapter 14** *Interpreting Model
     Prediction Results* and **Chapter 15** *Understanding the Relationship Between
     Variables*.
+  id: totrans-253
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使拥有完美的训练数据，也要记住，模型只能根据我们提供的训练数据进行预测。模型并不一定有与我们相同的经验，当然也没有人类建模的能力。有些模型在相同的数据集上可能表现得比其他模型更好，但我们建议坚持使用随机森林（回归器或分类器），然后将其与线性模型进行比较，以了解随机森林的性能。最后，只要选择一个像随机森林这样的不错模型，构建一个准确的机器学习模型更多的是确保你拥有强大的预测特征。同时也要记住，模型并非黑盒。我们可以对其进行质询以提取有用信息，例如特征重要性。关于这一点，在第14章“解释模型预测结果”和第15章“理解变量之间的关系”中将有更多介绍。

@@ -1,69 +1,104 @@
 - en: 6 Categorically Speaking
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 6 分类讨论
 - en: 原文：[https://mlbook.explained.ai/catvars.html](https://mlbook.explained.ai/catvars.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://mlbook.explained.ai/catvars.html](https://mlbook.explained.ai/catvars.html)
 - en: '[Terence Parr](http://parrt.cs.usfca.edu) and [Jeremy Howard](http://www.fast.ai/about/#jeremy)'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[特伦斯·帕特](http://parrt.cs.usfca.edu) 和 [杰里米·霍华德](http://www.fast.ai/about/#jeremy)'
 - en: Copyright © 2018-2019 Terence Parr. All rights reserved.
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 版权所有 © 2018-2019 特伦斯·帕特。保留所有权利。
 - en: '*Please don''t replicate on web or redistribute in any way.*'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '*请勿在网络上复制或以任何方式重新分发。*'
 - en: This book generated from markup+markdown+python+latex source with [Bookish](https://github.com/parrt/bookish).
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 这本书是从 markup+markdown+python+latex 源文件生成的，使用了 [Bookish](https://github.com/parrt/bookish)。
 - en: You can make **comments or annotate** this page by going to the annotated version
     of this page. You'll see existing annotated bits highlighted in yellow. They are
     *PUBLICLY VISIBLE*. Or, you can send comments, suggestions, or fixes directly
     to [Terence](mailto:parrt@cs.usfca.edu).
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以通过访问此页面的注释版本来对**此页进行评论或标注**。您会看到现有的标注部分以黄色突出显示。它们是**公开可见的**。或者，您可以直接将评论、建议或修正发送给
+    [特伦斯](mailto:parrt@cs.usfca.edu)。
 - en: Contents
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 目录
 - en: '[Getting a baseline](#sec:6.1)'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[获取基线](#sec:6.1)'
 - en: '[Encoding categorical variables](#sec:catvars)'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[编码分类变量](#sec:catvars)'
 - en: '[Extracting features from strings](#sec:6.3)'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[从字符串中提取特征](#sec:6.3)'
 - en: '[Synthesizing numeric features](#sec:6.4)'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[合成数值特征](#sec:6.4)'
 - en: '[Target encoding categorical variables](#target-encoding)'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[对分类变量进行目标编码](#target-encoding)'
 - en: '[Injecting external neighborhood info](#sec:6.6)'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[注入外部邻里信息](#sec:6.6)'
 - en: '[Our final model](#sec:6.7)'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[我们的最终模型](#sec:6.7)'
 - en: '[Summary of categorical feature engineering](#sec:6.8)'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[分类特征工程摘要](#sec:6.8)'
 - en: “*Coming up with features is difficult, timeconsuming, requires expert domain
     knowledge. When working applications of learning, we spend a lot of time tuning
     the features.*” — Andrew Ng in a Stanford plenary talk on AI, 2011
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: “*提出特征是困难的，耗时，需要专家领域知识。当应用学习时，我们花费大量时间调整特征。*” — 安德鲁·吴在2011年斯坦福大学关于人工智能的全体会议上的讲话
 - en: Creating a good model is more about *feature engineering* than it is about choosing
     the right model; well, assuming your go-to model is a good one like Random Forest.
     Feature engineering means improving, acquiring, and even *synthesizing* features
@@ -74,56 +109,79 @@
     how sophisticated our model is if we don't give it something useful to chew on.
     If there is no relationship to discover, because the features are not predictive,
     no machine learning model is going to give accurate predictions.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建一个好的模型更多的是关于**特征工程**，而不是选择正确的模型；嗯，假设您首选的模型是一个好的模型，比如随机森林。特征工程意味着改进、获取甚至**合成**那些是模型目标变量强预测者的特征。合成特征意味着从现有特征中推导出新的特征或从其他数据源注入特征。例如，我们可以从公寓的经纬度中合成纽约市某个地区的名称。如果我们不提供有用的东西供其咀嚼，那么我们的模型无论多么复杂都没有意义。如果没有关系可发现，因为特征不可预测，那么没有任何机器学习模型能够给出准确的预测。
 - en: So far we've dropped nonnumeric features, such as apartment description strings
     and manager ID categorical values, because machine learning models can only learn
     from numeric values. But, there is potentially predictive power that we could
     exploit in these string values. In this chapter, we're going to learn the basics
     of feature engineering in order to squeeze a bit more juice out of the nonnumeric
     features found in the New York City apartment rent data set.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们已经删除了非数值特征，例如公寓描述字符串和管理员ID的分类值，因为机器学习模型只能从数值值中学习。但是，这些字符串值中可能存在我们可以利用的潜在预测能力。在本章中，我们将学习特征工程的基础知识，以便从纽约市公寓租金数据集中找到的非数值特征中提取更多价值。
 - en: Most of the predictive power for rent price comes from apartment location, number
     of bedrooms, and number of bathrooms, so we shouldn't expect a massive boost in
     model performance. The primary goal of this chapter is to learn the techniques
     for use on real problems in your daily work. Or, if you've entered a Kaggle competition,
     the difference between the top spot and position 1000 is often razor thin, so
     even a small advantage from feature engineering could be useful in that context.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 租金价格的预测能力主要来自公寓位置、卧室数量和浴室数量，因此我们不应该期望模型性能有大幅提升。本章的主要目标是学习在实际工作中使用的技术。或者，如果你参加了Kaggle比赛，前100名和第1000名的差距往往非常小，所以在这种情况下，特征工程带来的微小优势也可能是有用的。
 - en: 6.1 Getting a baseline
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.1 获取基线
 - en: 2See **Section 3.2.1** *Loading and sniffing the training data* for instructions
     on downloading JSON rent data from Kaggle and creating the CSV files.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 请参阅**第3.2.1节** *加载数据和嗅探训练数据*，了解从Kaggle下载JSON租金数据并创建CSV文件的说明。
 - en: 1Don't forget the [notebooks](https://mlbook.explained.ai/notebooks/) aggregating
     the code snippets from the various chapters.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 不要忘记[笔记本](https://mlbook.explained.ai/notebooks/)，它汇总了各章节中的代码片段。
 - en: In order to measure any improvements in model accuracy, let's get a baseline
     using just the cleaned up numeric features from `rent.csv` in the `data` directory
     underneath where we started Jupyter.2 As we did in **Chapter 5** *Exploring and
     Denoising Your Data Set*, let's load the rent data, strip extreme prices, and
     remove apartments not in New York City:1
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了衡量模型准确性的任何改进，让我们使用位于我们开始Jupyter的`data`目录下的`rent.csv`中清理后的数值特征来获取基线。正如我们在**第5章**
+    *探索和去噪您的数据集*中所做的那样，让我们加载数据，去除极端价格，并移除不在纽约市内的公寓：1
 - en: '[PRE0]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Now train an RF using just the numeric features and print the out-of-bag (OOB)
     ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在仅使用数值特征训练一个随机森林，并打印出袋外（OOB）![图片](../Images/ec985123b9b52e80981e6500795e8d16.png)得分：
 - en: '[PRE1]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '0.8677576247438816'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '0.8677576247438816'
 - en: 'The 0.868 OOB score is pretty good as it''s close to 1.0\. (Recall that a score
     of 0 indicates our model does know better than simply guessing the average rent
     price for all apartments and 1.0 means a perfect predictor of rent price.) Let''s
@@ -131,43 +189,63 @@
     between those features and rent price. The `rfpimp` package provides a few simple
     measures we can use: the total number of nodes in all decision trees of the forest
     and the height (in nodes) of the typical tree.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 0.868的OOB得分相当不错，因为它接近1.0。（回想一下，得分为0表示我们的模型确实知道比简单地猜测所有公寓的平均租金价格要好，而1.0则意味着完美预测租金价格。）让我们也了解一下随机森林为了捕捉这些特征与租金价格之间的关系需要做多少工作。`rfpimp`包提供了一些我们可以使用的简单度量：森林中所有决策树的总节点数和典型树的高度（以节点为单位）。
 - en: '[PRE2]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 2,432,836 tree nodes and 35.0 median tree height
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 2,432,836个树节点和35.0的中位树高
 - en: The tree height matters because that is the path taken by the RF prediction
     mechanism and so tree height effects prediction speed.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 树高很重要，因为这是随机森林预测机制所采取的路径，因此树高会影响预测速度。
 - en: 'Let''s also get a baseline for feature importances so that, as we introduce
     new features, we can get a sense of their predictive power. Longitude and latitude
     are really one meta-feature called “location,” so we can combine those two using
     the `features` parameter to the `importances()` function. We''re going to ask
     for feature importances a lot in this chapter so let''s make a handy function:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们也为特征重要性设置一个基线，这样当我们引入新特征时，我们可以了解它们的预测能力。经度和纬度实际上是称为“位置”的一个元特征，因此我们可以使用`importances()`函数的`features`参数将这两个特征结合起来。在本章中，我们将多次请求特征重要性，所以让我们创建一个方便的函数：
 - en: » *Generated by code to left*
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由左侧代码生成*
 - en: '[![](../Images/ab971df2b73436db3be3a4d088755d5d.png)](images/catvars/catvars_cats_6.svg)'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '![图片](../Images/ab971df2b73436db3be3a4d088755d5d.png)(images/catvars/catvars_cats_6.svg)'
 - en: '[PRE3]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Now that we have a good benchmark for model and feature performance, let's try
     to improve our model by converting some existing nonnumeric features into numeric
     features.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经为模型和特征性能设定了一个良好的基准，让我们尝试通过将一些现有的非数值特征转换为数值特征来改进我们的模型。
 - en: 6.2 Encoding categorical variables
+  id: totrans-37
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.2 编码分类变量
 - en: 'The `interest_level` feature is a categorical variable that seems to encode
     interest in an apartment, no doubt taken from webpage activity logs. It''s a categorical
     variable because it takes on values from a finite set of choices: low, medium,
@@ -175,42 +253,64 @@
     which means that the values can be ordered even if they are not actual numbers.
     Looking at the count of each ordinal value is a good way to get an overview of
     an ordinal feature:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '`interest_level` 特征是一个分类变量，似乎表示对公寓的兴趣，无疑是从网页活动日志中提取的。它是一个分类变量，因为它从有限的选择集中取值：低、中、高。更具体地说，`interest_level`
+    是一个**序数**分类变量，这意味着即使它们不是实际数字，值也可以排序。查看每个序数值的计数是了解序数特征的好方法：'
 - en: '[PRE4]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'low 33270 medium 11203 high 3827 Name: interest_level, dtype: int64'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 'low 33270 medium 11203 high 3827 Name: interest_level, dtype: int64'
 - en: 'Ordinal variables are the easiest to convert from strings to numbers because
     we can simply assign a different integer for each possible ordinal value. One
     way to do the conversion is to use the Pandas `map()` function and a dictionary
     argument:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 序数变量最容易从字符串转换为数字，因为我们可以为每个可能的序数值分配一个不同的整数。进行转换的一种方法是用 Pandas 的 `map()` 函数和一个字典参数：
 - en: '[PRE5]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '1 33270 2 11203 3 3827 Name: interest_level, dtype: int64'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '1 33270 2 11203 3 3827 Name: interest_level, dtype: int64'
 - en: The key here is to ensure that the numbers we use for each category maintains
     the same ordering so, for example, medium's value of 2 is bigger than low's value
     of 1\. We could also have chosen `{'low':10,'medium':20,'high':30}` as the encoding
     because RFs care about the order and not the scale of the features.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键是要确保我们为每个类别使用的数字保持相同的顺序，例如，中等值 2 大于低值 1。我们也可以选择 `{'low':10,'medium':20,'high':30}`
+    作为编码，因为随机森林（RF）关心的是特征顺序而不是尺度。
 - en: 'Let''s see how an RF model performs using the numeric features and this newly
     converted `interest_level` feature:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看使用数值特征和这个新转换的 `interest_level` 特征的随机森林（RF）模型的表现：
 - en: '[PRE6]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: OOB R^2 0.87037 using 3,025,158 tree nodes with 36.0 median tree height
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 3,025,158 个树节点和 36.0 的中值树高，OOB R^2 0.87037
 - en: That 0.870 score is only a little bit better than our baseline of 0.868, but
     it's still useful. As you approach an ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
     of 1.0, it gets harder and harder to nudge model performance. The difference in
@@ -221,13 +321,18 @@
     boost. The only cost to this accuracy boost is an increase in the number of tree
     nodes, but the typical decision tree height in the forest remains the same as
     our baseline. Prediction using this model should be just as fast as the baseline.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 那个 0.870 分数只是略好于我们的基线 0.868，但仍然很有用。当你接近 1.0 的阈值时，提高模型性能变得越来越困难。分数的差异实际上代表了剩余准确性的几个百分点，因此我们可以对这个提升感到满意。此外，记住使用单个
+    OOB 分数是一个相当粗略的指标，它汇总了模型在 50,000 条记录上的性能。可能某种类型的公寓获得了很大的准确度提升。这种准确度提升的唯一代价是树节点数量的增加，但森林中典型的决策树高度与基线保持相同。使用此模型进行预测应该与基线一样快。
 - en: The easy way to remember the difference between ordinal and nominal variables
     is that ordinal variables have order and nominal comes from the word for “name”
     in Latin (*nomen*) or French (*nom*).
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住序数变量和名义变量之间的区别的简单方法是：序数变量有顺序，而名义来自拉丁语中“名称”一词（*nomen*）或法语中的 (*nom*）。
 - en: 'Ordinal categorical variables are simple to encode numerically. Unfortunately,
     there''s another kind of categorical variable called a *nominal* variable for
     which there is no meaningful order between the category values. For example, in
@@ -235,282 +340,427 @@
     nominal features. Without an order between categories, it''s hard to encode nominal
     variables as numbers in a meaningful way, particularly when there are very many
     category values:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 序数分类变量在数值编码上很简单。不幸的是，还有一种叫做**名义**变量的分类变量，其类别值之间没有有意义的顺序。例如，在这个数据集中，列 `manager_id`、`building_id`
+    和 `display address` 是名义特征。由于类别之间没有顺序，很难以有意义的方式将名义变量编码为数字，尤其是当有非常多的类别值时：
 - en: '[PRE7]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: (3409, 7417, 8692)
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: (3409, 7417, 8692)
 - en: So-called high-cardinality (many-valued) categorical variables such as `manager_id`,
     `building_id`, and `display address` are best handled using more advanced techniques
     such as [embeddings](https://developers.google.com/machine-learning/crash-course/embeddings/video-lecture)
     or *mean encoding* as we'll see in **Section 6.5** *Target encoding categorical
     variables*, but we'll introduce two simple encoding approaches here that are often
     useful.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 所说的“高基数”（多值）分类变量，例如`manager_id`、`building_id`和`display address`，最好使用更高级的技术来处理，例如[嵌入](https://developers.google.com/machine-learning/crash-course/embeddings/video-lecture)或*均值编码*，正如我们在**第6.5节**“目标编码分类变量”中将要看到的，但在这里我们将介绍两种简单的编码方法，这些方法通常很有用。
 - en: The first technique is called *label encoding* and simply converts each category
     to a numeric value, as we did before, while ignoring the fact that the categories
     are not really ordered. Sometimes an RF can get some predictive power from features
     encoded in this way but typically requires larger trees in the forest.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一种技术被称为*标签编码*，它简单地将每个类别转换为数值，就像我们之前做的那样，同时忽略这些类别实际上并没有顺序的事实。有时随机森林可以从以这种方式编码的特征中获得一些预测能力，但通常需要更大的森林中的树。
 - en: 'To label encode any categorical variable, convert the column to an ordered
     categorical variable and then convert the strings to the associated categorical
     code (which is computed automatically by Pandas):'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 要对任何分类变量进行标签编码，将列转换为有序分类变量，然后将字符串转换为相关的分类代码（这是由Pandas自动计算的）：
 - en: '[PRE8]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: The category codes start with 0 and the code for “not a number” (`nan`) is -1\.
     To bring everything into the range 0 or above, we add one to the category code.
     (Sklearn has equivalent functionality in its `OrdinalEncoder` transformer but
     it can't handle object columns with both integers and strings, plus it's get an
     error for missing values represented as `np.nan`.)
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别代码从0开始，而“非数字”(`nan`)的代码是-1。为了将所有内容都带入0或以上的范围，我们在类别代码上加上1。（Sklearn在其`OrdinalEncoder`转换器中具有等效的功能，但它无法处理同时包含整数和字符串的对象列，并且对于表示为`np.nan`的缺失值会报错。）
 - en: 'Let''s see if this new feature improves performance over the baseline model:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看这个新特征是否可以提高基线模型的表现：
 - en: '[PRE9]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: OOB R^2 0.86583 using 3,120,336 tree nodes with 37.5 median tree height
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: OOB R^2 0.86583，使用3,120,336个树节点，中值树高为37.5
 - en: Unfortunately, the ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score
     is roughly the same as the baseline's score and it increases the tree height.
     Not a good trade.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，![分数](../Images/ec985123b9b52e80981e6500795e8d16.png)与基线分数大致相同，并且它增加了树的高度。这不是一个好的权衡。
 - en: 'Let''s try another encoding approach called *frequency encoding* and apply
     it to the `manager_id` feature. Frequency encoding converts categories to the
     frequencies with which they appear in the training. For example, here are the
     category value counts for the top 5 `manager_id`s:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试另一种编码方法，称为*频率编码*，并将其应用于`manager_id`特征。频率编码将类别转换为它们在训练中出现的频率。例如，以下是前5个`manager_id`的类别值计数：
 - en: '[PRE10]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'e6472c7237327dd3903b3d6f6a94515a 2509 6e5c10246156ae5bdcd9b487ca99d96a 695
     8f5a9c893f6d602f4953fcc0b8e6e9b4 404 62b685cc0d876c3a1a51d63a0d6a8082 396 cb87dadbca78fad02b388dc9e8f25a5b
     370 Name: manager_id, dtype: int64'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: e6472c7237327dd3903b3d6f6a94515a 2509 6e5c10246156ae5bdcd9b487ca99d96a 695 8f5a9c893f6d602f4953fcc0b8e6e9b4
+    404 62b685cc0d876c3a1a51d63a0d6a8082 396 cb87dadbca78fad02b388dc9e8f25a5b 370
+    名称：manager_id，数据类型：int64
 - en: The idea behind this transformation is that there might be predictive power
     in the number of apartments managed by a particular manager.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种转换背后的想法是，特定经理管理的公寓数量可能存在预测能力。
 - en: 'Function `value_counts()` gives us the encoding and from there we can use `map()`
     to transform the `manager_id` into a new column called `mgr_apt_count`:'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 函数`value_counts()`给我们提供了编码，从那里我们可以使用`map()`将`manager_id`转换为一个名为`mgr_apt_count`的新列：
 - en: '[PRE11]'
+  id: totrans-67
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Again, we could actually divide the accounts by `len(df)`, but that just scales
     the column and won't affect predictive power.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次，我们实际上可以除以`len(df)`，但这只是缩放列，不会影响预测能力。
 - en: 'Let''s see how a model does with both of these categorical variables encoded:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看模型在将这两个分类变量编码后的表现如何：
 - en: '[PRE12]'
+  id: totrans-70
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: OOB R^2 0.86434 using 4,569,236 tree nodes with 41.0 median tree height
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: OOB R^2 0.86434，使用4,569,236个树节点，中值树高为41.0
 - en: '[![](../Images/72336ba67d853507cece336c37351eb6.png)](images/catvars/catvars_cats_18.svg)'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: '![图片](../Images/72336ba67d853507cece336c37351eb6.png)(images/catvars/catvars_cats_18.svg)'
 - en: The model accuracy does not improve and the complexity of the trees goes up,
     so we should avoid introducing these features. The feature importance plot confirms
     that these features are unimportant.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型的准确率没有提高，树的复杂性增加，因此我们应该避免引入这些特征。特征重要性图确认了这些特征并不重要。
 - en: We can conclude that, for this data set, label encoding and frequency encoding
     of high-cardinality categorical variables is not helpful. These encoding techniques
     could, however, be useful on other data set so it's worth learning them. We'll
     learn about another categorical variable encoding technique called “one-hot encoding”
     in [chp:onehot], but we avoid one-hot encoding here because it would add thousands
     of new columns to our data set.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这个数据集，我们可以得出结论，对于高基数分类变量的标签编码和频率编码没有帮助。然而，这些编码技术可能在其他数据集上是有用的，因此值得学习。我们将在[chp:onehot]中学习另一种分类变量编码技术，称为“独热编码”，但在这里我们避免使用独热编码，因为它会为我们的数据集添加数千个新列。
 - en: 6.3 Extracting features from strings
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.3 从字符串中提取特征
 - en: The apartment data set also has some variables that are both nonnumeric and
     noncategorical, `description` and `features`. Such arbitrary strings have no obvious
     numerical encoding, but we can extract bits of information from them to create
     new features. For example, an apartment with parking, doorman, dishwasher, and
     so on might fetch a higher price so let's synthesize some Boolean features derived
     from string features.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 公寓数据集还有一些变量既不是数值型也不是分类型，`description`和`features`。这些任意的字符串没有明显的数值编码，但我们可以从中提取一些信息来创建新的特征。例如，带有停车、门卫、洗碗机等的公寓可能会获得更高的价格，所以让我们从字符串特征中合成一些布尔特征。
 - en: First let's normalize the string columns to be lowercase and convert any missing
     values (represented as “not a number” `np.nan` values) to be empty strings; otherwise,
     applying `split()` to the columns will fail because `split()` does not apply to
     floating-point numbers (`np.nan`).
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们将字符串列规范化为小写，并将任何缺失值（表示为“不是一个数字”`np.nan`值）转换为空字符串；否则，应用`split()`到列上将会失败，因为`split()`不适用于浮点数（`np.nan`）。
 - en: '[PRE13]'
+  id: totrans-78
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'Now we can create new columns by applying `contains()` to the string columns,
     once for each new column:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们可以通过应用`contains()`到字符串列上创建新的列，每个新列一次：
 - en: '[PRE14]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: '|   | doorman | parking | garage | laundry |'
+  id: totrans-81
   prefs: []
   type: TYPE_TB
+  zh: '|   | doorman | parking | garage | laundry |'
 - en: '| --- | --- | --- | --- | --- |'
+  id: totrans-82
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- |'
 - en: '|  |'
+  id: totrans-83
   prefs: []
   type: TYPE_TB
+  zh: '|  |'
 - en: '| --- |'
+  id: totrans-84
   prefs: []
   type: TYPE_TB
+  zh: '| --- |'
 - en: '| 0 | False | False | False | False |'
+  id: totrans-85
   prefs: []
   type: TYPE_TB
+  zh: '| 0 | False | False | False | False |'
 - en: '| 1 | True | False | False | False |'
+  id: totrans-86
   prefs: []
   type: TYPE_TB
+  zh: '| 1 | True | False | False | False |'
 - en: '| 2 | False | False | False | True |'
+  id: totrans-87
   prefs: []
   type: TYPE_TB
+  zh: '| 2 | False | False | False | True |'
 - en: '| 3 | False | False | False | False |'
+  id: totrans-88
   prefs: []
   type: TYPE_TB
+  zh: '| 3 | False | False | False | False |'
 - en: '| 4 | False | False | False | False |'
+  id: totrans-89
   prefs: []
   type: TYPE_TB
+  zh: '| 4 | False | False | False | False |'
 - en: Another trick is to count the number of words in a string
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个技巧是计算字符串中的单词数量
 - en: '[PRE15]'
+  id: totrans-91
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: 'There''s not much we can do with the list of photo URLs in the other `photos`
     string column, but the number of photos might be slightly predictive of price,
     so let''s create a feature for that as well:'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于其他`photos`字符串列中的照片URL列表，我们做不了太多，但照片的数量可能略微预示着价格，因此我们也为这个特性创建一个：
 - en: '[PRE16]'
+  id: totrans-93
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: 'Let''s see how our new features affect performance above the baseline numerical
     features:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看我们的新特征如何影响基准数值特征之上的性能：
 - en: '[PRE17]'
+  id: totrans-95
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: OOB R^2 0.86242 using 4,767,582 tree nodes with 43.0 median tree height
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: OOB R^2 0.86242 使用 4,767,582 个树节点，中值树高度为 43.0
 - en: » *Generated by code to left*
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: » *由代码生成左侧*
 - en: '[![](../Images/801839f6dba1437a78ac9d6daea7a134.png)](images/catvars/catvars_cats_24.svg)'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: '[![](../Images/801839f6dba1437a78ac9d6daea7a134.png)](images/catvars/catvars_cats_24.svg)'
 - en: '[PRE18]'
+  id: totrans-99
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: It's disappointing that the accuracy does not improve with these features and
     that the complexity of the model is higher, but this does provide useful marketing
     information. Apartment features such as parking, laundry, and dishwashers are
     attractive but there's little evidence that people are willing to pay more for
     them (except maybe for having a doorman).
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 令人失望的是，这些特征并没有提高准确率，而且模型的复杂性更高，但这确实提供了有用的营销信息。像停车、洗衣和洗碗机这样的公寓特征很吸引人，但几乎没有证据表明人们愿意为它们支付更多（也许除了有门卫的情况）。
 - en: 6.4 Synthesizing numeric features
+  id: totrans-101
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.4 合成数值特征
 - en: 'If you grew up with lots of siblings, you''re likely familiar with the notion
     of waiting to use the bathroom in the morning. Perhaps there is some predictive
     power in the ratio of bedrooms to bathrooms, so let''s try synthesizing a new
     column that is the ratio of two numeric columns:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你有很多兄弟姐妹长大，你很可能熟悉早上等待使用洗手间的情况。也许卧室与洗手间比例中存在一些预测能力，所以让我们尝试合成一个新列，它是两个数值列的比例：
 - en: '[PRE19]'
+  id: totrans-103
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: OOB R^2 0.86831 using 2,433,878 tree nodes with 35.0 median tree height
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: OOB R^2 0.86831 使用2,433,878个树节点，平均树高为35.0
 - en: 'Combining numerical columns is a useful technique to keep in mind, but unfortunately
     this combination doesn''t affect our model significantly here. Perhaps we''d have
     better luck combining a numeric column with the target, such as the ratio of bedrooms
     to price:'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 将数值列组合起来是一个值得记住的有用技术，但不幸的是，这种组合在这里对我们的模型影响并不显著。也许我们将一个数值列与目标组合起来会更好，比如卧室与价格的比率：
 - en: '[PRE20]'
+  id: totrans-106
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: OOB R^2 0.98601 using 1,313,390 tree nodes with 31.0 median tree height
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: OOB R^2 0.98601 使用1,313,390个树节点，平均树高为31.0
 - en: Wow! That's almost a perfect score, which should trigger an alarm that it's
     too good to be true. In fact, we do have an error, but it's not a code bug. We
     have effectively copied the price column into the feature set, kind of like studying
     for a quiz by looking at the answers. This is a form of *data leakage*, which
     is a general term for the use of features that directly or indirectly hint at
     the target variable.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 哇！这几乎是一个完美的分数，这应该触发一个警报，表明它太好了，不可能是真的。事实上，我们确实有一个错误，但这不是代码错误。我们实际上已经将价格列复制到了特征集中，就像通过查看答案来准备小测验一样。这是一种*数据泄露*的形式，这是一个泛指使用直接或间接暗示目标变量的特征。
 - en: 'To illustrate how this leakage causes overfitting, let''s split out 20% of
     the data as a validation set and compute the `beds_per_price` feature for the
     training set:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了说明这种泄露如何导致过拟合，让我们将20%的数据分成验证集，并计算训练集的`beds_per_price`特征：
 - en: '[PRE21]'
+  id: totrans-110
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: '|   | beds_per_price | bedrooms |'
+  id: totrans-111
   prefs: []
   type: TYPE_TB
+  zh: '|   | beds_per_price | bedrooms |'
 - en: '| --- | --- | --- |'
+  id: totrans-112
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- |'
 - en: '|  |'
+  id: totrans-113
   prefs: []
   type: TYPE_TB
+  zh: '|  |'
 - en: '| --- |'
+  id: totrans-114
   prefs: []
   type: TYPE_TB
+  zh: '| --- |'
 - en: '| 23525 | 0.0003 | 1 |'
+  id: totrans-115
   prefs: []
   type: TYPE_TB
+  zh: '| 23525 | 0.0003 | 1 |'
 - en: '| 22736 | 0.0002 | 1 |'
+  id: totrans-116
   prefs: []
   type: TYPE_TB
+  zh: '| 22736 | 0.0002 | 1 |'
 - en: '| 22860 | 0.0006 | 3 |'
+  id: totrans-117
   prefs: []
   type: TYPE_TB
+  zh: '| 22860 | 0.0006 | 3 |'
 - en: '| 25510 | 0.0003 | 1 |'
+  id: totrans-118
   prefs: []
   type: TYPE_TB
+  zh: '| 25510 | 0.0003 | 1 |'
 - en: '| 40540 | 0.0008 | 2 |'
+  id: totrans-119
   prefs: []
   type: TYPE_TB
+  zh: '| 40540 | 0.0008 | 2 |'
 - en: As a general principle, you can't compute features for the validation set using
     information from the validation set. Only information computed directly from the
     training set can be used during feature engineering.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为一条一般原则，你不能使用验证集的信息来计算验证集的特征。在特征工程期间只能使用直接从训练集计算出的信息。
 - en: While we do have price information for the validation set in `df_test`, we can't
     use it to compute `beds_per_price` for the validation set. In production, the
     model will not have the validation set prices and so `df['beds_per_price']` must
@@ -518,37 +768,53 @@
     we wouldn't be the model.) To avoid this common pitfall, it's helpful to imagine
     computing features for and sending validation records to the model one by one,
     rather than all at once.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然`df_test`中确实有验证集的价格信息，但我们不能用它来计算验证集的`beds_per_price`。在生产环境中，模型将没有验证集的价格信息，因此`df['beds_per_price']`必须仅从训练集创建。（如果模型在实际中包含公寓价格，我们就不需要这个模型了。）为了避免这种常见的陷阱，想象一下逐个计算特征并将验证记录发送给模型，而不是一次性全部发送，这很有帮助。
 - en: 'Once we have the `beds_per_price` feature for the training set, we can compute
     a dictionary mapping bedrooms to the `beds_per_price` feature. Then, we can synthesize
     the `beds_per_price` in the validation set using `map()` on the bedrooms column:'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们有了训练集的`beds_per_price`特征，我们可以计算一个将卧室映射到`beds_per_price`特征的字典。然后，我们可以使用`map()`函数在卧室列上合成验证集的`beds_per_price`：
 - en: '[PRE22]'
+  id: totrans-123
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: '2125 0.000332 47172 0.000667 5584 0.000000 860 0.000294 49025 0.000332 Name:
     beds_per_price, dtype: float64'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 2125 0.000332 47172 0.000667 5584 0.000000 860 0.000294 49025 0.000332 名称：beds_per_price，数据类型：float64
 - en: The `fillna()` code deals with the situation where the validation set has a
     number of bedrooms that is not in the training set; for example, sometimes the
     validation set has an apartment with 7 bedrooms, but there is no bedroom key equal
     to 7 in the `bpmap`.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: '`fillna()`代码处理了验证集有不在训练集中的卧室数量这种情况；例如，有时验证集有一个7卧室的公寓，但在`bpmap`中没有等于7的卧室键。'
 - en: 'Now that we have `beds_per_price` for both training and validation sets, we
     can train an RF model using just the training set and evaluate its performance
     using just the validation set:'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们有了训练集和验证集的`beds_per_price`，我们可以仅使用训练集来训练RF模型，并仅使用验证集来评估其性能：
 - en: '[PRE23]'
+  id: totrans-127
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: OOB R^2 -0.41233 1,169,770 nodes, 31.0 median height
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: OOB R^2 -0.41233 1,169,770个节点，平均树高为31.0
 - en: An ![](../Images/ec985123b9b52e80981e6500795e8d16.png) of -0.412 on the validation
     set is terrible and indicates that the model lacks generality. In this situation,
     overfitting means that the model has put too much emphasis on the `beds_per_price`
@@ -557,12 +823,17 @@
     a whiff of overfitting even in the complexity of the model, which has half the
     number of nodes as a model trained just on the numeric features. It's not always
     an error to derive features from the target; we just have to be more careful.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 验证集上的-0.412的![](../Images/ec985123b9b52e80981e6500795e8d16.png)指标非常糟糕，表明模型缺乏泛化能力。在这种情况下，过拟合意味着模型过分强调了`beds_per_price`特征，这个特征在训练数据中对价格有很强的预测能力，但在验证数据集中却没有。
+    (该特征仅使用训练数据集的数据计算。)即使在模型的复杂度上，我们也能嗅到过拟合的迹象，因为该模型的节点数只有仅使用数值特征训练的模型的一半。从目标变量中提取特征并不总是错误，我们只需要更加小心。
 - en: 6.5 Target encoding categorical variables
+  id: totrans-130
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.5 目标编码分类变量
 - en: 'Creating features that incorporate information about the target variable is
     called *target encoding* and is often used to derive features from categorical
     variables to great effect. One of the most common target encodings is called *mean
@@ -573,93 +844,142 @@
     manage could be predictive. Similarly, certain buildings might have more expensive
     apartments than others. The average rent price per building is easy enough to
     get with Pandas by grouping the data by `building_id` and asking for the mean:'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建包含目标变量信息的特征被称为*目标编码*，通常用于从分类变量中有效地推导特征。最常见的目标编码之一被称为*平均编码*，它用与该类别相关的平均目标值替换每个类别值。例如，在我们的公寓数据集中，物业管理员可能会在特定的价格范围内出租公寓。物业管理员ID本身具有很小的预测能力，但将ID转换为他们管理的公寓的平均租金价格可能具有预测性。同样，某些建筑可能比其他建筑有更昂贵的公寓。使用Pandas通过按`building_id`分组数据并请求平均值，很容易得到每栋建筑的平均租金价格：
 - en: '[PRE24]'
+  id: totrans-132
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: '|   | price |'
+  id: totrans-133
   prefs: []
   type: TYPE_TB
+  zh: '|   | 价格 |'
 - en: '| --- | --- |'
+  id: totrans-134
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- |'
 - en: '| building_id |'
+  id: totrans-135
   prefs: []
   type: TYPE_TB
+  zh: '| building_id |'
 - en: '| --- |'
+  id: totrans-136
   prefs: []
   type: TYPE_TB
+  zh: '| --- |'
 - en: '| 0 | 3195.9321 |'
+  id: totrans-137
   prefs: []
   type: TYPE_TB
+  zh: '| 0 | 3195.9321 |'
 - en: '| 00005cb939f9986300d987652... | 3399.0000 |'
+  id: totrans-138
   prefs: []
   type: TYPE_TB
+  zh: '| 00005cb939f9986300d987652... | 3399.0000 |'
 - en: '| 00024d77a43f0606f926e2312... | 2000.0000 |'
+  id: totrans-139
   prefs: []
   type: TYPE_TB
+  zh: '| 00024d77a43f0606f926e2312... | 2000.0000 |'
 - en: '| 000ae4b7db298401cdae2b0ba... | 2400.0000 |'
+  id: totrans-140
   prefs: []
   type: TYPE_TB
+  zh: '| 000ae4b7db298401cdae2b0ba... | 2400.0000 |'
 - en: '| 0012f1955391bca600ec30103... | 3700.0000 |'
+  id: totrans-141
   prefs: []
   type: TYPE_TB
+  zh: '| 0012f1955391bca600ec30103... | 3700.0000 |'
 - en: 'Unfortunately, as we saw in the last section, it''s easy to overfit models
     when incorporating target information. Preventing overfitting is nontrivial and
     it''s best to rely on a vetted library, such as the [category_encoders](http://contrib.scikit-learn.org/categorical-encoding/)
     package contributed to sklearn. (To prevent overfitting, the idea is to compute
     the mean from a subset of the training data targets for each category.) You can
     install `category_encoders` with pip on the commandline:'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，正如我们在上一节中看到的，在结合目标信息时，很容易过拟合模型。防止过拟合并非易事，最好依赖于经过验证的库，例如sklearn贡献的[category_encoders](http://contrib.scikit-learn.org/categorical-encoding/)包。
+    (为了防止过拟合，想法是从每个类别的训练数据目标子集中计算平均值。)您可以在命令行上使用pip安装`category_encoders`：
 - en: '[PRE25]'
+  id: totrans-143
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: '{TODO: Maybe show my mean encoder. much faster. worth explaining somewhere.
     rent/mean-encoder.ipynb sees like we need an alpha parameter that gets rare cats
     towards avg; supposed to work better.}'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: '{待办：也许可以展示我的平均编码器。速度更快。值得在某处解释。rent/mean-encoder.ipynb看起来我们需要一个alpha参数，将稀有猫类推向平均值；应该会工作得更好。}'
 - en: 'Here''s how to use the `TargetEncoder` object to encode three categorical variables
     from the data set and get an OOB score:'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是如何使用`TargetEncoder`对象对数据集中的三个分类变量进行编码并获取OOB分数的方法：
 - en: '[PRE26]'
+  id: totrans-146
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: OOB R^2 0.87236 using 2,746,024 tree nodes with 39.0 median tree height
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用2,746,024个树节点和39.0的中值树高度，OOB R^2为0.87236
 - en: 'That ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score is a bit better
     than the baseline of 0.868 for numeric-only features. Given the tendency to overfit
     the model with target encoding, however, it''s a good idea to test the model with
     a validation set. Let''s split out 20% as a validation set and get a baseline
     for numeric features:'
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 那个![](../Images/ec985123b9b52e80981e6500795e8d16.png)分数略好于仅数值特征的基线0.868。然而，考虑到模型使用目标编码容易过拟合的趋势，测试模型时使用验证集是个好主意。让我们将20%的数据作为验证集，并为数值特征得到一个基线：
 - en: '[PRE27]'
+  id: totrans-149
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: 0.845264 score 2,126,222 tree nodes and 35.0 median tree height
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 0.845264 分数，2,126,222 个树节点，平均树高为 35.0
 - en: 'The validation score and the OOB score are very similar, confirming that OOB
     scores are an excellent approximation to validation scores. With that baseline,
     let''s see what happens when we properly target encode the validation set, that
     is, using only data from the training set (warning: this takes several minutes
     to execute):'
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 验证分数和 OOB 分数非常相似，证实了 OOB 分数是验证分数的一个很好的近似。有了这个基线，让我们看看当我们正确地对验证集进行目标编码时会发生什么，也就是说，只使用训练集的数据（警告：这需要几分钟才能执行）：
 - en: '[PRE28]'
+  id: totrans-152
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: 0.8488 score 2,378,442 tree nodes and 38.0 median tree height
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 0.8488 分数，2,378,442 个树节点，平均树高为 38.0
 - en: '[![](../Images/46f7e418ff7e78793994baaebbaf0320.png)](images/catvars/catvars_targencode_6.svg)'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: '![![](../Images/46f7e418ff7e78793994baaebbaf0320.png)](images/catvars/catvars_targencode_6.svg)'
 - en: The validation score for numeric plus target-encoded feature (0.849) is less
     than the validation score for numeric-only features (0.845). The model finds the
     target-encoded feature strongly predictive of the training set prices, causing
@@ -667,22 +987,31 @@
     the drop in validation scores. The feature importance graph provides evidence
     of this overemphasis because it shows the target-encoded `building_id` feature
     as the most important.
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 数字加目标编码特征的验证分数（0.849）低于仅数字特征的验证分数（0.845）。模型发现目标编码特征对训练集价格有很强的预测性，导致它过度拟合，过分强调这个特征。这种泛化损失解释了验证分数的下降。特征重要性图提供了这种过度强调的证据，因为它显示目标编码的
+    `building_id` 特征是最重要的。
 - en: While not beneficial for this data set, target encoding is reported to be useful
     by many practitioners and Kaggle competition winners. It's worth knowing about
     this technique and learning to apply it properly (computing validation set features
     using data only from the training set).
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然对这组数据没有帮助，但许多实践者和 Kaggle 竞赛获胜者报告说目标编码是有用的。了解这项技术并学会正确应用它是值得的（使用仅来自训练集的数据计算验证集特征）。
 - en: When we've exhausted our bag of tricks deriving features from a given data set,
     sometimes it's fruitful to inject features derived from external data sources.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们从给定数据集中提取特征的技巧用尽时，有时从外部数据源提取特征是有益的。
 - en: 6.6 Injecting external neighborhood info
+  id: totrans-158
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.6 注入外部社区信息
 - en: 'Our data set has longitude and latitude coordinates, but a more obvious price
     predictor would be a categorical variable identifying the neighborhood because
     some neighborhoods are more desirable than others. Given the trouble we''ve seen
@@ -693,79 +1022,116 @@
     from which we can get neighborhood names. Then, using a mapping website, we can
     estimate the longitude and latitude of those neighborhoods and record them like
     this:'
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的数据集包含经纬度坐标，但一个更明显的价格预测因子可能是一个表示社区的分类变量，因为一些社区比其他社区更受欢迎。然而，鉴于我们上面看到的分类变量的问题，一个数值特征将更有用。与其识别社区，不如将靠近高度受欢迎社区的邻近性作为一个数值特征。福布斯杂志有一篇文章，[根据当地人的意见，纽约市最值得居住的10个社区](https://www.forbes.com/sites/trulia/2016/10/04/the-top-10-new-york-city-neighborhoods-to-live-in-according-to-the-locals/#17bf6ff41494)，从中我们可以获取社区名称。然后，使用地图网站，我们可以估算这些社区的经纬度并将它们记录如下：
 - en: '[PRE29]'
+  id: totrans-160
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: To synthesize new features, we compute the so-called *Manhattan distance* (also
     called *L1 distance*) from each apartment to each neighborhood center, which measures
     the number of blocks one must walk to reach the neighborhood. In contrast, the
     *Euclidean distance* would measure distance as the crow flies, cutting through
     the middle of buildings.
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了综合新的特征，我们计算了所谓的 *曼哈顿距离*（也称为 *L1 距离*），这是从每个公寓到每个社区中心的距离，它衡量一个人必须走过多少街区才能到达社区。相比之下，*欧几里得距离*将衡量飞鸟飞行的距离，穿过建筑物的中间。
 - en: '[PRE30]'
+  id: totrans-162
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE30]'
 - en: 'Training a model on the numeric features and these new neighborhood features,
     gives us a decent bump in performance:'
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: 在数值特征和这些新的社区特征上训练模型，使我们的性能有了相当大的提升：
 - en: '[PRE31]'
+  id: totrans-164
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE31]'
 - en: OOB R^2 0.87213 using 2,412,662 tree nodes with 43.0 median tree height
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: OOB R^2 0.87213 使用 2,412,662 个树节点，平均树高为 43.0
 - en: An OOB score of 0.872 is noticeably better than the baseline 0.868 for numeric
     features. The number of trees increased significantly, but the number of nodes
     is about the same. The model works a little bit harder to associate similar apartments
     with similar rent prices, but it's worth the extra complexity for the performance
     boost.
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: OOB得分为0.872，明显优于基线0.868的数值特征。树的数量显著增加，但节点数量大致相同。模型需要更努力地将类似公寓与类似的租金价格联系起来，但这种额外的复杂性对于性能的提升是值得的。
 - en: 'The new proximity features effectively triangulate an apartment relative to
     desirable neighborhoods, which means we probably don''t need apartment longitude
     and latitude anymore. Dropping longitude and latitude and retraining a model shows
     a similar OOB score and shallower trees:'
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 新的邻近度特征有效地将公寓相对于理想社区进行三角定位，这意味着我们可能不再需要公寓的经纬度。删除经纬度并重新训练模型显示出类似的OOB得分和更浅的树：
 - en: '[PRE32]'
+  id: totrans-168
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE32]'
 - en: 0.8700 score 2,421,776 tree nodes and 41.0 median tree height
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: 0.8700得分，2,421,776个树节点和41.0的中位树高
 - en: Injecting outside data is definitely worth trying as a general rule. As another
     example, consider predicting sales at a store or website. We've found that injecting
     columns indicating paydays or national holidays often helps predict fluctuations
     in sales volume that are not explained well with existing features.
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: 按照一般规则，注入外部数据绝对值得一试。作为另一个例子，考虑预测商店或网站的销售。我们发现，注入表示发薪日或国家假日的列通常有助于预测销售量的波动，而这些波动用现有的特征解释得并不好。
 - en: 6.7 Our final model
+  id: totrans-171
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.7 我们的最终模型
 - en: 'We''ve explored a lot of common feature engineering techniques for categorical
     variables in this chapter, so let''s put them all together to see how a combined
     model performs:'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，我们探讨了针对分类变量的许多常见特征工程技术，现在让我们将它们全部放在一起，看看组合模型的表现如何：
 - en: '[PRE33]'
+  id: totrans-173
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE33]'
 - en: OOB R^2 0.87876 using 4,842,474 tree nodes with 44.0 median tree height
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用4,842,474个树节点和44.0的中位树高，OOB R^2为0.87876
 - en: While OOB score 0.879 is not too much larger than our numeric-only model baseline
     of 0.868 in absolute terms, it means we've squeezed an extra 8.321% relative accuracy
     out of our data (computed using `((oob_combined-oob_baseline) / (1-oob_baseline))*100`).
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然从绝对值来看，OOB得分为0.879并不比我们的仅数值模型基线0.868大太多，但这意味着我们已经从数据中榨取了额外的8.321%相对精度（使用`((oob_combined-oob_baseline)
+    / (1-oob_baseline))*100`计算）。
 - en: '[![](../Images/5ef6c0f12152db6ffb39acb86f885f8e.png)](images/catvars/catvars_cats_42.svg)'
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: '![图片](../Images/5ef6c0f12152db6ffb39acb86f885f8e.png)(images/catvars/catvars_cats_42.svg)'
 - en: Something to notice is that the RF model does not get confused with a combination
     of all of these features, which is one of the reasons we recommend RFs. RFs simply
     ignore features without much predictive power. The feature importance graph to
@@ -773,12 +1139,18 @@
     it's a good idea to keep all features, but we might want to remove unimportant
     features to simplify the model for interpretation purposes (when explaining model
     behavior).
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: 需要注意的是，随机森林模型不会因为所有这些特征的组合而混淆，这也是我们推荐使用随机森林的原因之一。随机森林简单地忽略那些预测能力不强的特征。右侧的特征重要性图显示了模型认为具有预测性的特征。出于模型准确性的考虑，保留所有特征是个好主意，但为了简化模型以便于解释（在解释模型行为时），我们可能想要移除不重要的特征。
 - en: 6.8 Summary of categorical feature engineering
+  id: totrans-178
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.8 分类特征工程总结
 - en: '{TODO: Summarize techniques from this chapter}'
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: '{待总结：总结本章的技术}'
