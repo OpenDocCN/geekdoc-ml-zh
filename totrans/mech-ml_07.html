@@ -79,43 +79,43 @@ You can make <b>comments or annotate</b> this page by going to the <a id="annota
 <h2 id="sec:7.1">7.1 Loading the bulldozer data</h2>
 
 
-<p>	Our first step is to grab the bulldozer dataset from Kaggle's <a href="https://www.kaggle.com/c/bluebook-for-bulldozers/data">Blue Book for Bulldozers</a> competition.  Download files <span class="inlinecode">Train.zip</span> (and uncompress), <span class="inlinecode">Valid.csv</span>, and <span class="inlinecode">ValidSolution.csv</span> into your <span class="inlinecode">data</span> directory beneath the directory where you launch Jupyter. (You must be a registered Kaggle user and logged in.)  The <span class="inlinecode">Train.csv</span> file you get after uncompressing <span class="inlinecode">Train.zip</span> is 116M, which takes about 35 seconds to load using Pandas' <span class="inlinecode">read_csv()</span> function. That load time would be unbearably slow while staring at the screen and would make it harder to iterate quickly on our models. Instead, we're going to use the <a href="https://github.com/wesm/feather">feather data format</a>, which lets us load the data in about one second. The <a href="data/prep-bulldozer.py">prep-bulldozer.py</a> script (from this book's <a href="data/index.html">data</a> directory) loads the training CSV data (for the first and only time), splits out a validation set, and saves them both using the fast feather format. The script also merges <span class="inlinecode">Valid.csv</span>, and <span class="inlinecode">ValidSolution.csv</span> into a single test dataframe and saves it for later use. From the command-line and in your <span class="inlinecode">data</span> directory, execute the following to create the data files we need.</p>
+<p>	Our first step is to grab the bulldozer dataset from Kaggle's <a href="https://www.kaggle.com/c/bluebook-for-bulldozers/data">Blue Book for Bulldozers</a> competition.  Download files <code>Train.zip</code> (and uncompress), <code>Valid.csv</code>, and <code>ValidSolution.csv</code> into your <code>data</code> directory beneath the directory where you launch Jupyter. (You must be a registered Kaggle user and logged in.)  The <code>Train.csv</code> file you get after uncompressing <code>Train.zip</code> is 116M, which takes about 35 seconds to load using Pandas' <code>read_csv()</code> function. That load time would be unbearably slow while staring at the screen and would make it harder to iterate quickly on our models. Instead, we're going to use the <a href="https://github.com/wesm/feather">feather data format</a>, which lets us load the data in about one second. The <a href="data/prep-bulldozer.py">prep-bulldozer.py</a> script (from this book's <a href="data/index.html">data</a> directory) loads the training CSV data (for the first and only time), splits out a validation set, and saves them both using the fast feather format. The script also merges <code>Valid.csv</code>, and <code>ValidSolution.csv</code> into a single test dataframe and saves it for later use. From the command-line and in your <code>data</code> directory, execute the following to create the data files we need.</p>
 
 
-<div class="codeblk">$ cd data
+<pre>$ cd data
 $ pip install feather-format
 $ python prep-bulldozer.py 
 Created bulldozer-train-all.feather
 Created bulldozer-train.feather
 Created bulldozer-valid.feather
-Created bulldozer-test.feather</div>
+Created bulldozer-test.feather</pre>
 
 
 <div class="p_wrapper">
 <p class="sidenote"><span class="sup">1</span>Don't forget the <a href="https://mlbook.explained.ai/notebooks/">notebooks</a> aggregating the code snippets from the various chapters.</p>
-<p class="p_left">For the next three chapters, we'll use <span class="inlinecode">bulldozer-train.feather</span> as our data starting point. To start the coding process, create a notebook in the directory above <span class="inlinecode">data</span> and paste in our usual preamble:<span class="sup">1</span></p>
+<p class="p_left">For the next three chapters, we'll use <code>bulldozer-train.feather</code> as our data starting point. To start the coding process, create a notebook in the directory above <code>data</code> and paste in our usual preamble:<span class="sup">1</span></p>
 </div>
 
 
-<div class="codeblk">import pandas as pd
+<pre>import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from rfpimp import *  # feature importance plot
-</div>
+</pre>
 
 
 <div class="p_wrapper">
-<p class="sidenote"><span class="sup">2</span>If you get an error “<span class="inlinecode">read_feather() got an unexpected keyword argument 'nthreads'</span>,” then try:<br/><span class="inlinecode">import feather</span><br/><span class="inlinecode">feather.read_dataframe("data/bulldozer-train.feather")</span></p>
+<p class="sidenote"><span class="sup">2</span>If you get an error “<code>read_feather() got an unexpected keyword argument 'nthreads'</code>,” then try:<br/><code>import feather</code><br/><code>feather.read_dataframe("data/bulldozer-train.feather")</code></p>
 <p class="p_left">Anytime we need a fresh copy of the data, we can load it like this:<span class="sup">2</span></p>
 </div>
 
 
-<div class="codeblk">df_raw = pd.read_feather("data/bulldozer-train.feather")
+<pre>df_raw = pd.read_feather("data/bulldozer-train.feather")
 df = df_raw.copy()
-</div>
+</pre>
 
 
-<p>It's a good idea to keep the original data around in <span class="inlinecode">df_raw</span> so that we can undo any data transformations that end up being unhelpful.</p>
+<p>It's a good idea to keep the original data around in <code>df_raw</code> so that we can undo any data transformations that end up being unhelpful.</p>
 
 
 
@@ -125,21 +125,21 @@ df = df_raw.copy()
 <p>When inspecting a dataset for the first time, look for this key summary information: the column names, column datatypes, sample data elements, and how much data is missing. Here's a handy function to sniff a dataframe and return a different dataframe containing a summary where each row describes a column in the original dataframe:</p>
 
 
-<div class="codeblk">def sniff(df):
+<pre>def sniff(df):
     with pd.option_context("display.max_colwidth", 20):
         info = pd.DataFrame()
         info['sample'] = df.iloc[0]
         info['data type'] = df.dtypes
         info['percent missing'] = df.isnull().sum()*100/len(df)
         return info.sort_values('data type')
-</div>
+</pre>
 
 
-<p>You can call <span class="inlinecode">sniff(df)</span> from your notebook to get a complete summary, but in the interest of space, here are just the first 14 entries:</p>
+<p>You can call <code>sniff(df)</code> from your notebook to get a complete summary, but in the interest of space, here are just the first 14 entries:</p>
 
 
-<div class="codeblk">
-sniff(df).head(14)</div>
+<pre>
+sniff(df).head(14)</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -192,12 +192,12 @@ sniff(df).head(14)</div>
 </tbody>
 </table>
 </div>
-<p>We can learn a lot just from this quick sniff.  There are three kinds of data: numeric, date time objects, and strings (<span class="inlinecode">object</span>). Some columns are complete, but others have missing data, including column <span class="inlinecode">Tip_Control</span> that is 94% missing.  Some values are just plain missing (represented as either the <span class="inlinecode">None</span> object or “not a number” <span class="inlinecode">np.nan</span> in Python), but other “missing” values are actually physically-present strings like “<span class="inlinecode">None or Unspecified</span>”.</p>
+<p>We can learn a lot just from this quick sniff.  There are three kinds of data: numeric, date time objects, and strings (<code>object</code>). Some columns are complete, but others have missing data, including column <code>Tip_Control</code> that is 94% missing.  Some values are just plain missing (represented as either the <code>None</code> object or “not a number” <code>np.nan</code> in Python), but other “missing” values are actually physically-present strings like “<code>None or Unspecified</code>”.</p>
 
-<p>Columns such as <span class="inlinecode">SalesID</span> and <span class="inlinecode">ModelID</span> are represented as integers (<span class="inlinecode">int64</span>), but they are really nominal categorical variables. Model 8434 is not somehow greater than model 8433. There are also columns represented as strings that contain numeric values, such as <span class="inlinecode">Hydraulics</span> (“<span class="inlinecode">2 Valve</span>”). Other columns are represented as strings but are actually purely numeric but with units such as feet or inches. For example, the values in column <span class="inlinecode">Tire_Size</span> should be converted to just the number of inches:</p>
+<p>Columns such as <code>SalesID</code> and <code>ModelID</code> are represented as integers (<code>int64</code>), but they are really nominal categorical variables. Model 8434 is not somehow greater than model 8433. There are also columns represented as strings that contain numeric values, such as <code>Hydraulics</code> (“<code>2 Valve</code>”). Other columns are represented as strings but are actually purely numeric but with units such as feet or inches. For example, the values in column <code>Tire_Size</code> should be converted to just the number of inches:</p>
 
 
-<div class="codeblk">print(df['Tire_Size'].unique())</div>
+<pre>print(df['Tire_Size'].unique())</pre>
 
 <p class="stdout">[None '14"' 'None or Unspecified' '20.5' '23.5' '26.5' '17.5' '29.5' '13"'
  '20.5"' '23.5"' '17.5"' '15.5' '15.5"' '7.0"' '23.1"' '10"' '10 inch']</p>
@@ -210,25 +210,25 @@ sniff(df).head(14)</div>
 <h2 id="sec:7.3">7.3 Baseline model</h2>
 
 
-<p>While we only have a few numeric columns out of the 52 total, and some of those values are missing, it's still a good idea to train a model early on in our process. First, it tells us how long training the model takes. If training time is significant, we should consider working with a subset of the data. Second, it gives us an initial appraisal of the strength of the relationship between numeric features and the <span class="inlinecode">SalePrice</span> target variable. The OOB <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> from this initial model is our lower bound, so if it's pretty good, we can be optimistic about the performance of our model after feature engineering. Finally, a feature importance graph derived from the model helps to focus our cleanup efforts on the most predictive columns.</p>
+<p>While we only have a few numeric columns out of the 52 total, and some of those values are missing, it's still a good idea to train a model early on in our process. First, it tells us how long training the model takes. If training time is significant, we should consider working with a subset of the data. Second, it gives us an initial appraisal of the strength of the relationship between numeric features and the <code>SalePrice</code> target variable. The OOB <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> from this initial model is our lower bound, so if it's pretty good, we can be optimistic about the performance of our model after feature engineering. Finally, a feature importance graph derived from the model helps to focus our cleanup efforts on the most predictive columns.</p>
 
 <p>Let's identify the features represented as numbers so far are:</p>
 
 
-<div class="codeblk">basefeatures = ['SalesID', 'MachineID', 'ModelID',
+<pre>basefeatures = ['SalesID', 'MachineID', 'ModelID',
                 'datasource', 'YearMade',
                 # some missing values but use anyway:
                 'auctioneerID', 'MachineHoursCurrentMeter']
-</div>
+</pre>
 
 
 <div class="p_wrapper">
 <p class="sidenote"><span class="sup">3</span>We've chosen to create RFs with 50 trees because it gives a stable and accurate <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score while not requiring too much processing time.</p>
-<p class="p_left">We can reuse the <span class="inlinecode">test()</span> function from <b>Chapter 6</b> <i>Categorically Speaking</i> to train an RF and print the OOB <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score:<span class="sup">3</span></p>
+<p class="p_left">We can reuse the <code>test()</code> function from <b>Chapter 6</b> <i>Categorically Speaking</i> to train an RF and print the OOB <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score:<span class="sup">3</span></p>
 </div>
 
 
-<div class="codeblk">def test(X, y, n_estimators=50):
+<pre>def test(X, y, n_estimators=50):
     rf = RandomForestRegressor(n_estimators=n_estimators, n_jobs=-1, oob_score=True)
     rf.fit(X, y)
     oob = rf.oob_score_
@@ -236,36 +236,36 @@ sniff(df).head(14)</div>
     h = np.median(rfmaxdepths(rf))
     print(f"OOB R^2 {oob:.5f} using {n:,d} tree nodes with {h} median tree height")
     return rf, oob
-</div>
+</pre>
 
 
-<p>Columns <span class="inlinecode">auctioneerID</span> and <span class="inlinecode">MachineHoursCurrentMeter</span> have some missing values, represented as Numpy <span class="inlinecode">np.nan</span>, but we can flip missing values to zeros as an expedient with function call  <span class="inlinecode">fillna(0)</span>:</p>
+<p>Columns <code>auctioneerID</code> and <code>MachineHoursCurrentMeter</code> have some missing values, represented as Numpy <code>np.nan</code>, but we can flip missing values to zeros as an expedient with function call  <code>fillna(0)</code>:</p>
 
 
-<div class="codeblk">X, y = df[basefeatures], df['SalePrice']
+<pre>X, y = df[basefeatures], df['SalePrice']
 X = X.fillna(0) # flip missing numeric values to zeros
 rf, oob_baseline_initial = test(X, y)
-</div>
+</pre>
 
 <p class="stdout">OOB R^2 0.78075 using 22,500,374 tree nodes with 56.0 median tree height
 </p>
 
 <p>That OOB score is not horrible and hints that there is a strong relationship to capture in this dataset.  </p>
 
-<p>Unfortunately, training the model via function <span class="inlinecode">fit()</span> takes about 25 seconds, which would seem like an eternity as we repeatedly transformed data and retrained the model. To reduce training time, we could subsample the dataframe with <span class="inlinecode">df.sample(n=100_000)</span>, and that's how we'd do it if this were not time-sensitive data. Instead, let's grab the last 100,000 records (which are sorted by date), taking advantage of the fact that more recent data will be better at predicting the near future:</p>
+<p>Unfortunately, training the model via function <code>fit()</code> takes about 25 seconds, which would seem like an eternity as we repeatedly transformed data and retrained the model. To reduce training time, we could subsample the dataframe with <code>df.sample(n=100_000)</code>, and that's how we'd do it if this were not time-sensitive data. Instead, let's grab the last 100,000 records (which are sorted by date), taking advantage of the fact that more recent data will be better at predicting the near future:</p>
 
 
-<div class="codeblk">df = df.iloc[-100_000:] # take only last 100,000 records
-</div>
+<pre>df = df.iloc[-100_000:] # take only last 100,000 records
+</pre>
 
 
 <p>After reducing the size of the dataframe, repeat the steps to train the model:</p>
 
 
-<div class="codeblk">X, y = df[basefeatures], df['SalePrice']
+<pre>X, y = df[basefeatures], df['SalePrice']
 X = X.fillna(0)
 rf, oob_baseline = test(X, y)
-</div>
+</pre>
 
 <p class="stdout">OOB R^2 0.84512 using 5,556,904 tree nodes with 45.0 median tree height
 </p>
@@ -275,8 +275,8 @@ rf, oob_baseline = test(X, y)
 <p>Now, let's see which features the model thinks are most predictive of bulldozer sale price:</p>
 
 
-<div class="codeblk">I = importances(rf, X, y)
-plot_importances(I)</div>
+<pre>I = importances(rf, X, y)
+plot_importances(I)</pre>
 <center>
 <a href="images/bulldozer-intro/bulldozer-intro_sniff_14.svg"><img src="../Images/c37407a99b8303f93c0bef383f309a2b.png" width="55%%" data-original-src="https://mlbook.explained.ai/images/bulldozer-intro/bulldozer-intro_sniff_14.svg"/></a>
 </center>
@@ -290,18 +290,18 @@ plot_importances(I)</div>
 <h2 id="sec:7.4">7.4 Cleaning up</h2>
 
 
-<p>The easiest things to fix in the cleanup process are the small administrative details like changing column datatypes and deleting unusable columns, so let's start with those. According to the data description at Kaggle, <span class="inlinecode">SalesID</span> is a unique identifier for a particular transaction. This is clearly not predictive as a <span class="inlinecode">SalesID</span> value will never be seen again as a feature, so we can remove it.  We can also remove <span class="inlinecode">MachineID</span> because this variable has <a href="https://www.kaggle.com/c/bluebook-for-bulldozers/discussion/3694">errors and inconsistencies</a>; besides, it's not strongly-predictive according to our feature importance graph. Our first step is then:</p>
+<p>The easiest things to fix in the cleanup process are the small administrative details like changing column datatypes and deleting unusable columns, so let's start with those. According to the data description at Kaggle, <code>SalesID</code> is a unique identifier for a particular transaction. This is clearly not predictive as a <code>SalesID</code> value will never be seen again as a feature, so we can remove it.  We can also remove <code>MachineID</code> because this variable has <a href="https://www.kaggle.com/c/bluebook-for-bulldozers/discussion/3694">errors and inconsistencies</a>; besides, it's not strongly-predictive according to our feature importance graph. Our first step is then:</p>
 
 
-<div class="codeblk">del df['MachineID'] # dataset has inconsistencies
+<pre>del df['MachineID'] # dataset has inconsistencies
 del df['SalesID']   # unique sales ID so not generalizer
-</div>
+</pre>
 
 
-<p>The <span class="inlinecode">auctioneerID</span> column values look like numbers, but they are really categorical variables, specifically nominal variables that have no order:</p>
+<p>The <code>auctioneerID</code> column values look like numbers, but they are really categorical variables, specifically nominal variables that have no order:</p>
 
 
-<div class="codeblk">print(df['auctioneerID'].unique())</div>
+<pre>print(df['auctioneerID'].unique())</pre>
 
 <p class="stdout">[nan  5.  2. 27.  1. 23.  3.  4. 20.  7.  8. 12. 10.  6. 21. 13.  9. 18.
  99. 16. 14. 19. 28. 15. 22. 25. 17. 11. 24. 26.  0.]</p>
@@ -310,16 +310,16 @@ del df['SalesID']   # unique sales ID so not generalizer
 <p>Just to make this clear, let's change the data type to be string:</p>
 
 
-<div class="codeblk">df['auctioneerID'] = df['auctioneerID'].astype(str)
-</div>
+<pre>df['auctioneerID'] = df['auctioneerID'].astype(str)
+</pre>
 
 
-<p>If we leave this as a number, our process below for dealing with missing numeric values would replace the missing <span class="inlinecode">auctioneerID</span> values with the median auctioneer ID, which is clearly meaningless.</p>
+<p>If we leave this as a number, our process below for dealing with missing numeric values would replace the missing <code>auctioneerID</code> values with the median auctioneer ID, which is clearly meaningless.</p>
 
 <p>So much for the numbers, let's take a look at the string-valued columns. Some are nice and tidy such as:</p>
 
 
-<div class="codeblk">print(df['ProductGroup'].unique())</div>
+<pre>print(df['ProductGroup'].unique())</pre>
 
 <p class="stdout">['TTT' 'TEX' 'WL' 'SSL' 'BL' 'MG']</p>
 
@@ -327,7 +327,7 @@ del df['SalesID']   # unique sales ID so not generalizer
 <p>but others have missing values:</p>
 
 
-<div class="codeblk">print(df['Drive_System'].unique())</div>
+<pre>print(df['Drive_System'].unique())</pre>
 
 <p class="stdout">[None 'Two Wheel Drive' 'Four Wheel Drive' 'No' 'All Wheel Drive']</p>
 
@@ -335,15 +335,15 @@ del df['SalesID']   # unique sales ID so not generalizer
 <p>and others have physically-present strings to mean “missing:”</p>
 
 
-<div class="codeblk">print(df['Backhoe_Mounting'].unique())</div>
+<pre>print(df['Backhoe_Mounting'].unique())</pre>
 
 <p class="stdout">['None or Unspecified' None 'Yes']</p>
 
 
-<p>Columns <span class="inlinecode">fiSecondaryDesc</span> and <span class="inlinecode">fiModelSeries</span> even have a value of “<span class="inlinecode">#NAME?</span>”.  This dataset has multiple ways to say “missing” or “unspecified,” but our model won't be able to figure the equivalencies on its own.  We need to normalize all of these strings so that <span class="inlinecode">None</span>, <span class="inlinecode">None or Unspecified</span>, and <span class="inlinecode">#NAME?</span> all mean “missing.”  Let's encapsulate this equivalents in a function that transforms the dataframe so only <span class="inlinecode">np.nan</span> means missing:</p>
+<p>Columns <code>fiSecondaryDesc</code> and <code>fiModelSeries</code> even have a value of “<code>#NAME?</code>”.  This dataset has multiple ways to say “missing” or “unspecified,” but our model won't be able to figure the equivalencies on its own.  We need to normalize all of these strings so that <code>None</code>, <code>None or Unspecified</code>, and <code>#NAME?</code> all mean “missing.”  Let's encapsulate this equivalents in a function that transforms the dataframe so only <code>np.nan</code> means missing:</p>
 
 
-<div class="codeblk">from pandas.api.types import is_string_dtype, is_object_dtype
+<pre>from pandas.api.types import is_string_dtype, is_object_dtype
 def df_normalize_strings(df):
     for col in df.columns:
         if is_string_dtype(df[col]) or is_object_dtype(df[col]):
@@ -353,16 +353,16 @@ def df_normalize_strings(df):
             df[col] = df[col].replace('none', np.nan)
             df[col] = df[col].replace('#name?', np.nan)
             df[col] = df[col].replace('', np.nan)
-</div>
+</pre>
 
 
-<p>After calling <span class="inlinecode">df_normalize_strings(df)</span>, all of the different ways to say none are collapsed to <span class="inlinecode">np.nan</span> and strings all are lowercase:</p>
+<p>After calling <code>df_normalize_strings(df)</code>, all of the different ways to say none are collapsed to <code>np.nan</code> and strings all are lowercase:</p>
 
 
-<div class="codeblk">df_normalize_strings(df)
+<pre>df_normalize_strings(df)
 print(df['Drive_System'].unique())
 print(df['Backhoe_Mounting'].unique())
-</div>
+</pre>
 
 <p class="stdout">[nan 'two wheel drive' 'four wheel drive' 'no' 'all wheel drive']
 [nan 'yes']
@@ -371,9 +371,9 @@ print(df['Backhoe_Mounting'].unique())
 <p>Some strings are actually numeric values, but include unit names or symbols that force the dataframe to treat them as strings:</p>
 
 
-<div class="codeblk">print(df['Tire_Size'].unique())
+<pre>print(df['Tire_Size'].unique())
 print(df['Undercarriage_Pad_Width'].unique())
-</div>
+</pre>
 
 <p class="stdout">[nan '26.5' '20.5' '17.5' '23.5' '14"' '13"' '29.5' '17.5"' '15.5"'
  '20.5"' '15.5' '23.5"' '7.0"' '10"' '23.1"']
@@ -382,22 +382,22 @@ print(df['Undercarriage_Pad_Width'].unique())
  '27 inch' '25 inch' '15 inch']
 </p>
 
-<p>It's a simple matter to strip  off the <span class="inlinecode">"</span> and <span class="inlinecode">inch</span> characters to convert these two columns to numeric values.  Here's a function to convert a column of strings to a numeric column by extracting any integer or floating-point numbers on the front of the string:</p>
+<p>It's a simple matter to strip  off the <code>"</code> and <code>inch</code> characters to convert these two columns to numeric values.  Here's a function to convert a column of strings to a numeric column by extracting any integer or floating-point numbers on the front of the string:</p>
 
 
-<div class="codeblk">def extract_sizes(df, colname):
+<pre>def extract_sizes(df, colname):
     df[colname] = df[colname].str.extract(r'([0-9.]*)', expand=True)
     df[colname] = df[colname].replace('', np.nan)
     df[colname] = pd.to_numeric(df[colname])
-</div>
+</pre>
 
 
 
-<div class="codeblk">extract_sizes(df, 'Tire_Size')
+<pre>extract_sizes(df, 'Tire_Size')
 extract_sizes(df, 'Undercarriage_Pad_Width')
 print(df['Tire_Size'].unique())
 print(df['Undercarriage_Pad_Width'].unique())
-</div>
+</pre>
 
 <p class="stdout">[ nan 26.5 20.5 17.5 23.5 14.  13.  29.5 15.5  7.  10.  23.1]
 [nan 36. 24. 20. 34. 26. 30. 28. 32. 16. 31. 18. 22. 33. 14. 27. 25. 15.]
@@ -406,9 +406,9 @@ print(df['Undercarriage_Pad_Width'].unique())
 <p>There are two other columns that are numeric in nature but  would be more complicated to parse apart (as they have both feet and inch units):</p>
 
 
-<div class="codeblk">print(df['Blade_Width'].unique())
+<pre>print(df['Blade_Width'].unique())
 print(df['Stick_Length'].unique())
-</div>
+</pre>
 
 <p class="stdout">[nan "12'" "14'" "13'" "16'" "&lt;12'"]
 [nan '10\' 6"' '9\' 6"' '9\' 7"' '10\' 2"' '12\' 8"' '12\' 10"' '9\' 10"'
@@ -417,26 +417,26 @@ print(df['Stick_Length'].unique())
  '13\' 7"' '15\' 4"' '19\' 8"']
 </p>
 
-<p>The <span class="inlinecode">Blade_Width</span> column even has a range in the form of <span class="inlinecode">&lt;12'</span>. It's better to leave these as strings, which we'll treat as categorical variables when prepping the data for use in a model. </p>
+<p>The <code>Blade_Width</code> column even has a range in the form of <code>&lt;12'</code>. It's better to leave these as strings, which we'll treat as categorical variables when prepping the data for use in a model. </p>
 
 
 
 <h2 id="sec:missing">7.5 Dealing with missing data</h2>
 
  
-<p>Missing data in CSV files is often indicated as physically missing (two commas in a row like “<span class="inlinecode">,,</span>”), but some records use physically-present string values such as <span class="inlinecode">None</span> or <span class="inlinecode">Unspecified</span>. Some files use special indicator numbers to represent missing numeric values, such as -1 or 0. Pandas uses Numpy's <span class="inlinecode">np.nan</span> (“not a number”) to represent values missing from data files in memory, for both numeric and string data types.  Pandas stores physically-present numeric and string values in files as-is in memory. The point is that the definition of missing is ambiguous and depends on the dataset.  That's why we normalized strings in the previous section so that only <span class="inlinecode">np.nan</span> indicates “missing.” We'll do the same for numeric indicator values in this section.</p>
+<p>Missing data in CSV files is often indicated as physically missing (two commas in a row like “<code>,,</code>”), but some records use physically-present string values such as <code>None</code> or <code>Unspecified</code>. Some files use special indicator numbers to represent missing numeric values, such as -1 or 0. Pandas uses Numpy's <code>np.nan</code> (“not a number”) to represent values missing from data files in memory, for both numeric and string data types.  Pandas stores physically-present numeric and string values in files as-is in memory. The point is that the definition of missing is ambiguous and depends on the dataset.  That's why we normalized strings in the previous section so that only <code>np.nan</code> indicates “missing.” We'll do the same for numeric indicator values in this section.</p>
 
-<p>Once the entire dataframe has a single definition of missing value, we still have to do something intelligent with these holes. Models can't train on “not a number” values.  Our recipe to handle missing values looks like this: For numeric columns, we replace missing values with the median of that column and introduce a new boolean column that is true for any record where we replace a missing value. (Statisticians call replacing missing values <i>imputation</i>.)  The strategy for nonnumeric columns simply is to leave them as-is with <span class="inlinecode">np.nan</span> values.  Our default string/categorical variable encoding is to label encode them, which will automatically replace <span class="inlinecode">np.nan</span> values with zeros. (Label encoding assigns a unique integer for every unique string or category value.)  Dealing with missing nonnumeric values is easiest so let's start by seeing how that works.</p>
+<p>Once the entire dataframe has a single definition of missing value, we still have to do something intelligent with these holes. Models can't train on “not a number” values.  Our recipe to handle missing values looks like this: For numeric columns, we replace missing values with the median of that column and introduce a new boolean column that is true for any record where we replace a missing value. (Statisticians call replacing missing values <i>imputation</i>.)  The strategy for nonnumeric columns simply is to leave them as-is with <code>np.nan</code> values.  Our default string/categorical variable encoding is to label encode them, which will automatically replace <code>np.nan</code> values with zeros. (Label encoding assigns a unique integer for every unique string or category value.)  Dealing with missing nonnumeric values is easiest so let's start by seeing how that works.</p>
 
 
 
 <h3 id="sec:7.5.1">7.5.1 Replacing missing categorical values</h3>
 
 
-<p>In <b>Section 6.2</b> <i>Encoding categorical variables</i>, we converted the string <span class="inlinecode">display_address</span> column to numeric values by converting the column to an ordered categorical column and then replacing the categories with their category integer codes + 1. Pandas represents <span class="inlinecode">np.nan</span> with category code -1 and so adding one shifts <span class="inlinecode">np.nan</span> to 0 and all category codes to be 1 and above. For convenience, let's create two functions that implement our label-encoding strategy:</p>
+<p>In <b>Section 6.2</b> <i>Encoding categorical variables</i>, we converted the string <code>display_address</code> column to numeric values by converting the column to an ordered categorical column and then replacing the categories with their category integer codes + 1. Pandas represents <code>np.nan</code> with category code -1 and so adding one shifts <code>np.nan</code> to 0 and all category codes to be 1 and above. For convenience, let's create two functions that implement our label-encoding strategy:</p>
 
 
-<div class="codeblk">from pandas.api.types import is_categorical_dtype
+<pre>from pandas.api.types import is_categorical_dtype
 def df_string_to_cat(df):
     for col in df.columns:
         if is_string_dtype(df[col]):
@@ -446,14 +446,14 @@ def df_cat_to_catcode(df):
     for col in df.columns:
         if is_categorical_dtype(df[col]):
             df[col] = df[col].cat.codes + 1
-</div>
+</pre>
 
 
 <p>Let's see the mechanism in action on a toy dataset:</p>
 
 
-<div class="codeblk">df_toy = pd.DataFrame(data={'Name':['Xue',np.nan,'Tom']})
-df_toy</div>
+<pre>df_toy = pd.DataFrame(data={'Name':['Xue',np.nan,'Tom']})
+df_toy</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -476,9 +476,9 @@ df_toy</div>
 <p>Converting the string column to a categorical variable means Pandas will replace each string with a unique integer representation, which we can include in the dataframe:</p>
 
 
-<div class="codeblk">df_string_to_cat(df_toy)
+<pre>df_string_to_cat(df_toy)
 df_toy['catcodes'] = df_toy['Name'].cat.codes
-df_toy</div>
+df_toy</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -498,10 +498,10 @@ df_toy</div>
 </tbody>
 </table>
 </div>
-<p>Pandas still displays the <span class="inlinecode">Name</span> column values as strings because that's more meaningful, but the <span class="inlinecode">Name</span> column is now categorical:</p>
+<p>Pandas still displays the <code>Name</code> column values as strings because that's more meaningful, but the <code>Name</code> column is now categorical:</p>
 
 
-<div class="codeblk">print(df_toy.dtypes)</div>
+<pre>print(df_toy.dtypes)</pre>
 
 <p class="stdout">Name        category
 catcodes        int8
@@ -511,8 +511,8 @@ dtype: object</p>
 <p>To complete the label encoding, we call the second function to replace the category values with the integer codes:</p>
 
 
-<div class="codeblk">df_cat_to_catcode(df_toy)
-df_toy</div>
+<pre>df_cat_to_catcode(df_toy)
+df_toy</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -532,14 +532,14 @@ df_toy</div>
 </tbody>
 </table>
 </div>
-<p>The <span class="inlinecode">Name</span> column is one more than the <span class="inlinecode">catcodes</span> column and so missing values become integer value 0 at the end of the encoding process.</p>
+<p>The <code>Name</code> column is one more than the <code>catcodes</code> column and so missing values become integer value 0 at the end of the encoding process.</p>
 
 <p>To handle all missing nonnumeric values and label-encode nonnumeric columns, takes just two function calls:</p>
 
 
-<div class="codeblk">df_string_to_cat(df)
+<pre>df_string_to_cat(df)
 df_cat_to_catcode(df)
-df.head(2).T.head(10)</div>
+df.head(2).T.head(10)</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -591,23 +591,23 @@ You might be wondering why it's “legal” to convert all of those unordered (n
 
 <p>To handle missing numeric values, we recommend a two step process:</p>
 <ol>
-<li>For column <i>x</i>, create a new boolean column <i>x</i><span class="inlinecode">_na</span> where <i>x</i><span class="inlinecode">[i]</span> is true if <i>x</i><span class="inlinecode">[i]</span> is missing.</li>
+<li>For column <i>x</i>, create a new boolean column <i>x</i><code>_na</code> where <i>x</i><code>[i]</code> is true if <i>x</i><code>[i]</code> is missing.</li>
 <li>Replace missing values in column <i>x</i> with the median of all <i>x</i> values in that column.</li>
 </ol>
 <p>Those two steps have simple and direct equivalents in Python, thanks to Pandas:</p>
 
 
-<div class="codeblk">def fix_missing_num(df, colname):
+<pre>def fix_missing_num(df, colname):
     df[colname+'_na'] = pd.isnull(df[colname])
     df[colname].fillna(df[colname].median(), inplace=True)
-</div>
+</pre>
 
 
 <p>Let's make a toy dataframe with a numeric column that's missing a value:</p>
 
 
-<div class="codeblk">df_toy = pd.DataFrame(data={'YearMade':[1995,2001,np.nan]})
-df_toy</div>
+<pre>df_toy = pd.DataFrame(data={'YearMade':[1995,2001,np.nan]})
+df_toy</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -630,8 +630,8 @@ df_toy</div>
 <p>and then run it through our function to see its effect on the dataframe:</p>
 
 
-<div class="codeblk">fix_missing_num(df_toy, 'YearMade')
-df_toy</div>
+<pre>fix_missing_num(df_toy, 'YearMade')
+df_toy</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -651,16 +651,16 @@ df_toy</div>
 </tbody>
 </table>
 </div>
-<p>The missing value in the third row has been replaced by 1998, the median of 1995 and 2001, and there is a new column called <span class="inlinecode">YearMade_na</span> indicating we replaced a value.</p>
+<p>The missing value in the third row has been replaced by 1998, the median of 1995 and 2001, and there is a new column called <code>YearMade_na</code> indicating we replaced a value.</p>
 
 <p>The logic behind using the median is that we have to choose a number and so we might as well choose a number that's not going to skew the distribution of the data in that column. We also don't want to choose an extreme value that the model might latch onto as predictive. But, we should include a column in our dataset that indicates we've done this replacement because sometimes missing values are strongly predictive.  For example, a bulldozer with an unknown manufacturing date is presumably less valuable because of the uncertainty. This approach is supported by recent academic research: <a href="https://hal.archives-ouvertes.fr/hal-02024202v2">On the consistency of supervised learning with missing values</a>.</p>
 
-<p>Turning back to the full dataset now, we previously converted <span class="inlinecode">Tire_Size</span> from a string to a numeric column by parsing out the number of inches:</p>
+<p>Turning back to the full dataset now, we previously converted <code>Tire_Size</code> from a string to a numeric column by parsing out the number of inches:</p>
 
 
-<div class="codeblk">print(f"Values {df['Tire_Size'].unique()}")
+<pre>print(f"Values {df['Tire_Size'].unique()}")
 print(f"Median {df['Tire_Size'].median()}")
-</div>
+</pre>
 
 <p class="stdout">Values [ nan 26.5 20.5 17.5 23.5 14.  13.  29.5 15.5  7.  10.  23.1]
 Median 20.5
@@ -669,8 +669,8 @@ Median 20.5
 <p>That still leaves a lot of missing values:</p>
 
 
-<div class="codeblk">
-df[['Tire_Size']].head(6)</div>
+<pre>
+df[['Tire_Size']].head(6)</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -699,11 +699,11 @@ df[['Tire_Size']].head(6)</div>
 </tbody>
 </table>
 </div>
-<p>After applying <span class="inlinecode">fix_missing_num()</span>, all <span class="inlinecode">np.nan</span>s representing missing values have been replaced with 20.5, the median of <span class="inlinecode">Tire_Size</span>:</p>
+<p>After applying <code>fix_missing_num()</code>, all <code>np.nan</code>s representing missing values have been replaced with 20.5, the median of <code>Tire_Size</code>:</p>
 
 
-<div class="codeblk">fix_missing_num(df, 'Tire_Size')
-df[['Tire_Size']].head(6)</div>
+<pre>fix_missing_num(df, 'Tire_Size')
+df[['Tire_Size']].head(6)</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -735,13 +735,13 @@ df[['Tire_Size']].head(6)</div>
 <p>We also have to fix missing values in the other column we converted to numbers:</p>
 
 
-<div class="codeblk">fix_missing_num(df, 'Undercarriage_Pad_Width')
-</div>
+<pre>fix_missing_num(df, 'Undercarriage_Pad_Width')
+</pre>
 
 
-<p>Not all missing values are represented by <span class="inlinecode">np.nan</span>. Sometimes people represent missing values by special indicator values during data entry or some conversion process. There are two numeric columns with such indicator values that we should fix because the feature importance graph suggests they are important.</p>
+<p>Not all missing values are represented by <code>np.nan</code>. Sometimes people represent missing values by special indicator values during data entry or some conversion process. There are two numeric columns with such indicator values that we should fix because the feature importance graph suggests they are important.</p>
 
-<p>One look at the relationship between <span class="inlinecode">YearMade</span> and the bulldozer sale price shows that we have a problem:</p>
+<p>One look at the relationship between <code>YearMade</code> and the bulldozer sale price shows that we have a problem:</p>
 <div class="p_wrapper">
 <span class="sidenote">
 » <i>Generated by code to left</i><br/>
@@ -749,18 +749,18 @@ df[['Tire_Size']].head(6)</div>
 </span>
 
 
-<div class="codeblk">df_small = df.sample(n=5_000) # don't draw too many dots
-df_small.plot.scatter('YearMade','SalePrice', alpha=0.02, c=bookcolors['blue'])</div>
+<pre>df_small = df.sample(n=5_000) # don't draw too many dots
+df_small.plot.scatter('YearMade','SalePrice', alpha=0.02, c=bookcolors['blue'])</pre>
 </div> <!-- end div for p_wrapper -->
 
-<p>It's unlikely that humans were manufacturing bulldozers in the year 1000.  Either the seller does not want to admit the age or does not know the age of the bulldozer.  It's unclear why someone chose an indicator value of 1000 instead of 0 or -1, but we can fix this problem by replacing 1000 with <span class="inlinecode">np.nan</span>. Then, we can apply our standard procedure for missing numeric values:</p>
+<p>It's unlikely that humans were manufacturing bulldozers in the year 1000.  Either the seller does not want to admit the age or does not know the age of the bulldozer.  It's unclear why someone chose an indicator value of 1000 instead of 0 or -1, but we can fix this problem by replacing 1000 with <code>np.nan</code>. Then, we can apply our standard procedure for missing numeric values:</p>
 
 
-<div class="codeblk"># There are some unlikely 1919, 1920 values too
+<pre># There are some unlikely 1919, 1920 values too
 # Assume &lt; 1950 is "unknown"
 df.loc[df.YearMade&lt;1950, 'YearMade'] = np.nan
 fix_missing_num(df, 'YearMade')
-</div>
+</pre>
 
 <div class="p_wrapper">
 <span class="sidenote">
@@ -773,8 +773,8 @@ fix_missing_num(df, 'YearMade')
 <p>There's one last problem with this column.  Some records indicate that the bulldozer was  sold before it was made, although there is only one in the last 100,000 records of our training subset:</p>
 
 
-<div class="codeblk">inverted = df.query("saledate.dt.year &lt; YearMade")[['SalePrice','YearMade','saledate']]
-inverted</div>
+<pre>inverted = df.query("saledate.dt.year &lt; YearMade")[['SalePrice','YearMade','saledate']]
+inverted</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -788,14 +788,14 @@ inverted</div>
 </tbody>
 </table>
 </div>
-<p>That's easy enough to fix by setting the <span class="inlinecode">YearMade</span> to the year of the sale date (using the assumption that the sale date is more recent and likely more accurate than the manufacturing date):</p>
+<p>That's easy enough to fix by setting the <code>YearMade</code> to the year of the sale date (using the assumption that the sale date is more recent and likely more accurate than the manufacturing date):</p>
 
 
-<div class="codeblk">df.loc[df.eval("saledate.dt.year &lt; YearMade"), 'YearMade'] = df['saledate'].dt.year
-</div>
+<pre>df.loc[df.eval("saledate.dt.year &lt; YearMade"), 'YearMade'] = df['saledate'].dt.year
+</pre>
 
 
-<p>The other numeric column with a special value is <span class="inlinecode">MachineHoursCurrentMeter</span>. At first glance, a bulldozer with 0 machine hours appears to be simply a new bulldozer. Let's filter for records with 0 missing hours and look at the histogram of <span class="inlinecode">YearMade</span>:</p>
+<p>The other numeric column with a special value is <code>MachineHoursCurrentMeter</code>. At first glance, a bulldozer with 0 machine hours appears to be simply a new bulldozer. Let's filter for records with 0 missing hours and look at the histogram of <code>YearMade</code>:</p>
 <div class="p_wrapper">
 <span class="sidenote">
 » <i>Generated by code to left</i><br/>
@@ -803,23 +803,23 @@ inverted</div>
 </span>
 
 
-<div class="codeblk">df.query("MachineHoursCurrentMeter==0")['YearMade'].plot.hist(bins=30)</div>
+<pre>df.query("MachineHoursCurrentMeter==0")['YearMade'].plot.hist(bins=30)</pre>
 </div> <!-- end div for p_wrapper -->
 
-<p>Those manufacturing dates all precede 2009, which is the first sale year in our data subset.  It's unlikely that all of those bulldozers sat idle from the time of their manufacture until their sale date years later. From this, we can conclude that 0 must indicate an unknown or “you really don't want to know” number of machine hours. Let's flip those zeros to <span class="inlinecode">np.nan</span> and call <span class="inlinecode">fix_missing_num()</span>:</p>
+<p>Those manufacturing dates all precede 2009, which is the first sale year in our data subset.  It's unlikely that all of those bulldozers sat idle from the time of their manufacture until their sale date years later. From this, we can conclude that 0 must indicate an unknown or “you really don't want to know” number of machine hours. Let's flip those zeros to <code>np.nan</code> and call <code>fix_missing_num()</code>:</p>
 
 
-<div class="codeblk">df.loc[df.eval("MachineHoursCurrentMeter==0"),
+<pre>df.loc[df.eval("MachineHoursCurrentMeter==0"),
        'MachineHoursCurrentMeter'] = np.nan
 fix_missing_num(df, 'MachineHoursCurrentMeter')
-</div>
+</pre>
 
 
 <p>After handling these missing numeric values, there are three new columns on the end of the dataframe:</p>
 
 
-<div class="codeblk">
-df[df.columns[-3:]].head(5)</div>
+<pre>
+df[df.columns[-3:]].head(5)</pre>
 <div class="scrollbar_wrapper">
 <table class="dataframe dataframe-indexed">
 <thead>
@@ -845,7 +845,7 @@ df[df.columns[-3:]].head(5)</div>
 </tbody>
 </table>
 </div>
-<p>At this point all features are numeric, except for <span class="inlinecode">saledate</span>, and missing values have been fixed.</p>
+<p>At this point all features are numeric, except for <code>saledate</code>, and missing values have been fixed.</p>
 
 
 
@@ -853,12 +853,12 @@ df[df.columns[-3:]].head(5)</div>
 <h2 id="sec:7.6">7.6 Training a model with all features</h2>
 
 
-<p>Now that we have the dataframe prepped as pure numbers, we can use all the features to train a model and compare its performance to the baseline. The one exception is that <span class="inlinecode">saledate</span> is still a time stamp, but we'll do something special with that in the next chapter. Here's the usual training sequence:</p>
+<p>Now that we have the dataframe prepped as pure numbers, we can use all the features to train a model and compare its performance to the baseline. The one exception is that <code>saledate</code> is still a time stamp, but we'll do something special with that in the next chapter. Here's the usual training sequence:</p>
 
 
-<div class="codeblk">X, y = df.drop(['SalePrice','saledate'], axis=1), df['SalePrice']
+<pre>X, y = df.drop(['SalePrice','saledate'], axis=1), df['SalePrice']
 rf, oob_all = test(X, y)
-</div>
+</pre>
 
 <p class="stdout">OOB R^2 0.89871 using 5,151,648 tree nodes with 43.0 median tree height
 </p>
@@ -866,9 +866,9 @@ rf, oob_all = test(X, y)
 <p>That 0.899 is a big improvement upon our baseline score of 0.845, but we can do better through feature engineering, which is the subject of the next chapter.  Let's take a snapshot of this cleaned up dataset to avoid repeating the same process:</p>
 
 
-<div class="codeblk">df = df.reset_index(drop=True)
+<pre>df = df.reset_index(drop=True)
 df.to_feather("data/bulldozer-train-clean.feather")
-</div>
+</pre>
 
 <div class="p_wrapper">
 <span class="sidenote">
@@ -876,18 +876,18 @@ df.to_feather("data/bulldozer-train-clean.feather")
 </span>
 </div> <!-- end div for p_wrapper -->
 
-<p>To help focus our feature engineering efforts, let's check the feature importance graph (right gutter) to see what the model finds predictive. <span class="inlinecode">YearMade</span> is still very important, but there's nothing left to do on that feature.  Given their importance, we should take a close look at <span class="inlinecode">ProductSize</span>, <span class="inlinecode">fiProductClassDesc</span>, <span class="inlinecode">Enclosure</span>, <span class="inlinecode">Hydraulics_Flow</span>, <span class="inlinecode">fiSecondaryDesc</span>, and so on. Also notice the long tail of unimportant features. These features could be truly unimportant or could be extremely important, but for a small subset of the records. The best strategy is to leave all features in the model until the end, and then gradually remove them until accuracy drops.</p>
+<p>To help focus our feature engineering efforts, let's check the feature importance graph (right gutter) to see what the model finds predictive. <code>YearMade</code> is still very important, but there's nothing left to do on that feature.  Given their importance, we should take a close look at <code>ProductSize</code>, <code>fiProductClassDesc</code>, <code>Enclosure</code>, <code>Hydraulics_Flow</code>, <code>fiSecondaryDesc</code>, and so on. Also notice the long tail of unimportant features. These features could be truly unimportant or could be extremely important, but for a small subset of the records. The best strategy is to leave all features in the model until the end, and then gradually remove them until accuracy drops.</p>
 
 
 
 <h2 id="sec:7.7">7.7 Summary</h2>
 
 
-<p>In this chapter, we did a lot of cleanup work on the bulldozer data set, mostly related to converting column datatypes and dealing with missing numeric and string values. Part of the cleanup process was to identify physically-present numbers or strings that actually represent missing values. Our <span class="inlinecode">df_normalize_strings()</span> function normalizes the notion of missing to <span class="inlinecode">np.nan</span> for strings, but we had to identify indicators of missing values,  such as medieval sale dates of 1000, manually.</p>
+<p>In this chapter, we did a lot of cleanup work on the bulldozer data set, mostly related to converting column datatypes and dealing with missing numeric and string values. Part of the cleanup process was to identify physically-present numbers or strings that actually represent missing values. Our <code>df_normalize_strings()</code> function normalizes the notion of missing to <code>np.nan</code> for strings, but we had to identify indicators of missing values,  such as medieval sale dates of 1000, manually.</p>
 
-<p>The most important lesson of this chapter is how to deal with missing values. Missing categorical values are dealt with automatically because of our recommended label-encoding process: Convert categories to unique integer values; missing values, <span class="inlinecode">np.nan</span>, become category code 0 and all other categories are codes 1 and above. Dealing with missing numeric values requires a new column and replacement of <span class="inlinecode">np.nan</span>s:</p>
+<p>The most important lesson of this chapter is how to deal with missing values. Missing categorical values are dealt with automatically because of our recommended label-encoding process: Convert categories to unique integer values; missing values, <code>np.nan</code>, become category code 0 and all other categories are codes 1 and above. Dealing with missing numeric values requires a new column and replacement of <code>np.nan</code>s:</p>
 <ol>
-<li>For column <i>x</i>, create a new boolean column <i>x</i><span class="inlinecode">_na</span> where <i>x</i><span class="inlinecode">[i]</span> is true if <i>x</i><span class="inlinecode">[i]</span> is missing.</li>
+<li>For column <i>x</i>, create a new boolean column <i>x</i><code>_na</code> where <i>x</i><code>[i]</code> is true if <i>x</i><code>[i]</code> is missing.</li>
 <li>Replace missing values in column <i>x</i> with the median of all <i>x</i> values in that column.</li>
 </ol>
 <p>At this point, you've got some good data cleaning skills, you know how to normalize and encode string columns as numeric values, and you know how to deal with missing values. That means you know how to prepare datasets for model training purposes. In the next chapter, were going to beef up your feature engineering skills.</p>

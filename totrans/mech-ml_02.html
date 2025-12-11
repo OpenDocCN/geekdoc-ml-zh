@@ -94,9 +94,9 @@ You can make <b>comments or annotate</b> this page by going to the <a id="annota
 <p>Given the training data, we can reasonably predict a price of $5,465 for an apartment with two bedrooms and one bathroom at location coordinates 40.7947,-73.9667 because that comes straight from the second row of the table.  To get perfect accuracy, we can interpret the learning process conceptually as just filling up a dictionary that maps a four-element key to a single value (price), something like this:</p>
 
 
-<div class="codeblk">model = {}
+<pre>model = {}
 def train(bedrooms, bathrooms, latitude, longitude, price):
-    model[(bedrooms, bathrooms, latitude, longitude)] = price</div>
+    model[(bedrooms, bathrooms, latitude, longitude)] = price</pre>
 
 
 <p>In the vocabulary of machine learning, we are “<i>training</i> a <i>model</i>,”  where the model here is a dictionary data structure. Training in this case simply means to remember all apartment data with perfect recall.</p>
@@ -255,14 +255,14 @@ def train(bedrooms, bathrooms, latitude, longitude, price):
 <p>An easy but tedious way to capture the relationship between the feature values and the associated price would be to define some rules in Python:</p>
 
 
-<div class="codeblk">if bedrooms==1 and bathrooms==1.0 and \
+<pre>if bedrooms==1 and bathrooms==1.0 and \
    latitude&gt;=40.6661 and latitude&lt;=40.6663 and \
    longitude&gt;=-73.9882 and longitude&lt;=-73.9402:
 	price = 2143 # average of 2200,2100,2100,2200,2100,1800,1800
 if bedrooms==2 and bathrooms==1.0 and \
    latitude&gt;=40.6661 and latitude&lt;=40.6663 and \
    longitude&gt;=-73.9882 and longitude&lt;=-73.9402:
-	price = 2462 # average of 2500,2500,2500,2350</div>
+	price = 2462 # average of 2500,2500,2500,2350</pre>
 
 
 <p>With enough coffee, we should be able to come up with the rules to carve up the <i>feature space</i> (4-dimensional space of all possible bedrooms, bathrooms, latitude, longitude combinations) into clusters.  Ideally, each cluster would contain apartments with similar attributes and similar rent, as is the case for this subsample.  To make a rent prediction, we'd execute the rules until we get a match for the apartment features of interest.</p>
@@ -271,14 +271,14 @@ if bedrooms==2 and bathrooms==1.0 and \
 
 <p>The size and number of feature value ranges used by the model represent a kind of an accuracy “knob.” Turning the knob one way increases generality but makes the model potentially less accurate. In the opposite direction, we can make the ranges tighter and the model more accurate, but we potentially lose generality. A model that is overly-specific to the training data and not general enough is said to <i>overfit</i> the training data. The opposite, naturally, is an <i>underfit</i> model that doesn't capture the relationships in the training data well, which also means that it won't generalize well.</p>
 
-<p>Okay,  now we have a model that is potentially accurate and general but prediction through sequential execution of numerous <span class="inlinecode">if</span>-statements would be pretty slow. The trick to making prediction efficient is to factor and nest the rules so they share comparisons to avoid repeated testing:</p>
+<p>Okay,  now we have a model that is potentially accurate and general but prediction through sequential execution of numerous <code>if</code>-statements would be pretty slow. The trick to making prediction efficient is to factor and nest the rules so they share comparisons to avoid repeated testing:</p>
 
 
-<div class="codeblk">if bathrooms==1.0:
+<pre>if bathrooms==1.0:
     if latitude&gt;=40.6661 and latitude&lt;=40.6663 and \ 
        longitude&gt;=-73.9882 and longitude&lt;=-73.9402:
         if bedrooms==1: price = 2143
-        elif bedrooms==2: price = 2462</div>
+        elif bedrooms==2: price = 2462</pre>
 
 
 <div class="p_wrapper">
@@ -397,7 +397,7 @@ if bedrooms==2 and bathrooms==1.0 and \
 <p class="p_left">If the target is a numeric value, we're building a predictor (also commonly called a regressor), as shown in <b>Figure 2.5</b>.  If the target is a discrete category or class, we're building a classifier (<b>Figure 2.6</b>). We'll learn about classifiers in <span style="color: red">[foo]</span>, but a simple way to think about the difference between predictors and classifiers is illustrated in <b>Figure 2.7</b> and <b>Figure 2.8</b>. Predictors are usually fitting curves to data and classifiers are drawing decision boundaries in between data points associated with the various categories. There is a tendency to think of predictors and classifiers as totally different problems with different solutions, but they are really the same core problem and most models have both predictor and classifier variants. In fact, the classifier variant is sometimes nothing more than the predictor variant with an additional function that clips, scales, or tweaks the predictor's output.</p>
 </div>
 
-<p>Machine learning tasks that have both feature vectors <span class="inlinecode">x</span> and known targets <span class="inlinecode">y</span> fall into the <i>supervised learning</i> category and are the focus of this book. <i>Unsupervised learning</i> tasks involve just <span class="inlinecode">x</span> and the target variable is unknown; we say the data is unlabeled. The most common unsupervised task is called <i>clustering</i> that attempts to cluster similar data points together very much like <b>Figure 2.8</b>. In the supervised case, though, we know not only how many categories there are but we also know which records are associated with which category. The goal of clustering is to discover both the number of categories and assign records to categories. As we mentioned in <b>Chapter 1</b> <i>Welcome!</i>, the vast majority of machine learning problems are supervised and, besides, unsupervised techniques are straightforward to learn after mastering supervised techniques.</p>
+<p>Machine learning tasks that have both feature vectors <code>x</code> and known targets <code>y</code> fall into the <i>supervised learning</i> category and are the focus of this book. <i>Unsupervised learning</i> tasks involve just <code>x</code> and the target variable is unknown; we say the data is unlabeled. The most common unsupervised task is called <i>clustering</i> that attempts to cluster similar data points together very much like <b>Figure 2.8</b>. In the supervised case, though, we know not only how many categories there are but we also know which records are associated with which category. The goal of clustering is to discover both the number of categories and assign records to categories. As we mentioned in <b>Chapter 1</b> <i>Welcome!</i>, the vast majority of machine learning problems are supervised and, besides, unsupervised techniques are straightforward to learn after mastering supervised techniques.</p>
 
 <div class="p_wrapper">
 <span class="sidenote">

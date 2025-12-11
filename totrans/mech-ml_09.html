@@ -107,20 +107,20 @@ You can make <b>comments or annotate</b> this page by going to the <a id="annota
 <h3 id="sec:split-time-insens">9.1.1 Splitting time-insensitive datasets</h3>
 
 
-<p>For datasets that do not change significantly over the time period of interest, we want to extract validation and test sets using random sampling of records.  This is called the <i>holdout method</i>. To get (roughly) 70% of dataframe <span class="inlinecode">df</span> into training and 15% into both validation and test sets, we can do this:</p>
+<p>For datasets that do not change significantly over the time period of interest, we want to extract validation and test sets using random sampling of records.  This is called the <i>holdout method</i>. To get (roughly) 70% of dataframe <code>df</code> into training and 15% into both validation and test sets, we can do this:</p>
 
 
-<div class="codeblk">from sklearn.model_selection import train_test_split
+<pre>from sklearn.model_selection import train_test_split
 df = df.sample(frac=1) # shuffle data
 df_dev, df_test = train_test_split(df, test_size=0.15)
-<span class="highlight">df_train, df_valid = train_test_split(df_dev, test_size=0.15)</span></div>
+<span class="highlight">df_train, df_valid = train_test_split(df_dev, test_size=0.15)</span></pre>
 
 
-<p><b>Note</b>: Squirrel away the <span class="inlinecode">df_test</span> testing subset in a vault for a single use during final testing.</p>
+<p><b>Note</b>: Squirrel away the <code>df_test</code> testing subset in a vault for a single use during final testing.</p>
 
-<p>After training a model using <span class="inlinecode">df_train</span>, we'd run <span class="inlinecode">df_valid</span> data through the model and compute a metric, such as <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/>.  Then we'd tune the model so that it's more accurate on <span class="inlinecode">df_valid</span> data. When we're happy with the model, we'd finally use <span class="inlinecode">df_test</span> to measure generality.</p>
+<p>After training a model using <code>df_train</code>, we'd run <code>df_valid</code> data through the model and compute a metric, such as <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/>.  Then we'd tune the model so that it's more accurate on <code>df_valid</code> data. When we're happy with the model, we'd finally use <code>df_test</code> to measure generality.</p>
 
-<p>Because we're selecting validation and test sets randomly, it's possible that the sets will contain a disproportionate number of outlier records, such as really expensive bulldozers. Such tests are not representative and yield pessimistic accuracy metrics. Running the split-train-validate sequence in a loop, would extract different subsets each time and the resulting accuracy metrics would fluctuate. (Note that only the highlighted <span class="inlinecode">train_test_split()</span> line would be part of the loop; never recompute <span class="inlinecode">df_test</span>.) A good strategy then would be to take the average accuracy metric over several runs.</p>
+<p>Because we're selecting validation and test sets randomly, it's possible that the sets will contain a disproportionate number of outlier records, such as really expensive bulldozers. Such tests are not representative and yield pessimistic accuracy metrics. Running the split-train-validate sequence in a loop, would extract different subsets each time and the resulting accuracy metrics would fluctuate. (Note that only the highlighted <code>train_test_split()</code> line would be part of the loop; never recompute <code>df_test</code>.) A good strategy then would be to take the average accuracy metric over several runs.</p>
 
 <div class="p_wrapper">
 <span class="sidenote">
@@ -136,10 +136,10 @@ df_dev, df_test = train_test_split(df, test_size=0.15)
 </div>
 
 
-<div class="codeblk">from sklearn.model_selection import cross_val_score
+<pre>from sklearn.model_selection import cross_val_score
 rf = RandomForestRegressor(...)
 scores = cross_val_score(rf, X, y, cv=5) # k=5
-print(scores.mean())</div>
+print(scores.mean())</pre>
 
 
 <p>Cross validation and repeated subsampling are excellent techniques for measuring model accuracy, but are unsuitable for time-sensitive datasets.</p>
@@ -154,11 +154,11 @@ print(scores.mean())</div>
 <p>The process for extracting training, validation, and test sets for time-sensitive data is:</p>
 <ol>
 <li>Sort the records by date, earliest to latest</li>
-<li>Extract the last, say, 15% of the records as <span class="inlinecode">df_test</span></li>
-<li>Extract the second to last 15% of the records as <span class="inlinecode">df_valid</span></li>
-<li>The remaining 70%  of the original data is <span class="inlinecode">df_train</span></li>
+<li>Extract the last, say, 15% of the records as <code>df_test</code></li>
+<li>Extract the second to last 15% of the records as <code>df_valid</code></li>
+<li>The remaining 70%  of the original data is <code>df_train</code></li>
 </ol>
-<p>For example, <b>Figure 9.2</b> illustrates the splitting process for a toy dataset derived from the bulldozer dataset where the records have been sorted from 2/19/08 to 07/27/11.  Keep in mind that our final model will be tested on <span class="inlinecode">df_test</span> but trained on the combined data in training and validation sets.</p>
+<p>For example, <b>Figure 9.2</b> illustrates the splitting process for a toy dataset derived from the bulldozer dataset where the records have been sorted from 2/19/08 to 07/27/11.  Keep in mind that our final model will be tested on <code>df_test</code> but trained on the combined data in training and validation sets.</p>
 <span class="figure">
 
 <center>
@@ -189,14 +189,14 @@ print(scores.mean())</div>
 </tbody>
 </table>
 </center>
-<p>If you look in <span class="inlinecode">prep-bulldozer.py</span> in the <span class="inlinecode">data</span> directory, you'll see code similar to the following that separates the original Kaggle training set into training and validation sets:</p>
+<p>If you look in <code>prep-bulldozer.py</code> in the <code>data</code> directory, you'll see code similar to the following that separates the original Kaggle training set into training and validation sets:</p>
 
 
-<div class="codeblk">df = df.sort_values('saledate')
+<pre>df = df.sort_values('saledate')
 n_valid = 12000  # same as Kaggle's test set size
 n_train = len(df)-n_valid
 df_train = df[:n_train].reset_index(drop=True)
-df_valid = df[n_train:].reset_index(drop=True)</div>
+df_valid = df[n_train:].reset_index(drop=True)</pre>
 
 
 
@@ -207,10 +207,10 @@ df_valid = df[n_train:].reset_index(drop=True)</div>
 
 <p>In an ideal world, datasets would be purely numeric and without missing values. Feature engineering would still be useful, but numericalizing data  such as encoding categorical variables, wouldn't be necessary. And we wouldn't have to conjure up missing values. Alas, real-world datasets are full of categorical variables and riddled with missing values, which introduces synchronization issues between training and validation/test sets. <b>Figure 9.2</b> illustrates a number of potential hazards:</p>
 <ol>
-<li>If category <span class="inlinecode">TEX</span> in column <span class="inlinecode">UsageBand</span> is encoded as integer value 1 in the training set, the validation and test set must use the same encoding of 1.</li>
+<li>If category <code>TEX</code> in column <code>UsageBand</code> is encoded as integer value 1 in the training set, the validation and test set must use the same encoding of 1.</li>
 <li>Missing categorical values should be encoded as integer 0 in all sets.</li>
-<li>Missing numeric values in column <span class="inlinecode">Hours</span> should be filled with the median of just those values from <span class="inlinecode">Hours</span> in the training set.</li>
-<li>Categorical values in validation or test sets not present in the training set, such as <span class="inlinecode">MG</span> in column <span class="inlinecode">Group</span>, should be encoded as integer 0; the model has never seen <span class="inlinecode">MG</span>, so we encode such values as if they were missing.</li>
+<li>Missing numeric values in column <code>Hours</code> should be filled with the median of just those values from <code>Hours</code> in the training set.</li>
+<li>Categorical values in validation or test sets not present in the training set, such as <code>MG</code> in column <code>Group</code>, should be encoded as integer 0; the model has never seen <code>MG</code>, so we encode such values as if they were missing.</li>
 </ol>
 <p>We can abstract that list into these important rules for preparing separated training and test sets:</p>
 <ol>
@@ -226,10 +226,10 @@ df_valid = df[n_train:].reset_index(drop=True)</div>
 
 <p>Over the last two chapters, we've worked purely on the bulldozer training set to clean, encode, and perform feature engineering. Now, it's time to learn how to correctly prepare separate training and validation sets. We'll prepare the data as we did before, but will also track the data transformations that we perform. Then, we can apply those transformations to the validation set. We'll reuse as many functions as we can from the previous chapters, but some functions will require some updates and we'll organize some of the code snippets into new functions. You can find all the code from this chapter in the auto-generated <a href="https://mlbook.explained.ai/notebooks/bulldozer-testing/prep.ipynb">notebook</a>.</p>
 
-<p>To get started, cut-and-paste the common set of import statements used in the last chapter into a new notebook. Then, copy in functions <span class="inlinecode">test()</span>, <span class="inlinecode">fix_missing_num()</span>, <span class="inlinecode">extract_sizes()</span>, <span class="inlinecode">df_normalize_strings()</span>, <span class="inlinecode">df_cat_to_catcode()</span>, and <span class="inlinecode">df_split_dates()</span>. Now,  let's encapsulate all of the cleanup work that we did in <b>Chapter 7</b> <i>Exploring and Cleaning the Bulldozer Dataset</i> into a <span class="inlinecode">clean()</span> function for use on validation and test sets later:</p>
+<p>To get started, cut-and-paste the common set of import statements used in the last chapter into a new notebook. Then, copy in functions <code>test()</code>, <code>fix_missing_num()</code>, <code>extract_sizes()</code>, <code>df_normalize_strings()</code>, <code>df_cat_to_catcode()</code>, and <code>df_split_dates()</code>. Now,  let's encapsulate all of the cleanup work that we did in <b>Chapter 7</b> <i>Exploring and Cleaning the Bulldozer Dataset</i> into a <code>clean()</code> function for use on validation and test sets later:</p>
 
 
-<div class="codeblk">def clean(df):
+<pre>def clean(df):
     del df['MachineID'] # dataset has inconsistencies
     del df['SalesID']   # unique sales ID so not generalizer
 
@@ -246,36 +246,36 @@ df_valid = df[n_train:].reset_index(drop=True)</div>
 
     df.loc[df.eval("MachineHoursCurrentMeter==0"),
            'MachineHoursCurrentMeter'] = np.nan
-</div>
+</pre>
 
 
-<p>In <b>Chapter 8</b> <i>Bulldozer Feature Engineering</i>, we ordinal encoded <span class="inlinecode">ProductSize</span>:</p>
+<p>In <b>Chapter 8</b> <i>Bulldozer Feature Engineering</i>, we ordinal encoded <code>ProductSize</code>:</p>
 
 
-<div class="codeblk">def df_order_product_size(df):
+<pre>def df_order_product_size(df):
     sizes = {np.nan:0, 'mini':1, 'compact':1, 'small':2, 'medium':3,
              'large / medium':4, 'large':5}
     df['ProductSize'] = df['ProductSize'].map(sizes).values
-</div>
+</pre>
 
 
-<p>and one-hot encoded features <span class="inlinecode">Hydraulics_Flow</span> and <span class="inlinecode">Enclosure</span>.  Here's a generic function to one-hot encode categorical variables:</p>
+<p>and one-hot encoded features <code>Hydraulics_Flow</code> and <code>Enclosure</code>.  Here's a generic function to one-hot encode categorical variables:</p>
 
 
-<div class="codeblk">def onehot(df, colname):
+<pre>def onehot(df, colname):
     ascat = df[colname].astype('category').cat.as_ordered()
     onehot = pd.get_dummies(df[colname], prefix=colname, dtype=bool)
     del df[colname]
     df = pd.concat([df, onehot], axis=1)
     # return altered dataframe and column training categories
     return df, ascat.cat.categories
-</div>
+</pre>
 
 
-<p>Feature <span class="inlinecode">fiProductClassDesc</span> has lots of interesting information that we split into four new features:</p>
+<p>Feature <code>fiProductClassDesc</code> has lots of interesting information that we split into four new features:</p>
 
 
-<div class="codeblk">def split_fiProductClassDesc(df):
+<pre>def split_fiProductClassDesc(df):
     df_split = df.fiProductClassDesc.str.split(' - ',expand=True).values
     df['fiProductClassDesc'] = df_split[:,0] 
     df['fiProductClassSpec'] = df_split[:,1] # temporary column
@@ -286,13 +286,13 @@ df_valid = df[n_train:].reset_index(drop=True)</div>
     df['fiProductClassSpec_upper'] = pd.to_numeric(df_split[:,1])
     df['fiProductClassSpec_units'] = df_split[:,2]
     del df['fiProductClassSpec'] # remove temporary column
-</div>
+</pre>
 
 
 <p>As we did with the cleanup procedure, let's encapsulate our feature engineering work into a function because we'll need to reuse this function on different amounts of training data later:</p>
 
 
-<div class="codeblk">def feature_eng(X): # for later use
+<pre>def feature_eng(X): # for later use
     df_split_dates(X, 'saledate')
     df_order_product_size(X)
     split_fiProductClassDesc(X)
@@ -306,96 +306,96 @@ df_valid = df[n_train:].reset_index(drop=True)</div>
                    'Enclosure':enc_cats}
 
     return X, catencoders
-</div>
+</pre>
 
 
-<p>It's easy enough to remember to one-hot <span class="inlinecode">Hydraulics_Flow</span> and <span class="inlinecode">Enclosure</span> later when working on the validation set, but we still need to track the training categories.  If the categories in training and validation sets were identical, we wouldn't need to track anything; we could just apply <span class="inlinecode">onehot()</span> to the validation set. If, however, the validation set contained a category not in the training set, we'd get a different number of columns in the validation set than in the training set. Before one-hot encoding, we have to line up the categories from training and validation. More on this shortly.</p>
+<p>It's easy enough to remember to one-hot <code>Hydraulics_Flow</code> and <code>Enclosure</code> later when working on the validation set, but we still need to track the training categories.  If the categories in training and validation sets were identical, we wouldn't need to track anything; we could just apply <code>onehot()</code> to the validation set. If, however, the validation set contained a category not in the training set, we'd get a different number of columns in the validation set than in the training set. Before one-hot encoding, we have to line up the categories from training and validation. More on this shortly.</p>
 
 <p>After cleanup and feature engineering comes the “numericalization” phase, which fixes any missing values and uses our default label encoding of categorical variables to remove any remaining non-numeric values.  That means tracking the median of all numerical columns and recording the label encodings.</p>
 
-<p>Rather than manually identifying numeric columns, we can ask Pandas via <span class="inlinecode">is_numeric_dtype()</span>, which gives us a generic mechanism for replacing missing values in numeric columns and recording their medians:</p>
+<p>Rather than manually identifying numeric columns, we can ask Pandas via <code>is_numeric_dtype()</code>, which gives us a generic mechanism for replacing missing values in numeric columns and recording their medians:</p>
 
 
-<div class="codeblk">def df_fix_missing_nums(df:pd.DataFrame) -&gt; dict:
+<pre>def df_fix_missing_nums(df:pd.DataFrame) -&gt; dict:
     medians = {}  # column name to median
     for colname in df.columns:
         if is_numeric_dtype(df[colname]):
             medians[colname] = df[colname].median(skipna=True)
             fix_missing_num(df, colname)
     return medians
-</div>
+</pre>
 
 
-<p>You might be wondering why we're creating <span class="inlinecode">_na</span> columns even if a numeric training column has no missing values.  The reason is that we have to be prepared to handle missing data in the validation or test sets, which would require <span class="inlinecode">_na</span> columns. A RF model won't be confused by a column full of <span class="inlinecode">False</span> values, so it's safe to inject columns that end up being superfluous.</p>
+<p>You might be wondering why we're creating <code>_na</code> columns even if a numeric training column has no missing values.  The reason is that we have to be prepared to handle missing data in the validation or test sets, which would require <code>_na</code> columns. A RF model won't be confused by a column full of <code>False</code> values, so it's safe to inject columns that end up being superfluous.</p>
 
-<p>For our dataset, the return value of <span class="inlinecode">df_fix_missing_nums()</span> looks like:</p>
+<p>For our dataset, the return value of <code>df_fix_missing_nums()</code> looks like:</p>
 
 
-<div class="codeblk">{'ModelID': 4642.0,
+<pre>{'ModelID': 4642.0,
  'datasource': 136.0,
  'YearMade': 2002.0,
  'MachineHoursCurrentMeter': 3290.0,
  'saledate': 1.2511584e+18,
- ...}</div>
+ ...}</pre>
 
 
-<p>To apply label-encoding transformations consistently across training and validation sets,  we have to update <span class="inlinecode">df_string_to_cat()</span> from the <b>Chapter 7</b> <i>Exploring and Cleaning the Bulldozer Dataset</i> to return a dictionary mapping a column name to the category index. The key functionality from Pandas is <span class="inlinecode">df[colname].cat.categories</span>:</p>
+<p>To apply label-encoding transformations consistently across training and validation sets,  we have to update <code>df_string_to_cat()</code> from the <b>Chapter 7</b> <i>Exploring and Cleaning the Bulldozer Dataset</i> to return a dictionary mapping a column name to the category index. The key functionality from Pandas is <code>df[colname].cat.categories</code>:</p>
 
 
-<div class="codeblk">def df_string_to_cat(df:pd.DataFrame) -&gt; dict:
+<pre>def df_string_to_cat(df:pd.DataFrame) -&gt; dict:
     catencoders = {}
     for colname in df.columns:
         if is_string_dtype(df[colname]) or is_object_dtype(df[colname]):
             df[colname] = df[colname].astype('category').cat.as_ordered()
             catencoders[colname] = df[colname].cat.categories
     return catencoders
-</div>
+</pre>
 
 
-<p>Here's an example of the categories stored in the dictionary at <span class="inlinecode">catencoders['Ripper']</span>:</p>
+<p>Here's an example of the categories stored in the dictionary at <code>catencoders['Ripper']</code>:</p>
 
 
-<div class="codeblk">Index(['multi shank', 'single shank', 'yes'], dtype='object')</div>
+<pre>Index(['multi shank', 'single shank', 'yes'], dtype='object')</pre>
 
 
 <p>With those functions in place, we can encapsulate the numericalization phase with a wrapper function:</p>
 
 
-<div class="codeblk">def numericalize(X, catencoders):
+<pre>def numericalize(X, catencoders):
     medians = df_fix_missing_nums(X)            
     e = df_string_to_cat(X)
     catencoders.update(e)
     df_cat_to_catcode(X)    
     return medians
-</div>
+</pre>
 
 
 <p>At this point, we have functions that apply our cleanup, feature engineering, and numericalization procedures. Let's load our raw data and grab the last 100,000 records:</p>
 
 
-<div class="codeblk">df = pd.read_feather("data/bulldozer-train.feather")
+<pre>df = pd.read_feather("data/bulldozer-train.feather")
 df = df.iloc[-100_000:] # same 100,000 records as before
 X, y = df.drop('SalePrice', axis=1), df['SalePrice']
-</div>
+</pre>
 
 
 <p>Then, our complete preparation procedure for the training records boils down to this simple sequence:</p>
 
 
-<div class="codeblk">y = np.log(y)
+<pre>y = np.log(y)
 clean(X)
 X, catencoders = feature_eng(X)
 medians = numericalize(X, catencoders)
-</div>
+</pre>
 
 
-<p>Variables <span class="inlinecode">medians</span> and <span class="inlinecode">catencoders</span> track the information we need to consistently apply our  transformations to the validation and test sets. We also need to remember that we one-hot encoded <span class="inlinecode">Hydraulics_Flow</span> and <span class="inlinecode">Enclosure</span>.</p>
+<p>Variables <code>medians</code> and <code>catencoders</code> track the information we need to consistently apply our  transformations to the validation and test sets. We also need to remember that we one-hot encoded <code>Hydraulics_Flow</code> and <code>Enclosure</code>.</p>
 
 <p>Once we're sure all columns are numeric and that there are no missing values, we can train a model. </p>
 
 
-<div class="codeblk">rf, r2_train = test(X, y, n_estimators=150)
-</div>
+<pre>rf, r2_train = test(X, y, n_estimators=150)
+</pre>
 
 <p class="stdout">OOB R^2 0.91907 using 14,865,112 tree nodes with 45.0 median tree height
 </p>
@@ -407,7 +407,7 @@ medians = numericalize(X, catencoders)
 <h3 id="sec:9.2.2">9.2.2 Preparing consistent training and validation sets</h3>
 
 
-<p>To evaluate our model using a validation set, we need to load the raw validation data and then transform it as we did with the training set. The key difference is that we can only use data from the training set to label encode categories and fix missing values in the validation set, which we've saved in variables <span class="inlinecode">catencoders</span> and <span class="inlinecode">medians</span>.   Models should never be trained on future data because that's a form of data leakage. Part of the answer would have leaked into the training data.  </p>
+<p>To evaluate our model using a validation set, we need to load the raw validation data and then transform it as we did with the training set. The key difference is that we can only use data from the training set to label encode categories and fix missing values in the validation set, which we've saved in variables <code>catencoders</code> and <code>medians</code>.   Models should never be trained on future data because that's a form of data leakage. Part of the answer would have leaked into the training data.  </p>
 
 <p>This is a very subtle point so it's worth emphasizing the potential hazards by annotating <b>Figure 9.2</b>, as shown in <b>Figure 9.3</b>.</p>
 <span class="figure">
@@ -419,7 +419,7 @@ medians = numericalize(X, catencoders)
 </center>
 
 <center><b>Figure 9.3</b>. Hazards in split training and test subset</center></span>
-<p>The missing <span class="inlinecode">Hours</span> value in the validation set should be replaced with the median of the <span class="inlinecode">Hours</span> values from just the training set. When tested in production on a set of future records, we won't be retraining the model using those future records.   Therefore, to get an accurate picture of future performance, no data from validation or test sets should ever be used in training the model.  </p>
+<p>The missing <code>Hours</code> value in the validation set should be replaced with the median of the <code>Hours</code> values from just the training set. When tested in production on a set of future records, we won't be retraining the model using those future records.   Therefore, to get an accurate picture of future performance, no data from validation or test sets should ever be used in training the model.  </p>
 
 <p>And, we certainly shouldn't replace the missing value in the validation set with just the median of the validation data (6758 and 7191). One way to highlight the medians data leakage issue is to imagine testing a single future record with a missing value:</p>
 
@@ -427,14 +427,14 @@ medians = numericalize(X, catencoders)
 <img src="../Images/6efea931758c793e8409ad1259fdda9d.png" width="45%" data-original-src="https://mlbook.explained.ai/images/bulldozer-testing/single-record.png"/>
 </center>
 
-<p>When there are literally no other <span class="inlinecode">Hours</span> values with which to compute a median, our only choice is to compute the median from the training data alone. Here's a function to fill in missing values using medians from the training data:</p>
+<p>When there are literally no other <code>Hours</code> values with which to compute a median, our only choice is to compute the median from the training data alone. Here's a function to fill in missing values using medians from the training data:</p>
 
 
-<div class="codeblk">def df_fix_missing_test_nums(df_test, medians):
+<pre>def df_fix_missing_test_nums(df_test, medians):
     for colname in medians:
         df_test[colname+'_na'] = pd.isnull(df_test[colname])
         df_test[colname].fillna(medians[colname], inplace=True)
-</div>
+</pre>
 
 
 <p>After missing numeric values, the next big hazard is inconsistent label encoding across training and validation sets.  Consistency requires:</p>
@@ -446,23 +446,23 @@ medians = numericalize(X, catencoders)
 <p>The following function transforms all categorical variables according to those consistency rules, using the category indexes from the training set. </p>
 
 
-<div class="codeblk">def df_apply_cats(df_test:pd.DataFrame, catencoders:dict):
+<pre>def df_apply_cats(df_test:pd.DataFrame, catencoders:dict):
     for colname,encoder in catencoders.items():
         # encode with categories from training set
         df_test[colname] = \
             pd.Categorical(df_test[colname],
                            categories=encoder, ordered=True)
-</div>
+</pre>
 
 
-<p>After calling this function, missing category values in training and validation sets will be <span class="inlinecode">np.nan</span> values, which will become zeros after we call <span class="inlinecode">df_cat_to_catcode()</span> during the final numericalization step. </p>
+<p>After calling this function, missing category values in training and validation sets will be <code>np.nan</code> values, which will become zeros after we call <code>df_cat_to_catcode()</code> during the final numericalization step. </p>
 
 <p>Ensuring consistent one-hot encoding is another, related, hazard. The name and number of columns in the training and validation sets must be the same. This consistency is only a problem if there are categories in the validation set that are unknown to the training set. Such unknown categories should be encoded as missing values in the validation set, as we saw in the CS/Math/Physics example from <b>Section 8.3</b> <i>One-hot encoding Hydraulics_Flow</i>. The model has no experience with that category, so we lump it together with missing values.</p>
 
 <p>To ensure consistency, we just have to apply the training category index for column <i>x</i> to the validation set column <i>x</i> before one-hot encoding it:</p>
 
 
-<div class="codeblk">def onehot_apply_cats(df_test, colname, catencoders):
+<pre>def onehot_apply_cats(df_test, colname, catencoders):
     df_test[colname] = \
         pd.Categorical(df_test[colname],
                        categories=catencoders[colname],
@@ -472,15 +472,15 @@ medians = numericalize(X, catencoders)
     df_test = pd.concat([df_test, onehot], axis=1)
     del catencoders[colname] # simplify df_apply_cats()
     return df_test
-</div>
+</pre>
 
 
-<p>The reason that we delete the category index from <span class="inlinecode">catencoders</span> is to simplify the loop in <span class="inlinecode">df_apply_cats()</span>.  That function does not have to test if <span class="inlinecode">colname in df_test</span> to avoid an indexing exception from <span class="inlinecode">df_test[colname]</span>. (The original categorical column <i>x</i> will not be in <span class="inlinecode">df_test</span> after one-hot encoding.)</p>
+<p>The reason that we delete the category index from <code>catencoders</code> is to simplify the loop in <code>df_apply_cats()</code>.  That function does not have to test if <code>colname in df_test</code> to avoid an indexing exception from <code>df_test[colname]</code>. (The original categorical column <i>x</i> will not be in <code>df_test</code> after one-hot encoding.)</p>
 
 <p>To perform feature engineering on the validation set, we split dates, encode  the product size, and split apart the product description as we did before. The only difference is how we apply the one-hot encoding:</p>
 
 
-<div class="codeblk">def feature_eng_test(df_test, catencoders):
+<pre>def feature_eng_test(df_test, catencoders):
     df_split_dates(df_test, 'saledate')
     df_order_product_size(df_test)
     split_fiProductClassDesc(df_test)
@@ -491,24 +491,24 @@ medians = numericalize(X, catencoders)
     df_test = onehot_apply_cats(df_test, 'Enclosure', catencoders)
 
     return df_test
-</div>
+</pre>
 
 
-<p>To numericalize the validation set, we apply categories with <span class="inlinecode">df_apply_cats()</span> instead of calling <span class="inlinecode">df_string_to_cat()</span>,  use medians from the training set to fix any missing values, and then do the usual category-to-code conversion:</p>
+<p>To numericalize the validation set, we apply categories with <code>df_apply_cats()</code> instead of calling <code>df_string_to_cat()</code>,  use medians from the training set to fix any missing values, and then do the usual category-to-code conversion:</p>
 
 
-<div class="codeblk">def numericalize_test(df_test:pd.DataFrame, medians:dict, catencoders:dict):
+<pre>def numericalize_test(df_test:pd.DataFrame, medians:dict, catencoders:dict):
     df_apply_cats(df_test, catencoders)
     df_fix_missing_test_nums(df_test, medians)
     df_cat_to_catcode(df_test)
-</div>
+</pre>
 
 <div class="aside"><b>Program defensively</b><br/>
 
 <p>Machine learning models are difficult to debug because bugs often only show up as fluctuations in model accuracy. It's a good idea to practice some defensive programming. Here's are two functions that do some basic sanity checking on the features before we shove them into the model:</p>
 
 
-<div class="codeblk">def sanity_check(df):
+<pre>def sanity_check(df):
     for col in df.columns:
         if is_string_dtype(df[col]) or is_object_dtype(df[col]):
             print(f"Col {col} is still a string")
@@ -528,53 +528,53 @@ def check_types(df1,df2):
             print(f"\tIn df2 not df1: {cols2-cols1}")
     for col in cols1.intersection(cols2): # check those in common
         if df1[col].dtype != df2[col].dtype:
-            print(f"Col {col} dtypes differ {df1[col].dtype} != {df2[col].dtype}")</div>
+            print(f"Col {col} dtypes differ {df1[col].dtype} != {df2[col].dtype}")</pre>
 
 
 <p>Here's a common invocation sequence:</p>
 
 
-<div class="codeblk">sanity_check(X)
+<pre>sanity_check(X)
 sanity_check(X_valid)
-check_types(X, X_valid)</div>
+check_types(X, X_valid)</pre>
 
 
 </div>
 <p>With all of those functions in hand, we're finally ready to load and prepare a validation set with this simple code sequence:</p>
 
 
-<div class="codeblk">df_valid = pd.read_feather("data/bulldozer-valid.feather")
+<pre>df_valid = pd.read_feather("data/bulldozer-valid.feather")
 X_valid, y_valid = df_valid.drop('SalePrice', axis=1), df_valid['SalePrice']
 
 y_valid = np.log(y_valid)
 clean(X_valid)
 X_valid = feature_eng_test(X_valid, catencoders)
 numericalize_test(X_valid, medians, catencoders)
-</div>
+</pre>
 
 
-<p>At this point, we've got prepared training data in <span class="inlinecode">X</span> and <span class="inlinecode">y</span> and prepared validation data in <span class="inlinecode">X_valid</span> and <span class="inlinecode">y_valid</span>; let's see how well the model does on the validation set.</p>
+<p>At this point, we've got prepared training data in <code>X</code> and <code>y</code> and prepared validation data in <code>X_valid</code> and <code>y_valid</code>; let's see how well the model does on the validation set.</p>
 
 
 
 <h3 id="sec:9.2.3">9.2.3 Getting baseline validation metrics</h3>
 
 
-<p>For this bulldozer dataset, we've been measuring model performance with the unitless <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score (in range negative infinity to 1.0), because that's what sklearn's RF implementation gives us easily for OOB samples. The MAE measure is easier to interpret, though, and so let's compute that as well for validation set predictions. To compare how well our model performs in comparison to the Kaggle competitors, we also need to compute the so-called <i>root mean squared log error</i> (<i>RMSLE</i>) (see the <i>Common regression metrics</i> box). Because we've already taken the log of <span class="inlinecode">y_valid</span>, squaring the difference between predicted and true values and then taking the square root gives us RMSLE. Good RMSLE errors are down near 0.23 for this data set.</p>
+<p>For this bulldozer dataset, we've been measuring model performance with the unitless <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/> score (in range negative infinity to 1.0), because that's what sklearn's RF implementation gives us easily for OOB samples. The MAE measure is easier to interpret, though, and so let's compute that as well for validation set predictions. To compare how well our model performs in comparison to the Kaggle competitors, we also need to compute the so-called <i>root mean squared log error</i> (<i>RMSLE</i>) (see the <i>Common regression metrics</i> box). Because we've already taken the log of <code>y_valid</code>, squaring the difference between predicted and true values and then taking the square root gives us RMSLE. Good RMSLE errors are down near 0.23 for this data set.</p>
 <div class="aside"><b>Common regression metrics</b><br/>
 
 <p>There are a number of very common, and very similar, metrics used to evaluate the accuracy of regressors. We've already used mean absolute value, MAE, which is just the average absolute difference between predicted and true values:</p>
 
 
-<div class="codeblk">def MAE(y_pred, y_true):
-    return np.mean(np.abs(y_pred - y_true))</div>
+<pre>def MAE(y_pred, y_true):
+    return np.mean(np.abs(y_pred - y_true))</pre>
 
 
 <p>The absolute value prevents negative and positive deviations from canceling each other out.  Instead of taking the absolute value, we could square the differences, giving us <i>mean squared error</i> (<i>MSE</i>).  Squaring the difference also has the effect of emphasizing any predictions that are very far away from their true values:</p>
 
 
-<div class="codeblk">def MSE(y_pred, y_true):
-    return np.mean((y_pred - y_true)**2)</div>
+<pre>def MSE(y_pred, y_true):
+    return np.mean((y_pred - y_true)**2)</pre>
 
 
 <p>To ignore a few significantly-deviant predictions, it's better to use MAE than MSE.  It all depends on what you care about.</p>
@@ -582,27 +582,27 @@ numericalize_test(X_valid, medians, catencoders)
 <p>Because the units of MSE are the square of the target variable units, such as square dollars, practitioners often use <i>root mean squared error</i> (<i>RMSE</i>):</p>
 
 
-<div class="codeblk">def RMSE(y_pred, y_true):
-    return np.sqrt(MSE(y_pred, y_true))</div>
+<pre>def RMSE(y_pred, y_true):
+    return np.sqrt(MSE(y_pred, y_true))</pre>
 
 
-<p>If we take the logarithm of the target variable, as we've done with the bulldozer dataset (<span class="inlinecode">y=np.log(y)</span>), then computing MSE is actually computing <i>mean squared log error</i> (<i>MSLE</i>).  Similarly, if we take the square root of that, we get <i>root mean squared log error</i> (<i>RMSLE</i>).</p>
+<p>If we take the logarithm of the target variable, as we've done with the bulldozer dataset (<code>y=np.log(y)</code>), then computing MSE is actually computing <i>mean squared log error</i> (<i>MSLE</i>).  Similarly, if we take the square root of that, we get <i>root mean squared log error</i> (<i>RMSLE</i>).</p>
 
 </div>
 <div class="p_wrapper">
-<div class="callout">Avoid a common pitfall by ensuring the columns of the validation set line up with the columns in the training set. Use Pandas' <span class="inlinecode">reindex()</span> function before running a validation set through a model.</div>
-<p class="p_left">Model <span class="inlinecode">rf</span> has been trained on <span class="inlinecode">X</span> and <span class="inlinecode">y</span>, but we can't immediately ask for predictions for the observations in <span class="inlinecode">X_valid</span>. The order of columns in the validation set could differ from the training set because the order in which we transform and inject new columns could be different. The sklearn models convert Pandas dataframes to numpy 2D arrays in <span class="inlinecode">fit()</span> and <span class="inlinecode">predict()</span> without concern for column order, so let's make sure they line up:</p>
+<div class="callout">Avoid a common pitfall by ensuring the columns of the validation set line up with the columns in the training set. Use Pandas' <code>reindex()</code> function before running a validation set through a model.</div>
+<p class="p_left">Model <code>rf</code> has been trained on <code>X</code> and <code>y</code>, but we can't immediately ask for predictions for the observations in <code>X_valid</code>. The order of columns in the validation set could differ from the training set because the order in which we transform and inject new columns could be different. The sklearn models convert Pandas dataframes to numpy 2D arrays in <code>fit()</code> and <code>predict()</code> without concern for column order, so let's make sure they line up:</p>
 </div>
 
 
-<div class="codeblk">X_valid = X_valid.reindex(columns=X.columns)
-</div>
+<pre>X_valid = X_valid.reindex(columns=X.columns)
+</pre>
 
 
-<p>Now, we can make predictions from <span class="inlinecode">X_valid</span> and compute <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/>, RMSLE, and MAE scores:</p>
+<p>Now, we can make predictions from <code>X_valid</code> and compute <img style="vertical-align: -0.5pt;" src="../Images/ec985123b9b52e80981e6500795e8d16.png" data-original-src="https://mlbook.explained.ai/images/eqn-E31B458B48DD58470B662E66B9742071-depth000.00.svg"/>, RMSLE, and MAE scores:</p>
 
 
-<div class="codeblk">from sklearn.metrics import mean_squared_error, mean_absolute_error
+<pre>from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 y_pred = rf.predict(X_valid)
 # Use np.exp(y_valid) to get back into dollars space
@@ -612,7 +612,7 @@ r2_valid_baseline = rf.score(X_valid, y_valid)
 print(f"Validation R^2 {r2_valid_baseline:.5f}, "+
       f"RMSLE {rmsle_valid_baseline:.5f}, "+
       f"MAE ${mae_valid_baseline:.0f}")
-</div>
+</pre>
 
 <p class="stdout">Validation R^2 0.88148, RMSLE 0.24890, MAE $5939
 </p>
@@ -625,15 +625,15 @@ print(f"Validation R^2 {r2_valid_baseline:.5f}, "+
 <h2 id="sec:tuning">9.3 Tuning a Random Forest model</h2>
 
 
-<p>One of the nice characteristics of RF models is that they don't require a lot of tuning to get good accuracy. To get maximize accuracy, though, there are three common hyperparameters that we can tweak: the number of decision trees in the forest (<span class="inlinecode">n_estimators</span>), the number of randomly-selected features considered during training for each node in the trees (<span class="inlinecode">max_features</span>), and the minimum number of samples grouped into a leaf node (<span class="inlinecode">min_samples_leaf</span>). We'll define these hyperparameters precisely in <b>Chapter 17</b> <i>Forests of Randomized Decision Trees</i>, but for now, let's just assume they are important.</p>
+<p>One of the nice characteristics of RF models is that they don't require a lot of tuning to get good accuracy. To get maximize accuracy, though, there are three common hyperparameters that we can tweak: the number of decision trees in the forest (<code>n_estimators</code>), the number of randomly-selected features considered during training for each node in the trees (<code>max_features</code>), and the minimum number of samples grouped into a leaf node (<code>min_samples_leaf</code>). We'll define these hyperparameters precisely in <b>Chapter 17</b> <i>Forests of Randomized Decision Trees</i>, but for now, let's just assume they are important.</p>
 
 <p>Tuning a model involves repeatedly wiggling hyperparameters, retraining the model, and computing a metric based upon predictions from a validation set. The optimal hyperparameters are those that give us the best validation metric.  During model development and experimentation related to feature engineering, we're more concerned with short training duration than finding optimal hyperparameters.  It's only after we've more-or-less finished feature engineering that we tweak hyperparameters, looking for the best model. As a final tuning step, we'll try removing unimportant features.</p>
 
-<p>To increase the speed with which we can try different models, we want to keep training time low, so we typically work with a subset of the training data and use between 20 and 50 trees in the RF model. (We've been using 100,000 out of about 400,000 records so far.) We sometimes set <span class="inlinecode">min_samples_leaf</span> to the highest value that still gives us decent accuracy, because larger values of <span class="inlinecode">min_samples_leaf</span> decrease tree size and smaller trees are faster to build. <span class="inlinecode">min_samples_leaf</span>=1 is the default and finds the most detail in the training data, but results in the biggest trees.</p>
+<p>To increase the speed with which we can try different models, we want to keep training time low, so we typically work with a subset of the training data and use between 20 and 50 trees in the RF model. (We've been using 100,000 out of about 400,000 records so far.) We sometimes set <code>min_samples_leaf</code> to the highest value that still gives us decent accuracy, because larger values of <code>min_samples_leaf</code> decrease tree size and smaller trees are faster to build. <code>min_samples_leaf</code>=1 is the default and finds the most detail in the training data, but results in the biggest trees.</p>
 
 <p>When it's time to tune the model for accuracy, we gradually increase the number of trees until accuracy levels off. In the last chapter, we used 150 trees during feature engineering because we wanted to compare the effect of various features with a fairly stable metric.  Due to the randomness of model construction, the same metric on the same data and same hyperparameters will fluctuate. The fewer the trees, the more the metric will fluctuate. For the remainder of this chapter, we'll bump the number of trees to 200, hoping to squeeze out a tiny bit more accuracy and increase metric stability. As we tune the model, we want to know that differences in accuracy are due to changes in hyperparameters, not random fluctuations.</p>
 
-<p>Practitioners will often use a technique called a <i>grid search</i> to tune hyperparameters, which would try lots of combinations, looking for the best set of hyperparameters.  Such a search takes forever to run and isn't necessary for RF models.  We can choose hyperparameters in sequence. First, increase the number of trees until accuracy stops improving. Next, using the number of trees from the first step, try a few values of <span class="inlinecode">max_features</span> (<span class="inlinecode">'sqrt'</span>, 0.1 to 0.6) and pick the one that gives the best metric. Finally, using the best <span class="inlinecode">max_features</span>, run <span class="inlinecode">min_samples_leaf</span> from 1 to about 15, again picking the best one.</p>
+<p>Practitioners will often use a technique called a <i>grid search</i> to tune hyperparameters, which would try lots of combinations, looking for the best set of hyperparameters.  Such a search takes forever to run and isn't necessary for RF models.  We can choose hyperparameters in sequence. First, increase the number of trees until accuracy stops improving. Next, using the number of trees from the first step, try a few values of <code>max_features</code> (<code>'sqrt'</code>, 0.1 to 0.6) and pick the one that gives the best metric. Finally, using the best <code>max_features</code>, run <code>min_samples_leaf</code> from 1 to about 15, again picking the best one.</p>
 
 
 
@@ -646,16 +646,16 @@ print(f"Validation R^2 {r2_valid_baseline:.5f}, "+
 </div>
 
 
-<div class="codeblk">df = pd.read_feather("data/bulldozer-train.feather")
+<pre>df = pd.read_feather("data/bulldozer-train.feather")
 df = df.query('saledate.dt.year&gt;=2007').copy()
 X, y = df.drop('SalePrice', axis=1), df['SalePrice']
-</div>
+</pre>
 
 
-<p>With new training data, we have to run the same data preparation process as before. That means also reprocessing the validation set because our <span class="inlinecode">medians</span> and <span class="inlinecode">catencoders</span> will have changed, since they are computed from the training set. Here's the complete sequence for preparing both training and validation sets:</p>
+<p>With new training data, we have to run the same data preparation process as before. That means also reprocessing the validation set because our <code>medians</code> and <code>catencoders</code> will have changed, since they are computed from the training set. Here's the complete sequence for preparing both training and validation sets:</p>
 
 
-<div class="codeblk">y = np.log(y)
+<pre>y = np.log(y)
 clean(X)
 X, catencoders = feature_eng(X)
 medians = numericalize(X, catencoders)
@@ -668,13 +668,13 @@ X_valid = feature_eng_test(X_valid, catencoders)
 df_apply_cats(X_valid, catencoders)
 df_fix_missing_test_nums(X_valid, medians)
 df_cat_to_catcode(X_valid)
-</div>
+</pre>
 
 
 <p>Let's also create a method that trains a model, measures accuracy, and reports some metrics:</p>
 
 
-<div class="codeblk">def test_valid(X, y, X_valid, y_valid, n_estimators=200,
+<pre>def test_valid(X, y, X_valid, y_valid, n_estimators=200,
                max_features='auto', min_samples_leaf=1):
     X_valid = X_valid.reindex(columns=X.columns)
     rf = RandomForestRegressor(n_estimators=n_estimators,
@@ -692,15 +692,15 @@ df_cat_to_catcode(X_valid)
     print(f"OOB R^2 {rf.oob_score_:.5f} using {n:,d} tree nodes {h} median tree height")
     print(f"Validation R^2 {r2_score_valid:.5f}, RMSLE {rmsle_valid:.5f}, MAE ${mae_valid:.0f}")
     return rf, r2_score_valid, rmsle_valid, mae_valid
-</div>
+</pre>
 
 
 <p>Here are the metrics for our model trained on the larger training set and tested on the updated validation set:</p>
 
 
-<div class="codeblk">rf, r2_score_2007, rmsle_2007, mae_2007 = \
+<pre>rf, r2_score_2007, rmsle_2007, mae_2007 = \
     test_valid(X, y, X_valid, y_valid)
-</div>
+</pre>
 
 <p class="stdout">OOB R^2 0.91934 using 34,346,352 tree nodes 45.0 median tree height
 Validation R^2 0.88339, RMSLE 0.24688, MAE $5967
@@ -713,16 +713,16 @@ Validation R^2 0.88339, RMSLE 0.24688, MAE $5967
 <h3 id="sec:9.3.2">9.3.2 Choosing max_features and min_samples_leaf</h3>
 
 
-<p>When constructing a decision tree node, an RF model randomly selects and examines a subset of the feature set. The size of that feature set affects a number of things, including accuracy and generality. The more features we allow the model to consider for each node, the higher the accuracy but the less general the model. (If we allowed the model to consider all features, the model would become overfit and much less general.)   With a simple loop, we can try different values of <span class="inlinecode">max_features</span>, such as 0.1 to 0.6 stepping by 0.1 (that is, try 10% to 60% of the features):</p>
+<p>When constructing a decision tree node, an RF model randomly selects and examines a subset of the feature set. The size of that feature set affects a number of things, including accuracy and generality. The more features we allow the model to consider for each node, the higher the accuracy but the less general the model. (If we allowed the model to consider all features, the model would become overfit and much less general.)   With a simple loop, we can try different values of <code>max_features</code>, such as 0.1 to 0.6 stepping by 0.1 (that is, try 10% to 60% of the features):</p>
 
 
-<div class="codeblk">ntrees = 200
+<pre>ntrees = 200
 minleaf = 1
 for maxf in np.arange(.1,.6,.1):
     print(f"n_estimators={ntrees}, max_features={maxf:.1f}, min_samples_leaf={minleaf}")
     test_valid(X, y, X_valid, y_valid,
                max_features=maxf, min_samples_leaf=minleaf)
-</div>
+</pre>
 
 <p class="stdout">n_estimators=200, max_features=0.1, min_samples_leaf=1
 OOB R^2 0.91818 using 38,555,212 tree nodes 45.0 median tree height
@@ -741,15 +741,15 @@ OOB R^2 0.92345 using 35,358,180 tree nodes 45.0 median tree height
 Validation R^2 0.89359, RMSLE 0.23584, MAE $5732
 </p>
 
-<p>It looks like <span class="inlinecode">max_features</span>=0.3 gives the lowest RMSLE error, so let's hold <span class="inlinecode">max_features</span> steady while we optimize <span class="inlinecode">min_samples_leaf</span>, the next hyperparameter:</p>
+<p>It looks like <code>max_features</code>=0.3 gives the lowest RMSLE error, so let's hold <code>max_features</code> steady while we optimize <code>min_samples_leaf</code>, the next hyperparameter:</p>
 
 
-<div class="codeblk">maxf = .3
+<pre>maxf = .3
 for minleaf in range(2,7):
    print(f"n_estimators={ntrees}, max_features={maxf}, min_samples_leaf={minleaf}")
    test_valid(X, y, X_valid, y_valid,
               max_features=maxf, min_samples_leaf=minleaf)
-</div>
+</pre>
 
 <p class="stdout">n_estimators=200, max_features=0.3, min_samples_leaf=2
 OOB R^2 0.92170 using 17,839,822 tree nodes 40.0 median tree height
@@ -768,13 +768,13 @@ OOB R^2 0.91304 using 5,555,130 tree nodes 34.0 median tree height
 Validation R^2 0.89401, RMSLE 0.23537, MAE $5792
 </p>
 
-<p>A value of 2 or 3 for <span class="inlinecode">min_samples_leaf</span> yields the lowest error, depending on the run, so now we have decent values for both hyperparameters. Subsequent validation tests will like this:</p>
+<p>A value of 2 or 3 for <code>min_samples_leaf</code> yields the lowest error, depending on the run, so now we have decent values for both hyperparameters. Subsequent validation tests will like this:</p>
 
 
-<div class="codeblk">rf, r2_score_valid, rmsle_valid, mae_valid = \
+<pre>rf, r2_score_valid, rmsle_valid, mae_valid = \
     test_valid(X, y, X_valid, y_valid,
                max_features=.3, min_samples_leaf=2)
-</div>
+</pre>
 
 <p class="stdout">OOB R^2 0.92182 using 17,843,764 tree nodes 40.0 median tree height
 Validation R^2 0.89639, RMSLE 0.23272, MAE $5687
@@ -796,10 +796,10 @@ Validation R^2 0.89639, RMSLE 0.23272, MAE $5687
 
 <p>Our strategy will be to repeatedly train a model on the current feature set, compute the feature importances, and drop the least important 10% from the feature set. Looking at the top 30 in the feature importance graph, we see a quick drop off in importance.  We want to toss out the least helpful, but we can't do it in one pass by just taking all features above an importance threshold.  </p>
 
-<p>The permutation importance mechanism used in these graphs effectively shares importance between collinear features, those that are not independent of each other. Features <span class="inlinecode">YearMade</span> and <span class="inlinecode">age</span> are good examples of collinear features. If we dropped <span class="inlinecode">YearMade</span>, then <span class="inlinecode">age</span> would become much more important. Those two features have such large importance values we'd never drop them, but collinearity between less important features means we must take a  conservative approach. After dropping the bottom 10% of the features, we'll recompute feature importance to recheck which features the model thinks are important before dropping the next 10%, and so on. The following function embodies that strategy.</p>
+<p>The permutation importance mechanism used in these graphs effectively shares importance between collinear features, those that are not independent of each other. Features <code>YearMade</code> and <code>age</code> are good examples of collinear features. If we dropped <code>YearMade</code>, then <code>age</code> would become much more important. Those two features have such large importance values we'd never drop them, but collinearity between less important features means we must take a  conservative approach. After dropping the bottom 10% of the features, we'll recompute feature importance to recheck which features the model thinks are important before dropping the next 10%, and so on. The following function embodies that strategy.</p>
 
 
-<div class="codeblk">def select_features(X, y, X_valid, y_valid, drop=0.10):
+<pre>def select_features(X, y, X_valid, y_valid, drop=0.10):
    min_rmsle = 99999
    X_valid = X_valid.reindex(columns=X.columns)
    rf, _, rmsle, _ = test_valid(X, y, X_valid, y_valid,
@@ -822,22 +822,22 @@ Validation R^2 0.89639, RMSLE 0.23272, MAE $5687
        keep = features[0:int(len(features)*(1-drop))]
 
    return min_rmsle, best_features
-</div>
+</pre>
 
 
 <p>We can use that function to select the best feature set:</p>
 
 
-<div class="codeblk">min_rmsle, best_features = \
+<pre>min_rmsle, best_features = \
     select_features(X, y, X_valid, y_valid, drop=0.10)
 print(f"{len(best_features)} features is best:")
-print(best_features)</div>
+print(best_features)</pre>
 
 
 <p>That takes a long time to run as it's retraining the model for each iteration, but the output looks like:</p>
 
 
-<div class="codeblk">OOB R^2 0.92191 using 0 tree nodes 0 median tree height
+<pre>OOB R^2 0.92191 using 0 tree nodes 0 median tree height
 Validation R^2 0.89617, RMSLE 0.23296, MAE $5682
 ...
 Num features = 53
@@ -848,18 +848,18 @@ Num features = 33
 OOB R^2 0.90824 using 0 tree nodes 0 median tree height
 Validation R^2 0.89824, RMSLE 0.23062, MAE $5649
 33 features is best:
-['YearMade', 'ProductSize', 'fiProductClassSpec_lower', ...]</div>
+['YearMade', 'ProductSize', 'fiProductClassSpec_lower', ...]</pre>
 
 
-<p>Using the 33 features in <span class="inlinecode">best_features</span>, let's train a model and get some metrics:</p>
+<p>Using the 33 features in <code>best_features</code>, let's train a model and get some metrics:</p>
 
 
-<div class="codeblk">X = X[best_features]
+<pre>X = X[best_features]
 X_valid = X_valid[best_features]
 rf, r2_score_bestf, rmsle_bestf, mae_bestf = \
     test_valid(X, y, X_valid, y_valid,
                max_features=.3, min_samples_leaf=2)
-</div>
+</pre>
 
 <p class="stdout">OOB R^2 0.90841 using 14,362,342 tree nodes 39.0 median tree height
 Validation R^2 0.89852, RMSLE 0.23031, MAE $5642
@@ -875,11 +875,11 @@ Validation R^2 0.89852, RMSLE 0.23031, MAE $5642
 <p>Inflation causes prices to grow over time and the bulldozer dataset has roughly 20 years of data.  Earlier records in the training set have lower sale prices on average than later records. Identical bulldozers sold in 1990 and 2010 would have significantly different prices, which would give conflicting training information to a model. An RF model predicts the average price computed from all identical, or nearly identical, bulldozers. Consequently, our model must be systematically underpredicting bulldozer prices in the validation set. In fact, we can verify that easily:</p>
 
 
-<div class="codeblk">y_valid_pred = rf.predict(X_valid)
+<pre>y_valid_pred = rf.predict(X_valid)
 underprediction = np.mean(y_valid-y_valid_pred)
 dollars = np.mean(np.exp(y_valid)-np.exp(y_valid_pred))
 print(f"Model underpredicts by ${dollars:.0f}, {underprediction:.5f} log(dollars)")
-</div>
+</pre>
 
 <p class="stdout">Model underpredicts by $2352, 0.03588 log(dollars)
 </p>
@@ -892,7 +892,7 @@ print(f"Model underpredicts by ${dollars:.0f}, {underprediction:.5f} log(dollars
 <a href="images/bulldozer-testing/bulldozer-testing_trend_1.svg"><img src="../Images/9ac09e42a6a0759853dfe6969f83051e.png" width="65%%" data-original-src="https://mlbook.explained.ai/images/bulldozer-testing/bulldozer-testing_trend_1.svg"/></a>
 </center>
 	<center><b>Figure 9.4</b>. Average Bulldozer Price</center></span>
-<p>Unfortunately, adjusting a model according to the overall price trend line only affects the overall accuracy. If we'd like to improve the accuracy for individual bulldozers or  population segments, we need trend lines for each segment. For example, larger bulldozers should cost more than smaller bulldozers, which we can see in <b>Figure 9.5</b>. (Code for this figure is in the <a href="https://mlbook.explained.ai/notebooks/bulldozer-testing/prod-trend.ipynb">notebook</a> for this chapter.)  To get a more accurate model, we'd need to adjust prices differently, depending on <span class="inlinecode">ProductSize</span>. There could be lots of features and combinations of features that dictate price fluctuations.  To improve accuracy, we'd need to combine the efforts of multiple models that looked at different aspects of the training set. (See the <a href="https://www.kaggle.com/c/bluebook-for-bulldozers/discussion/4368">winners' discussion on Kaggle</a>.)</p>
+<p>Unfortunately, adjusting a model according to the overall price trend line only affects the overall accuracy. If we'd like to improve the accuracy for individual bulldozers or  population segments, we need trend lines for each segment. For example, larger bulldozers should cost more than smaller bulldozers, which we can see in <b>Figure 9.5</b>. (Code for this figure is in the <a href="https://mlbook.explained.ai/notebooks/bulldozer-testing/prod-trend.ipynb">notebook</a> for this chapter.)  To get a more accurate model, we'd need to adjust prices differently, depending on <code>ProductSize</code>. There could be lots of features and combinations of features that dictate price fluctuations.  To improve accuracy, we'd need to combine the efforts of multiple models that looked at different aspects of the training set. (See the <a href="https://www.kaggle.com/c/bluebook-for-bulldozers/discussion/4368">winners' discussion on Kaggle</a>.)</p>
 <span class="figure">
 <center>
 <a href="images/bulldozer-testing/bulldozer-testing_prod-trend_1.svg"><img src="../Images/5a5d6426a91432b830dcf3e100158b6e.png" width="65%%" data-original-src="https://mlbook.explained.ai/images/bulldozer-testing/bulldozer-testing_prod-trend_1.svg"/></a>
@@ -901,17 +901,17 @@ print(f"Model underpredicts by ${dollars:.0f}, {underprediction:.5f} log(dollars
 <p>We're sticking to a single model in this book, but we can still tweak the output of this model by adding in the underprediction amount computed from the validation set. It will hurt some predictions and help others but, on average, the adjustment will improve the RMSLE:</p>
 
 
-<div class="codeblk"><span class="highlight">y_valid_pred = rf.predict(X_valid) + underprediction</span>
+<pre><span class="highlight">y_valid_pred = rf.predict(X_valid) + underprediction</span>
 mae_best = mean_absolute_error(np.exp(y_valid), np.exp(y_valid_pred))
 rmsle_best = np.sqrt( mean_squared_error(y_valid, y_valid_pred) )
 r2_score_best = r2_score(y_valid, y_valid_pred)
 print(f"Adjusted-model validation R^2 {r2_score_best:.5f}, RMSLE {rmsle_best:.5f}, MAE {mae_best:.0f}")
-</div>
+</pre>
 
 <p class="stdout">Adjusted-model validation R^2 0.90098, RMSLE 0.22750, MAE 5464
 </p>
 
-<p>The highlighted code line has our simple tweak to the model predictions. Our RMSLE error drops from 0.2303 to 0.2275.  We can think of <span class="inlinecode">underprediction</span> as another parameter of a new meta-model or we can think of <span class="inlinecode">underprediction</span> has a second (additive) model that takes the output of a previous model and generates new output.  Either way, we're updating our model based upon information derived from the validation set results, just like we did with hyper parameters, which means that we've tailored our model somewhat to this validation set.  Nonetheless, the tweak is still useful for any other test sets we have, as long as they are in the near future.</p>
+<p>The highlighted code line has our simple tweak to the model predictions. Our RMSLE error drops from 0.2303 to 0.2275.  We can think of <code>underprediction</code> as another parameter of a new meta-model or we can think of <code>underprediction</code> has a second (additive) model that takes the output of a previous model and generates new output.  Either way, we're updating our model based upon information derived from the validation set results, just like we did with hyper parameters, which means that we've tailored our model somewhat to this validation set.  Nonetheless, the tweak is still useful for any other test sets we have, as long as they are in the near future.</p>
 
 <p><span style="color: red">{TODO: What about adding "DaysSinceFirstSale" feature to detrend in model?}</span></p>
 
@@ -923,10 +923,10 @@ print(f"Adjusted-model validation R^2 {r2_score_best:.5f}, RMSLE {rmsle_best:.5f
 
 <p>At this point, we have a final model that is based upon a selected training subset, a subset of features, tuned hyper parameters, and a tweak to adjust for inflation. Our best RMSLE on the validation set is 0.2275, but because we've turned the model hyper parameters and computed an inflation adjustment on the validation set, metrics derived from the validation set are overly optimistic. That's why we carved out a test set that we've totally ignored until now. We can finally use that test set to get an objective measure of model generality.</p>
 
-<p>First, let's load and prepare a training set that includes the validation set in order to use as much training data as possible. (File <span class="inlinecode">bulldozer-train-all.feather</span> is created by <span class="inlinecode">prep-bulldozer.py</span> in the <span class="inlinecode">data</span> directory.)</p>
+<p>First, let's load and prepare a training set that includes the validation set in order to use as much training data as possible. (File <code>bulldozer-train-all.feather</code> is created by <code>prep-bulldozer.py</code> in the <code>data</code> directory.)</p>
 
 
-<div class="codeblk">df = pd.read_feather("data/bulldozer-train-all.feather")
+<pre>df = pd.read_feather("data/bulldozer-train-all.feather")
 df = df.query('saledate.dt.year&gt;=2007').copy()
 X, y = df.drop('SalePrice', axis=1), df['SalePrice']
 y = np.log(y)
@@ -934,13 +934,13 @@ clean(X)
 X, catencoders = feature_eng(X)
 medians = numericalize(X, catencoders)
 X = X[best_features]
-</div>
+</pre>
 
 
 <p>Next, load and prepare the test set, just like we did for the validation set:</p>
 
 
-<div class="codeblk">df_test = pd.read_feather("data/bulldozer-test.feather")
+<pre>df_test = pd.read_feather("data/bulldozer-test.feather")
 X_test, y_test = df_test.drop('SalePrice', axis=1), df_test['SalePrice']
 y_test = np.log(y_test)
 clean(X_test)
@@ -949,17 +949,17 @@ df_apply_cats(X_test, catencoders)
 df_fix_missing_test_nums(X_test, medians)
 df_cat_to_catcode(X_test)
 X_test = X_test[best_features]
-</div>
+</pre>
 
 					  
 <p>Then train a model and compute metrics using the test set:</p>
 
 
-<div class="codeblk">rf, r2_score_test, rmsle_test, mae_test = \
+<pre>rf, r2_score_test, rmsle_test, mae_test = \
     test_valid(X, y + underprediction,
                X_test, y_test,
                max_features=.3, min_samples_leaf=2)
-</div>
+</pre>
 
 <p class="stdout">OOB R^2 0.90900 using 15,344,480 tree nodes 39.0 median tree height
 Validation R^2 0.89356, RMSLE 0.23961, MAE $6018
