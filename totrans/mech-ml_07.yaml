@@ -1,0 +1,1092 @@
+- en: 7 Exploring and Cleaning the Bulldozer Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://mlbook.explained.ai/bulldozer-intro.html](https://mlbook.explained.ai/bulldozer-intro.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[Terence Parr](http://parrt.cs.usfca.edu) and [Jeremy Howard](http://www.fast.ai/about/#jeremy)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Copyright © 2018-2019 Terence Parr. All rights reserved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Please don''t replicate on web or redistribute in any way.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This book generated from markup+markdown+python+latex source with [Bookish](https://github.com/parrt/bookish).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can make **comments or annotate** this page by going to the annotated version
+    of this page. You'll see existing annotated bits highlighted in yellow. They are
+    *PUBLICLY VISIBLE*. Or, you can send comments, suggestions, or fixes directly
+    to [Terence](mailto:parrt@cs.usfca.edu).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contents
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Loading the bulldozer data](#sec:7.1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Taking an initial look at the data](#sec:7.2)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Baseline model](#sec:7.3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Cleaning up](#sec:7.4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Dealing with missing data](#sec:missing)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Replacing missing categorical values](#sec:7.5.1)'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Replacing missing numeric values](#sec:7.5.2)'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Training a model with all features](#sec:7.6)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Summary](#sec:7.7)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We've learned a great deal so far about preparing data, feature engineering,
+    and training models, but the apartment rent dataset is relatively small with few
+    features. Over the next few chapters, we're going to explore and build models
+    for a [bulldozer auction prices dataset](https://www.kaggle.com/c/bluebook-for-bulldozers)
+    from Kaggle that has 8 times as many observations and 52 features. A large dataset
+    presents a new set of problems, such as figuring out which features to focus on
+    for feature engineering and being able to train and test models quickly. The bulldozer
+    dataset is also rife with missing values. After working through the process we've
+    laid out for this dataset, though, your final model will perform near the top
+    of the leaderboard for the (now closed) bulldozer competition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another wrinkle with this dataset is that records represent bulldozer sales,
+    and prices can drift over time due to inflation, financial crises, and so on.
+    As a general rule, we can't train and test models for time-sensitive data the
+    same way we do for time-insensitive data. The out-of-bag (OOB) ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    score isn't usually appropriate because OOB scores measure performance only within
+    the training data period, not against future predictions. It's more appropriate
+    to sort a dataset by date and then take the last, say, 20% as a hold-out validation
+    set. That leaves the first 80% as the training set, which we use to train the
+    model. Evaluating the performance of the model on the validation set gives a much
+    more accurate estimate of model generality than the OOB score. That said, in order
+    to tackle this bulldozer problem in pieces, we're going to start out measuring
+    model performance using the OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    score, dramatically simplifying our process. Just keep in mind that the OOB score
+    is overestimating model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we'll examine the bulldozer data set, normalize and cleanup
+    various values, fill in missing values, and then train an initial model. Next,
+    in **Chapter 8** *Bulldozer Feature Engineering*, we'll learn a few more encodings
+    for categorical variables and improve the features identified as important by
+    the initial model. After we figure out how to prepare this dataset, we'll explore
+    in **Chapter 9** *Train, Validate, Test* how to properly prepare validation and
+    test sets for use in tuning the model and getting a true estimate of model generality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.1 Loading the bulldozer data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our first step is to grab the bulldozer dataset from Kaggle's [Blue Book for
+    Bulldozers](https://www.kaggle.com/c/bluebook-for-bulldozers/data) competition.
+    Download files `Train.zip` (and uncompress), `Valid.csv`, and `ValidSolution.csv`
+    into your `data` directory beneath the directory where you launch Jupyter. (You
+    must be a registered Kaggle user and logged in.) The `Train.csv` file you get
+    after uncompressing `Train.zip` is 116M, which takes about 35 seconds to load
+    using Pandas' `read_csv()` function. That load time would be unbearably slow while
+    staring at the screen and would make it harder to iterate quickly on our models.
+    Instead, we're going to use the [feather data format](https://github.com/wesm/feather),
+    which lets us load the data in about one second. The [prep-bulldozer.py](data/prep-bulldozer.py)
+    script (from this book's [data](data/index.html) directory) loads the training
+    CSV data (for the first and only time), splits out a validation set, and saves
+    them both using the fast feather format. The script also merges `Valid.csv`, and
+    `ValidSolution.csv` into a single test dataframe and saves it for later use. From
+    the command-line and in your `data` directory, execute the following to create
+    the data files we need.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 1Don't forget the [notebooks](https://mlbook.explained.ai/notebooks/) aggregating
+    the code snippets from the various chapters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the next three chapters, we'll use `bulldozer-train.feather` as our data
+    starting point. To start the coding process, create a notebook in the directory
+    above `data` and paste in our usual preamble:1
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '2If you get an error “`read_feather() got an unexpected keyword argument ''nthreads''`,”
+    then try:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`import feather`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`feather.read_dataframe("data/bulldozer-train.feather")`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anytime we need a fresh copy of the data, we can load it like this:2
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: It's a good idea to keep the original data around in `df_raw` so that we can
+    undo any data transformations that end up being unhelpful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.2 Taking an initial look at the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When inspecting a dataset for the first time, look for this key summary information:
+    the column names, column datatypes, sample data elements, and how much data is
+    missing. Here''s a handy function to sniff a dataframe and return a different
+    dataframe containing a summary where each row describes a column in the original
+    dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can call `sniff(df)` from your notebook to get a complete summary, but
+    in the interest of space, here are just the first 14 entries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | sample | data type | percent missing |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| SalesID | 1646770 | int64 | 0.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| SalePrice | 9500 | int64 | 0.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| MachineID | 1126363 | int64 | 0.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| ModelID | 8434 | int64 | 0.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| datasource | 132 | int64 | 0.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| YearMade | 1974 | int64 | 0.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| auctioneerID | 18.0000 | float64 | 5.1747 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| MachineHoursCurrentMeter |  | float64 | 64.7178 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| saledate | 1989-01-17 00:00:00 | datetime64[ns] | 0.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Coupler |  | object | 46.8269 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Tire_Size |  | object | 76.3297 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Tip_Control |  | object | 93.6982 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Hydraulics | 2 Valve | object | 20.1663 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Ripper | None or Unspecified | object | 73.9670 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'We can learn a lot just from this quick sniff. There are three kinds of data:
+    numeric, date time objects, and strings (`object`). Some columns are complete,
+    but others have missing data, including column `Tip_Control` that is 94% missing.
+    Some values are just plain missing (represented as either the `None` object or
+    “not a number” `np.nan` in Python), but other “missing” values are actually physically-present
+    strings like “`None or Unspecified`”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Columns such as `SalesID` and `ModelID` are represented as integers (`int64`),
+    but they are really nominal categorical variables. Model 8434 is not somehow greater
+    than model 8433\. There are also columns represented as strings that contain numeric
+    values, such as `Hydraulics` (“`2 Valve`”). Other columns are represented as strings
+    but are actually purely numeric but with units such as feet or inches. For example,
+    the values in column `Tire_Size` should be converted to just the number of inches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[None ''14"'' ''None or Unspecified'' ''20.5'' ''23.5'' ''26.5'' ''17.5'' ''29.5''
+    ''13"'' ''20.5"'' ''23.5"'' ''17.5"'' ''15.5'' ''15.5"'' ''7.0"'' ''23.1"'' ''10"''
+    ''10 inch'']'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It's a good idea to look at the unique set of values for the other columns too
+    as you experiment with this dataset. The next step in our exploration is to train
+    a model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.3 Baseline model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While we only have a few numeric columns out of the 52 total, and some of those
+    values are missing, it's still a good idea to train a model early on in our process.
+    First, it tells us how long training the model takes. If training time is significant,
+    we should consider working with a subset of the data. Second, it gives us an initial
+    appraisal of the strength of the relationship between numeric features and the
+    `SalePrice` target variable. The OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    from this initial model is our lower bound, so if it's pretty good, we can be
+    optimistic about the performance of our model after feature engineering. Finally,
+    a feature importance graph derived from the model helps to focus our cleanup efforts
+    on the most predictive columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s identify the features represented as numbers so far are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3We've chosen to create RFs with 50 trees because it gives a stable and accurate
+    ![](../Images/ec985123b9b52e80981e6500795e8d16.png) score while not requiring
+    too much processing time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can reuse the `test()` function from **Chapter 6** *Categorically Speaking*
+    to train an RF and print the OOB ![](../Images/ec985123b9b52e80981e6500795e8d16.png)
+    score:3
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Columns `auctioneerID` and `MachineHoursCurrentMeter` have some missing values,
+    represented as Numpy `np.nan`, but we can flip missing values to zeros as an expedient
+    with function call `fillna(0)`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: OOB R^2 0.78075 using 22,500,374 tree nodes with 56.0 median tree height
+  prefs: []
+  type: TYPE_NORMAL
+- en: That OOB score is not horrible and hints that there is a strong relationship
+    to capture in this dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unfortunately, training the model via function `fit()` takes about 25 seconds,
+    which would seem like an eternity as we repeatedly transformed data and retrained
+    the model. To reduce training time, we could subsample the dataframe with `df.sample(n=100_000)`,
+    and that''s how we''d do it if this were not time-sensitive data. Instead, let''s
+    grab the last 100,000 records (which are sorted by date), taking advantage of
+    the fact that more recent data will be better at predicting the near future:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After reducing the size of the dataframe, repeat the steps to train the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: OOB R^2 0.84512 using 5,556,904 tree nodes with 45.0 median tree height
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the model now takes only about 5 seconds down from 25 seconds and,
+    as a bonus, the ![](../Images/ec985123b9b52e80981e6500795e8d16.png) of 0.845 is
+    much better than the previous 0.781.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let''s see which features the model thinks are most predictive of bulldozer
+    sale price:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[![](../Images/c37407a99b8303f93c0bef383f309a2b.png)](images/bulldozer-intro/bulldozer-intro_sniff_14.svg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The most important features are consistent with what we''d expect when evaluating
+    a vehicle''s value: what kind (model) of bulldozer it is, when it was made, how
+    long it''s been in use, etc.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have a good understanding of the data and a baseline model, let's
+    start cleaning up the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.4 Cleaning up
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The easiest things to fix in the cleanup process are the small administrative
+    details like changing column datatypes and deleting unusable columns, so let''s
+    start with those. According to the data description at Kaggle, `SalesID` is a
+    unique identifier for a particular transaction. This is clearly not predictive
+    as a `SalesID` value will never be seen again as a feature, so we can remove it.
+    We can also remove `MachineID` because this variable has [errors and inconsistencies](https://www.kaggle.com/c/bluebook-for-bulldozers/discussion/3694);
+    besides, it''s not strongly-predictive according to our feature importance graph.
+    Our first step is then:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `auctioneerID` column values look like numbers, but they are really categorical
+    variables, specifically nominal variables that have no order:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[nan 5\. 2\. 27\. 1\. 23\. 3\. 4\. 20\. 7\. 8\. 12\. 10\. 6\. 21\. 13\. 9\.
+    18. 99\. 16\. 14\. 19\. 28\. 15\. 22\. 25\. 17\. 11\. 24\. 26\. 0.]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Just to make this clear, let''s change the data type to be string:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: If we leave this as a number, our process below for dealing with missing numeric
+    values would replace the missing `auctioneerID` values with the median auctioneer
+    ID, which is clearly meaningless.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So much for the numbers, let''s take a look at the string-valued columns. Some
+    are nice and tidy such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[''TTT'' ''TEX'' ''WL'' ''SSL'' ''BL'' ''MG'']'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'but others have missing values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[None ''Two Wheel Drive'' ''Four Wheel Drive'' ''No'' ''All Wheel Drive'']'
+  prefs: []
+  type: TYPE_NORMAL
+- en: and others have physically-present strings to mean “missing:”
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[''None or Unspecified'' None ''Yes'']'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Columns `fiSecondaryDesc` and `fiModelSeries` even have a value of “`#NAME?`”.
+    This dataset has multiple ways to say “missing” or “unspecified,” but our model
+    won''t be able to figure the equivalencies on its own. We need to normalize all
+    of these strings so that `None`, `None or Unspecified`, and `#NAME?` all mean
+    “missing.” Let''s encapsulate this equivalents in a function that transforms the
+    dataframe so only `np.nan` means missing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After calling `df_normalize_strings(df)`, all of the different ways to say
+    none are collapsed to `np.nan` and strings all are lowercase:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[nan ''two wheel drive'' ''four wheel drive'' ''no'' ''all wheel drive''] [nan
+    ''yes'']'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some strings are actually numeric values, but include unit names or symbols
+    that force the dataframe to treat them as strings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[nan ''26.5'' ''20.5'' ''17.5'' ''23.5'' ''14"'' ''13"'' ''29.5'' ''17.5"''
+    ''15.5"'' ''20.5"'' ''15.5'' ''23.5"'' ''7.0"'' ''10"'' ''23.1"''] [nan ''36 inch''
+    ''24 inch'' ''20 inch'' ''34 inch'' ''26 inch'' ''30 inch'' ''28 inch'' ''32 inch''
+    ''16 inch'' ''31 inch'' ''18 inch'' ''22 inch'' ''33 inch'' ''14 inch'' ''27 inch''
+    ''25 inch'' ''15 inch'']'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It''s a simple matter to strip off the `"` and `inch` characters to convert
+    these two columns to numeric values. Here''s a function to convert a column of
+    strings to a numeric column by extracting any integer or floating-point numbers
+    on the front of the string:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[ nan 26.5 20.5 17.5 23.5 14\. 13\. 29.5 15.5 7\. 10\. 23.1] [nan 36\. 24\.
+    20\. 34\. 26\. 30\. 28\. 32\. 16\. 31\. 18\. 22\. 33\. 14\. 27\. 25\. 15.]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two other columns that are numeric in nature but would be more complicated
+    to parse apart (as they have both feet and inch units):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[nan "12''" "14''" "13''" "16''" "<12''"] [nan ''10\'' 6"'' ''9\'' 6"'' ''9\''
+    7"'' ''10\'' 2"'' ''12\'' 8"'' ''12\'' 10"'' ''9\'' 10"'' ''9\'' 8"'' ''11\''
+    0"'' ''10\'' 10"'' ''8\'' 6"'' ''9\'' 5"'' ''14\'' 1"'' ''11\'' 10"'' ''6\'' 3"''
+    ''12\'' 4"'' ''8\'' 2"'' ''8\'' 10"'' ''8\'' 4"'' ''15\'' 9"'' ''13\'' 10"'' ''13\''
+    7"'' ''15\'' 4"'' ''19\'' 8"'']'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `Blade_Width` column even has a range in the form of `<12'`. It's better
+    to leave these as strings, which we'll treat as categorical variables when prepping
+    the data for use in a model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.5 Dealing with missing data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Missing data in CSV files is often indicated as physically missing (two commas
+    in a row like “`,,`”), but some records use physically-present string values such
+    as `None` or `Unspecified`. Some files use special indicator numbers to represent
+    missing numeric values, such as -1 or 0\. Pandas uses Numpy's `np.nan` (“not a
+    number”) to represent values missing from data files in memory, for both numeric
+    and string data types. Pandas stores physically-present numeric and string values
+    in files as-is in memory. The point is that the definition of missing is ambiguous
+    and depends on the dataset. That's why we normalized strings in the previous section
+    so that only `np.nan` indicates “missing.” We'll do the same for numeric indicator
+    values in this section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once the entire dataframe has a single definition of missing value, we still
+    have to do something intelligent with these holes. Models can''t train on “not
+    a number” values. Our recipe to handle missing values looks like this: For numeric
+    columns, we replace missing values with the median of that column and introduce
+    a new boolean column that is true for any record where we replace a missing value.
+    (Statisticians call replacing missing values *imputation*.) The strategy for nonnumeric
+    columns simply is to leave them as-is with `np.nan` values. Our default string/categorical
+    variable encoding is to label encode them, which will automatically replace `np.nan`
+    values with zeros. (Label encoding assigns a unique integer for every unique string
+    or category value.) Dealing with missing nonnumeric values is easiest so let''s
+    start by seeing how that works.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.5.1 Replacing missing categorical values
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In **Section 6.2** *Encoding categorical variables*, we converted the string
+    `display_address` column to numeric values by converting the column to an ordered
+    categorical column and then replacing the categories with their category integer
+    codes + 1\. Pandas represents `np.nan` with category code -1 and so adding one
+    shifts `np.nan` to 0 and all category codes to be 1 and above. For convenience,
+    let''s create two functions that implement our label-encoding strategy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s see the mechanism in action on a toy dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | Name |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | Xue |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | Tom |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Converting the string column to a categorical variable means Pandas will replace
+    each string with a unique integer representation, which we can include in the
+    dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | Name | catcodes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | Xue | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 |  | -1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | Tom | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Pandas still displays the `Name` column values as strings because that''s more
+    meaningful, but the `Name` column is now categorical:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Name category catcodes int8 dtype: object'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To complete the label encoding, we call the second function to replace the
+    category values with the integer codes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | Name | catcodes |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 2 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 0 | -1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: The `Name` column is one more than the `catcodes` column and so missing values
+    become integer value 0 at the end of the encoding process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To handle all missing nonnumeric values and label-encode nonnumeric columns,
+    takes just two function calls:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | 289125 | 289126 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| SalePrice | 8300 | 15500 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| ModelID | 4663 | 11859 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| datasource | 136 | 132 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| auctioneerID | 31 | 25 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| YearMade | 1985 | 1995 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| MachineHoursCurrentMeter | 0.0000 |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| UsageBand | 0 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| saledate | 2009-01-23 00:00:00 | 2009-01-23 00:00:00 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| fiModelDesc | 654 | 3081 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| fiBaseModel | 211 | 1127 |'
+  prefs: []
+  type: TYPE_TB
+- en: We've now converted all string columns to numbers and dealt with missing string
+    values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The unreasonable effectiveness of label encoding categorical variables**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might be wondering why it's “legal” to convert all of those unordered (nominal)
+    categorical variables to ordered integers. We know for sure that assuming an order
+    between categories is wrong. The short answer is that RF models can still partition
+    such converted categorical features in a way that is predictive, possibly at the
+    cost of a more complex tree model. This is definitely not true for many models,
+    such as linear regression models (which require so-called “dummy” boolean columns,
+    one for each unique categorical value). In practice, we've found label encoding
+    categorical variables surprisingly effective, even when it seems more advanced
+    methods would work better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.5.2 Replacing missing numeric values
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'To handle missing numeric values, we recommend a two step process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For column *x*, create a new boolean column *x*`_na` where *x*`[i]` is true
+    if *x*`[i]` is missing.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Replace missing values in column *x* with the median of all *x* values in that
+    column.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Those two steps have simple and direct equivalents in Python, thanks to Pandas:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s make a toy dataframe with a numeric column that''s missing a value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | YearMade |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1995.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2001.0000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 |  |'
+  prefs: []
+  type: TYPE_TB
+- en: 'and then run it through our function to see its effect on the dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | YearMade | YearMade_na |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1995.0000 | False |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2001.0000 | False |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1998.0000 | True |'
+  prefs: []
+  type: TYPE_TB
+- en: The missing value in the third row has been replaced by 1998, the median of
+    1995 and 2001, and there is a new column called `YearMade_na` indicating we replaced
+    a value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The logic behind using the median is that we have to choose a number and so
+    we might as well choose a number that''s not going to skew the distribution of
+    the data in that column. We also don''t want to choose an extreme value that the
+    model might latch onto as predictive. But, we should include a column in our dataset
+    that indicates we''ve done this replacement because sometimes missing values are
+    strongly predictive. For example, a bulldozer with an unknown manufacturing date
+    is presumably less valuable because of the uncertainty. This approach is supported
+    by recent academic research: [On the consistency of supervised learning with missing
+    values](https://hal.archives-ouvertes.fr/hal-02024202v2).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Turning back to the full dataset now, we previously converted `Tire_Size` from
+    a string to a numeric column by parsing out the number of inches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Values [ nan 26.5 20.5 17.5 23.5 14\. 13\. 29.5 15.5 7\. 10\. 23.1] Median 20.5
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That still leaves a lot of missing values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | Tire_Size |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289125 |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289126 |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289127 |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289128 |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289129 | 26.5000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289130 |  |'
+  prefs: []
+  type: TYPE_TB
+- en: 'After applying `fix_missing_num()`, all `np.nan`s representing missing values
+    have been replaced with 20.5, the median of `Tire_Size`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | Tire_Size |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289125 | 20.5000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289126 | 20.5000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289127 | 20.5000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289128 | 20.5000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289129 | 26.5000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289130 | 20.5000 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'We also have to fix missing values in the other column we converted to numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Not all missing values are represented by `np.nan`. Sometimes people represent
+    missing values by special indicator values during data entry or some conversion
+    process. There are two numeric columns with such indicator values that we should
+    fix because the feature importance graph suggests they are important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One look at the relationship between `YearMade` and the bulldozer sale price
+    shows that we have a problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: » *Generated by code to left*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/d0dcb507595e954eeee16778e1fcebec.png)](images/bulldozer-intro/bulldozer-intro_sniff_40.svg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It''s unlikely that humans were manufacturing bulldozers in the year 1000\.
+    Either the seller does not want to admit the age or does not know the age of the
+    bulldozer. It''s unclear why someone chose an indicator value of 1000 instead
+    of 0 or -1, but we can fix this problem by replacing 1000 with `np.nan`. Then,
+    we can apply our standard procedure for missing numeric values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[![](../Images/c083fbe0d280dd68192b2ec5c9d61b0a.png)](images/bulldozer-intro/bulldozer-intro_sniff_42.svg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the manufacturing year versus sale price looks a lot more reasonable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There''s one last problem with this column. Some records indicate that the
+    bulldozer was sold before it was made, although there is only one in the last
+    100,000 records of our training subset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | SalePrice | YearMade | saledate |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 344948 | 35000 | 2012.0000 | 2010-05-06 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'That''s easy enough to fix by setting the `YearMade` to the year of the sale
+    date (using the assumption that the sale date is more recent and likely more accurate
+    than the manufacturing date):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The other numeric column with a special value is `MachineHoursCurrentMeter`.
+    At first glance, a bulldozer with 0 machine hours appears to be simply a new bulldozer.
+    Let''s filter for records with 0 missing hours and look at the histogram of `YearMade`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: » *Generated by code to left*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[![](../Images/3cba6205b22ef2147be900536cbfdb6c.png)](images/bulldozer-intro/bulldozer-intro_sniff_45.svg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Those manufacturing dates all precede 2009, which is the first sale year in
+    our data subset. It''s unlikely that all of those bulldozers sat idle from the
+    time of their manufacture until their sale date years later. From this, we can
+    conclude that 0 must indicate an unknown or “you really don''t want to know” number
+    of machine hours. Let''s flip those zeros to `np.nan` and call `fix_missing_num()`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After handling these missing numeric values, there are three new columns on
+    the end of the dataframe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|   | Undercarriage_Pad_Width_na | YearMade_na | MachineHoursCurrentMeter_na
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289125 | True | False | True |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289126 | True | False | True |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289127 | True | False | True |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289128 | False | False | True |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 289129 | True | False | True |'
+  prefs: []
+  type: TYPE_TB
+- en: At this point all features are numeric, except for `saledate`, and missing values
+    have been fixed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.6 Training a model with all features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that we have the dataframe prepped as pure numbers, we can use all the
+    features to train a model and compare its performance to the baseline. The one
+    exception is that `saledate` is still a time stamp, but we''ll do something special
+    with that in the next chapter. Here''s the usual training sequence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: OOB R^2 0.89871 using 5,151,648 tree nodes with 43.0 median tree height
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That 0.899 is a big improvement upon our baseline score of 0.845, but we can
+    do better through feature engineering, which is the subject of the next chapter.
+    Let''s take a snapshot of this cleaned up dataset to avoid repeating the same
+    process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[![](../Images/987f99d07829a600e5e6ade52713bcae.png)](images/bulldozer-intro/bulldozer-intro_sniff_52.svg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To help focus our feature engineering efforts, let's check the feature importance
+    graph (right gutter) to see what the model finds predictive. `YearMade` is still
+    very important, but there's nothing left to do on that feature. Given their importance,
+    we should take a close look at `ProductSize`, `fiProductClassDesc`, `Enclosure`,
+    `Hydraulics_Flow`, `fiSecondaryDesc`, and so on. Also notice the long tail of
+    unimportant features. These features could be truly unimportant or could be extremely
+    important, but for a small subset of the records. The best strategy is to leave
+    all features in the model until the end, and then gradually remove them until
+    accuracy drops.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7.7 Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this chapter, we did a lot of cleanup work on the bulldozer data set, mostly
+    related to converting column datatypes and dealing with missing numeric and string
+    values. Part of the cleanup process was to identify physically-present numbers
+    or strings that actually represent missing values. Our `df_normalize_strings()`
+    function normalizes the notion of missing to `np.nan` for strings, but we had
+    to identify indicators of missing values, such as medieval sale dates of 1000,
+    manually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The most important lesson of this chapter is how to deal with missing values.
+    Missing categorical values are dealt with automatically because of our recommended
+    label-encoding process: Convert categories to unique integer values; missing values,
+    `np.nan`, become category code 0 and all other categories are codes 1 and above.
+    Dealing with missing numeric values requires a new column and replacement of `np.nan`s:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For column *x*, create a new boolean column *x*`_na` where *x*`[i]` is true
+    if *x*`[i]` is missing.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Replace missing values in column *x* with the median of all *x* values in that
+    column.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: At this point, you've got some good data cleaning skills, you know how to normalize
+    and encode string columns as numeric values, and you know how to deal with missing
+    values. That means you know how to prepare datasets for model training purposes.
+    In the next chapter, were going to beef up your feature engineering skills.
+  prefs: []
+  type: TYPE_NORMAL
