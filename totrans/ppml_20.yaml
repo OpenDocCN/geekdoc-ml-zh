@@ -1,16 +1,22 @@
 - en: 'Chapter 12 Recommending Recommendations: A Recommender System Using Natural
     Language Understanding'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第12章 推荐推荐：使用自然语言理解的推荐系统
 - en: 原文：[https://ppml.dev/nlp.html](https://ppml.dev/nlp.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://ppml.dev/nlp.html](https://ppml.dev/nlp.html)
 - en: '*In collaboration with Carlo Lipizzi, Teaching Associate Professor & Program
     Lead, School of Systems and Enterprises, Stevens Institute of Technology.*'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '*与Carlo Lipizzi合作，系统与企业学院教学助理教授兼项目负责人，史蒂文斯理工学院。*'
 - en: In Part [**1**](hardware.html#) we covered the foundations underlying machine
     learning pipelines; in Part [**2**](design-code.html#) we discussed how to create
     and maintain them well; and in Part [**3**](development-tools.html#) we provided
@@ -20,12 +26,17 @@
     our discussion on Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations))
     and the references therein. An adapted version of the pipeline code and configurations
     is available at
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 在第[**1**](hardware.html#)部分，我们介绍了机器学习流程的基础；在第[**2**](design-code.html#)部分，我们讨论了如何创建和维护它们；在第[**3**](development-tools.html#)部分，我们提供了涉及的工具和技术简要概述。现在，我们通过讨论Carlo
+    Lipizzi为美国国防部构建的一个真实世界机器学习流程的简略版，将这些材料置于上下文中。我们的讨论基于Lipizzi等人（Lipizzi等人 [2022](#ref-recommendations)）及其中的参考文献。流程代码和配置的改编版本可在以下网址找到：
 - en: '[https://github.com/pragprogml](https://github.com/pragprogml) .'
+  id: totrans-4
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '[https://github.com/pragprogml](https://github.com/pragprogml) .'
 - en: We first define the scope of the pipeline and put it into the appropriate domain
     context (Section [12.1](nlp.html#nlp-domain)). We then outline the machine learning
     models involved and how we can think of them as a data processing pipeline (Section
@@ -33,44 +44,62 @@
     infrastructure for the pipeline to run on (Section [12.3](nlp.html#nlp-infra))
     and the modules that are most interesting from a software engineering perspective
     (Section [12.4](nlp.html#nlp-architecture)).
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先定义流程的范围，并将其置于适当的领域背景下（第[12.1节](nlp.html#nlp-domain)）。然后，我们概述涉及的机器学习模型以及我们如何将它们视为数据处理流程（第[12.2节](nlp.html#nlp-model)）。最后，我们概述适合流程运行的硬件和软件基础设施（第[12.3节](nlp.html#nlp-infra)）以及从软件工程角度来看最有趣的模块（第[12.4节](nlp.html#nlp-architecture)）。
 - en: 12.1 The Domain Problem
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 12.1 领域问题
 - en: 'The first step in creating a machine learning pipeline is to define its scope,
     starting with the problem it will try to solve (Section [5.3.1](design-code.html#scoping-pipeline)).
     Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)) frame it as follows:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建机器学习流程的第一步是定义其范围，从它将尝试解决的问题开始（第[5.3.1节](design-code.html#scoping-pipeline)）。Lipizzi等人（Lipizzi等人
+    [2022](#ref-recommendations)）将其描述如下：
 - en: “a system to determine what are the most relevant recommendations that stakeholders
     are providing to the Defense Acquisition community […] extracting user-specific
     relevance from text and recommending a document or part of it.”
+  id: totrans-8
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “一个确定利益相关者向国防采办社区提供的最相关推荐的系统[...] 从文本中提取用户特定的相关性，并推荐文档的一部分。”
 - en: In other words, we envisage that users will submit one or more documents and
     that the machine learning pipeline will rank them in terms of overall relevance,
     highlighting the most relevant passages in each document at the same time. This
     would be an ideal opening in the mission statement document (Section [8.4](documenting-code.html#domaindocs)).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，我们设想用户将提交一份或几份文档，并且机器学习流程将根据整体相关性对它们进行排序，同时突出显示每份文档中最相关的段落。这将是使命陈述文档（第[8.4节](documenting-code.html#domaindocs)）的理想开端。
 - en: 'The domain metrics that Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations))
     focus on are the *relevance of each document*, which is defined as:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: Lipizzi等人（Lipizzi等人 [2022](#ref-recommendations)）关注的领域指标是每份文档的**相关性**，其定义为：
 - en: “By counting the number of words with a similarity more than a threshold (such
     as 0.50) and normalising it with respect to the number of the words in each document,
     an average similarity measure is calculated that presents the level of similarity
     of the entire document with respect to the entire benchmarks. […] A document with
     a higher measure is more relevant or like the benchmarks.”
+  id: totrans-11
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “通过计算超过阈值（如0.50）的相似性单词的数量，并将其与每份文档中的单词数量进行归一化，计算出平均相似度指标，该指标展示了整个文档与整个基准之间的相似程度。[...]
+    相似度指标较高的文档与基准更相关或相似。”
 - en: 'and the *relevance of individual passages*, which is defined as follows:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 以及*单个段落的相关性*，其定义如下：
 - en: “To determine the relevant parts of each recommendation, the document was looked
     at in segments of words. […] It was found that with a window of 20 words from
     the similarity matrix, the actual document (which includes the raw text) would
@@ -78,20 +107,26 @@
     To assure high-quality moving average windows, the threshold of average similarity
     is set to 0.75\. Any window of words above that threshold is then traced back
     to the original document and is highlighted.”
+  id: totrans-13
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “为了确定每个推荐的相关部分，文档被分成单词段进行查看。[...] 发现，在相似度矩阵的20个单词窗口内，实际文档（包括原始文本）会有一个35个单词的窗口，这些单词构成了重要且相关的推荐。为了保证高质量的平均移动窗口，平均相似度的阈值设置为0.75。任何高于该阈值的单词窗口都会追溯到原始文档并突出显示。”
 - en: What is the threshold for success? From a domain perspective, we want relevant
     documents to be ranked consistently higher than unrelated documents.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 成功的阈值是什么？从领域角度来看，我们希望相关文档的排名始终高于无关文档。
 - en: “A good indicator that the model learned is that the control document’s similarity
     (0.25) was significantly lower than the worst recommendation document (0.5). This
     means that the model did an accurate job of learning the domain of recommendations
     and finding the parallels in the documents.”
+  id: totrans-15
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “模型学习良好的一个良好指标是，控制文档的相似度（0.25）显著低于最差的推荐文档（0.5）。这意味着模型在学习和推荐领域以及找到文档中的相似性方面做得非常准确。”
 - en: 'In statistical terms, we can evaluate the performance of the pipeline using
     any of the popular measures of rank agreement. If we have access to a set of documents
     labelled by domain experts as either relevant or unrelated, a simple but effective
@@ -111,8 +146,12 @@
     the ability of the monitoring infrastructure (Section [5.3.6](design-code.html#monitoring-pipeline))
     to automatically trigger model retraining (Section [5.3.4](design-code.html#model-pipeline))
     or rollbacks (Section [7.6](deploying-code.html#rollback)).'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在统计术语中，我们可以使用任何流行的排名一致性度量来评估管道的性能。如果我们能够访问一组由领域专家标记为相关或不相关的文档，一个简单但有效的方法可能是前\(k\)个文档中的命中比：\[\begin{equation*}
+    \mathrm{HR} = \frac{\text{前$k$个文档中相关文档的数量}}{k}\,. \end{equation*}\] 首先，我们可能假设用户只会查看前\(k\)个文档中的相关结果：毕竟，70%–90%的用户永远不会查看谷歌结果的第二页（Shelton
+    [2017](#ref-first-page))。因此，从领域角度来看，后续文档的排名准确性并不重要。其次，文档的标记不可避免地会有噪声（第[5.2.1](design-code.html#data-debt)节）：不同的领域专家会产生不同的排名。希望我们可以使用一组所有专家都同意要么高度相关要么不相关的文档子集来估计HR。像Kendall的\(\tau\)或Spearman的\(\rho\)这样的细粒度排名一致性度量可能不会对标签中的噪声具有鲁棒性，这限制了我们对不同机器学习模型性能进行对比的能力。反过来，这可能会影响监控基础设施（第[5.3.6](design-code.html#monitoring-pipeline)节）自动触发模型重新训练（第[5.3.4](design-code.html#model-pipeline)节）或回滚（第[7.6](deploying-code.html#rollback)节）的能力。
 - en: 'For the ranking to be well-defined, we should specify what “relevant” means.
     Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)) base the pipeline
     design on the *room theory* framework developed in their previous work (Lipizzi,
@@ -146,52 +185,74 @@
     from becoming stale (Section [5.2.1](design-code.html#data-debt)) as quickly,
     since there will be fewer relevant terms and they will only be used with a specific
     technical meaning.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使排名定义得更好，我们应该明确“相关”的含义。Lipizzi 等人（Lipizzi et al. [2022](#ref-recommendations)）将管道设计基于他们在之前工作中开发的**房间理论**框架（Lipizzi,
+    Borrelli, and de Oliveira Capela [2021](#ref-room-theory)）。这个框架背后的关键思想是我们需要让机器学习模型意识到它们所操作的环境，以实现对所分析文档的语义理解。同一个词在不同的领域可能有不同的含义：区分它们及其相关性对于从自然语言处理（NLP）过渡到自然语言理解（NLU）至关重要。Lipizzi
+    等人（Lipizzi, Borrelli, and de Oliveira Capela [2021](#ref-room-theory)）提出，通过让领域专家仔细选择模型将要训练的文档，以形成一个特定主题的知识库来实现
+    NLU。此外，专家识别领域中的关键术语，并赋予它们权重以编码它们相对的重要性。新文档将与这个知识库进行比较，这是由机器学习模型提炼出来的：它们与知识库中的文档越相似，就越被认为是相关的。显然，如果我们用像维基百科语料库这样的大规模通用数据集来训练我们的模型，这种方法是不起作用的：正如我们在第
+    [5.3.1](design-code.html#scoping-pipeline) 节中论证的，确定我们需要收集哪些数据对于管道表现良好至关重要。在 Lipizzi
+    等人（Lipizzi et al. [2022](#ref-recommendations)）的情况下，这些数据是美国国防部采购流程范围内的特定类型商品或服务的文档语料库。该语料库应该足够大，以涵盖该类型商品或服务的所有相关信息：如果它太小，可能不包含所有关键术语和短语，或者可能不允许我们准确建模它们之间的关系。另一方面，如果它太大，可能缺乏焦点，并可能降低模型生成的排名质量。我们应该使用与管道将要排名的文档完全相同的主题的文档来训练管道中的机器学习模型（第
+    [9.1](troubleshooting-code.html#data-problems) 节）。以这种方式限制管道的焦点也可能有助于防止模型迅速过时（第
+    [5.2.1](design-code.html#data-debt) 节），因为相关的术语会更少，并且它们只会在特定的技术意义上使用。
 - en: 12.2 The Machine Learning Model
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 12.2 机器学习模型
 - en: 'The pipeline in Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations))
     is relatively straightforward from a machine learning perspective because it includes
     just a single model. As a result, it is not susceptible to model feedback loops
     (Section [5.2.2](design-code.html#model-debt)) and is robust against correction
     cascades (Sections [5.2.2](design-code.html#model-debt) and [9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data)).
     The data and the models interact in the pipeline as follows:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 从机器学习角度来看，Lipizzi等人（Lipizzi et al. [2022](#ref-recommendations)）的管道相对简单，因为它只包含一个模型。因此，它不易受到模型反馈循环（第[5.2.2](design-code.html#model-debt)节）的影响，并且对纠正级联（第[5.2.2](design-code.html#model-debt)节和[9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data)节）具有鲁棒性。数据和模型在管道中的交互如下：
 - en: The documents that encode the domain knowledge on the acquisition of a specific
     type of goods or services are ingested and prepared (Section [5.3.3](design-code.html#data-pipeline))
     using standard NLP techniques including those described in Section [3.1.3](types-structures.html#string-types).
     They are a static data set that is used for training (Section [5.3.4](design-code.html#model-pipeline)).
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 编码特定类型商品或服务获取领域知识的文档通过标准NLP技术（包括第[3.1.3](types-structures.html#string-types)节中描述的技术）进行摄取和准备（第[5.3.3](design-code.html#data-pipeline)节）。它们是一个用于训练（第[5.3.4](design-code.html#model-pipeline)节）的静态数据集。
 - en: The domain knowledge is distilled from the documents into word embeddings using
     word2vec (Rong [2014](#ref-word2vec)) and the list of key terms with the associated
     weights provided by the domain experts. The embeddings represent what Lipizzi
     et al. (Lipizzi, Borrelli, and de Oliveira Capela [2021](#ref-room-theory)) call
     the “room” and are the core of our machine learning model. The key terms are the
     vocabulary we pass to word2vec.
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 领域知识通过word2vec（Rong [2014](#ref-word2vec)）从文档中提炼到词嵌入，以及领域专家提供的带有相关权重的关键词列表。这些嵌入代表了Lipizzi等人（Lipizzi,
+    Borrelli, and de Oliveira Capela [2021](#ref-room-theory)）所说的“房间”，并且是我们机器学习模型的核心。关键词是我们传递给word2vec的词汇表。
 - en: Inference (Section [5.3.5](design-code.html#production-pipeline)) involves users
     submitting new documents which are then prepared in the same way as those in the
     training set. The relevance of each document is measured as the degree of similarity
     with the “room” by pooling cosine distance and scaling it by the document’s length.
     Therefore, the machine learning model outputs a scalar number between 0 and 1
     which is then used to rank the model.
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 推理（第[5.3.5](design-code.html#production-pipeline)节）涉及用户提交新的文档，这些文档随后以与训练集中相同的方式进行准备。每个文档的相关性是通过计算与“房间”的相似度来衡量的，即通过池化余弦距离并按文档长度进行缩放。因此，机器学习模型输出一个介于0和1之间的标量数，然后用于对模型进行排序。
 - en: At the same time, the model parses each new document sequentially, identifies
     sequences of words with high relevance and highlights them. Therefore, each inference
     request also returns a modified version of the document that was submitted by
     the user.
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 同时，该模型按顺序解析每个新的文档，识别出高度相关的词序列并将其突出显示。因此，每个推理请求也会返回用户提交的文档的修改版本。
 - en: 'Training and inference are both computationally efficient. The time complexity
     (Chapter [4](algorithms.html#algorithms)) of training varies between \(O(N \log(V))\)
     and \(O(NV)\), where \(N\) is the number of documents and \(V\) is the number
@@ -201,8 +262,12 @@
     word embeddings can be updated when new documents are available (Kaji and Kobayashi
     [2017](#ref-kaji)): there is no need to relearn them from scratch when the embeddings
     become stale.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练和推理都具有计算效率。训练的时间复杂度（第[4](algorithms.html#algorithms)章）介于 \(O(N \log(V))\)
+    和 \(O(NV)\) 之间，其中 \(N\) 是文档数量，\(V\) 是词汇表中的单词数量，这取决于word2vec的实现。推理对于估计相关性和突出显示相关文本部分都是
+    \(O(N)\)，并且可以实现对每个文档的单次遍历。此外，当有新文档可用时（Kaji和Kobayashi [2017](#ref-kaji)），可以更新词嵌入：当嵌入变得过时时，无需从头开始重新学习。
 - en: 'In practice, Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)) limit
     \(V\) by asking the domain experts to provide a list of a few hundred key terms:
     manually assembling such a list is feasible because we are targeting a single
@@ -215,8 +280,12 @@
     by matching the new document to the closest “room”. The latter task can reuse
     the inference module that computes document similarity, so it has linear time
     complexity and should not noticeably impact the time complexity of the pipeline.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，Lipizzi等人（Lipizzi et al. [2022](#ref-recommendations)）通过要求领域专家提供几百个关键术语的列表来限制
+    \(V\)：由于我们针对的是第 [12.1](nlp.html#nlp-domain) 节中讨论的单种商品或服务，手动编制这样的列表是可行的。由于同样的原因，word2vec的样本大小要求也大大降低（Dusserre
+    and Padró [2017](#ref-word2vec-ssize)），因此 \(N\) 和 \(V\) 在实际应用中都是有限的。然而，我们可以通过扩展管道以包括一个模型集合（每个类型一个）来扩大范围，其中适当的模型要么（手动）由用户选择，要么（自动）通过将新文档与最近的“房间”匹配来选择。后一项任务可以重用计算文档相似性的推理模块，因此它具有线性时间复杂度，不应明显影响管道的时间复杂度。
 - en: 'The inputs and outputs of each of data ingestion, data preparation, model training
     and inference have well-defined characteristics that make it easy to construct
     a suite of software tests based on property-based testing (Section [9.4](troubleshooting-code.html#testing))
@@ -225,33 +294,46 @@
     have better performance in model evaluation and validation (Section [5.3.4](design-code.html#model-pipeline))
     because we can demonstrate them to be functionally equivalent to those we are
     currently using. In particular:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据摄取、数据准备、模型训练和推理的输入和输出都有明确的特征，这使得基于属性测试（第 [9.4](troubleshooting-code.html#testing)
+    节）构建一系列软件测试变得容易，并且可以监控它们在生产中的行为（第 [5.3.6](design-code.html#monitoring-pipeline)
+    节）。由于我们可以证明它们在功能上与我们目前使用的等效，因此涉及到的模型和算法很容易用性能更好的新模型替换。特别是：
 - en: Data ingestion takes PDFs containing text as inputs and outputs the words therein
     as a vector of strings.
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据摄取以包含文本的PDF作为输入，并将其中的单词作为字符串向量输出。
 - en: Data preparation takes a vector of strings as input, performs the operations
     discussed in Section [3.1.3](types-structures.html#string-types) and outputs a
     second vector of strings containing only the key terms in the list provided by
     the domain experts.
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据准备以字符串向量作为输入，执行第 [3.1.3](types-structures.html#string-types) 节中讨论的操作，并输出一个包含由领域专家提供的列表中仅有的关键术语的第二个字符串向量。
 - en: Model training takes the output from data preparation as an input and outputs
     the word embeddings, which can be either a sparse or a dense matrix (Sections
     [3.2.3](types-structures.html#matrices) and [4.5.2](algorithms.html#bigO-sparsem)).
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模型训练以数据准备的输出作为输入，并输出词嵌入，这可以是稀疏矩阵或密集矩阵（第 [3.2.3](types-structures.html#matrices)
+    和 [4.5.2](algorithms.html#bigO-sparsem) 节）。
 - en: Inference takes the word embeddings and one or more new, preprocessed documents
     as inputs and outputs a relevance score (a scalar) and a document with highlights
     as outputs. The outputs may or may not be ordered in order of reverse relevance,
     depending on whether they are meant for programmatic use rr for a dashboard.
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 推理以词嵌入和一个或多个新预处理文档作为输入，并输出一个相关性得分（一个标量）以及带有高亮的文档作为输出。输出可能按反向相关性排序，也可能不按顺序排序，这取决于它们是否用于程序化使用或仪表板。
 - en: 'We should test that data ingestion correctly handles well-formed PDFs, and
     either fails outright or degrades gracefully when handed malformed PDFs or PDFs
     with structured data that cannot be parsed as text (for instance, tables and equations).
@@ -270,8 +352,10 @@
     monitoring facilities should be designed to cover all parts of the pipeline, to
     be as few as possible (Section [9.4.6](troubleshooting-code.html#test-coverage))
     and to be fast enough to allow for live monitoring.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该测试数据摄取是否正确处理了格式良好的PDF，并且在接收到格式不正确的PDF或无法解析为文本的结构化数据PDF时（例如，表格和方程式）要么直接失败，要么优雅地降级。可选地，我们可以通过位图和OCR来增强数据摄取，以尝试恢复此类文档。数据准备应处理与管道范围内的商品或服务相关的文本，删除无关的单词并拒绝非英语语言的文本。我们还应该测试模型训练和推理对于边界和有效输入（例如，没有相关关键词的文档、只有一个相关关键词的文档、所有相关关键词的文档）能够成功完成，而对于无效输入（例如，空文档、`NA`字符串）则失败。最后，我们应该添加集成和系统测试来检查所有输出以及整个管道的稳定性：提交包含具有微小扰动的文本的PDF（例如，用同义词替换一个单词等）应导致非常相似的相关性分数。我们可以用不变量（如标点符号和大写字母）做同样的事情，这两者都应该在数据准备期间被移除。这些测试和相应的监控设施应设计为涵盖管道的所有部分，尽可能少（第[9.4.6节](troubleshooting-code.html#test-coverage)），并且足够快，以便进行实时监控。
 - en: Having such a suite of software tests integrated in our CI/CD and monitoring
     facilities makes it possible to safely plug in new software and models to upgrade
     different parts of the pipeline. However, we should measure and log how many resources
@@ -284,19 +368,26 @@
     For the particular application in Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)),
     it is particularly important for inference to have low latency because we envisage
     that users will expect the documents to be ranked in real time.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 将这样一套软件测试集成到我们的CI/CD和监控设施中，使得我们可以安全地将新的软件和模型插入到管道的不同部分进行升级。然而，我们应该测量并记录升级部分使用的资源数量（第[5.3.6节](design-code.html#monitoring-pipeline)）。首先，我们应该确保在第[12.3节](nlp.html#nlp-infra)中将要制定硬件基础设施足够运行它们，或者根据需要对其进行扩展（第[2.4节](hardware.html#hardware-choice)）。其次，监控设施仍然能够提供实时反馈。毕竟，NLP模型因其资源密集而臭名昭著（第[9.2.3节](troubleshooting-code.html#troubleshooting-costly-models)）！对于Lipizzi等人（Lipizzi
+    et al. [2022](#ref-recommendations)）的特定应用，推理具有低延迟尤为重要，因为我们预计用户会期望文档能够实时排序。
 - en: 12.3 The Infrastructure
+  id: totrans-33
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 12.3 基础设施
 - en: 'How the software implementation of the pipeline should be divided into modules
     should be apparent: the data processing steps we described in Section [12.2](nlp.html#nlp-model)
     map well to the general architecture we discussed in Section [5.3](design-code.html#processing-pipeline).
     In order to support it, we should perform some capacity planning and estimate
     its compute, memory and storage needs (Section [2.4](hardware.html#hardware-choice)).'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 管道软件实现应如何划分为模块应该是显而易见的：我们在第[12.2节](nlp.html#nlp-model)中描述的数据处理步骤很好地映射到我们在第[5.3节](design-code.html#processing-pipeline)中讨论的通用架构。为了支持它，我们应该进行一些容量规划并估计其计算、内存和存储需求（第[2.4节](hardware.html#hardware-choice)）。
 - en: 'The pipeline described in Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations))
     is not particularly demanding in terms of computing power. The narrow focus of
     the “room” on a single type of goods or services means that we can keep our training
@@ -305,35 +396,50 @@
     number of key terms in the vocabulary. Furthermore, we do not need to load the
     complete training set into memory to learn them: we can use the documents in smaller
     batches and learn the embeddings incrementally (Kaji and Kobayashi [2017](#ref-kaji)).'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: Lipizzi 等人描述的流程（Lipizzi 等人 [2022](#ref-recommendations)）在计算能力方面要求不高。由于“房间”对单一类型商品或服务的狭窄关注，我们可以保持我们的训练集较小，并限制我们的存储需求。我们也没有严格的内存要求：由于词汇表中的关键术语数量有限，词嵌入的大小也有限。此外，我们不需要将完整的训练集加载到内存中才能学习它们：我们可以使用较小的批次文档，并逐步学习嵌入（Kaji
+    和 Kobayashi [2017](#ref-kaji)）。
 - en: 'Therefore, at a bare minimum, we need:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，至少我们需要：
 - en: a machine learning system for model training, optimised for compute and memory;
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用于模型训练的机器学习系统，针对计算和内存进行了优化；
 - en: a set of systems with less memory and compute but good network connectivity
     to distribute the inference load and keep latency low;
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一组具有较少内存和计算能力但网络连接良好的系统，用于分配推理负载并保持低延迟；
 - en: a storage system to hold the PDF documents used for training, the prepared textual
     data we extract from them and a model repository with the embeddings;
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个存储系统，用于存储用于训练的 PDF 文档、从中提取的预处理文本数据以及包含嵌入的模型存储库；
 - en: a separate system hosting the pipeline orchestrator, the CI/CD infrastructure
     and the server components of logging and monitoring (Section [5.3.6](design-code.html#monitoring-pipeline)).
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个独立的系统，用于托管流程编排器、CI/CD 基础设施以及日志和监控的服务器组件（见[5.3.6节](design-code.html#monitoring-pipeline)）。
 - en: We should also take care of assigning sufficient resources to all the environments
     we use (test, pre-production, production) and of making as similar as possible
     in their hardware configurations.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还应该注意为所有使用的环境（测试、预生产、生产）分配足够的资源，并尽可能使它们的硬件配置相似。
 - en: 'The machine learning system dedicated to model training may be a local system:
     this facilitates experimentation because observability is more limited on remote
     systems (Section [2.3](hardware.html#hardware-cloud)). Furthermore, we should
@@ -348,16 +454,22 @@
     we need to access them only when working on data ingestion and preparation, not
     for training. Hot storage may be better for the prepared data, again to limit
     the overhead of data accesses and increase operational intensity (Section [2.2](hardware.html#hardware-using)).'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 专门用于模型训练的机器学习系统可能是一个本地系统：这有助于实验，因为远程系统上的可观察性更有限（见[2.3节](hardware.html#hardware-cloud)）。此外，我们应该为未来做好准备：我们应该配备
+    GPU 或 TPU，以便能够探索更复杂的 NLP 模型（着眼于采用它们并替换 word2vec，如果它们表现更好），并加速 word2vec，使其达到增加训练集大小随时间推移不再成为问题的程度。因此，存储包含原始和准备数据的存储系统也应该是本地系统，并放置在执行模型训练的同一设施中，以减少模型训练中的数据访问开销。冷存储（见[2.1.2节](hardware.html#hardware-memory)）适用于原始数据（PDF
+    文档）：我们只需要在处理数据摄取和准备时访问它们，而不是用于训练。热存储可能更适合准备数据，再次限制数据访问的开销并提高操作强度（见[2.2节](hardware.html#hardware-using)）。
 - en: In contrast, the machine learning systems running the inference modules are
     better placed in geographically-distributed cloud instances if the users are spread
     over the world, which is definitely the case for U.S. Defense personnel, to reduce
     latency across the board. We may locate the model repository in the same cloud
     to facilitate model deployment (Section [5.3.5](design-code.html#production-pipeline)
     and Chapter [7](deploying-code.html#deploying-code)).
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 相比之下，运行推理模块的机器学习系统如果用户遍布全球，比如美国国防人员，那么将其放置在地理上分布的云实例中会更好，这样可以全面降低延迟。我们可能将模型仓库放置在同一云中，以方便模型部署（[5.3.5节](design-code.html#production-pipeline)和第[7章](deploying-code.html#deploying-code)）。
 - en: Finally, the orchestrator, the CI/CD infrastructure, and the logging and monitoring
     facilities should be placed on completely separate hardware and network connections
     to ensure they will be available and accessible regardless of any hardware or
@@ -368,8 +480,10 @@
     state, for instance, by rolling back malfunctioning machine learning models. Keeping
     the model registry in the cloud makes replicating it it in different geographical
     regions easier, increasing its availability and reliability in adverse scenarios.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，协调器、CI/CD基础设施以及日志和监控设施应该放置在完全独立的硬件和网络连接上，以确保它们在不受其他模块中任何硬件或软件问题影响的情况下仍然可用和可访问。我们还应该将它们（或如果我们使用MLOps平台代替它们）配置为集群模式，以避免单点故障，并追求最大可伸缩性和可靠性。它们将需要将管道恢复到功能状态，例如，通过回滚故障的机器学习模型。将模型注册表保留在云中使得在不同地理区域复制它更容易，从而在不利情况下提高其可用性和可靠性。
 - en: How can we design a backup and disaster recovery strategy? That depends on how
     we manage our infrastructure and on whether the infrastructure is local, remote
     or a mix of both. If we can rely on configuration management and we have our infrastructure
@@ -382,8 +496,12 @@
     If our infrastructure is not stored as-code, which may be the case for legacy
     environments, we can only rely on taking regular snapshots of all systems and
     restoring them as needed.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何设计备份和灾难恢复策略？这取决于我们如何管理我们的基础设施，以及基础设施是本地、远程还是两者的混合。如果我们可以依赖配置管理，并且我们的基础设施完全以代码形式描述，那么从头开始重新创建它并重新运行CI/CD管道可能是更好的选择。仅仅重新运行CI/CD管道可能就足以修复一些小问题，比如失败的模块部署。例如，Kubernetes（Kubernetes作者
+    [2022](#ref-kubernetes)[a](#ref-kubernetes)）可以备份它管理的任何集群的状态，并在灾难发生时从单个组件恢复到整个集群（Velero作者
+    [2022](#ref-velero)[b](#ref-velero)）。如果我们的基础设施没有以代码形式存储，这可能适用于遗留环境，我们只能依赖定期对所有系统进行快照，并在需要时恢复它们。
 - en: If part of our infrastructure is remote, we should keep in mind that cloud providers
     and third-party services can fail and have downtimes of a day or two. Therefore,
     it is safer to have a set of geographically-distributed systems with a mix of
@@ -391,12 +509,16 @@
     that the users or the services that consume the inference outputs can fall back
     to a functioning system in case of failures (hopefully handling retries and fallbacks
     transparently).
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们的基础设施中有一部分是远程的，我们应该记住云提供商和第三方服务可能会出现故障，并且可能会有一天或两天的停机时间。因此，拥有一个地理上分布的系统集合，其中包含云和本地部署的混合，会更安全。在推理模块的情况下，我们可以确保用户或消费推理输出的服务在出现故障时可以回退到一个正常工作的系统（希望可以透明地处理重试和回退）。
 - en: 12.4 The Architecture of the Pipeline
+  id: totrans-47
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 12.4 管道架构
 - en: We aim to develop a pipeline that is as close as possible to production grade
     for the use case presented by Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)),
     while keeping it simple enough that it can serve as a useful illustration of the
@@ -409,61 +531,89 @@
     execution. Additional documentation on the pipeline architecture and a list of
     the software prerequisites for our development environment can be found on the
     `README.md` file in the repository’s root.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的目标是开发一个尽可能接近生产级别的管道，用于Lipizzi等人（Lipizzi et al. [2022](#ref-recommendations)）提出的用例，同时保持其足够简单，以便可以作为我们在第[**2**](design-code.html#)和[**3**](development-tools.html#)部分讨论的实践的有用说明。为了使其完全可重复，我们只使用开源组件，作为独立应用程序或从容器镜像（Docker
+    [2022](#ref-docker)[a](#ref-docker)）安装和执行。此外，我们选择使用Git（The Git Development Team
+    [2022](#ref-git-git)）单仓库（Section [6.4](writing-code.html#filesystem-structure)）来管理整个管道，该仓库包含所有配置、提供、启动和监控其执行的组件。有关管道架构的附加文档以及我们开发环境的软件先决条件列表可以在存储库根目录下的`README.md`文件中找到。
 - en: 'We will use as reference architecture the pipeline structure presented in Section
     [5.3](design-code.html#processing-pipeline), which outlines at a high level a
     pipeline enclosed in five architectural modules:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将参考第[5.3](design-code.html#)节中提出的管道结构作为架构，该结构从高层次概述了一个包含五个架构模块的管道：
 - en: data ingestion and data preparation (Section [12.4.1](nlp.html#nlp-ingestion-preparation));
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据摄取和数据处理（Section [12.4.1](nlp.html#nlp-ingestion-preparation)）；
 - en: data tracking and versioning (Section [12.4.2](nlp.html#nlp-tracking-with-dvc));
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据跟踪和版本控制（Section [12.4.2](nlp.html#nlp-tracking-with-dvc)）；
 - en: model training, validation and experiment tracking (Section [12.4.3](nlp.html#nlp-training-exp-tracking));
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模型训练、验证和实验跟踪（Section [12.4.3](nlp.html#nlp-training-exp-tracking)）；
 - en: model packaging (Section [12.4.4](nlp.html#nlp-model-packaging));
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模型打包（Section [12.4.4](nlp.html#nlp-model-packaging)）；
 - en: CI/CD deployment and inference (Section [12.4.5](nlp.html#nlp-deployment-inference)).
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: CI/CD部署和推理（Section [12.4.5](nlp.html#nlp-deployment-inference)）。
 - en: '![The architecture of our NLU ML pipeline.](../Images/27108feb5f2e81c28088058d44055315.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
+  zh: '![我们的NLU ML管道架构](../Images/27108feb5f2e81c28088058d44055315.png)'
 - en: 'Figure 12.1: The architecture of our NLU ML pipeline.'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12.1：我们的NLU ML管道架构。
 - en: 'We decided on this design, shown in Figure [12.1](nlp.html#fig:nlu-pipeline),
     for two reasons:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们选择这种设计，如图[12.1](nlp.html#fig:nlu-pipeline)所示，有两个原因：
 - en: 'Pipelines are rarely managed end-to-end by a single software solution in practice:
     in the vast majority of cases, they comprise and integrate multiple platforms
     and components working together.'
+  id: totrans-58
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 实际操作中，很少由单一软件解决方案端到端管理管道：在绝大多数情况下，它们由多个平台和组件组成并协同工作。
 - en: 'Different pieces of software have different strengths and weaknesses and each
     excels in a specific area: as we have pointed out in Part [**3**](development-tools.html#),
     there is no one-size-fits-all MLOps solution! Using separate solutions for data
     engineering, model training and experimental tracking, we can illustrate different
     open-source tools and how to interface them.'
+  id: totrans-59
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不同的软件有不同的优势和劣势，并且每款软件在特定领域都表现出色：正如我们在第[**3**](development-tools.html#)部分所指出的，没有一种适合所有情况的MLOps解决方案！使用针对数据工程、模型训练和实验跟踪的独立解决方案，我们可以展示不同的开源工具以及如何将它们接口连接。
 - en: 12.4.1 Data Ingestion and Data Preparation
+  id: totrans-60
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 12.4.1 数据摄取和数据处理
 - en: 'For reproducibility, we decided to use a set of freely-accessible documents
     instead of those originally used in Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)):
     a corpus of scientific articles belonging to a research topic that is fairly homogeneous
@@ -471,71 +621,101 @@
     chose comprises the arXiv preprints whose abstract contains the terms “causal
     inference”, “causal network”, “counterfactual” or “causal reasoning”, and that
     were submitted between August 1, 2021 and August 31, 2022\. The resulting query'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了确保可重复性，我们决定使用一组可自由访问的文档，而不是Lipizzi等人（Lipizzi et al. [2022](#ref-recommendations)）最初使用的那些：属于一个相当同质的研究主题的科学文章语料库，同时，该语料库有足够多的出版物。我们选择的语料库包括包含“因果推断”、“因果网络”、“反事实”或“因果推理”等术语的arXiv预印本，并且是在2021年8月1日至2022年8月31日期间提交的。生成的查询
 - en: '[PRE0]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: submitted using the arXiv’s public APIs (ArXiv [2022](#ref-arxiv-api)), returns
     a corpus of 1044 articles with the associated metadata, including the HTTP URL
     of the PDF file.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用arXiv的公共API（ArXiv [2022](#ref-arxiv-api)）提交，返回包含相关元数据的1044篇文章语料库，包括PDF文件的HTTP
+    URL。
 - en: '![Data ingestion and data preparation steps.](../Images/8e80f14f4d57f9a9a5ac7ada0ca07bc5.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![数据摄取和数据准备步骤。](../Images/8e80f14f4d57f9a9a5ac7ada0ca07bc5.png)'
 - en: 'Figure 12.2: Data ingestion and data preparation steps.'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12.2：数据摄取和数据准备步骤。
 - en: 'We implement this part of the pipeline using Apache Airflow (The Apache Software
     Foundation [2022](#ref-airflow)[a](#ref-airflow)), which we introduced in Section
     [10.3](development-tools.html#build-test-doc-tools). The DAG that represents the
     data ingestion and data preparation steps is shown in Figure [12.2](nlp.html#fig:nlu-ingestion):
     each step is implemented as a Python function and called by Airflow using the
     generic `PythonOperator` and `pythonVirtualenvOperator` interfaces. More in detail:'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用Apache Airflow（The Apache Software Foundation [2022](#ref-airflow)[a](#ref-airflow)）实现这一部分的管道，我们在第[10.3](development-tools.html#build-test-doc-tools)节中介绍了它。表示数据摄取和数据准备步骤的DAG如图[12.2](nlp.html#fig:nlu-ingestion)所示：每个步骤都实现为一个Python函数，并由Airflow使用通用的`PythonOperator`和`pythonVirtualenvOperator`接口调用。更详细地说：
 - en: '*ArXiv Query*: we call the arXiv APIs and process the returned list to extract
     the PDF URLs.'
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*ArXiv查询*：我们调用arXiv API并处理返回的列表以提取PDF URL。'
 - en: '*Article Download*: we download the PDFs returned by the query with a multi-threaded
     HTTP Python client, respecting the rate limits imposed by arXiv, and we store
     them in a local filesystem or local object storage (implemented with MinIO (MinIO
     [2022](#ref-minio))).'
+  id: totrans-68
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*文章下载*：我们使用多线程HTTP Python客户端下载查询返回的PDF，并遵守arXiv施加的速率限制，并将它们存储在本地文件系统或本地对象存储（使用MinIO（MinIO
+    [2022](#ref-minio)）实现）中。'
 - en: '*Text Conversion*: we extract the text in PDF into a plain-text file using
     one of the many available Python libraries, such as PyPDF2 (Fenniak [2022](#ref-pypdf2)),
     PdfMiner (Shinyama, Guglielmetti, and Marsman [2022](#ref-pdfminer.six)) or Spacy
     (Explosion [2021](#ref-spacy)). As before, we process multiple documents in parallel
     using a thread pool.'
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*文本转换*：我们使用众多可用的Python库之一，如PyPDF2（Fenniak [2022](#ref-pypdf2)）、PdfMiner（Shinyama,
+    Guglielmetti, and Marsman [2022](#ref-pdfminer.six)）或Spacy（Explosion [2021](#ref-spacy)），将PDF中的文本提取到纯文本文件中。与之前一样，我们使用线程池并行处理多个文档。'
 - en: '*Basic Cleaning*, *n-Gramming*, *Stopwords Removal*: we preprocess the text
     files using NLP libraries such NLTK (NLTK Team [2021](#ref-nltk)), Spacy (Explosion
     [2021](#ref-spacy)) and Gensim (Řehůřek and Sojka [2022](#ref-gensim)[a](#ref-gensim)).
     In particular, we perform case conversion, punctuation and stopword removal, stemming,
     lemmatisation and n-gramming.'
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*基本清理*、*n-gramming*、*停用词去除*：我们使用NLP库如NLTK（NLTK Team [2021](#ref-nltk)）、Spacy（Explosion
+    [2021](#ref-spacy)）和Gensim（Řehůřek and Sojka [2022](#ref-gensim)[a](#ref-gensim)）对文本文件进行预处理。特别是，我们执行大小写转换、标点符号和停用词去除、词干提取、词形还原和n-gramming。'
 - en: '*Tokens*: what is left are tokens[^(26)](#fn26) suitable for modelling in NLP
     and NLU applications.'
+  id: totrans-71
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*标记*：剩下的适合在NLP和NLU应用中进行建模的标记[^(26)](#fn26)。'
 - en: The Python code for the Airflow DAG provides a programmatic view of how the
     blocks in Figure [12.1](nlp.html#fig:nlu-pipeline) are implemented and linked
     together.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: Airflow DAG的Python代码提供了如何实现和链接图[12.1](nlp.html#fig:nlu-pipeline)中块的程序性视图。
 - en: '[PRE1]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: The two main challenges we tackle are the scalability of extracting the text
     from the PDF files and the robustness of the software tests. We achieve scalability
     with multithreading in the Python code we call from Airflow; we could have achieved
@@ -550,8 +730,15 @@
     in dedicated submodules and complemented by unit tests. The n-grams list is a
     static resource file versioned in Git and referenced via environment variables
     in the pipeline stages.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们面临的两个主要挑战是从 PDF 文件中提取文本的可扩展性和软件测试的鲁棒性。我们通过在 Airflow 中调用的 Python 代码中使用多线程来实现可扩展性；我们可以在
+    Airflow DAG 的级别上使用 Celery（Apache 软件基金会 [2022](#ref-celery-executor)[a](#ref-celery-executor)）或
+    Kubernetes（Kubernetes 作者 [2022](#ref-kubernetes)[a](#ref-kubernetes)）执行器实现类似的结果，或者完全用
+    Apache Spark（Apache 软件基金会 [2022](#ref-spark)[f](#ref-spark)）替换 Airflow。至于清理提取的文本，我们开发了一套自定义方法来执行基本的
+    NLP 清理任务，并为领域因果推理专家识别的关键术语开发了一个自定义 n-gram 方法来检测单语元、双语元和三元语。这两个都是组织在专门的子模块中，并通过单元测试进行补充。n-gram
+    列表是一个静态资源文件，在 Git 中进行版本控制，并通过环境变量在管道阶段进行引用。
 - en: The output of the DAG is a list of tokens that we will model with word2vec.
     The tokens, the list of the PDF URLs, the list of n-grams and the metadata that
     define the arXiv query are stored inside a data tracking and versioning repository
@@ -559,8 +746,13 @@
     and to allow us to track data provenance, as discussed in Section [5.3.3](design-code.html#data-pipeline).
     We can integrate Airflow and DVC with a custom Airflow operator or by calling
     the `dvc` commandline client from the Airflow built-in operator `BashOperator`.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: DAG 的输出是我们将使用 word2vec 模型化的标记列表。标记、PDF URL 列表、n-gram 列表以及定义 arXiv 查询的元数据存储在由
+    DVC（Iterative [2022](#ref-dvc)[b](#ref-dvc)）支持的跟踪和版本控制仓库中，以确保可重复性和允许我们跟踪数据来源，如第
+    [5.3.3](design-code.html#data-pipeline) 节所述。我们可以通过自定义 Airflow 操作符或从 Airflow 内置操作符
+    `BashOperator` 调用 `dvc` 命令行客户端来集成 Airflow 和 DVC。
 - en: The Airflow DAG is configured to write task logs to `stdout`, where they are
     collected by a tool such as Fluentd (The Fluentd Project [2022](#ref-fluentd))
     and forwarded to a logging database such as Elasticsearch (Elasticsearch [2022](#ref-elastic)).
@@ -568,12 +760,19 @@
     built by tools such as Grafana (GrafanaLabs [2022](#ref-grafana)). The logs themselves
     take the form of a JSON object representation of the `LogRecord` object in the
     Python Airflow code, which can be passed to the Python logging module.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: Airflow DAG 被配置为将任务日志写入 `stdout`，在那里它们被像 Fluentd（Fluentd 项目 [2022](#ref-fluentd)）这样的工具收集，并转发到像
+    Elasticsearch（Elasticsearch [2022](#ref-elastic)）这样的日志数据库。Airflow 还可以配置为将任务执行指标导出到由像
+    Grafana（GrafanaLabs [2022](#ref-grafana)）这样的工具构建的仪表板。日志本身是 Python Airflow 代码中
+    `LogRecord` 对象的 JSON 对象表示形式，可以传递给 Python 日志模块。
 - en: 12.4.2 Data Tracking and Versioning
+  id: totrans-77
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 12.4.2 数据跟踪和版本控制
 - en: 'In addition to ingesting and cleaning the data in a reproducible way, we also
     want to track all the data sets that are produced by the steps described in Section
     [12.4.1](nlp.html#nlp-ingestion-preparation): the DAG may be scheduled to run
@@ -583,8 +782,13 @@
     learning code (Section [6.5](writing-code.html#versioning)) together with the
     text corpus. This allows us to evaluate different NLP frameworks, choices for
     the parameters of word2vec and sets of n-grams from the domain experts.'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了以可重复的方式摄取和清理数据外，我们还想跟踪第 [12.4.1](nlp.html#nlp-ingestion-preparation) 节中描述的步骤产生的所有数据集：DAG
+    可能会被安排每天运行，使用不同的搜索查询来创建如 Lipizzi 等人所述的额外知识域，或者重新训练现有的 word2vec 模型。因此，我们选择将机器学习代码（第
+    [6.5](writing-code.html#versioning) 节）与文本语料库一起进行版本控制。这使我们能够评估不同的 NLP 框架、word2vec
+    参数的选择以及来自领域专家的 n-gram 集合。
 - en: As we mentioned in Section [12.4.1](nlp.html#nlp-ingestion-preparation), we
     choose DVC to implement data versioning. DVC can also perform experiment tracking,
     but we will implement that in Section [12.4.3](nlp.html#nlp-training-exp-tracking)
@@ -593,24 +797,38 @@
     the tokens produced by the Airflow DAG from the remote object-storage we stored
     them in with the command *dvc pull*. This also pulls the corresponding metadata,
     which are versioned and stored in a YAML `.dvc` file like that below.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我们在第 [12.4.1](nlp.html#nlp-ingestion-preparation) 节中提到的，我们选择 DVC 来实现数据版本控制。DVC
+    还可以执行实验跟踪，但我们将使用 MLflow（在第 [10.1](development-tools.html#exploration-experiment-tracking)
+    节中与 DVC 一起介绍）在第 [12.4.3](nlp.html#nlp-training-exp-tracking) 节中实现它。我们初始化 Git 仓库以供
+    DVC 使用，并使用命令 `dvc pull` 从我们存储它们的远程对象存储中拉取 Airflow DAG 生成的标记。这也会拉取相应的元数据，这些元数据是版本化的，并存储在类似下面的
+    YAML `.dvc` 文件中。
 - en: '[PRE2]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The `md5` attribute represents the hash of content and the `path` attribute
     is the path of the file or directory relative to the working directory, which
     defaults to the file’s location. We can then start experimenting using a development
     flow like the following.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: '`md5` 属性表示内容的哈希值，而 `path` 属性是文件或目录相对于工作目录的路径，默认为文件的位置。然后我们可以开始使用以下类似的发展流程进行实验。'
 - en: '[PRE3]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 12.4.3 Training and Experiment Tracking
+  id: totrans-83
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 12.4.3 训练和实验跟踪
 - en: The tokens we produced in Section [12.4.1](nlp.html#nlp-ingestion-preparation)
     and tracked in Section [12.4.2](nlp.html#nlp-tracking-with-dvc) are the input
     for the word2vec implementation in Gensim, available from `models.word2vec`, together
@@ -619,82 +837,121 @@
     (that is, a word vector) in a structure called `KeyedVectors` that maps the n-grams
     (the “keys”) to vectors. The `KeyedVectors` can be used to perform operations
     on the vectors, such as computing their distance or their similarity.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在第 [12.4.1](nlp.html#nlp-ingestion-preparation) 节中生成的标记，并在第 [12.4.2](nlp.html#nlp-tracking-with-dvc)
+    节中跟踪的标记是 Gensim 中 word2vec 实现的输入，可从 `models.word2vec` 获取，以及领域专家提供的 n-gram 列表（下面代码中的
+    `vocabulary` 变量）。word2vec 返回一个 `wv` 对象，该对象将每个嵌入（即单词向量）存储在称为 `KeyedVectors` 的结构中，该结构将
+    n-gram（“键”）映射到向量。`KeyedVectors` 可以用于对向量执行操作，例如计算它们的距离或相似度。
 - en: '[PRE4]'
+  id: totrans-85
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: We obtain the tokens by calling the `get_url()` method of the DVC Python API
     (Iterative [2022](#ref-dvc-api)[c](#ref-dvc-api)), which returns the URL of the
     storage location of `corpus_path` for a specific revision defined in `revision`
     of the dataset present in the `path`.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过调用 DVC Python API 的 `get_url()` 方法（迭代 [2022](#ref-dvc-api)[c](#ref-dvc-api)）来获取标记，该方法返回
+    `corpus_path` 在 `path` 中定义的 `revision` 数据集的存储位置的 URL。
 - en: '[PRE5]'
+  id: totrans-87
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'The corpus is sequentially read, tokenised and fed directly to the `train()`
     method of word2vec. We set the arguments of the `train()` method (Řehůřek and
     Sojka [2022](#ref-word2vec-api)[b](#ref-word2vec-api)) using environment variables,
     as suggested in Section [5.1](design-code.html#data-as-code), to facilitate multiple
     experimentations with different combinations of:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 语料库是顺序读取、标记并直接输入到 word2vec 的 `train()` 方法的。我们根据第 [5.1](design-code.html#data-as-code)
+    节中的建议使用环境变量设置 `train()` 方法的参数（Řehůřek 和 Sojka [2022](#ref-word2vec-api)[b](#ref-word2vec-api)），以方便进行不同组合的多次实验。
 - en: '*vector_size*: the number of dimensions of the word vectors (default: 100);'
+  id: totrans-89
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*vector_size*：单词向量的维度数（默认：100）；'
 - en: '*window*: the maximum distance between the current and predicted word within
     a sentence (default: 5).'
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*window*：句子中当前单词和预测单词之间的最大距离（默认：5）。'
 - en: '*min_count*: the minimum frequency for a word to be considered (default: 5).'
+  id: totrans-91
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*min_count*：一个单词被认为是的最低频率（默认：5）。'
 - en: '*workers*: the number of worker threads to train the model (default: 3).'
+  id: totrans-92
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*workers*：训练模型的工作线程数（默认：3）。'
 - en: 'As for experiment tracking, we implement it using the following MLflow tracking
     APIs:'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 至于实验跟踪，我们使用以下 MLflow 跟踪 API 来实现：
 - en: '`log_param()`: for tracking the word2vec parameters and the metadata associated
     with the input tokens, in particular the arXiv query that produced them and the
     DVC file path and hash they were pulled from;'
+  id: totrans-94
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`log_param()`：用于跟踪 word2vec 参数和与输入标记相关的元数据，特别是生成它们的 arXiv 查询以及它们被拉取的 DVC 文件路径和哈希；'
 - en: '`log_metric()`: for logging the dimensions of the embeddings produced by the
     model;'
+  id: totrans-95
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`log_metric()`：用于记录模型生成的嵌入的维度；'
 - en: '`log_artifact()`: for logging the name of a local file or directory, such as
     those containing the n-grams from the domain experts and the word vectors of the
     trained model, as an artefact of the experiment.'
+  id: totrans-96
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`log_artifact()`: 用于记录本地文件或目录的名称，例如包含领域专家的n-gram和训练模型的词向量等实验成果。'
 - en: Here is a short example of how we use these methods in our code.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是一个简短的例子，说明我们如何在代码中使用这些方法。
 - en: '[PRE6]'
+  id: totrans-98
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: We save the model in MLflow using its `python_function` interface, which supports
     custom models implemented as generic Python functions. Specifically, we serialise
     the learned word vectors contained in `model.wv` with the Gensim function `save()`,
     and we reload them later with the function `KeyedVectors.load()` when the serving
     model.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用MLflow的`python_function`接口保存模型，该接口支持作为通用Python函数实现的自定义模型。具体来说，我们使用Gensim函数`save()`将包含在`model.wv`中的学习词向量进行序列化，并在服务模型时使用`KeyedVectors.load()`函数重新加载它们。
 - en: 12.4.4 Model Packaging
+  id: totrans-100
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 12.4.4 模型打包
 - en: BentoML (BentoML [2022](#ref-bentoml)), which we introduced in Section [11.2](production-tools.html#production-software),
     can import a serialised Python model or an MLflow model, and it can bind its API
     to a RESTful endpoint with a minimal use of glue code. Therefore, it is a convenient
@@ -703,8 +960,10 @@
     by the user and those used to train the word2vec model (that is, what we call
     the “room” in Section [12.1](nlp.html#nlp-domain)) is exposed as a `/classify`
     endpoint.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在第[11.2](production-tools.html#production-software)节中介绍了BentoML（BentoML [2022](#ref-bentoml)），它可以导入序列化的Python模型或MLflow模型，并且它可以以最小的胶水代码将API绑定到RESTful端点。因此，它是打包和提供word2vec模型的一个方便选择。在我们的情况下，计算用户提交的PDF文档与用于训练word2vec模型的文档之间相似度的分类API（即我们在第[12.1](nlp.html#nlp-domain)节中称为“房间”的内容）公开为`/classify`端点。
 - en: 'The code snippet below shows the declaration of the service with the API and
     decorator provided by BentoML. Once the service is running, the API will be available
     at `/classify`: it will accept a PDF file as input and return a scalar between
@@ -712,15 +971,22 @@
     that accepts a JSON-formatted list of PDF URLs as input, runs calls `/classify`
     API for each of them and returns a sorted list of documents with the associated
     ranking and similarities.'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的代码片段显示了使用BentoML提供的API和装饰器声明服务的示例。一旦服务启动，API将在`/classify`处可用：它将接受PDF文件作为输入，并返回介于0和1之间的标量。作为一个未来的增强功能，我们可以构建一个额外的`/rank`
+    API端点，该端点接受JSON格式的PDF URL列表作为输入，为每个URL调用`/classify` API，并返回带有相关排名和相似度的排序文档列表。
 - en: '[PRE7]'
+  id: totrans-103
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 12.4.5 Deployment and Inference
+  id: totrans-104
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 12.4.5 部署和推理
 - en: 'One advantage of using containers to deploy and serve models is that they can
     be deployed locally using Docker or in a target (possibly remote) environment
     using Kubernetes (Section [7.1.4](deploying-code.html#container-packaging)). This
@@ -730,17 +996,27 @@
     requirements needed to run the inference API we defined in Section [12.4.4](nlp.html#nlp-model-packaging):
     the output is a Docker container with a stateless RESTful API server implemented
     in Python. The commands for building the container are shown below.'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用容器部署和提供模型的一个优点是，它们可以使用Docker在本地部署，或者使用Kubernetes在目标（可能是远程）环境中部署（见第[7.1.4](deploying-code.html#container-packaging)节）。这在我们的用例中是一个重要的点：如第[12.3](nlp.html#nlp-infra)节所述，我们的管道在本地和远程系统的组合上运行。因此，我们使用`bentoml
+    containerize`命令构建一个包含运行我们第[12.4.4](nlp.html#nlp-model-packaging)节中定义的推理API所需的所有要求的容器镜像：输出是一个实现了Python的无状态RESTful
+    API服务器的Docker容器。构建容器的命令如下所示。
 - en: '[PRE8]'
+  id: totrans-106
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '![The OpenAPI specification generated by BentoML.](../Images/a327ff14abdfde1b2e10ed90daf493a2.png)'
+  id: totrans-107
   prefs: []
   type: TYPE_IMG
+  zh: '![BentoML生成的OpenAPI规范。](../Images/a327ff14abdfde1b2e10ed90daf493a2.png)'
 - en: 'Figure 12.3: The OpenAPI specification generated by BentoML.'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12.3：BentoML生成的OpenAPI规范。
 - en: After starting the container, the API server is reachable at `http://127.0.0.1:3000`.
     The URL `http://127.0.0.1:3000/classify` serves the API from Section [12.4.4](nlp.html#nlp-model-packaging)
     and `http://127.0.0.1:3000/` displays a web page with the dynamically-generated
@@ -748,8 +1024,14 @@
     We also make available additional liveness and readiness APIs to support deployment
     on Kubernetes, as well as a `/metrics` endpoint that returns the service metrics
     in Prometheus format (Prometheus Authors and The Linux Foundation [2022](#ref-prometheus)).
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 容器启动后，API 服务器可通过 `http://127.0.0.1:3000` 访达。URL `http://127.0.0.1:3000/classify`
+    提供了第 [12.4.4](nlp.html#nlp-model-packaging) 节中的 API，而 `http://127.0.0.1:3000/`
+    显示了一个包含动态生成的 OpenAPI 文档的网页（SmartBear Software [2021](#ref-swagger)）（见图 [12.3](nlp.html#fig:openapi)）。我们还提供了额外的存活性和就绪性
+    API，以支持在 Kubernetes 上的部署，以及一个返回 Prometheus 格式服务指标的 `/metrics` 端点（Prometheus Authors
+    and The Linux Foundation [2022](#ref-prometheus)）。
 - en: 'The RESTful interface is designed to be used programmatically: we can access
     it using tools like `curl` or API testing tools like Postman (Velero Authors [2022](#ref-postman)[a](#ref-postman)).
     We can also query it in our continuous integration setup to run integration tests
@@ -766,169 +1048,277 @@
     In particular, they make it possible for domain experts to iteratively refine
     the list of key terms we use as the vocabulary of word2vec as envisaged by Lipizzi
     et al. (Lipizzi et al. [2022](#ref-recommendations)).'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: RESTful 接口设计为可编程使用：我们可以使用 `curl` 或 Postman 等API测试工具（Velero Authors [2022](#ref-postman)[a](#ref-postman)）来访问它。我们还可以在我们的持续集成设置中查询它以运行集成测试，并验证构建过程是否成功创建了容器镜像。然而，RESTful
+    接口也可以作为后端构建消耗 API 输出并通过仪表板（使用我们在第 [11.3](production-tools.html#production-dashboard)
+    节中讨论的工具）或简单网页界面（使用如 React（Meta Platforms [2022](#ref-react)[b](#ref-react)）或 Vue.js（You
+    [2022](#ref-vue)）等库或框架）的 Web 应用程序。它们对领域专家来说很有用，可以检查推理输出并验证它们以及生成它们的模型，作为人机交互（见第
+    [5.3.4](design-code.html#model-pipeline) 和 [5.3.6](design-code.html#monitoring-pipeline)
+    节）。特别是，它们使得领域专家能够迭代地细化我们用作 word2vec 词汇表的关键术语列表，正如 Lipizzi 等人所设想的那样（Lipizzi et
+    al. [2022](#ref-recommendations)）。
 - en: To validate the `/classify` API, we can upload (POST) the PDF of a scientific
     article on causal inference with the command-line tool `curl`,
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 要验证 `/classify` API，我们可以使用命令行工具 `curl` 上传（POST）一篇关于因果推理的科学论文的 PDF。
 - en: '[PRE9]'
+  id: totrans-112
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: and another on a completely different topic.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 以及另一篇关于完全不同主题的文章。
 - en: '[PRE10]'
+  id: totrans-114
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: As we can see from the relevance scores, the “/classify” API responds correctly
     for both relevant and unrelated documents (Section [9.4.6](troubleshooting-code.html#test-coverage)).
     The underlying `classify()` method computes the cosine distance between the `KeyedVectors`,
     returns the degree of similarity as a float, and logs the PDF metadata and the
     relevance to a remote logging database via Fluentd.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 从相关性得分中我们可以看出，“/classify” API 对于相关和不相关的文档都能正确响应（见第 [9.4.6](troubleshooting-code.html#test-coverage)
+    节）。底层的 `classify()` 方法计算 `KeyedVectors` 之间的余弦距离，以浮点数形式返回相似度，并通过 Fluentd 将 PDF
+    元数据和相关性记录到远程日志数据库。
 - en: '[PRE11]'
+  id: totrans-116
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: The Docker image that serves the APIs can be automatically rebuilt using tools
     like Jenkins (Jenkins [2022](#ref-jenkins)[b](#ref-jenkins)), GitLab CI or GitHub
     Actions each time we release a new model. We can deploy it to a container service
     or to an orchestrator by applying one of the techniques discussed in Section [7.2](deploying-code.html#deployment-strategies).
     Thanks to its stateless composition, the container can scale horizontally if necessary
     (we just deploy more instances of it) so we can handle increasing loads over time.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 为 API 提供服务的 Docker 镜像可以使用 Jenkins（Jenkins [2022](#ref-jenkins)[b](#ref-jenkins)）、GitLab
+    CI 或 GitHub Actions 等工具在每次发布新模型时自动重建。我们可以通过应用第 [7.2](deploying-code.html#deployment-strategies)
+    节中讨论的技术之一将其部署到容器服务或编排器。由于其无状态组合，容器在必要时可以水平扩展（我们只需部署更多实例），因此我们可以随着时间的推移处理不断增加的负载。
 - en: References
+  id: totrans-118
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: 'Abid, A., A. Abdalla, A. Ali, D. Khan, A. Alfozan, and J. Zou. 2022\. *Gradio:
     Hassle-Free Sharing and Testing of ML Models in the Wild*. [https://www.gradio.app/docs/](https://www.gradio.app/docs/).'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: Abid, A.，A. Abdalla，A. Ali，D. Khan，A. Alfozan，和 J. Zou。2022。*Gradio：在野外轻松分享和测试机器学习模型*。[https://www.gradio.app/docs/](https://www.gradio.app/docs/).
 - en: Apache Software Foundation. 2022a. *Celery Executor*. [https://airflow.apache.org/docs/apache-airflow/stable/executor/celery.html](https://airflow.apache.org/docs/apache-airflow/stable/executor/celery.html).
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache 软件基金会。2022a。*Celery 执行器*。[https://airflow.apache.org/docs/apache-airflow/stable/executor/celery.html](https://airflow.apache.org/docs/apache-airflow/stable/executor/celery.html).
 - en: ArXiv. 2022\. *arXiv API Access*. [https://arxiv.org/help/api](https://arxiv.org/help/api).
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: ArXiv。2022。*arXiv API 访问*。[https://arxiv.org/help/api](https://arxiv.org/help/api).
 - en: BentoML. 2022\. *Unified Model Serving Framework*. [https://docs.bentoml.org/en/latest/](https://docs.bentoml.org/en/latest/).
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: BentoML。2022。*统一模型服务框架*。[https://docs.bentoml.org/en/latest/](https://docs.bentoml.org/en/latest/).
 - en: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: Docker。2022a。*Docker*。[https://www.docker.com/](https://www.docker.com/).
 - en: Dusserre, E., and M. Padró. 2017\. “Bigger Does Not Mean Better! We Prefer Specificity.”
     In *Proceedings of the 12th International Conference on Computational Semantics*,
     1–6.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: Dusserre, E.，和 M. Padró。2017。“更大不一定更好！我们更喜欢特异性。”在 *第 12 届国际计算语义学会议论文集* 中，第 1-6
+    页。
 - en: 'Elasticsearch. 2022\. *Free and Open Search: The Creators of Elasticsearch,
     ELK & Kibana*. [https://www.elastic.co/](https://www.elastic.co/).'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: Elasticsearch。2022。*免费和开源搜索：Elasticsearch、ELK 和 Kibana 的创造者*。[https://www.elastic.co/](https://www.elastic.co/).
 - en: 'Explosion. 2021\. *Spacy: Industrial-Strength Natural Language Processing*.
     [https://spacy.io/](https://spacy.io/).'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 爆发。2021。*Spacy：工业级自然语言处理*。[https://spacy.io/](https://spacy.io/).
 - en: Fenniak, M. 2022\. *PyPDF2 Documentation*. [https://pypdf2.readthedocs.io/en/latest/](https://pypdf2.readthedocs.io/en/latest/).
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: Fenniak, M.。2022。*PyPDF2 文档*。[https://pypdf2.readthedocs.io/en/latest/](https://pypdf2.readthedocs.io/en/latest/).
 - en: 'GrafanaLabs. 2022\. *Grafana: The Open Observability Platform*. [https://grafana.com/](https://grafana.com/).'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: GrafanaLabs。2022。*Grafana：开源可观察性平台*。[https://grafana.com/](https://grafana.com/).
 - en: 'Iterative. 2022b. *DVC: Data Version Control. Git for Data & Models*. [https://github.com/iterative/dvc](https://github.com/iterative/dvc).'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 迭代。2022b。*DVC：数据版本控制。数据与模型的 Git*。[https://github.com/iterative/dvc](https://github.com/iterative/dvc).
 - en: Iterative. 2022c. *DVC Python API*. [https://dvc.org/doc/api-reference](https://dvc.org/doc/api-reference).
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 迭代。2022c。*DVC Python API*。[https://dvc.org/doc/api-reference](https://dvc.org/doc/api-reference).
 - en: Jenkins. 2022b. *Jenkins User Documentation*. [https://www.jenkins.io/doc/](https://www.jenkins.io/doc/).
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: Jenkins。2022b。*Jenkins 用户文档*。[https://www.jenkins.io/doc/](https://www.jenkins.io/doc/).
 - en: Kaji, N., and H. Kobayashi. 2017\. “Incremental Skip-gram Model with Negative
     Sampling.” In *Proceedings of the 2017 Conference on Empirical Methods in Natural
     Language Processing*, 363–71.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: Kaji, N.，和 H. Kobayashi。2017。“带有负采样的增量 Skip-gram 模型。”在 *2017 年自然语言处理实证方法会议论文集*
+    中，第 363-371 页。
 - en: 'Lipizzi, C., H. Behrooz, M. Dressman, A. G. Vishwakumar, and K. Batra. 2022\.
     “Acquisition Research: Creating Synergy for Informed Change.” In *Proceedings
     of the 19th Annual Acquisition Research Symposium*, 242–55.'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: Lipizzi, C.，H. Behrooz，M. Dressman，A. G. Vishwakumar，和 K. Batra。2022。“获取研究：创造信息变化的协同效应。”在
+    *第 19 届年度获取研究研讨会论文集* 中，第 242-255 页。
 - en: 'Lipizzi, C., D. Borrelli, and F. de Oliveira Capela. 2021\. *A Computational
     Model Implementing Subjectivity with the “Room Theory”: The case of Detecting
     Emotion from Text*. [https://arxiv.org/abs/2005.06059](https://arxiv.org/abs/2005.06059).'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: Lipizzi, C.，D. Borrelli，和 F. de Oliveira Capela。2021。*使用“房间理论”实现主观性的计算模型：从文本中检测情感案例*。[https://arxiv.org/abs/2005.06059](https://arxiv.org/abs/2005.06059).
 - en: 'Meta Platforms. 2022b. *React: A JavaScript Library for Building User Interfaces*.
     [https://reactjs.org/](https://reactjs.org/).'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Meta Platforms. 2022b. *React: A JavaScript Library for Building User Interfaces*.
+    [https://reactjs.org/](https://reactjs.org/).'
 - en: MinIO. 2022\. *MinIO Documentation*. [https://docs.min.io/docs](https://docs.min.io/docs).
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: MinIO. 2022\. *MinIO 文档*. [https://docs.min.io/docs](https://docs.min.io/docs).
 - en: 'NLTK Team. 2021\. *NLTK: A Natural Language Toolkit*. [https://www.nltk.org/](https://www.nltk.org/).'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 'NLTK 团队. 2021\. *NLTK: 自然语言工具包*. [https://www.nltk.org/](https://www.nltk.org/).'
 - en: 'Prometheus Authors, and The Linux Foundation. 2022\. *Prometheus: Monitoring
     System and Time Series Databases*. [https://prometheus.io/](https://prometheus.io/).'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Prometheus 作者，以及 Linux 基金会. 2022\. *Prometheus: 监控系统和时间序列数据库*. [https://prometheus.io/](https://prometheus.io/).'
 - en: Řehůřek, R., and P. Sojka. 2022a. *Gensim Documentation*. [https://radimrehurek.com/gensim/auto_examples/index.html](https://radimrehurek.com/gensim/auto_examples/index.html).
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: Řehůřek, R. 和 P. Sojka. 2022a. *Gensim 文档*. [https://radimrehurek.com/gensim/auto_examples/index.html](https://radimrehurek.com/gensim/auto_examples/index.html).
 - en: Řehůřek, R., and P. Sojka. 2022a. *Gensim Documentation*. [https://radimrehurek.com/gensim/auto_examples/index.html](https://radimrehurek.com/gensim/auto_examples/index.html).
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: Řehůřek, R. 和 P. Sojka. 2022a. *Gensim 文档*. [https://radimrehurek.com/gensim/auto_examples/index.html](https://radimrehurek.com/gensim/auto_examples/index.html).
 - en: 2022b. *Gensim Documentation*. [https://radimrehurek.com/gensim/models/word2vec.html](https://radimrehurek.com/gensim/models/word2vec.html).
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 2022b. *Gensim 文档*. [https://radimrehurek.com/gensim/models/word2vec.html](https://radimrehurek.com/gensim/models/word2vec.html).
 - en: Rong, X. 2014\. “Word2vec Parameter Learning Explained.” *arXiv Preprint arXiv:1411.2738*.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: Rong, X. 2014\. “Word2vec 参数学习解释.” *arXiv 预印本 arXiv:1411.2738*.
 - en: Shelton, K. 2017\. *The Value of Search Results Rankings*. [https://www.forbes.com/sites/forbesagencycouncil/2017/10/30/the-value-of-search-results-rankings/](https://www.forbes.com/sites/forbesagencycouncil/2017/10/30/the-value-of-search-results-rankings/).
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: Shelton, K. 2017\. *搜索结果排名的价值*. [https://www.forbes.com/sites/forbesagencycouncil/2017/10/30/the-value-of-search-results-rankings/](https://www.forbes.com/sites/forbesagencycouncil/2017/10/30/the-value-of-search-results-rankings/).
 - en: Shinyama, Y., P. Guglielmetti, and P. Marsman. 2022\. *Pdfminer.six’s Documentation*.
     [https://pdfminersix.readthedocs.io/en/latest/](https://pdfminersix.readthedocs.io/en/latest/).
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: Shinyama, Y., P. Guglielmetti, and P. Marsman. 2022\. *Pdfminer.six 的文档*. [https://pdfminersix.readthedocs.io/en/latest/](https://pdfminersix.readthedocs.io/en/latest/).
 - en: SmartBear Software. 2021\. *OpenAPI Specification*. [https://swagger.io/specification/](https://swagger.io/specification/).
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: SmartBear Software. 2021\. *OpenAPI 规范*. [https://swagger.io/specification/](https://swagger.io/specification/).
 - en: Streamlit. 2022\. *Streamlit Documentation*. [https://docs.streamlit.io/](https://docs.streamlit.io/).
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: Streamlit. 2022\. *Streamlit 文档*. [https://docs.streamlit.io/](https://docs.streamlit.io/).
 - en: The Apache Software Foundation. 2022a. *Airflow Documentation*. [https://airflow.apache.org/docs/](https://airflow.apache.org/docs/).
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache 软件基金会. 2022a. *Airflow 文档*. [https://airflow.apache.org/docs/](https://airflow.apache.org/docs/).
 - en: The Apache Software Foundation. 2022f. *Apache Spark Documentation*. [https://spark.apache.org/docs/latest](https://spark.apache.org/docs/latest).
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache 软件基金会. 2022f. *Apache Spark 文档*. [https://spark.apache.org/docs/latest](https://spark.apache.org/docs/latest).
 - en: 'The Fluentd Project. 2022\. *Fluentd: Open Source Data Collector*. [https://www.fluentd.org/](https://www.fluentd.org/).'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 'The Fluentd 项目. 2022\. *Fluentd: 开源数据收集器*. [https://www.fluentd.org/](https://www.fluentd.org/).'
 - en: The Git Development Team. 2022\. *Git Source Code Mirror*. [https://github.com/git/git](https://github.com/git/git).
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: Git 开发团队. 2022\. *Git 源代码镜像*. [https://github.com/git/git](https://github.com/git/git).
 - en: The Kubernetes Authors. 2022a. *Kubernetes*. [https://kubernetes.io/](https://kubernetes.io/).
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: Kubernetes 作者. 2022a. *Kubernetes*. [https://kubernetes.io/](https://kubernetes.io/).
 - en: Velero Authors. 2022a. *Postman Documentation*. [https://learning.postman.com/docs](https://learning.postman.com/docs).
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: Velero 作者. 2022a. *Postman 文档*. [https://learning.postman.com/docs](https://learning.postman.com/docs).
 - en: Velero Authors. 2022b. *Velero Documentation*. [https://velero.io/docs](https://velero.io/docs).
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: Velero 作者. 2022b. *Velero 文档*. [https://velero.io/docs](https://velero.io/docs).
 - en: 'You, E. 2022\. *Vue.js: The Progressive JavaScript Framework*. [https://vuejs.org/](https://vuejs.org/).'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 'You, E. 2022\. *Vue.js: 进步的 JavaScript 框架*. [https://vuejs.org/](https://vuejs.org/).'
 - en: '* * *'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: A sequence of characters grouped to provide a semantic unit for NLP processing.[↩︎](nlp.html#fnref26)
+  id: totrans-156
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一系列字符被分组以提供 NLP 处理的语义单元。[↩︎](nlp.html#fnref26)

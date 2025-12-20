@@ -3,11 +3,13 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第11章 生产环境中管理流水线的工具
 - en: 原文：[https://ppml.dev/production-tools.html](https://ppml.dev/production-tools.html)
   id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://ppml.dev/production-tools.html](https://ppml.dev/production-tools.html)
 - en: The production environments of machine learning pipe-lines often have more moving
     parts than those of traditional software, and the MLOps software to manage them
     is a broad and fast-moving field with many platforms, projects and tools. The
@@ -20,11 +22,13 @@
   id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 机器学习流水线在生产环境中的组成部分通常比传统软件的更多，而管理这些组成部分的MLOps软件是一个广泛且快速发展的领域，拥有许多平台、项目和工具。其底层基础设施可能更加复杂（第[11.1](production-tools.html#production-infra)节），而构成流水线的由数据、代码和模型组成的组合无疑更加异构（第[11.2](production-tools.html#production-software)节）。除了我们需要管理它们的工具和技术之外，我们还讨论了那些我们可以用来补充流水线的仪表板和报告功能，这些功能在数据科学中很常见（第[11.3](production-tools.html#production-dashboard)节）。
 - en: 11.1 Infrastructure Management
   id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 11.1 基础设施管理
 - en: 'Successfully running a machine learning application in production goes beyond
     just implementing a pipeline: it involves managing different local and remote
     compute systems and integrating different pieces of software that communicate
@@ -41,6 +45,8 @@
   id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 在生产环境中成功运行机器学习应用程序不仅限于实现一个流水线：它还涉及到管理不同的本地和远程计算系统，以及集成通过各种API相互通信的不同软件组件。令人困惑的是，文献中经常将这两者都称为“系统”，意味着任何需要配置、接收一些输入并产生一些输出的东西。这样的抽象定义使得计算系统、托管我们代码的GitHub组织、在云中运行其一部分的Amazon
+    AWS EC2实例以及管理我们本地系统资源的Kubernetes集群都是系统。考虑到硬件在机器学习应用程序中的突出作用（第[2](hardware.html#hardware)章），我们发现这个定义并不实用，因为它过于抽象，无法推理应用程序本身的架构和性能（第[5](design-code.html#design-code)章）。同样，对于“一切只是API”的更加抽象的观点也是如此。
 - en: 'Managing the compute systems and the software in a real-world pipeline either
     manually or with a few simple scripts (which would qualify as glue code, Section
     [5.2.3](design-code.html#architecture-debt)) is often too burdensome: there are
@@ -52,6 +58,7 @@
   id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 在现实世界的流水线中手动或使用一些简单的脚本（这些脚本可以被视为粘合代码，第[5.2.3](design-code.html#architecture-debt)节）来管理计算系统和软件通常过于繁重：它们太多了，遵循不同的约定（因为它们是由不同的供应商生产的），它们不向后兼容，并且它们的配置文件使用不同的语言和格式。配置管理是唯一可能的方法，以保持这种复杂性在可控范围内，并确保流水线可重复和可审计。
 - en: One of the most widely-used tools for this task is Terraform (HashiCorp [2022](#ref-terraform)[b](#ref-terraform)),
     which defines itself as a tool to achieve “infrastructure as code”. Terraform
     is essentially an abstraction layer for a wide range of services (HashiCorp [2022](#ref-terraform-registry)[c](#ref-terraform-registry))
@@ -223,6 +230,15 @@
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: Seldon core（Seldon Technologies [2022](#ref-seldon-core)）和 KServe（KServe 作者
+    [2022](#ref-kserve)）是专门针对 MLOps 的框架，用于在 Kubernetes（Kubernetes 作者 [2022](#ref-kubernetes)[a](#ref-kubernetes)）上打包、部署、监控和管理机器学习模型作为自定义资源。两者都将存储在二进制工件或代码包装器中的模型封装到容器中，通过自动生成的
+    OpenAPI 规范文件，通过 REST/gRPC API 公开模型的特性。此外，两者都与 Prometheus（Prometheus 作者和 Linux
+    基金会 [2022](#ref-prometheus)）和 Grafana（GrafanaLabs [2022](#ref-grafana)）（用于监控指标）以及
+    Elasticsearch（Elasticsearch [2022](#ref-elastic)）或 Grafana Loki（Grafana Labs [2022](#ref-loki)）（用于日志记录）以及其他工具（用于检测数据漂移和执行渐进式部署等功能，我们在第
+    [5.2.1](design-code.html#data-debt) 和 [7.2](deploying-code.html#deployment-strategies)
+    节中讨论过）。具有类似架构的其他两种选择是 BentoML（BentoML [2022](#ref-bentoml)）和 MLEM（Iterative [2022](#ref-mlem)[d](#ref-mlem)）。前者是一个
+    Python 框架，具有简单的面向对象接口，用于将模型打包到容器中并创建 HTTP(S) 服务。后者，与 DVC 的作者相同，将模型元数据作为版本化的纯文本文件存储在
+    Git 仓库中，成为唯一的真相来源。
 - en: 'Tensorflow Extended (TensorFlow [2022](#ref-tfx)[d](#ref-tfx), also known as
     TFX) is a platform to host end-to-end machine learning pipelines based on Tensorflow.
     TFX is designed to run on top of different platforms (Google Cloud via Vertex
@@ -242,6 +258,14 @@
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: Tensorflow Extended (TensorFlow [2022](#ref-tfx)[d](#ref-tfx)，也称为 TFX) 是一个基于
+    Tensorflow 的平台，用于托管端到端机器学习管道。TFX 设计用于在多种平台（通过 Vertex AI 的 Google Cloud、Amazon
+    AWS）和编排框架（Apache Airflow、Kubeflow 和 Apache Beam（Apache 软件基金会 [2022](#ref-beam)[b](#ref-beam)））上运行，支持分布式处理（使用
+    Apache Spark 等框架），并允许使用 TensorBoard（TensorFlow [2022](#ref-tensorboard)[c](#ref-tensorboard)）和
+    Jupyter 笔记本进行本地模型和数据探索。TFX 管道高度模块化，并按照我们在第 [5](design-code.html#design-code) 章讨论的路线组织成不同的组件，所有这些组件通过表示为
+    DAG 的依赖关系相互连接。用于实验跟踪所需的元数据使用 ML 元数据库（TensorFlow [2022](#ref-mlmd)[a](#ref-mlmd)，也称为
+    MLMD）保存，以及监控信息和管道的日志，在一个支持关系型数据库的数据存储中。所有这些功能都伴随着复杂性和在某些领域缺乏灵活性的代价：在决定是否采用 TFX
+    之前，需要仔细评估我们的用例。
 - en: 'Unlike Kubeflow (built around Kubernetes) or TFX (built around Tensorflow),
     MLflow (Zaharia and The Linux Foundation [2022](#ref-mlflow)) is a library-agnostic
     platform written in Python that can be integrated with any machine learning library
@@ -250,6 +274,9 @@
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 与基于 Kubernetes 构建的 Kubeflow 或基于 Tensorflow 构建的 TFX 不同，MLflow（Zaharia 和 Linux
+    基金会 [2022](#ref-mlflow)）是一个用 Python 编写的库无关平台，可以通过轻量级 API 与任何机器学习库集成。MLflow 的目标是支持
+    MLOps，提供以下四个关键特性：
 - en: a project packaging format built on Conda (Anaconda [2022](#ref-conda)[b](#ref-conda))
     and Docker (Docker [2022](#ref-docker)[a](#ref-docker)) which guarantees reproducibility
     and which makes projects easy to share;
@@ -257,24 +284,28 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 以及基于 Conda（Anaconda [2022](#ref-conda)[b](#ref-conda)）和 Docker（Docker [2022](#ref-docker)[a](#ref-docker)）构建的项目打包格式，这保证了可重复性，并使得项目易于共享；
 - en: an experiment tracking API to log parameters, code and results together with
     an interactive user interface to compare models and data across experiments;
   id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个实验跟踪 API，用于记录参数、代码和结果，并带有交互式用户界面，以便在实验之间比较模型和数据；
 - en: a model packaging format and a set of APIs for deploying models to target platforms
     such as Docker, Apache Spark and AWS Sagemaker; and
   id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个模型打包格式和一组 API，用于将模型部署到目标平台，如 Docker、Apache Spark 和 AWS Sagemaker；
 - en: a model registry with a graphical interface and a set of APIs to work collaboratively
     on models.
   id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个带有图形界面和一组 API 的模型注册库，以便在模型上协作工作。
 - en: As we mentioned earlier, we can implement machine learning pipelines using general-purpose
     open-source orchestrators like Airflow and Luigi (Spotify [2022](#ref-luigi)[a](#ref-luigi))
     or using more integrated tools such as Dagster (Elementl [2022](#ref-dagster))
@@ -290,6 +321,11 @@
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们之前提到的，我们可以使用通用开源编排器，如 Airflow 和 Luigi（Spotify [2022](#ref-luigi)[a](#ref-luigi)）来实现机器学习管道，或者使用更集成的工具，如
+    Dagster（Elementl [2022](#ref-dagster)）和 Prefect 2.0（Prefect [2022](#ref-prefect)）。Dagster
+    和 Prefect 2.0 都将管道作为 Python 模块在 DAG 中链接实现，并提供一个网络界面，使得可视化生产中运行的管道、监控其进度和故障排除变得容易。在
+    Airflow 和 Luigi 中，监控工作外包给了 Prometheus。与 Airflow 和 Luigi 不同，Pachyderm 支持非结构化数据，如视频和图像，以及来自数据仓库的表格数据。此外，它可以根据数据变化、任何类型的数据版本自动触发管道，并自动调整资源（因为它基于容器并在
+    Kubernetes 上运行）。
 - en: 'We can implement experiment tracking using more lightweight tools than Kubeflow:
     two examples are MLflow Tracking and DVC (integrated with a CI/CD pipeline such
     as Gitlab’s or Jenkins), which we discussed in Section [10.1](development-tools.html#exploration-experiment-tracking).
@@ -359,6 +395,7 @@
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据可视化是数据科学和机器学习的重要组成部分：它有助于解释复杂的数据，并使它们对用户和领域专家可理解，从而让他们能够参与管道的设计和维护（第[5](design-code.html#design-code)章）。正如第[11.2](production-tools.html#production-software)节中所述，我们可以选择使用一系列解决方案来实现它，从用于数据探索的低级库到创建交互式仪表板和数据报告的更全面的可视化平台。
 - en: The decade-old Matplotlib (Hunter [2022](#ref-matplotlib)) library is the most
     widely adopted Python package for basic data visualisation, followed by its descendant
     Seaborn (Waskom [2022](#ref-seaborn)), which tries to tackle some of the complexity
@@ -366,6 +403,8 @@
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 十年之久的Matplotlib（Hunter [2022](#ref-matplotlib)）库是Python中最广泛使用的用于基本数据可视化的包，其次是它的后继者Seaborn（Waskom
+    [2022](#ref-seaborn)），它试图解决Matplotlib的一些复杂性，同时产生更具现代外观的图形。
 - en: At a higher level, we have Plotly (Plotly [2022](#ref-plotly)[c](#ref-plotly)),
     Bokeh (Bokeh [2022](#ref-bokeh)) and Altair (Altair [2022](#ref-altair)) for Python,
     and the ggplot2 package (Wickham [2022](#ref-ggplot2)[a](#ref-ggplot2)) for R.
@@ -380,6 +419,11 @@
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 在更高层次上，我们有Python的Plotly（Plotly [2022](#ref-plotly)[c](#ref-plotly)）、Bokeh（Bokeh
+    [2022](#ref-bokeh)）和Altair（Altair [2022](#ref-altair)）库，以及R的ggplot2包（Wickham [2022](#ref-ggplot2)[a](#ref-ggplot2)）。这些库具有类似的功能和美学，可以创建静态、动画和交互式可视化。Plotly、Bokeh和ggplot2是程序性的；Altair使用Vega-Lite（Satyanarayan
+    et al. [2022](#ref-vega-lite)）语言的声明性JSON语法和一组简单的API来实现“图形语法”（Wilkinson [2005](#ref-gog)），这启发了ggplot2的设计。ggplot2有一个名为Plotnine的Python端口（Kibirige
+    [2022](#ref-plotnine)），Altair有一个基于reticulate包（Ushey, Allaire, and Tang [2022](#ref-reticulate)）的R包装器（Lyttle,
+    Jeppson, and Altair Developers [2022](#ref-r-altair)）。
 - en: These packages are the foundation upon which more advanced web dashboards like
     Dash (Plotly [2022](#ref-plotly-dash)[b](#ref-plotly-dash)), Bokeh Server and
     Shiny (Chang et al. [2022](#ref-shiny)) are built. Dash provides interfaces for
@@ -398,6 +442,10 @@
   id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些包是构建更高级的Web仪表板（如Dash（Plotly [2022](#ref-plotly-dash)[b](#ref-plotly-dash)）、Bokeh
+    Server和Shiny（Chang et al. [2022](#ref-shiny)））的基础。Dash提供了Jupyter笔记本和多种语言（如Python、R和Julia）的接口，而Bokeh仅支持Python。这两个库都是创建仪表板的良好起点，尽管Plotly的学习曲线更快。另一方面，Shiny由于其与RStudio和R
+    Markdown的深度集成，成为了在R中创建基于Web的交互式可视化的实际标准。其他开源选项包括Voilà（Voilà Dashboards [2022](#ref-voila)）、Streamlit（Streamlit
+    [2022](#ref-streamlit)）和Panel（Holoviz [2022](#ref-panel)）。Voilà可以将Jupyter笔记本转换为独立的应用程序和仪表板，这在生成快速数据分析报告时很有用。Streamlit和Panel通过组合来自Plotly、Bokeh和Altair的控件、表格和图形以及可查看的对象和控制来构建与数据交互的Web仪表板。与Streamlit和Voilà相比，Panel对Jupyter笔记本的支持更好。
 - en: 'Applications for visual analytics and business intelligence like Tableau (Tableau
     Software [2022](#ref-tableau)) and Microsoft PowerBI (Microsoft [2022](#ref-powerbi)[e](#ref-powerbi))
     are also suitable for creating dashboards, and are especially useful to management
