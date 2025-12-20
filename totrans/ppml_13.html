@@ -1,0 +1,703 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Chapter 7 Packaging and Deploying Pipelines</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Chapter 7 Packaging and Deploying Pipelines</h1>
+<blockquote>原文：<a href="https://ppml.dev/deploying-code.html">https://ppml.dev/deploying-code.html</a></blockquote>
+<div id="deploying-code" class="section level1 hasAnchor" number="7">
+
+<p>Packaging machine learning models into artefacts is an important step in making pipelines reproducible. It also makes
+models easier to deploy, that is, to bring them into production (or another target) systems and to put them to use.
+Choosing the right combination of <em>packaging formats</em> and <em>deployment strategies</em> ensures that we can build on CI/CD
+solutions <span class="citation">(Duvall, Matyas, and Glover <a href="#ref-cicd" role="doc-biblioref">2007</a>)</span> to do that efficiently and effectively. Our ultimate goal is to ship a pipeline with confidence
+because we have designed (Chapter <a href="design-code.html#design-code">5</a>), implemented (Chapter <a href="writing-code.html#writing-code">6</a>), documented (Chapter
+<a href="documenting-code.html#documenting-code">8</a>) and tested it well (Chapter <a href="troubleshooting-code.html#troubleshooting-code">9</a>).</p>
+<p>Models are part of a machine learning pipeline as much as code is, and are packaged (Section <a href="deploying-code.html#deployment-prep">7.1</a>) and
+deployed (Sections <a href="deploying-code.html#deployment-strategies">7.2</a> and <a href="deploying-code.html#deployment-process">7.3</a>) in similar ways to traditional software.
+However, their behaviour is less predictable (Sections <a href="design-code.html#technical-debt">5.2</a> and <a href="troubleshooting-code.html#model-problems">9.2</a>): we should
+monitor them when they are deployed and when they are running in production (Section <a href="deploying-code.html#deployment-monitoring">7.4</a>).
+We should also have contingency plans for when they fail (Section <a href="deploying-code.html#deployment-fails">7.5</a>) so that we can restore the
+pipeline to a functional state (Section <a href="deploying-code.html#rollback">7.6</a>).</p>
+<div id="deployment-prep" class="section level2 hasAnchor" number="7.1">
+<h2><span class="header-section-number">7.1</span> Model Packaging<a href="deploying-code.html#deployment-prep" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>Models can be stored into different types of artefacts, as we briefly discussed in Section <a href="design-code.html#model-pipeline">5.3.4</a>. There
+are several ways in which model artefacts can be integrated into a pipeline, with varying degrees of abstraction from
+the underlying machine learning systems.</p>
+<div id="standalone-packaging" class="section level3 hasAnchor" number="7.1.1">
+<h3><span class="header-section-number">7.1.1</span> Standalone Packaging<a href="deploying-code.html#standalone-packaging" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+
+The most minimalist form of packaging is simply the artefact produced by the machine learning framework that we used to
+train the model: for instance, a SavedModel file from TensorFlow <span class="citation">(TensorFlow <a href="#ref-tensorflow" role="doc-biblioref">2021</a><a href="#ref-tensorflow" role="doc-biblioref">a</a>)</span> or an ONNX <span class="citation">(ONNX <a href="#ref-onnx" role="doc-biblioref">2021</a>)</span> file. Such files are
+easy to make available to third parties and convenient to embed in a library or in a (desktop or mobile) application
+with frameworks like Apple Core ML <span class="citation">(Apple <a href="#ref-tf-to-coreml" role="doc-biblioref">2022</a>)</span>. They can also be shipped as standalone packages via a generic
+artefact registry such as those offered by GitHub <span class="citation">(GitHub <a href="#ref-github-registry" role="doc-biblioref">2022</a><a href="#ref-github-registry" role="doc-biblioref">c</a>)</span>, GitLab <span class="citation">(GitLab <a href="#ref-gitlab-registry" role="doc-biblioref">2022</a><a href="#ref-gitlab-registry" role="doc-biblioref">b</a>)</span> or Nexus <span class="citation">(Sonatype <a href="#ref-nexus" role="doc-biblioref">2022</a>)</span>.
+Tracking the version of the trained model, its parameters, its configurations and its dependencies is delegated to the
+configuration management platform supporting the pipeline (Section <a href="design-code.html#production-pipeline">5.3.5</a>).
+
+</p>
+</div>
+<div id="distribution-packaging" class="section level3 hasAnchor" number="7.1.2">
+<h3><span class="header-section-number">7.1.2</span> Programming Language Package Managers<a href="deploying-code.html#distribution-packaging" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+Python has become the most popular programming language in machine learning applications because of the availability of
+mature and versatile frameworks such as TensorFlow <span class="citation">(TensorFlow <a href="#ref-tensorflow" role="doc-biblioref">2021</a><a href="#ref-tensorflow" role="doc-biblioref">a</a>)</span> and PyTorch <span class="citation">(Paszke et al. <a href="#ref-pytorch" role="doc-biblioref">2019</a>)</span> (Section
+<a href="writing-code.html#programming-language">6.1</a>). As a result, it is increasingly common to ship models as Python packages to simplify the
+deployment process, and to make the model depend on a specific version of the Python interpreter and of those
+frameworks. Doing so throughout the pipeline helps avoid the technical debt arising from polyglot programming (Section
+<a href="design-code.html#code-debt">5.2.4</a>). In practice, this involves distributing packages, modules and resource files following the Python
+standard (known as “Distribution Package”), using tools like Setuptools <span class="citation">(Python Packaging Authority <a href="#ref-setuptools" role="doc-biblioref">2022</a>)</span> and Pip <span class="citation">(Python Software Foundation <a href="#ref-pip" role="doc-biblioref">2022</a><a href="#ref-pip" role="doc-biblioref">a</a>)</span> to install them,
+and possibly uploading them to the central Python Package Index to make them easily accessible.
+
+</p>
+</div>
+<div id="vm-packaging" class="section level3 hasAnchor" number="7.1.3">
+<h3><span class="header-section-number">7.1.3</span> Virtual Machines<a href="deploying-code.html#vm-packaging" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:t1-vs-t2"/>
+<img src="../Images/6545b549667e508a3380b4b811c253c6.png" alt="Type-1 and type-2 hypervisor virtualisation architectures." width="100%" data-original-src="https://ppml.dev/chapter07/figures/t1-vs-t2.svg"/>
+<p class="caption">
+Figure 7.1: Type-1 and type-2 hypervisor virtualisation architectures.
+</p>
+</div>
+<p>
+
+All modern CPUs (Section <a href="hardware.html#hardware-compute">2.1.1</a>) implement instruction sets to support hardware virtualisation: for
+instance, Intel CPUs have Virtualisation Technology (VT-x) and AMD CPUs have AMD-V. This has made <em>virtual machines</em>
+(VMs, also known as “guest operating systems”) a convenient choice on local hardware and resulted in the wide
+availability of cloud instances. VMs run on top of a <em>hypervisor</em>, a specialised software allowing multiple guest
+systems to share a single compute system (the host hardware). A VM is like a normal compute system: the main difference
+is that its CPU, memory, storage and network interfaces are shared with the underlying hardware through the hypervisor
+which allocates them to the guests as needed. vSphere <span class="citation">(VmWare <a href="#ref-vmware-vsphere" role="doc-biblioref">2022</a>)</span>, KVM <span class="citation">(Open Virtualization Alliance <a href="#ref-kvm" role="doc-biblioref">2022</a>)</span> and HyperV <span class="citation">(Microsoft <a href="#ref-hyperv" role="doc-biblioref">2022</a><a href="#ref-hyperv" role="doc-biblioref">h</a>)</span> are some
+examples of  hypervisors (Figure <a href="deploying-code.html#fig:t1-vs-t2">7.1</a>, left panel): they run directly on the host hardware,
+either as standalone pieces of software or integrated in the host operating system.  hypervisors (Figure
+<a href="deploying-code.html#fig:t1-vs-t2">7.1</a>, right panel) like Virtual box <span class="citation">(Oracle <a href="#ref-virtualbox" role="doc-biblioref">2022</a>)</span> and VMware Workstation <span class="citation">(VMware <a href="#ref-vmware-workstation" role="doc-biblioref">2022</a>)</span>, on the
+other hand, run on top of the host operating system. Both types are limited to executing applications compiled for the
+same type of CPU they are running on.</p>
+<p>Thanks to hardware virtualisation, VMs can run on the host CPU and can access the host’s hardware resources with limited
+overhead via PCIe pass-through (GPUs are a typical example, see Section <a href="hardware.html#hardware-compute">2.1.1</a>).
+Overhead can be further reduced by moving from (complete) virtualisation to <em>paravirtualisation</em>, which trades off
+complete isolation of the guests for better throughput and latency. The guest operating system is now aware of running
+in a virtualised environment, and it can use a special set system of calls (<em>hypercalls</em>) and I/O drivers (especially for
+storage and networking) to communicate directly with the hypervisor.
+
+</p>
+<p>
+VMs are the second type of artefact we mentioned in Section <a href="design-code.html#model-pipeline">5.3.4</a>. We can either create them from
+scratch, installing and configuring the operating system and all the libraries we need, or we can start from <em>pre-baked
+images</em> that come configured with most of the software we need. For the former, we have tools like Hashicorp Packer
+<span class="citation">(HashiCorp <a href="#ref-packer" role="doc-biblioref">2022</a><a href="#ref-packer" role="doc-biblioref">a</a>)</span> or Vagrant <span class="citation">(HashiCorp <a href="#ref-vagrant" role="doc-biblioref">2022</a><a href="#ref-vagrant" role="doc-biblioref">d</a>)</span>, which can install the operating system, and configuration management software like
+Ansible <span class="citation">(Ansible Project <a href="#ref-ansible" role="doc-biblioref">2022</a>)</span>, which can install the models as well as the software stack they depend on. As for the latter, a vast
+selection of pre-baked images is available from cloud providers: an example is the catalogue of Amazon Machine Images
+(AMIs) <span class="citation">(Amazon Web Services <a href="#ref-amis" role="doc-biblioref">2022</a><a href="#ref-amis" role="doc-biblioref">b</a>)</span>. VM configurations and images are typically stored in a standardised open format such as the Open
+Virtualisation Format (OVF) <span class="citation">(DMTF <a href="#ref-ovf" role="doc-biblioref">2022</a>)</span>. Finally, VMs can be managed automatically by the orchestrator of the machine
+learning pipeline through the hypervisor and the associated software tools, which can create, clone, snapshot, start and
+stop individual VMs.
+
+</p>
+<div style="page-break-after: always;"/>
+<p>
+
+VMs offer three main advantages:</p>
+<ul>
+<li>They are <em>flexible to operate</em>: we can run multiple instances of different operating systems and of different software
+stacks on the same host, consolidating their configurations using pre-baked images and managing them centrally as
+individual entities.</li>
+<li>They can also be easily scaled to deal with peak loads, both by starting new ones (<em>horizontal scalability</em>) or by
+increasing the hardware resources they have access to (<em>vertical scalability</em>, Section <a href="hardware.html#hardware-choice">2.4</a>).</li>
+<li>They can be moved to another host (<em>portability</em>) and are easy to snapshot, facilitating disaster recovery in the case
+of hardware failure.</li>
+</ul>
+<p>However, VMs have one important disadvantage: they contain an entire operating system and therefore require large
+amounts of hot storage. As a result, the deployment time of a VM can range from tens of seconds (in the best case) to
+minutes (in the average case) <span class="citation">(Hao, anang, and Kim <a href="#ref-hao" role="doc-biblioref">2021</a>)</span>, depending on the cloud provider or the on-premises hypervisor configuration.
+
+</p>
+</div>
+<div id="container-packaging" class="section level3 hasAnchor" number="7.1.4">
+<h3><span class="header-section-number">7.1.4</span> Containers<a href="deploying-code.html#container-packaging" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+
+
+In contrast, <em>containers</em> are more lightweight <span class="citation">(Espe et al. <a href="#ref-container-performance" role="doc-biblioref">2020</a>)</span> because they only virtualise the libraries and
+the applications running on top of the operating system, not an entire machine learning system (Figure
+<a href="deploying-code.html#fig:vm-vs-container">7.2</a>). Instead of a hypervisor, they are managed by a <em>container runtime</em> (sometimes called a
+“container engine”) like Docker <span class="citation">(Docker <a href="#ref-docker" role="doc-biblioref">2022</a><a href="#ref-docker" role="doc-biblioref">a</a>)</span> which controls the access to the hardware and to the operating system of the
+host.</p>
+<p>
+Container runtimes are typically built on top of a set of Linux kernel capabilities <span class="citation">(Rice <a href="#ref-rice" role="doc-biblioref">2020</a>)</span>:</p>
+<ul>
+<li><em>Namespaces</em>: an isolation layer that allows each process to see and access only those processes, directories and
+system resources of the host that are bound to the same namespace it is running in.</li>
+<li><em>Cgroups (control groups)</em>: a resource management layer that sets and limits CPU, memory and network bandwidth for a
+collection of processes.</li>
+<li><em>Seccomp (secure computing)</em>: a security layer that limits a container to a restricted subset of system calls (the
+kernel’s APIs).
+</li>
+</ul>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:vm-vs-container"/>
+<img src="../Images/f47c9c5be4812ae58329dc5f4d8e69bd.png" alt="Virtualisation and containers high-level architectures." width="100%" data-original-src="https://ppml.dev/chapter07/figures/vm-vs-container.svg"/>
+<p class="caption">
+Figure 7.2: Virtualisation and containers high-level architectures.
+</p>
+</div>
+<p>As was the case with VMs, containers can package machine learning applications with all the associated libraries,
+dependencies and tools in a single self-contained artefact: a <em>container image</em> which is immutable, stateless and
+ephemeral by design.<a href="#fn16" class="footnote-ref" id="fnref16"><sup>16</sup></a> In the case of
+Docker, we commonly refer to it as a <em>Docker image</em>. Container images are created from declarative configuration files,
+also known as <code>Dockerfiles</code>, that define all the necessary commands. Each command produces an immutable <em>layer</em>
+reflecting the changes that the command itself introduces into the image, allowing for incremental changes and
+minimising disk space usage. The starting point of this process are <em>base images</em> that provide a stripped-down
+environment (not a complete operating system, as was the case for pre-baked VM images) to which we can add our models
+and the libraries, tools and applications that complement them.</p>
+<p>
+Below is an example of a <code>Dockerfile</code> that creates an image for a FastAPI RESTful application (a framework to create web
+services and APIs). For reproducibility, both the <code>Dockerfile</code> and the <code>requirements.txt</code> file it references should be
+stored under version control in a configuration management platform (Section <a href="writing-code.html#filesystem-structure">6.4</a>).
+</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode dockerfile"><code class="sourceCode dockerfile"><span id="cb41-1"><a href="deploying-code.html#cb41-1" aria-hidden="true"/><span class="kw">FROM</span> python:3.10.6-bullseye</span>
+<span id="cb41-2"><a href="deploying-code.html#cb41-2" aria-hidden="true"/></span>
+<span id="cb41-3"><a href="deploying-code.html#cb41-3" aria-hidden="true"/><span class="kw">WORKDIR</span> /app</span>
+<span id="cb41-4"><a href="deploying-code.html#cb41-4" aria-hidden="true"/></span>
+<span id="cb41-5"><a href="deploying-code.html#cb41-5" aria-hidden="true"/><span class="kw">COPY</span> requirements.txt .</span>
+<span id="cb41-6"><a href="deploying-code.html#cb41-6" aria-hidden="true"/><span class="kw">RUN</span> pip3 install --no-cache-dir  -r requirements.txt</span>
+<span id="cb41-7"><a href="deploying-code.html#cb41-7" aria-hidden="true"/></span>
+<span id="cb41-8"><a href="deploying-code.html#cb41-8" aria-hidden="true"/><span class="kw">COPY</span> . .</span>
+<span id="cb41-9"><a href="deploying-code.html#cb41-9" aria-hidden="true"/></span>
+<span id="cb41-10"><a href="deploying-code.html#cb41-10" aria-hidden="true"/><span class="kw">CMD</span> [ <span class="st">"uvicorn"</span>, <span class="st">"main:app"</span>, <span class="st">"--host=0.0.0.0"</span>]</span></code></pre></div>
+<p>Firstly, the <code>Dockerfile</code> explicitly identifies the system dependencies of the image it generates. The first line,
+“<code>FROM python:3.10.5-bullseye</code>” identifies a base image with the stable release of Debian GNU/Linux, codenamed
+“Bullseye”, and version 3.10.5 of the Python interpreter. Secondly, it identifies the Python packages we depend on. The
+third and fourth lines, “<code>COPY requirements.txt .</code>” and “<code>RUN pip3 install -r requirements.txt</code>”, copy the file
+<code>requirements.txt</code> which lists the Python dependencies into the image and uses the Python package manager (<code>pip</code>) to
+install them. It is important that all dependencies are listed and pinned to the exact versions we have tested, to avoid
+accruing technical debt (Sections <a href="design-code.html#code-debt">5.2.4</a> and <a href="writing-code.html#coding-standards">6.3</a>).  If we
+upgrade one or more dependencies, the corresponding container layer is invalidated. Docker caches layers as they
+are created: those that have not been affected by our changes will be taken from that cache instead of being re-created
+from scratch. The second line (“<code>WORKDIR /app</code>”) changes the working directory to that containing the application files,
+the fifth line (“<code>COPY . .</code>”) copies them into the container image, and the last line defines the command that is run
+when the container is started.
+</p>
+<p>
+After a successful build, we can store containers into a <em>container registry</em> such as Docker registry <span class="citation">(Docker <a href="#ref-docker-registry" role="doc-biblioref">2022</a><a href="#ref-docker-registry" role="doc-biblioref">b</a>)</span>
+or Harbour <span class="citation">(Harbor <a href="#ref-harbor" role="doc-biblioref">2022</a>)</span>. Container registries are server applications that provide a standardised API for uploading (push),
+versioning (tag) and downloading (pull) container images. The registry structure is organised into repositories (like
+Git <span class="citation">(The Git Development Team <a href="#ref-git-git" role="doc-biblioref">2022</a>)</span>) where each repository holds all the versions of a specific container image. The container’s runtime,
+registry and image specifications are based on the Open Container Initiative (OCI) <span class="citation">(Open Container Initiative <a href="#ref-oci" role="doc-biblioref">2022</a>)</span>, an open standard by the Linux
+Foundation, and are therefore highly portable across platforms and vendors.</p>
+<p>
+Like any other software artefact, container images may have security vulnerabilities <span class="citation">(Bhupinder et al. <a href="#ref-image-vuln" role="doc-biblioref">2021</a>)</span> inherited from
+vulnerable libraries in an outdated base image, rogue images in an untrusted container registry or a vulnerable
+<code>Dockerfile</code>. To identify these vulnerabilities, we should enforce <em>compliance and security checks</em> to validate both the
+<code>Dockerfiles</code>, with tools such as Hadolint <span class="citation">(The Hadolint Project <a href="#ref-hadolint" role="doc-biblioref">2022</a>)</span>, and the resulting images, with static analysis and image scanner
+tools such as Trivy <span class="citation">(Aquasecurity <a href="#ref-trivy" role="doc-biblioref">2022</a>)</span>. Cloud providers such as Amazon AWS <span class="citation">(Services <a href="#ref-aws-containers" role="doc-biblioref">2022</a>)</span> and Google Cloud <span class="citation">(Google <a href="#ref-gcp-containers" role="doc-biblioref">2022</a><a href="#ref-gcp-containers" role="doc-biblioref">b</a>)</span>
+have public container registries with secure and tested base images ranging from vanilla operating system installations
+to pre-configured machine learning stacks built on TensorFlow <span class="citation">(TensorFlow <a href="#ref-tensorflow" role="doc-biblioref">2021</a><a href="#ref-tensorflow" role="doc-biblioref">a</a>)</span> and PyTorch <span class="citation">(Paszke et al. <a href="#ref-pytorch" role="doc-biblioref">2019</a>)</span>.
+</p>
+<p>
+Container runtimes integrate with orchestrators to allow for a seamless use of container images. The orchestrator is
+responsible for managing a fleet of containers in terms of deployment, scaling, networking and security policies. The
+containers are responsible for providing different pieces of functionality as modular and decoupled services that
+communicate over the network, that can be deployed independently and that are highly observable. This is, in essence,
+the microservices architecture <span class="citation">(Newman <a href="#ref-microservices" role="doc-biblioref">2021</a>)</span>. In addition, container runtimes integrate with CI to enable
+reproducible software testing: base container images provide a clean environment that ensures that test results are not
+tainted by external factors (Section <a href="troubleshooting-code.html#testing">9.4</a> and <a href="development-tools.html#build-test-doc-tools">10.3</a>).</p>
+<p>
+
+
+Kubernetes <span class="citation">(The Kubernetes Authors <a href="#ref-kubernetes" role="doc-biblioref">2022</a><a href="#ref-kubernetes" role="doc-biblioref">a</a>)</span> is the de facto standard among orchestrators.<a href="#fn17" class="footnote-ref" id="fnref17"><sup>17</sup></a> Orchestrators specialising in machine
+learning pipelines integrate Kubernetes with experiment tracking and model serving to provide complete MLOps solutions:
+two examples are Kubeflow <span class="citation">(The Kubeflow Authors <a href="#ref-kubeflow" role="doc-biblioref">2022</a>)</span>, which is more integrated, and MLflow <span class="citation">(Zaharia and The Linux Foundation <a href="#ref-mlflow" role="doc-biblioref">2022</a>)</span>, which is more programmatic.
+Container runtimes enhance them by implementing a GPU pass-through from the physical host to the container (with the
+“<code>--gpus</code>” flag, in the case of Docker). Kubernetes can use this functionality to apply the appropriate <em>label selector</em>
+<span class="citation">(The Kubernetes Authors <a href="#ref-k8s-gpu" role="doc-biblioref">2022</a><a href="#ref-k8s-gpu" role="doc-biblioref">b</a>)</span> to each container and to schedule training and inference workloads on machine learning systems with the
+appropriate hardware (Section <a href="hardware.html#hardware-compute">2.1.1</a>).
+
+
+
+</p>
+</div>
+</div>
+<div id="deployment-strategies" class="section level2 hasAnchor" number="7.2">
+<h2><span class="header-section-number">7.2</span> Model Deployment: Strategies<a href="deploying-code.html#deployment-strategies" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+
+A <em>deployment strategy</em> or <em>deployment pattern</em> is a technique to replace or upgrade an artefact or a service in a
+production environment while minimising downtime and impact on users. Here we will focus on how we can deploy machine
+learning models (Section <a href="design-code.html#production-pipeline">5.3.5</a>) without impacting their consumers, that is, the final users and the
+modules in the pipeline that depend on the models’ outputs. Clearly, there are similarities to how traditional software
+is deployed: we want automated and reproducible releases via CI/CD, in most cases using containers as artefacts (Section
+<a href="deploying-code.html#container-packaging">7.1.4</a>). Furthermore, parts of a machine learning pipeline are in fact traditional software and are
+deployed as such.
+
+</p>
+<p>
+
+
+
+Model deployment can take advantage of modern software deployment strategies from <em>progressive delivery</em>. A pipeline
+will usually contain multiple instances of each model (say, version <code>A</code>) to be able to process multiple inference
+requests and data preparation queues in parallel. Therefore, we can initially replace a small subset of these instances
+with a new model (say, version <code>B</code>). If no issues emerge, we then gradually replace the remaining instances: the new
+model has effectively passed acceptance testing (Section <a href="troubleshooting-code.html#local-vs-global">9.4.4</a>).  If any issues
+do arise, our logging and monitoring facilities (Section <a href="design-code.html#monitoring-pipeline">5.3.6</a>) will have recorded the information
+we need to troubleshoot them. We can also deploy multiple models at the same time to compare their performance in terms
+of accuracy, throughput and latency. As a result, progressive delivery speeds up model deployment (by reducing the
+amount of pre-deployment testing), decreases deployment risk (because most consumers will not be impacted by any issues
+that may emerge in the initial deployment) and makes rollbacks easier (Section <a href="deploying-code.html#rollback">7.6</a>).
+
+</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:deployment-strategies"/>
+<img src="../Images/4aa8111e621b018d7623f2057a25b4bc.png" alt="Blue-green (left), canary and A/B testing (top right) and shadow (bottom right) deployment strategies." width="100%" data-original-src="https://ppml.dev/chapter07/figures/deployment-strategies.svg"/>
+<p class="caption">
+Figure 7.3: Blue-green (left), canary and A/B testing (top right) and shadow (bottom right) deployment strategies.
+</p>
+</div>
+<p>We can implement progressive delivery with a number of related deployment strategies <span class="citation">(Tremel <a href="#ref-deployment-strategies" role="doc-biblioref">2017</a>)</span>:</p>
+<p/>
+<ul>
+<li>The <em>blue-green</em> deployment pattern <span class="citation">(Humble and Farley <a href="#ref-devops" role="doc-biblioref">2011</a>)</span> assumes that we are using a router (typically a load balancer) to spread
+requests over a pool of instances that serve the version <code>A</code> of a machine learning model
+(Figure <a href="deploying-code.html#fig:deployment-strategies">7.3</a>, left). When we deploy a new version <code>B</code> of the model, we create a second
+pool of instances that serves it and send a subset of the new incoming requests to this new pool. If no issues
+arise, the router will then gradually send more and more requests to the pool that serves model <code>B</code> instead of that
+serving model <code>A</code>. Existing requests being processed by model <code>A</code> are allowed to complete to avoid disruptions.
+The pool serving model <code>A</code> will eventually not be assigned any more requests and may then be decommissioned. If
+any issues arise, rollback is simple: we can send all requests to the pool serving model <code>A</code> again. Keeping the
+two pools in separate environments or even separate machine learning systems will further reduce deployment risk.
+</li>
+<li>We already mentioned the <em>canary</em> deployment pattern <span class="citation">(Humble and Farley <a href="#ref-devops" role="doc-biblioref">2011</a>)</span> in Section <a href="design-code.html#model-pipeline">5.3.4</a>: the main difference
+with the blue-green pattern is that we deploy instances with model <code>B</code> in the same pool that is already serving
+model <code>A</code> (Figure <a href="deploying-code.html#fig:deployment-strategies">7.3</a>, top tight). The router will redirect a small number of requests
+to the instances with model <code>B</code>, taking care of session affinity.<a href="#fn18" class="footnote-ref" id="fnref18"><sup>18</sup></a> Other requests act as our
+<em>control group</em>: we can inspect and compare the performance of the two models without any bias because they run in
+the same environment. Again, if no issues arise we can gradually retire the instances with model <code>A</code>. Canary
+deployments are typically slower than other deployment patterns because collecting enough data on the performance of
+model <code>B</code> with a small number of instances requires time. However, they provide an easy way to test new models in
+production with real data and in the same environment as existing models.
+</li>
+<li>In a <em>shadow</em> deployment <span class="citation">(Microsoft <a href="#ref-shadow" role="doc-biblioref">2022</a><a href="#ref-shadow" role="doc-biblioref">g</a>)</span>, a new model <code>B</code> is deployed in parallel to model <code>A</code> and each request is sent
+to both models (Figure <a href="deploying-code.html#fig:deployment-strategies">7.3</a>, bottom right). We can compare their accuracy using the
+outputs they produce from the same input, as well as their latency and any other metric we collect through logging
+and monitoring. In fact, we can deploy several models in parallel to test different approaches and keep only the
+model that performs best. Shadow deployment therefore requires us to set up a different API endpoint for each model
+we are testing, and to allocate enough hardware resources to handle the increased inference workload. However, it
+allows for testing new models without disturbing operations.
+</li>
+<li>In the <em>rolling</em> or <em>ramped</em> deployment pattern, we simply replace the instances with model <code>A</code> in batches on a
+pre-determined schedule until all the running instances are serving model <code>B</code>. Rolling deployments are easy both
+to schedule and to roll back.
+</li>
+<li>Another deployment pattern we mentioned elsewhere (Sections <a href="design-code.html#model-pipeline">5.3.4</a> and <a href="troubleshooting-code.html#offline-vs-online">9.4.3</a>) is
+<em>A/B testing</em> <span class="citation">(Amazon <a href="#ref-amazon-ab-testing" role="doc-biblioref">2021</a>; Zheng <a href="#ref-evaluatingml" role="doc-biblioref">2015</a>)</span>: the router randomly splits the requests 50%-50% across two models
+<code>A</code> and <code>B</code>, we evaluate the relevant metrics for each model, and we promote model <code>B</code> if and only if it outperforms
+model <code>A</code>. The key difference from canary deployments is that in the latter only a small proportion of the requests
+is sent to instances with model <code>B</code> to reduce deployment risk: the split is 90%-10% or at most 80%-20%
+(Figure <a href="deploying-code.html#fig:deployment-strategies">7.3</a>, top right).
+</li>
+<li><em>Destroy and re-create</em> is the most basic deployment strategy: we stop all the instances with model <code>A</code> and we
+create from scratch a new set of instances with model <code>B</code> to deploy in their place. As a result, the pipeline
+will be unavailable and consumers that are performing multiple requests in a sequence may receive inconsistent
+outputs.</li>
+</ul>
+<p>
+
+We can integrate these deployment patterns by adding feature flags (Section <a href="writing-code.html#versioning">6.5</a>) to our models: then
+models <code>A</code> and <code>B</code> can share large portions of code. In this way, we can easily create new models just by switching
+different combinations of flags, without building and deploying new artefacts at all. However, both models will
+be served at the same time during the progressive delivery process: all consumers should support both their APIs or
+model <code>B</code> should be fully backward compatible with model <code>A</code>.
+</p>
+</div>
+<div id="deployment-process" class="section level2 hasAnchor" number="7.3">
+<h2><span class="header-section-number">7.3</span> Model Deployment: Infrastructure<a href="deploying-code.html#deployment-process" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+In a machine learning pipeline, model deployment is the part of the pipeline orchestration that enables models to be
+deployed and served in the development, testing and production environments (Section <a href="design-code.html#production-pipeline">5.3.5</a>).
+Ideally, it should be completely automated via CI/CD to avoid catastrophic failures like that at Knight Capital
+<span class="citation">(.Seven <a href="#ref-knights-capital" role="doc-biblioref">2014</a>)</span> which we touched on in Section <a href="design-code.html#architecture-debt">5.2.3</a>.
+</p>
+<p>
+
+
+
+
+
+
+The nature of the continuous deployment part of CI/CD can vary depending on the type of artefact (Section
+<a href="deploying-code.html#deployment-prep">7.1</a>) and on the type of compute systems (Section <a href="hardware.html#hardware-choice">2.4</a>) we are deploying to. Our
+artefacts may be container images that wrap and serve our models through APIs: we can deploy them locally by manually
+invoking Docker, or remotely by instructing Kubernetes to call an automated script stored in the pipeline’s CI/CD
+configuration. In both cases, the image is fetched from the registry at deployment time if it is not available locally.
+Our artefacts may also be VMs: continuous deployment can then leverage configuration management tools like Ansible
+<span class="citation">(Ansible Project <a href="#ref-ansible" role="doc-biblioref">2022</a>)</span> to deploy and upgrade them. In both these cases, the CI/CD pipeline standardises the deployment process,
+hiding the differences between local and cloud environments (Section <a href="hardware.html#hardware-cloud">2.3</a>) and shifting complexity from
+glue code to declarative configuration files (Sections <a href="design-code.html#architecture-debt">5.2.3</a>). This has standardised the deployment
+process to the point where it is largely the same to target orchestrator platforms like Kubernetes <span class="citation">(The Kubernetes Authors <a href="#ref-kubernetes" role="doc-biblioref">2022</a><a href="#ref-kubernetes" role="doc-biblioref">a</a>)</span> and
+commercial providers like Amazon AWS ECS.
+
+
+
+
+</p>
+<p>We may also run machine learning pipelines on top of an integrated MLOps platform: model deployment then depends
+entirely on the platform’s opinionated workflows. For example, an MLOps platform like Databricks <span class="citation">(Databricks <a href="#ref-databricks" role="doc-biblioref">2022</a>)</span>
+integrates many open-source components through MLflow <span class="citation">(Zaharia and The Linux Foundation <a href="#ref-mlflow" role="doc-biblioref">2022</a>)</span> and wraps them with APIs that support multiple
+deployment targets. These APIs present a standardised interface similar to that of Docker and Kubernetes regardless of
+what target we choose. Machine learning platforms from cloud vendors (“Machine Learning as a Service”) like Azure ML
+<span class="citation">(Microsoft <a href="#ref-azureml" role="doc-biblioref">2022</a><a href="#ref-azureml" role="doc-biblioref">c</a>)</span> or Amazon AWS SageMaker <span class="citation">(Amazon <a href="#ref-sagemaker" role="doc-biblioref">2022</a><a href="#ref-sagemaker" role="doc-biblioref">d</a>)</span> provide a much higher level of abstraction. On the one hand, they give
+us little control over how the pipeline is implemented and how models are deployed. On the other hand, they are
+accessible for teams that do not have the skills or the budget to manage their own CI/CD, monitoring and logging
+infrastructure. They also provide an experiment tracking web interface (with an API to use it programmatically) to test
+new models and to visualise them along with their parameters and performance metrics.
+</p>
+</div>
+<div id="deployment-monitoring" class="section level2 hasAnchor" number="7.4">
+<h2><span class="header-section-number">7.4</span> Model Deployment: Monitoring and Logging<a href="deploying-code.html#deployment-monitoring" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+
+
+We should track automated model deployments through all their stages with our logging and monitoring infrastructure to
+achieve the observability we need to diagnose any issue we may run into (Section <a href="design-code.html#monitoring-pipeline">5.3.6</a>). All
+continuous deployment platforms allow that: MLflow <span class="citation">(Zaharia and The Linux Foundation <a href="#ref-mlflow" role="doc-biblioref">2022</a>)</span> has MLflow tracking, Airflow <span class="citation">(The Apache Software Foundation <a href="#ref-airflow" role="doc-biblioref">2022</a><a href="#ref-airflow" role="doc-biblioref">a</a>)</span> can use Fluentd
+<span class="citation">(The Fluentd Project <a href="#ref-fluentd" role="doc-biblioref">2022</a>)</span> and general-purpose CI/CD solutions like GitLab have built-in mechanisms for issuing metrics and log events
+as well as support for Prometheus <span class="citation">(Prometheus Authors and The Linux Foundation <a href="#ref-prometheus" role="doc-biblioref">2022</a>)</span>. It is essential to log every entry and exit point of every module, as
+well as any retries and the successful conclusion of all tasks in the pipeline: we should be able to construct
+descriptive activity reports that include comprehensive stack traces. Machine learning pipelines have many moving parts
+and can fail in many different places and in ways that are difficult to diagnose even with that much information
+(Sections <a href="troubleshooting-code.html#data-problems">9.1</a>, <a href="troubleshooting-code.html#model-problems">9.2</a> and <a href="troubleshooting-code.html#signs-of-trouble">9.3</a>). Furthermore, logging should
+automatically trigger external notification systems like PagerDuty <span class="citation">(PagerDuty <a href="#ref-pagerduty" role="doc-biblioref">2022</a>)</span> to become aware of any issues during
+deployment as early as possible.</p>
+<p>
+
+
+
+After a model is deployed, we should check that it is being served, that it is ready to accept inference requests
+(readiness) and that it produces correct results (liveness). The software that we use to serve the model may expose
+a health-check API (like the readiness and liveness probes in Kubernetes <span class="citation">(The Kubernetes Authors <a href="#ref-kubernetes" role="doc-biblioref">2022</a><a href="#ref-kubernetes" role="doc-biblioref">a</a>)</span>) which the orchestrator can use
+to only route inference requests to models that can to process them. The monitoring client inside the model itself
+can serve the same purpose by exposing metrics to check that performance has not degraded over time. As we discussed in
+Section <a href="design-code.html#monitoring-pipeline">5.3.6</a>, we should locate the logging and monitoring servers on dedicated systems to make
+sure that they are not affected by any of the issues caused by or affecting the models and that they can be used to
+perform a root cause analysis of what went wrong.
+
+
+</p>
+</div>
+<div id="deployment-fails" class="section level2 hasAnchor" number="7.5">
+<h2><span class="header-section-number">7.5</span> What Can Possibly Go Wrong?<a href="deploying-code.html#deployment-fails" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>Many kinds of issues can arise when we deploy a new model, for different reasons: lack of control or observability for
+either the deployment process or its targets (Section <a href="hardware.html#hardware-choice">2.4</a>); manually executing pre- or
+post-deployment operations (Section <a href="design-code.html#architecture-debt">5.2.3</a>); or a critical defect in a model or in a module slipping
+through our software test suite (Section <a href="troubleshooting-code.html#testing">9.4</a>). We can minimise deployment risk by taking advantage of CI/CD
+(Chapter <a href="design-code.html#design-code">5</a>) and following modern development practices (Chapter <a href="writing-code.html#writing-code">6</a>), but some problems
+cannot be fully resolved or even detected automatically.</p>
+<p>
+<em>Hardware resources may be unavailable.</em> The environment we are deploying to may be running on machine learning systems
+that have inadequate resources (say, not enough storage space or memory), hardware faults or network connectivity issues
+(say, the systems themselves are unreachable, or they cannot access remote third-party resources needed by the
+model).<a href="#fn19" class="footnote-ref" id="fnref19"><sup>19</sup></a> These problems
+can occur both in local (on-premises) and remote (cloud) environments; in the latter, scheduling a new deployment will
+typically solve them since the underlying hardware will change (Section <a href="hardware.html#hardware-cloud">2.3</a>).</p>
+<p><em>Hardware resources may not be accessible.</em> The machine learning systems may be fine, but there are access restrictions
+in place that prevent us from using them. Firewalls may be preventing us from connecting to them across networks; file
+permissions may be preventing us from reading data and configurations from their storage. This is a common issue with
+cloud instances and managed services because their identity and access management (IAM) policies are difficult to write
+and to understand. In fact, it is often only possible to test the configurations controlling authentication and
+authorisation to those services interactively which makes it easy to break them accidentally. As a result, there have
+been many instances of machine learning engineers removing too many access restrictions and leaving S3 buckets full of
+personal data publicly accessible on AWS (Twilio <span class="citation">(The Register <a href="#ref-twilio-breach" role="doc-biblioref">2020</a>)</span> and Switch <span class="citation">(VPNOverview <a href="#ref-switch-breach" role="doc-biblioref">2022</a>)</span> are two notable examples
+from recent years). This is also clearly undesirable, but it can be prevented by writing IAM policies according to the
+<em>principle of least privilege</em>, by tracking them with configuration management tools (Section <a href="production-tools.html#production-infra">11.1</a>)
+and by including them in code reviews (Section <a href="writing-code.html#code-review">6.6</a>) before applying them.
+</p>
+<p><em>People do not talk to each other.</em> Model deployment is when we actually put to use the models we trained and the code
+that supports them. Therefore, it is also when defects arising from the lack of communication between domain experts,
+machine learning experts, software engineers and users may come to light. Scoping and designing the pipeline (Section
+<a href="design-code.html#processing-pipeline">5.3</a>), validating machine learning models (Section <a href="design-code.html#model-pipeline">5.3.4</a>) and inference outputs
+(Section <a href="design-code.html#monitoring-pipeline">5.3.6</a>), designing and naming modules and their arguments (Section <a href="writing-code.html#naming">6.2</a>), code
+reviews (Section <a href="writing-code.html#code-review">6.6</a>) and writing various forms of documentation (Chapter <a href="documenting-code.html#documenting-code">8</a>) should
+all be collaborative efforts involving all the people working and using the pipeline. When this collaboration is not
+effective, different people will be responsible for different parts of the pipeline and the resulting lack of
+coordination may cause issues at the boundaries of the different areas of responsibility. Machine learning engineers may
+develop models without consulting the domain experts (“Are the models meaningful? Do we have the right data to train
+them?”) or the software engineers (“Can the models run on the available systems and produce inference with low enough
+latency?”). Domain experts may fail to get across their expert knowledge to machine learning engineers (“This model
+class cannot express some relevant domain facts!”) or to software engineers (“This variable should be coded in a
+specific way to make sense!”). Software engineers may take liberties in implementing machine learning models that change
+their statistical properties without the machine learning engineers noticing (“Maybe I can use this other library… or
+it may be faster to reimplement it myself!”) or structure the code in ways that make it difficult for a domain expert to
+understand (“What does this <code>theta_hat</code> argument mean again?”). The segregation of roles is an organisational
+anti-pattern that should be avoided at all costs in favour of the shared responsibility and constant sharing of skills
+and knowledge originally advocated by DevOps <span class="citation">(Humble and Farley <a href="#ref-devops" role="doc-biblioref">2011</a>)</span>.</p>
+<p>
+<em>Missing dependencies.</em> The deployment of a module may fail because one or more of its dependencies (inside or outside
+the pipeline) is missing or is not functional. For instance, if module <code>A</code> requires the outputs of module <code>B</code> as inputs,
+we should ensure that module <code>B</code> is present and in a working state before deploying module <code>A</code>. In practice, this
+requires a <em>coordinated deployment</em> of the two modules, which is an anti-pattern when we strive for modules to be
+decoupled from each other. We can, of course, also implement appropriate retry policies in module <code>A</code> to make it
+resilient to module <code>B</code> being temporarily offline. On Kubernetes <span class="citation">(The Kubernetes Authors <a href="#ref-kubernetes" role="doc-biblioref">2022</a><a href="#ref-kubernetes" role="doc-biblioref">a</a>)</span>, we can use liveness and readiness probes
+(Section <a href="deploying-code.html#deployment-monitoring">7.4</a>) together with “init containers” (specialised containers that run before app
+containers in a pod) for this purpose.
+</p>
+<p>
+<em>Incomplete or incorrect configuration management.</em> Configuration management tools (Section
+<a href="development-tools.html#exploration-experiment-tracking">10.1</a> and <a href="production-tools.html#production-infra">11.1</a>) promote and automate the reuse of templates,
+environment variables and configuration files. However, this means that we should be careful to store those that
+correspond to different environments separately, and to keep them clean and complete at all times. In a complex pipeline
+with many modules and environments, it is easy to mistakenly use the configuration of a different environment than what
+we intended. In the best case, what we are trying to do will fail and an exception will be logged. In the worst case, we
+will apparently succeed in what we are trying to do but the results will be silently wrong because we are accessing
+different resources than we think we are. For instance, we may inadvertently cause an information leakage by accessing
+training data instead of validation data. Similar <em>misconfiguration</em> issues may involve any part of the pipeline
+(training, software testing, inference, etc.) and any of the entities tracked by configuration management (database
+references, secrets, model parameters, features, etc.).
+</p>
+</div>
+<div id="rollback" class="section level2 hasAnchor" number="7.6">
+<h2><span class="header-section-number">7.6</span> Rolling Back<a href="deploying-code.html#rollback" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+When a model that is deployed in production fails to meet the required performance and quality standards (Section
+<a href="documenting-code.html#designdocs">8.3</a>), we have two choices: either we replace it with a previous model that is still fit for use (<em>rolling
+back</em>) or with a new model that we train specifically to address the reason why the current model is failing (<em>rolling
+forward</em>). In the following, we will focus on rollbacks, but our discussion will be as relevant for rolling a model
+forward.</p>
+<p>
+
+Model rollbacks are only possible if the model APIs are backward compatible between releases. Then every version of our
+model can be restored to any previous version at any given moment in time without disrupting the rest of the pipeline
+because we can guarantee that the model delivers the same functionality, with the same protocol specifications and the
+same signature. Achieving backward compatibility requires a significant amount of planning and effort in terms of
+software engineering. In addition to wrapping models in a container that abstracts and standardises their interface,
+encapsulating their peculiarities and their implementation, we also need an experiment management platform that versions
+the pipeline modules, the models and the respective configurations. At a minimum, such a setup involves a model registry
+(Section <a href="design-code.html#model-pipeline">5.3.4</a>) and a version control system for the code (Section <a href="writing-code.html#versioning">6.5</a>).
+
+
+</p>
+<p>Sometimes maintaining backward compatibility is simply not possible: if we replace a model with another from a
+completely different model class, or if the task the model was trained for has changed, the APIs should change to
+reflect the new model capabilities and purpose. We can <em>transition between the two different sets of APIs by versioning
+them</em>. For example, the old set of APIs may be available from the URL path <code>https://api.mlmodel.local/v1/</code> while the new
+ones may be made available from <code>https://api.mlmodel.local/v2/</code>, and the old APIs may raise a warning to signal that
+they are deprecated. (OpenAPI supports deprecating API “Operations” <span class="citation">(SmartBear Software <a href="#ref-swagger" role="doc-biblioref">2021</a>)</span>). We can then deploy new, incompatible
+models with the strategies we discussed in Section <a href="deploying-code.html#deployment-strategies">7.2</a>, and the pipeline modules will be able
+to access both sets of APIs at the same time and without any ambiguity about what version they are using. This in turn
+makes it possible to update individual modules in an orderly transition.</p>
+<p>If a model is shipped with a built-in configuration that is versioned along with its APIs, the function that loads it
+should support the older versions. Similarly, if a model is stateful and needs to access a database to retrieve assets
+and configurations, the function that accesses these resources should be able to deal with different database schemas.
+Our ability to perform rollbacks will then depend on our ability to perform database migrations.
+</p>
+<p>Whether rollbacks should be manual (that is, triggered by a human-in-the-loop domain expert) or automatic (that is,
+triggered by the pipeline orchestrator on the basis of the metrics collected by the monitoring infrastructure) is not a
+simple decision to make. From a technical perspective, we should evaluate the impact of the deployment strategy we
+plan to use in terms of how long it will take to return the pipeline to a fully functional state. From a business
+perspective, domain experts may want more solid evidence before asking for a rollback: they may be fine with an
+underperforming model while they acquire more data points and they better understand the underlying reason why the model
+is no longer accurate. Machine learning experts can help during that time by deploying alternative models with a canary
+or shadow deployment strategy to investigate their performance and compare it with that of the failing model. The only
+case in which an automatic rollback is clearly the best option is when the model’s poor performance is not caused by
+changes in the data or in the inference requests but by issues with the hardware and software infrastructure underlying
+the pipeline. (For instance, a newly deployed model uses too much memory or becomes unresponsive.) Even in such a case,
+the decision to roll back should be supported by monitoring and logging evidence (Section <a href="design-code.html#monitoring-pipeline">5.3.6</a>).
+</p>
+<!-- vim: set synmaxcol=600 textwidth=120 colorcolumn=120 spell wrap number: -->
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references hanging-indent">
+<div id="ref-network-partitioning">
+<p>Alquraan, A., H. Takruri, M. Alfatafta, and S. Al-Kiswany. 2018. “An Analysis of Network-Partitioning Failures in Cloud Systems.” In <em>13th USENIX Symposium on Operating Systems Design and Implementation (OSDI 18)</em>, 51–68.</p>
+</div>
+<div id="ref-amazon-ab-testing">
+<p>Amazon. 2021. <em>Dynamic A/B Testing for Machine Learning Models with Amazon SageMaker MLOps Projects</em>. <a href="https://aws.amazon.com/blogs/machine-learning/dynamic-a-b-testing-for-machine-learning-models-with-amazon-sagemaker-mlops-projects/">https://aws.amazon.com/blogs/machine-learning/dynamic-a-b-testing-for-machine-learning-models-with-amazon-sagemaker-mlops-projects/</a>.</p>
+</div>
+<div id="ref-sagemaker">
+<p>Amazon. 2022d. <em>Machine Learning: Amazon Sagemaker</em>. <a href="https://aws.amazon.com/sagemaker/">https://aws.amazon.com/sagemaker/</a>.</p>
+</div>
+<div id="ref-amis">
+<p>Amazon Web Services. 2022b. <em>Amazon Machine Images (AMI)</em>. <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html</a>.</p>
+</div>
+<div id="ref-ansible">
+<p>Ansible Project. 2022. <em>Ansible Documentation</em>. <a href="https://docs.ansible.com/ansible/latest/index.html">https://docs.ansible.com/ansible/latest/index.html</a>.</p>
+</div>
+<div id="ref-tf-to-coreml">
+<p>Apple. 2022. <em>TensorFlow 2 Conversion</em>. <a href="https://coremltools.readme.io/docs/tensorflow-2">https://coremltools.readme.io/docs/tensorflow-2</a>.</p>
+</div>
+<div id="ref-trivy">
+<p>Aquasecurity. 2022. <em>Trivy Documentation</em>. <a href="https://aquasecurity.github.io/trivy/">https://aquasecurity.github.io/trivy/</a>.</p>
+</div>
+<div id="ref-image-vuln">
+<p>Bhupinder, K., M. Dugré, A. Hanna, and T. Glatard. 2021. “An Analysis of Security Vulnerabilities in Container Images for Scientific Data Analysis.” <em>GigaScience</em> 10 (6): giab025.</p>
+</div>
+<div id="ref-databricks">
+<p>Databricks. 2022. <em>Databricks Documentation</em>. <a href="https://docs.databricks.com/applications/machine-learning/index.html">https://docs.databricks.com/applications/machine-learning/index.html</a>.</p>
+</div>
+<div id="ref-ovf">
+<p>DMTF. 2022. <em>Open Virtualization Format</em>. <a href="https://www.dmtf.org/standards/ovf">https://www.dmtf.org/standards/ovf</a>.</p>
+</div>
+<div id="ref-docker">
+<p>Docker. 2022a. <em>Docker</em>. <a href="https://www.docker.com/">https://www.docker.com/</a>.</p>
+</div>
+<div id="ref-docker-registry">
+<p>Docker. 2022b. <em>Docker Registry HTTP API V2 Documentation</em>. <a href="https://docs.docker.com/registry/spec/api/">https://docs.docker.com/registry/spec/api/</a>.</p>
+</div>
+<div id="ref-cicd">
+<p>Duvall, P. M., S. Matyas, and A. Glover. 2007. <em>Continuous Integration: Improving Software Quality and Reducing Risk</em>. Addison-Wesley.</p>
+</div>
+<div id="ref-container-performance">
+<p>Espe, L., A. Jindal, V. Podolskiy, and M. Gerndt. 2020. “Performance Evaluation of Container Runtimes.” In <em>Proceedings of the 10th International Conference on Cloud Computing and Services Science</em>, 273–81.</p>
+</div>
+<div id="ref-github-registry">
+<p>GitHub. 2022c. <em>Working with the Container Registry</em>. <a href="https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry">https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry</a>.</p>
+</div>
+<div id="ref-gitlab-registry">
+<p>GitLab. 2022b. <em>GitLab Container Registry</em>. <a href="https://docs.gitlab.com/ee/user/packages/container_registry/">https://docs.gitlab.com/ee/user/packages/container_registry/</a>.</p>
+</div>
+<div id="ref-gcp-containers">
+<p>Google. 2022b. <em>Deep Learning Containers</em>. <a href="https://cloud.google.com/deep-learning-containers">https://cloud.google.com/deep-learning-containers</a>.</p>
+</div>
+<div id="ref-hao">
+<p>Hao, J., T. Jiang anang, and K. Kim. 2021. “An Empirical Analysis of VM Startup Times in Public IaaS Clouds: An Extended Report.” In <em>Proceedings of the 14th Ieee International Conference on Cloud Computing</em>, 398–403.</p>
+</div>
+<div id="ref-harbor">
+<p>Harbor. 2022. <em>Harbor Documentation</em>. <a href="https://goharbor.io/docs/">https://goharbor.io/docs/</a>.</p>
+</div>
+<div id="ref-packer">
+<p>HashiCorp. 2022a. <em>Packer Documentation</em>. <a href="https://www.packer.io/docs">https://www.packer.io/docs</a>.</p>
+</div>
+<div id="ref-vagrant">
+<p>HashiCorp. 2022d. <em>Vagrant Documentation</em>. <a href="https://www.vagrantup.com/docs">https://www.vagrantup.com/docs</a>.</p>
+</div>
+<div id="ref-devops">
+<p>Humble, J., and D. Farley. 2011. <em>Continuous Delivery</em>. Addison Wesley.</p>
+</div>
+<div id="ref-azureml">
+<p>Microsoft. 2022c. <em>Azure Machine Learning</em>. <a href="https://azure.microsoft.com/en-us/services/machine-learning/">https://azure.microsoft.com/en-us/services/machine-learning/</a>.</p>
+</div>
+<div id="ref-shadow">
+<p>Microsoft. 2022g. <em>Shadow Testing</em>. <a href="https://microsoft.github.io/code-with-engineering-playbook/automated-testing/shadow-testing/">https://microsoft.github.io/code-with-engineering-playbook/automated-testing/shadow-testing/</a>.</p>
+</div>
+<div id="ref-hyperv">
+<p>Microsoft. 2022h. <em>Virtualization Documentation</em>. <a href="https://docs.microsoft.com/en-us/virtualization/">https://docs.microsoft.com/en-us/virtualization/</a>.</p>
+</div>
+<div id="ref-microservices">
+<p>Newman, S. 2021. <em>Building Microservices: Designing Fine-Grained Systems</em>. O’Reilly.</p>
+</div>
+<div id="ref-onnx">
+<p>ONNX. 2021. <em>Open Neural Network Exchange</em>. <a href="https://github.com/onnx/onnx">https://github.com/onnx/onnx</a>.</p>
+</div>
+<div id="ref-oci">
+<p>Open Container Initiative. 2022. <em>Open Container Initiative</em>. <a href="https://opencontainers.org/">https://opencontainers.org/</a>.</p>
+</div>
+<div id="ref-kvm">
+<p>Open Virtualization Alliance. 2022. <em>Documents</em>. <a href="https://www.linux-kvm.org/page/Documents">https://www.linux-kvm.org/page/Documents</a>.</p>
+</div>
+<div id="ref-virtualbox">
+<p>Oracle. 2022. <em>Oracle VM Virtualbox</em>. <a href="https://www.virtualbox.org/">https://www.virtualbox.org/</a>.</p>
+</div>
+<div id="ref-pagerduty">
+<p>PagerDuty. 2022. <em>PagerDuty: Uptime Is Money</em>. <a href="https://www.pagerduty.com/">https://www.pagerduty.com/</a>.</p>
+</div>
+<div id="ref-pytorch">
+<p>Paszke, A., S. Gross, F. Massa, A. Lerer, J. Bradbury, G. Chanan, T. Killeen, et al. 2019. “PyTorch: An Imperative Style, High-Performance Deep Learning Library.” In <em>Advances in Neural Information Processing Systems (Nips)</em>, 32:8026–37.</p>
+</div>
+<div id="ref-prometheus">
+<p>Prometheus Authors, and The Linux Foundation. 2022. <em>Prometheus: Monitoring System and Time Series Databases</em>. <a href="https://prometheus.io/">https://prometheus.io/</a>.</p>
+</div>
+<div id="ref-setuptools">
+<p>Python Packaging Authority. 2022. <em>Building and Distributing Packages with Setuptools</em>. <a href="https://setuptools.pypa.io/en/latest/userguide/index.html">https://setuptools.pypa.io/en/latest/userguide/index.html</a>.</p>
+</div>
+<div id="ref-pip">
+<p>Python Software Foundation. 2022a. <em>PyPI: The Python Package Index</em>. <a href="https://pypi.org/">https://pypi.org/</a>.</p>
+</div>
+<div id="ref-rice">
+<p>Rice, L. 2020. <em>Container Security: Fundamental Technology Concepts that Protect Containerized Applications</em>. O’Reilly.</p>
+</div>
+<div id="ref-aws-containers">
+<p>Services, Amazon Web. 2022. <em>AWS Deep Learning Containers</em>. <a href="https://aws.amazon.com/en/machine-learning/containers/">https://aws.amazon.com/en/machine-learning/containers/</a>.</p>
+</div>
+<div id="ref-knights-capital">
+<p>.Seven, D. 2014. <em>Knightmare: A DevOps Cautionary Tale</em>. <a href="https://dougseven.com/2014/04/17/knightmare-a-devops-cautionary-tale/">https://dougseven.com/2014/04/17/knightmare-a-devops-cautionary-tale/</a>.</p>
+</div>
+<div id="ref-swagger">
+<p>SmartBear Software. 2021. <em>OpenAPI Specification</em>. <a href="https://swagger.io/specification/">https://swagger.io/specification/</a>.</p>
+</div>
+<div id="ref-nexus">
+<p>Sonatype. 2022. <em>Nexus Repository Manager</em>. <a href="https://www.sonatype.com/products/nexus-repository">https://www.sonatype.com/products/nexus-repository</a>.</p>
+</div>
+<div id="ref-tensorflow">
+<p>TensorFlow. 2021a. <em>TensorFlow</em>. <a href="https://www.tensorflow.org/overview/">https://www.tensorflow.org/overview/</a>.</p>
+</div>
+<div id="ref-airflow">
+<p>The Apache Software Foundation. 2022a. <em>Airflow Documentation</em>. <a href="https://airflow.apache.org/docs/">https://airflow.apache.org/docs/</a>.</p>
+</div>
+<div id="ref-fluentd">
+<p>The Fluentd Project. 2022. <em>Fluentd: Open Source Data Collector</em>. <a href="https://www.fluentd.org/">https://www.fluentd.org/</a>.</p>
+</div>
+<div id="ref-git-git">
+<p>The Git Development Team. 2022. <em>Git Source Code Mirror</em>. <a href="https://github.com/git/git">https://github.com/git/git</a>.</p>
+</div>
+<div id="ref-hadolint">
+<p>The Hadolint Project. 2022. <em>Hadolint: Haskell Dockerfile Linter Documentation</em>. <a href="https://github.com/hadolint/hadolint">https://github.com/hadolint/hadolint</a>.</p>
+</div>
+<div id="ref-kubeflow">
+<p>The Kubeflow Authors. 2022. <em>All of Kubeflow documentation</em>. <a href="https://www.kubeflow.org/docs/">https://www.kubeflow.org/docs/</a>.</p>
+</div>
+<div id="ref-kubernetes">
+<p>The Kubernetes Authors. 2022a. <em>Kubernetes</em>. <a href="https://kubernetes.io/">https://kubernetes.io/</a>.</p>
+</div>
+<div id="ref-k8s-gpu">
+<p>The Kubernetes Authors. 2022b. <em>Kubernetes Documentation: Schedule GPUs</em>. <a href="https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/">https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/</a>.</p>
+</div>
+<div id="ref-twilio-breach">
+<p>The Register. 2020. <em>Twilio: Someone Waltzed into Our Unsecured AWS S3 Silo, Added Dodgy Code to Our JavaScript SDK for Customers</em>. <a href="https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection">https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection</a>.</p>
+</div>
+<div id="ref-deployment-strategies">
+<p>Tremel, E. 2017. <em>Deployment Strategies on Kubernetes</em>. <a href="https://www.cncf.io/wp-content/uploads/2020/08/CNCF-Presentation-Template-K8s-Deployment.pdf">https://www.cncf.io/wp-content/uploads/2020/08/CNCF-Presentation-Template-K8s-Deployment.pdf</a>.</p>
+</div>
+<div id="ref-vmware-vsphere">
+<p>VmWare. 2022. <em>VMware vSphere Documentation</em>. <a href="https://docs.vmware.com/en/VMware-vSphere/index.html">https://docs.vmware.com/en/VMware-vSphere/index.html</a>.</p>
+</div>
+<div id="ref-vmware-workstation">
+<p>VMware. 2022. <em>VMware Workstation Pro</em>. <a href="https://www.vmware.com/products/workstation-pro.html">https://www.vmware.com/products/workstation-pro.html</a>.</p>
+</div>
+<div id="ref-switch-breach">
+<p>VPNOverview. 2022. <em>Fintech App Switch Leaks Users’ Transactions, Personal IDs</em>. <a href="https://vpnoverview.com/news/fintech-app-switch-leaks-users-transactions-personal-ids">https://vpnoverview.com/news/fintech-app-switch-leaks-users-transactions-personal-ids</a>.</p>
+</div>
+<div id="ref-12factor">
+<p>Wiggins, A. 2017. <em>The Twelve Factor App</em>. <a href="https://12factor.net">https://12factor.net</a>.</p>
+</div>
+<div id="ref-mlflow">
+<p>Zaharia, M., and The Linux Foundation. 2022. <em>MLflow Documentation</em>. <a href="https://www.mlflow.org/docs/latest/index.html">https://www.mlflow.org/docs/latest/index.html</a>.</p>
+</div>
+<div id="ref-evaluatingml">
+<p>Zheng, A. 2015. <em>Evaluating Machine Learning Models</em>. O’Reilly.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr/>
+<ol start="16">
+<li id="fn16"><p>Containers are <em>ephemeral</em> in the sense that they should be built with the expectation that they
+may go down at any time. Therefore, they should be easy to (re)create and to destroy, and they should be <em>stateless</em>:
+any valuable information they contain will be irrevocably lost when they are destroyed. These characteristics make
+them a key tool in “The Twelve-Factor App” <span class="citation">(Wiggins <a href="#ref-12factor" role="doc-biblioref">2017</a>)</span> and other modern software engineering practices.<a href="deploying-code.html#fnref16" class="footnote-back">↩︎</a></p></li>
+<li id="fn17"><p>A group of one or more containers that
+encapsulates an application is called a “pod” in the Kubernetes documentation.<a href="deploying-code.html#fnref17" class="footnote-back">↩︎</a></p></li>
+<li id="fn18"><p>Each consumer or user is always served the
+same version of the model. This happens implicitly in the blue-green deployment pattern because each consumer or
+user is assigned to a pool, and all instances within each pool serve the same model.<a href="deploying-code.html#fnref18" class="footnote-back">↩︎</a></p></li>
+<li id="fn19"><p>Connectivity issues between compute systems, clusters or data centers due to the failure of network devices or
+network connections are also called “network splits” or “network partitioning” <span class="citation">(Alquraan et al. <a href="#ref-network-partitioning" role="doc-biblioref">2018</a>)</span>.<a href="deploying-code.html#fnref19" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+                
+</body>
+</html>

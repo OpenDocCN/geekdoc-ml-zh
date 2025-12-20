@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Chapter 2 Hardware Architectures</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Chapter 2 Hardware Architectures</h1>
+<blockquote>原文：<a href="https://ppml.dev/hardware.html">https://ppml.dev/hardware.html</a></blockquote>
+<div id="hardware" class="section level1 hasAnchor" number="2">
+
+<p>
+Building a compute system to run machine learning software requires careful planning. How well it will perform depends
+on choosing the right hardware; a set of machine learning algorithms that can attack efficiently and effectively the
+task we want to perform; and how to represent the data we will use, the models and their outputs. For the purpose of
+this book, we define a “compute system” as a computer system, not necessarily server-class, that will perform one or
+more of the tasks required to learn or use machine learning models. We will often call it a “machine learning system” as
+well to highlight its purpose. Other types of systems, such as those focusing on storage (database servers, data lakes,
+object storage) or delivery (human-readable dashboards, computer-readable API endpoints) will be mentioned only in
+passing.
+</p>
+<p>In this chapter we focus on the hardware, moving to the data in Chapter <a href="types-structures.html#types-structures">3</a> and to the algorithms in
+Chapter <a href="algorithms.html#algorithms">4</a>. After covering the key aspects of a compute system (Section <a href="hardware.html#hardware-types">2.1</a>), we
+discuss how to use it to the best of its potential (Section <a href="hardware.html#hardware-using">2.2</a>), the trade-offs involved in
+integrating remote systems (Section <a href="hardware.html#hardware-cloud">2.3</a>) and how to design it based on our requirements (Section
+<a href="hardware.html#hardware-choice">2.4</a>). Modern machine learning libraries try to make these decisions for us, but they have limits that
+become apparent in many real-world applications: in such cases, being able to reason about the hardware is an invaluable
+skill.</p>
+<div style="page-break-after: always;"/>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:schematic"/>
+<img src="../Images/547fdc3726b6a903570f2227ea79c1de.png" alt="A schematic view of the key components that may appear in a modern compute system (not necessarily all at the same time). Sizes and distances are not to scale." data-original-src="https://ppml.dev/chapter02/figures/processors.svg"/>
+<p class="caption">
+Figure 2.1: A schematic view of the key components that may appear in a modern compute system (not necessarily all at the same time). Sizes and distances are not to scale.
+</p>
+</div>
+<div id="hardware-types" class="section level2 hasAnchor" number="2.1">
+<h2><span class="header-section-number">2.1</span> Types of Hardware<a href="hardware.html#hardware-types" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>Compute systems come in a variety of configurations whose components are summarised in Figure <a href="hardware.html#fig:schematic">2.1</a>.
+Broadly speaking, we can say that they vary along three axes:</p>
+<ol style="list-style-type: decimal">
+<li><em>compute</em>, the processors that perform the operations required to learn and run our machine learning models;</li>
+<li><em>memory</em> to store the data, the models and their outputs as variables and data structures; and the</li>
+<li><em>connections</em> that we use to move the data and the models around.</li>
+</ol>
+<p>These dimensions are admittedly somewhat arbitrary, but they are well-suited to discuss the topics we will cover in this
+book. In this context, choosing the right hardware means choosing a trade-off in terms of compute, memory and
+connections that allows the machine learning system to achieve the goals it is designed for while fitting the available
+budget. To quote one of the universal truths from RFC 1925 <span class="citation">(Callon <a href="#ref-rfc1925" role="doc-biblioref">1996</a>)</span>:</p>
+<blockquote>
+<p>“(7a) Good, Fast, Cheap: Pick any two (you can’t have all three).”</p>
+</blockquote>
+<div id="hardware-compute" class="section level3 hasAnchor" number="2.1.1">
+<h3><span class="header-section-number">2.1.1</span> Compute<a href="hardware.html#hardware-compute" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>The three types of processors we can commonly find in machine learning systems are:</p>
+<p>
+</p>
+<ol style="list-style-type: decimal">
+<li><p><em>Central processing units</em> (CPUs), usually either an x86-64 processor from AMD or Intel or an ARM processor.</p></li>
+<li><p><em>Graphics processing units</em> (GPUs) from NVidia or AMD.</p></li>
+<li><p><em>Tensor processing units</em> (TPUs), usually from Google. Other specialised hardware to accelerate machine learning
+certainly exists <span class="citation">(Reuther et al. <a href="#ref-ai-accelerators" role="doc-biblioref">2020</a>)</span> but, for practical purposes, fulfils the same role as TPUs.
+</p></li>
+</ol>
+<p>CPUs, GPUs and TPUs represent different trade-offs in terms of speed, capabilities and versatility. Trading one off for
+another is unavoidable: the end of the “easy” performance improvements granted by Moore’s law (transistors per chip
+double each year or two) and by Dennard’s law (power density is constant as transistors get smaller, that is, we get
+more transistors) mean that we cannot expect general-purpose processors to become faster at the rate we were used to.
+Transistors cannot get any smaller without breaking the laws of physics. Current and voltage cannot drop any further
+while keeping transistors dependable, so we cannot easily double transistors per chip anymore. The only way out of this
+conundrum is domain-specific architectures that use their transistor- and power-budgets to the fullest for specific
+types of operations <span class="citation">(Jouppi et al. <a href="#ref-patterson" role="doc-biblioref">2018</a>)</span>. Hence the rise of GPUs and, more recently, TPUs in machine learning applications.</p>
+<p>
+
+CPUs are the most versatile type of compute: they can perform a wide range of operations by means of the instructions
+they implement; they can perform multiple operations in parallel to some extent (whether on different cores or on
+different threads on the same core); and they can efficiently handle any type of data. At the same time, CPUs contain
+<em>logical units</em> that implement specialised single-instruction multiple-data (SIMD) instruction sets such as the
+Streaming SIMD Extensions (SSE1 to SSE4 on x86, Neon on ARM) and the Advanced Vector Extensions (AVX, AVX2, AVX512 on
+x86, SVM on ARM) to perform numerical computations efficiently and simultaneously on multiple variables.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> The speed-ups that can be obtained by their use can be
+substantial, ranging from 10–15% to a factor of 10 <span class="citation">(see, for instance, Williams-Young and Li <a href="#ref-young" role="doc-biblioref">2019</a>; Fortin et al. <a href="#ref-monagan" role="doc-biblioref">2021</a>)</span>. The main limitation of SIMD
+instructions is that they can only operate on the contents of the <em>registers</em>, the smallest and fastest memory inside
+the CPU. For instance, on x86-64 CPUs each register can hold 2-16 floating point numbers, and there are 16 (SSE, AVX,
+AVX2) or 32 (AVX512) registers for each core.</p>
+<p>Another type of instruction that performs multiple operations in parallel are <em>fused operations</em> such as FMA (“fused add
+and multiply”), which perform predefined sets of operations on multiple variables and in approximately the same time it
+would take to perform a single operation. They also have the added benefit of performing just one floating point
+rounding to precision after the last operation, thus eliminating many rounding issues (more on this in Section
+<a href="types-structures.html#floating-point">3.1.2</a>).
+</p>
+<p>
+GPUs specialise in parallel computations over large amounts of data. They are fundamentally different from CPUs: they
+behave like asynchronous devices in which we load data, we wait for data to be processed and then we collect the
+results. For practical purposes, modern GPUs can be viewed as multithreaded, multicore vector processors
+<span class="citation">(Volkov and Demmel <a href="#ref-benchmarking-gpus" role="doc-biblioref">2008</a>)</span> designed to operate on one-dimensional arrays of data. The data is internally subdivided into
+blocks that will be processed by hundreds of independent, identical <em>units</em>.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> Each unit is
+extremely simple: it is close to a CPU’s SIMD/FMA logical unit in terms of functionality. It has its own set of
+registers and a local memory cache, but it can only apply a single type of operation at a time and is completely driven
+by the GPU scheduler. The GPU scheduler takes care of keeping the units busy by assigning them tasks in such a way as to
+maximise <em>occupancy</em> (the overall load of the GPU) and by keeping them fed with data from the global memory of the GPU.</p>
+<p>This level of parallelism makes them potentially much faster than CPUs: a CPU has at most a few tens of cores, whereas a
+GPU has hundreds of units that are equally capable of using SIMD instructions. This allows the GPU scheduler to handle
+tasks of unequal sizes and with different latencies, limiting their impact on the efficiency of parallel computations.
+Furthermore, each GPU unit has more registers<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> than a CPU core and can work on a much larger amount of data at extremely low
+latencies.
+</p>
+<p>On the other hand, the hardware design that makes all of this possible restricts what a GPU can do. Units are optimised
+to work on 32-bit floating point and integer numbers; modern hardware also supports 16-bit and 64-bit floating point
+numbers well, but working with other types of variables is difficult. Getting data to the units requires copying them
+first to the GPU global memory, where they will be stored in one or more memory banks. Different units cannot read
+different data from the same memory bank at the same time, so we should carefully optimise the layout of the data in
+memory. Furthermore, data are assumed to be organised into one-dimensional arrays: further structure is disregarded.
+Support for branching (that is, if-then-else programming constructs) is limited to the GPU scheduler: units have no
+concept of conditional execution at all. Finally, units are organised in groups of 32 to 64, and the GPU scheduler can
+only allocate tasks to groups. Any task whose size is not a multiple of the group size will result in under-utilised
+groups and decrease occupancy.</p>
+<p>TPUs are even more specialised: they are expressly built for training and performing inference on deep neural network
+models with the best possible average and tail performance. The architecture of TPU cores<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a>
+rests on five design decisions <span class="citation">(Jouppi et al. <a href="#ref-patterson" role="doc-biblioref">2018</a>)</span>:</p>
+<ul>
+<li>including a single, very simple core per processor;</li>
+<li>concentrating most computing power in a large, two-dimensional matrix-multiply unit;</li>
+<li>organising memory in a mesh network that allows for asynchronous, lockless communications between cores;</li>
+<li>implementing hardware support for integers and floats with limited precision, which use less memory;</li>
+<li>dropping all the features that are not strictly needed for working with deep neural networks.</li>
+</ul>
+<p>This single-minded focus on deep learning makes TPUs the best hardware to use for this kind of models, with documented
+speed-ups on the order of 20-30 times over GPUs in terms of performance per watt <span class="citation">(Jouppi et al. <a href="#ref-patterson" role="doc-biblioref">2018</a>)</span>. In particular,
+<span class="citation">(Jouppi et al. <a href="#ref-patterson2" role="doc-biblioref">2020</a>)</span> reports that TPUs are 50 times faster per watt for inference and 5 to 10 times faster for training. These
+improvements are largely driven by the fact that TPU cores are much smaller than GPU or CPU cores (38 times less area),
+so they consume (13 times) less energy and leave a larger share of the available transistors to the matrix-multiply
+unit. Another important factor is the memory layout, which allows deadlock-free communications between TPU cores at
+500Gb per second and removes the need to synchronise them periodically. Intuitively, we can expect these performance
+improvements to carry over to other types of machine learning models that require similar patterns of mathematical
+operations, and particularly to those that can be completely formulated in terms of matrix manipulations.</p>
+<p>The price we pay for this level of performance is the complete lack of flexibility and versatility of TPUs, which are
+really good only at multiplying matrices. TPU cores cannot perform any instruction scheduling, do not support
+multithreading, and in general have none of the sophisticated features we can find in CPUs and GPUs. They are completely
+driven by the CPU of the compute system they are attached to.  To make up for that, code can
+be compiled with Google’s XLA compiler <span class="citation">(Tensorflow <a href="#ref-xla" role="doc-biblioref">2021</a>)</span> to require no dynamic scheduling and to maximise data- and
+instruction-level parallelism, combining operations to use SIMD/FMA instructions and to ensure that the
+matrix-multiplication unit is always busy. XLA has complete visibility into the structure of Tensorflow and PyTorch
+models and can optimise across operations much better than a traditional compiler or the CPU and GPU schedulers. It is
+effective to the point that it can achieve sustained 70% peak performance <span class="citation">(Jouppi et al. <a href="#ref-patterson2" role="doc-biblioref">2020</a>)</span>. TPUs are also heavily optimised
+for a single type of variable, Google’s “brain” floating point format (“bfloat”), and are slower for variables in the
+industry-standard IEEE 754 floating point format <span class="citation">(Overton <a href="#ref-overton" role="doc-biblioref">2001</a>)</span>. (More in Section <a href="types-structures.html#floating-point">3.1.2</a>.) Furthermore, they
+are designed specifically for 16-bit (“bfloat16”) floating point operations over 32-bit operations. Both formats are
+empirically good enough for working deep neural networks and are eight times more efficient to operate on than IEEE
+formats <span class="citation">(Jouppi et al. <a href="#ref-patterson2" role="doc-biblioref">2020</a>)</span>.
+</p>
+</div>
+<div id="hardware-memory" class="section level3 hasAnchor" number="2.1.2">
+<h3><span class="header-section-number">2.1.2</span> Memory<a href="hardware.html#hardware-memory" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>The practical performance of CPUs, GPUs and TPUs is limited by the fact that we need to provide them data to operate on.
+Each processor can only access the memory it is directly attached to: the registers and the internal cache for CPUs, the
+on-board global and local memory for GPUs and TPUs (see Figure <a href="hardware.html#fig:schematic">2.1</a>). This translates to delivering
+input data from system RAM to their dedicated memory and copying the outputs they produce back to system RAM for further
+processing.</p>
+<p>
+Moving data between different memories costs time, as does moving them within each type of memory, although less so.
+Ideally, we want to have as much data as close as possible to the processor that will work on it. Furthermore, we want
+that processor to keep working on that data in place for as long as possible to amortise the cost of moving data over a
+large number of operations. This aspiration is limited by three factors:</p>
+<ol style="list-style-type: decimal">
+<li>the <em>amount</em> of memory available to and directly accessible by each type of processor;</li>
+<li>the <em>latency</em> of accessing different types of memory;</li>
+<li>and the <em>bandwidth</em> of our connections to different types of memory, which determines how quickly data can be
+transferred after it is accessed.</li>
+</ol>
+<p>In other words, latency is the time spent waiting for the memory copy to start, and the bandwidth is the maximum amount
+of memory we can copy per second.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:memory-hierarchy"/>
+<img src="../Images/57ea91307361ffaf0282f31cde38e80e.png" alt="A schematic view of the different types of memory, their size and their latency (the time it takes for the CPU to access them). Times are expressed as nanoseconds (1ns = $10^{-9}$s) or microseconds (1μs = $10^{-6}$s)." data-original-src="https://ppml.dev/chapter02/figures/memory-hierarchy.svg"/>
+<p class="caption">
+Figure 2.2: A schematic view of the different types of memory, their size and their latency (the time it takes for the CPU to access them). Times are expressed as nanoseconds (1ns = <span class="math inline">\(10^{-9}\)</span>s) or microseconds (1μs = <span class="math inline">\(10^{-6}\)</span>s).
+</p>
+</div>
+<p>Clearly, each type of processor will be fastest in accessing its dedicated memory because it is physically located next
+to or inside it. Distance plays a key role in determining the latency of memory accesses: the propagation speed of
+electrical signals limits how quickly we can reach for that memory. The need to process these signals along the way, for
+instance, to translate the addresses of memory locations in different formats, may further delay accesses as well. CPU
+registers, the local memory of GPU units and the local memory of TPUs are directly attached to the respective processors
+to minimise distance and to make them directly addressable. This reduces latency from microseconds (<span class="math inline">\(10^{-6}\)</span> seconds)
+or tens of microseconds (<span class="math inline">\(10^{-5}\)</span> seconds) to a few hundred or tens of microseconds (<span class="math inline">\(10^{-9}\)</span> to <span class="math inline">\(10^{-7}\)</span> seconds).
+To quote RFC 1925 once more:</p>
+<blockquote>
+<p>“(2) No matter how hard you push and no matter what the priority, you can’t increase the speed of light.”</p>
+</blockquote>
+<p>The latency of accessing particular types of memory is usually inversely proportional to their size and is bound below
+by the frequency of the processor accessing it. We illustrate this point in Figure <a href="hardware.html#fig:memory-hierarchy">2.2</a>, focusing
+on the CPU, but our considerations hold for GPUs and TPUs as well. CPU registers and the various CPU caches are the
+smallest because their size is limited by the physical size of the CPU. For instance, the three levels of cache (L1, L2,
+L3) on a Sandy Bridge Intel CPU are 32kB (L1), 256kB (L2) and 20MB (L3) in size and can be accessed in 4, 12 and 29
+cycles respectively <span class="citation">(Williams-Young and Li <a href="#ref-young" role="doc-biblioref">2019</a>)</span>. In contrast, registers can only store a few hundreds of bytes, but it only takes a single
+cycle to access them. For practical purposes, we can take a CPU cycle to be the reciprocal of the CPU’s clock frequency.
+Say that we have a 2GHz CPU:
+<span class="math display">\[\begin{equation*}
+  \text{$1$ cycle} \operatorname{/} (2 \times 10^9 \mbox{Hz}) = 5 \times 10^{-10}\mathrm{s} = 0.5\mathrm{ns}.
+\end{equation*}\]</span>
+With this equation we can derive the latencies shown in Figure <a href="hardware.html#fig:memory-hierarchy">2.2</a>: accessing registers takes
+0.5ns and accessing the CPU cache takes between 2ns and 14.5ns. It is easy to see that performance degrades quickly if
+the CPU is forced to wait for several nanoseconds to fetch the data from the CPU cache for every 0.5ns it spends doing
+computations. The degradation may be less noticeable for instructions that take longer than 1 cycle to complete, such as
+division, trigonometric and transcendental functions, simply because the time spent on the computations is larger
+compared to that spent waiting.
+</p>
+<p>
+Next in the memory hierarchy are different sets of RAM: the system RAM accessible from CPUs, the video RAM on the GPU
+boards and that in TPU boards. As we can see from Figure <a href="hardware.html#fig:memory-hierarchy">2.2</a>, the latency of accessing RAM can
+be in the hundreds of nanoseconds, making it slower than CPU caches by a factor of at least 10. The GPU and TPU RAM,
+called “global memory” in Figure <a href="hardware.html#fig:schematic">2.1</a>, can be even slower because GPUs and TPUs are connected to the CPU
+through a PCI Express bus (PCIe),<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a> which adds to the latency. However, RAM is much larger than CPU caches, ranging from a few gigabytes (GPU
+and TPU RAM) to a few terabytes (for system RAM).</p>
+<p>The latency of RAM is such that we want to read data from it as few times as possible, and to read as much data as
+possible each time. For example, consider accessing 10MB of data in RAM to apply a set of 10 FMA instructions.</p>
+<ul>
+<li>If we transfer the data to the CPU as a single batch, we have to wait 60–100ns in order to access it, and then
+5ns performing computations.</li>
+<li>If we transfer data in 200 50kB batches, we have to wait 12000–10000ns (12-20μs) to spend the same 5ns on
+computations.</li>
+</ul>
+<p>The transfer itself takes the same time since it only depends on the bandwidth of the PCIe connection between the CPU
+and the RAM: 10MB take 216μs at 64GB/s. However, in the first case the latency introduced by the memory transfer is
+negligible, while in the second case it increases the overall time by about 20%. This is why both GPUs and TPUs are
+initialised by copying all the data from system RAM in a single batch, making the memory transfer (often called “kernel
+launch”) a fixed overhead cost that will be amortised over the whole computation.
+</p>
+<p>
+At the bottom of the memory hierarchy we have hot and cold storage. Hot storage is meant to contain data that we need to
+access often and right away, and will comprise hard drives (mostly solid-state drives) that are locally attached to
+the compute system. Cold storage is for data that we access less frequently and that do not require fast access times.
+It comprises a combination of tape, slower hard drives and network-attached storage. Hot storage usually has a size of
+several tens of terabytes, with less redundancy; cold storage can potentially scale to the petabytes, and often has more
+redundancy because it contains data that should be preserved in the long term. Hot storage is local, so it is limited by
+the latency and the bandwidth of PCIe; cold storage may be remote, so it is limited by network latencies and bandwidth.
+The storage medium is rarely a limiting factor: it almost always has more bandwidth than the connection we use to access
+it, which becomes the bottleneck.
+</p>
+</div>
+<div id="hardware-connections" class="section level3 hasAnchor" number="2.1.3">
+<h3><span class="header-section-number">2.1.3</span> Connections<a href="hardware.html#hardware-connections" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+The last, crucial part of a compute system is the connections that allow the data to move between different processors
+and types of memory. The performance of memory is necessarily limited by how it is connected to various processors.
+Memory directly connected to a particular processor (CPU caches and registers, the memory built in GPU and TPU
+boards) is always the fastest to access for that particular processor because it works at its full native speed. This
+means that latency is minimised and that bandwidth is maximised. For example, TPU memory has a throughput of 500Gb/s
+<span class="citation">(Jouppi et al. <a href="#ref-patterson2" role="doc-biblioref">2020</a>)</span> and GPU memory has a throughput of 500-1000Gb/s (Nvidia Quadro cards <span class="citation">(Mujtaba <a href="#ref-gddr6" role="doc-biblioref">2018</a>)</span>). The latency is negligible
+for both.
+</p>
+<p>
+However, GPUs cannot access the system RAM directly; nor can CPUs access the memory on the GPU boards. This means that
+any data that is transferred to a GPU for processing must be copied from the system RAM to the on-board memory. Speed is
+then limited by the bandwidth of the PCIe bus that connects the GPU to the system and latency increases to the levels
+shown in Figure <a href="hardware.html#fig:memory-hierarchy">2.2</a>. The same is true for TPUs.
+</p>
+<p>
+This is the reason why <em>data locality</em>, keeping the data “close” to the processor that will work on it, matters: direct
+connections have the best possible latency and bandwidth, while indirect ones are limited by the PCIe bus. Furthermore,
+transferring data between different types of memory typically involves copying it to system RAM as an intermediate step,
+which degrades performance even further.</p>
+<p>
+Hot and cold storage are different from other types of memory in several respects. Firstly, they do not have any compute
+capabilities and therefore we cannot avoid transferring the data they contain to system RAM to work on it. Secondly,
+neither type of storage will necessarily saturate its connection to the system RAM: the connection does not introduce
+any bottleneck in itself. Hot storage is typically connected to the compute system via PCIe, but its sustained
+read-write speed (8GB/s for SATA 3 to 4GB/s for NVMe) is comfortably smaller than PCIe. Cold storage is even slower, or
+is only available through a network connection such as 100Gb/s Ethernet.
+</p>
+</div>
+</div>
+<div id="hardware-using" class="section level2 hasAnchor" number="2.2">
+<h2><span class="header-section-number">2.2</span> Making Hardware Live Up to Expectations<a href="hardware.html#hardware-using" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+
+All these hardware types have powerful capabilities, each in their own way, but in order to use them effectively we need
+either compilers that can leverage them (if we can compile software from source) or libraries that have been built to
+do so (if we cannot). This means using compilers that understand the memory layout of the system and what specialised
+hardware instructions are available, or software built on optimised libraries like CUDA <span class="citation">(Nvidia <a href="#ref-cuda" role="doc-biblioref">2021</a>)</span> (for NVidia GPUs) or
+Intel’s Math Kernel Library (MKL) <span class="citation">(Intel <a href="#ref-mkl" role="doc-biblioref">2021</a>)</span> (for CPUs). Some popular machine learning frameworks and libraries such as
+PyTorch <span class="citation">(Paszke et al. <a href="#ref-pytorch" role="doc-biblioref">2019</a>)</span> go even further and abstract all hardware-specific optimisations away, adapting automatically to the
+characteristics of the hardware they run on.
+</p>
+<p>
+The key to getting the best possible performance out of modern compute systems is to recognise that they have many
+processors (specialised or otherwise) and that we want to keep all those processors busy as much as possible. In other
+words, we need <em>parallelism</em>:</p>
+<ul>
+<li>At the <em>instruction level</em>, we want software to use hardware instructions that can be executed simultaneously.</li>
+<li>At the <em>data level</em>, we want tasks with modular inputs and outputs so that we can operate on each of their elements
+independently, without having to wait for other operations to complete.</li>
+<li>At the <em>thread level</em>, we want different parts of our machine learning software to depend on each other’s outputs as
+little as possible so that we can run them in separate threads or processes across different cores, processors or even
+systems.</li>
+</ul>
+<p>To what extent thread-level parallelism is possible depends on what algorithms we are using and on how they are
+implemented (see Section <a href="algorithms.html#bigO-performance">4.6</a>). The same is true for data-level parallelism: whether data points and
+random variables can be considered to be independent, whether parameters can be estimated independently, and whether
+predictions can be computed independently depends on what machine learning model we are using and on how we learned it.
+Instruction-level parallelism, on the other hand, depends crucially on the software using the appropriate hardware
+instructions (SIMD and FMA in CPUs and GPUs, matrix-multiplication units in TPUs). This is true for data-level
+parallelism as well because being able to operate on multiple data points simultaneously is useless if the software
+does not tell various processors to do that.</p>
+<p>
+
+Taking advantage of parallelism requires us to feed data to all the processors involved in the computations so that they
+have something to operate on. How we do that determines the <em>operational intensity</em> of the software: the number of
+operations per byte of RAM accessed during execution. Data locality is then key to improving that: loading data has a
+much higher latency than operating on data that are already in the local memory of the processor, so the processor will
+end up sitting idle while waiting for the data to arrive. This is bound to happen every time we load data from a
+different level in the hierarchy in Figure <a href="hardware.html#fig:memory-hierarchy">2.2</a>, as we discussed in Section
+<a href="hardware.html#hardware-connections">2.1.3</a>. It is also bound to happen, to some extent, as we get close to running processors at full
+capacity. For instance, the CPU will often sit idle while waiting to receive results from GPUs and TPUs. And the closer
+we get to full occupancy, the less room we have for optimising load across and within processors. By the law of
+diminishing returns, we eventually end up decreasing their overall performance as the gains from increasing occupancy
+are outweighed by the overhead of managing different threads and processes contending for resources.
+
+</p>
+<p>In other words, increasing operational intensity means reducing the number of memory accesses. Performing data
+transformations in place is a way to do that: it reduces the number and the volume of high-latency data transfers to and
+from RAM while maximising the usage of faster local memory. In doing so, we prevent the processors from stalling while
+waiting for data (they are “starving”) and we allow them to operate continuously (we “keep them fed” with data). The
+price is that memory use is likely to increase because we need to rearrange the data in memory and possibly to keep
+multiple copies around. Depending on the algorithm, it is sometimes possible to get most of the intensity without
+sacrificing space complexity, as in <span class="citation">(Fortin et al. <a href="#ref-monagan" role="doc-biblioref">2021</a>)</span>.</p>
+<p>
+When we are eventually forced to read from RAM, large RAM reads are better than many small RAM reads: we should lay
+out data continuously in RAM to allow for that. If we do not do that, most algorithms will become memory-bound. (More on
+that in Chapter <a href="types-structures.html#types-structures">3</a>.) Limiting memory usage in the first place will also help in this respect. Hence
+the interest in numeric formats with smaller precisions such as 16-bit floating point numbers and integers
+<span class="citation">(Jouppi et al. <a href="#ref-patterson" role="doc-biblioref">2018</a>, <a href="#ref-patterson2" role="doc-biblioref">2020</a>)</span>; and in reducing the number of parameters of machine learning models by compressing them or by
+making the models sparser <span class="citation">(Hazelwood et al. <a href="#ref-facebook-infra" role="doc-biblioref">2018</a>)</span>.
+
+</p>
+</div>
+<div id="hardware-cloud" class="section level2 hasAnchor" number="2.3">
+<h2><span class="header-section-number">2.3</span> Local and Remote Hardware<a href="hardware.html#hardware-cloud" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+
+
+The discussion of the key aspects of compute systems in Sections <a href="hardware.html#hardware-types">2.1</a> and <a href="hardware.html#hardware-using">2.2</a>
+implicitly assumes that all hardware is part of a single system. That is unlikely to be the case: machine learning
+systems typically comprise different systems with specific purposes because different tasks run best on different
+hardware, and it is expensive to maximise memory, storage and compute in a single system all at the same time. Having
+different systems makes it possible to specialise them and to make them perform better while reducing costs. We can
+think of them as <em>remote storage</em> and <em>remote compute</em>, as they are labelled in Figure <a href="hardware.html#fig:schematic">2.1</a>, connected
+by either a local or a geographical network.</p>
+<p>Remote systems that are in the same local network are typically connected by a high-speed Ethernet connection. 50Gb
+Ethernet is good enough even at the scale of Facebook operations <span class="citation">(Hazelwood et al. <a href="#ref-facebook-infra" role="doc-biblioref">2018</a>)</span>, so throughput is not a limiting
+factor for smaller machine learning systems. Latencies are more of a problem: the networking equipment that routes the
+traffic in the network is likely to introduce several microseconds of delay in establishing a new connection.</p>
+<p>For remote systems that are in a different geographical location, both latency and bandwidth are limiting factors. A
+prime example is <em>cloud instances</em>, virtual servers that we can quickly create (“provision”) or destroy (“decommission”)
+and that run on hardware that we own (a private cloud) or that we rent from a public cloud provider such as Amazon Web
+Services (AWS), Microsoft Azure or Google Cloud Computing Services (GCP). Latency arises from the physical time it takes
+for signals to go through several layers of networking equipment to reach a system that is possibly in a different
+country. For instance, if we are located on the west coast of the United States the latency of a connection to the east
+coast is 40ms, to the United Kingdom is 81ms, and to Australia is 183ms <span class="citation">(Gregg <a href="#ref-gregg" role="doc-biblioref">2021</a>)</span>. If the remote system is activated on
+demand, we must also wait for it to boot before we can start processing any data: this can take between 1s and 40s
+depending on the type of virtualisation underlying the instances (Sections <a href="deploying-code.html#vm-packaging">7.1.3</a> and
+<a href="deploying-code.html#container-packaging">7.1.4</a>). Compared to the latencies in Figure <a href="hardware.html#fig:memory-hierarchy">2.2</a>, accessing data on a remote
+system is therefore 3-6 orders of magnitude slower than the storage of a local system. This is the case, for instance,
+for AWS spot instances: while they are cheaper to run, they must be booted up every time they are used and they may be
+shut down without warning.
+</p>
+<p>
+On the one hand, we want to preserve locality as much as possible: colocating the data and all the compute systems that
+will work on it to avoid large, repeated data transfers across different locations. Designing the topology of the local
+network connecting different systems can minimise the impact of data transfers within the network and can make it
+feasible to spread the load of training complex models across different systems <span class="citation">(Hazelwood et al. <a href="#ref-facebook-infra" role="doc-biblioref">2018</a>)</span>. This approach is
+known as <em>distributed</em> or <em>federated learning</em> <span class="citation">(Li et al. <a href="#ref-federated" role="doc-biblioref">2021</a>)</span>: as an example, see the research done at DeepMind for
+distributed deep reinforcement learning <span class="citation">(Espeholt et al. <a href="#ref-impala" role="doc-biblioref">2018</a>)</span> and Google’s systems architecture for federated learning from mobile
+devices <span class="citation">(Bonawitz et al. <a href="#ref-bonawitz" role="doc-biblioref">2019</a>)</span>. The latter is an instance of <em>edge computing</em> <span class="citation">(Khan et al. <a href="#ref-edge" role="doc-biblioref">2019</a>)</span>, which addresses data privacy, security, and
+latency constraints by pushing data processing to low-power devices closer to where the data originates (Section
+<a href="design-code.html#scoping-pipeline">5.3.1</a>).
+
+</p>
+<p>On the other hand, it is desirable to keep geographical spread for the purpose of disaster recovery. Keeping multiple
+copies of the data and of the models in different locations makes it unlikely that a hardware failure will result in the
+loss of crucial resources: a time-honoured strategy to achieve that is the “3-2-1 backup rule” (3 copies of your data,
+your production data and 2 backup copies, on 2 different types of storage with 1 copy off-site). It also helps with
+locality, but requires some care in synchronising the data and the models at different locations to ensure that the
+correct version is used everywhere.
+</p>
+</div>
+<div id="hardware-choice" class="section level2 hasAnchor" number="2.4">
+<h2><span class="header-section-number">2.4</span> Choosing the Right Hardware for the Job<a href="hardware.html#hardware-choice" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+No single compute system(s) configuration is best overall: practical performance is the result of complex interactions
+between the type(s) of algorithms, the models and the type(s) of hardware. Engineering the best possible performance
+should then begin by defining what the objectives of the machine learning system are (Section <a href="design-code.html#scoping-pipeline">5.3.1</a>)
+and then choosing the software and the hardware required to achieve them. A comprehensive discussion on this topic can
+be found in <span class="citation">(Gregg <a href="#ref-gregg" role="doc-biblioref">2021</a>)</span>, which explores all the different aspects of hardware, operating systems, protocols, benchmarking
+and profiling. In what follows, we will focus on the interactions between the machine learning models, the software
+stack that underlies them and the hardware. Numeric libraries such as BLAS <span class="citation">(Blackford et al. <a href="#ref-blas" role="doc-biblioref">2002</a>)</span>, LAPACK <span class="citation">(Anderson et al. <a href="#ref-lapack" role="doc-biblioref">1999</a>)</span> and GSL <span class="citation">(Galassi et al. <a href="#ref-gsl" role="doc-biblioref">2021</a>)</span>,
+frameworks like TensorFlow <span class="citation">(TensorFlow <a href="#ref-tensorflow" role="doc-biblioref">2021</a><a href="#ref-tensorflow" role="doc-biblioref">a</a>)</span> and PyTorch, and low-level libraries such as XLA and CUDA essentially act as
+compilers for the models and translate them into the best available set of hardware instructions for the most suitable
+processor(s).</p>
+<p>
+
+
+
+Some tasks are better suited to particular types of hardware. Consider, for instance, deep neural networks. There are
+important computational differences between training and inference: the latter is less parallelisable, has
+higher memory requirements, and requires wider data to keep enough precision and avoid catastrophic errors in the final
+model <span class="citation">(Jouppi et al. <a href="#ref-patterson2" role="doc-biblioref">2020</a>)</span>. Hence training is best performed on compute systems generously equipped by GPUs and TPUs, while
+inference performs well even on CPUs <span class="citation">(Hazelwood et al. <a href="#ref-facebook-infra" role="doc-biblioref">2018</a>)</span>. After all, GPUs and TPUs are not magic “go fast” devices! They
+only benefit certain classes of problems that are embarrassingly parallel and mostly consist of vector (GPU) or matrix
+(TPU) operations. How many of each should we buy? That depends on the relative scale and frequency with which we perform
+each task. Typically, model training is performed every few days, while inference runs in real-time, possibly millions
+of times per day. For instance, 90% of the overall compute cost at Amazon is inference <span class="citation">(Amazon Web Services <a href="#ref-trainium" role="doc-biblioref">2022</a><a href="#ref-trainium" role="doc-biblioref">c</a>)</span>: at that scale, using
+GPUs becomes a necessity again. But since GPUs are poorly suited for inference, an ad hoc software scheduler
+<span class="citation">(Jain et al. <a href="#ref-gpu-scheduling" role="doc-biblioref">2018</a>)</span> is required to use them efficiently and with consistent, predictable performance. At smaller scales,
+compute systems with many CPU cores will be sufficient and simpler to set up.
+
+</p>
+<p>Specific machine learning models may be feasible to use only on some types of hardware. Models that make heavy use of
+matrix operations naturally perform better on GPUs and TPUs but they are limited in size by the amount of on-board
+memory that the GPUs and TPUs can access. The whole model must fit and, at the same time, there must be enough memory
+left to store the data the model will operate on. Furthermore, we want to operate on data in batches as large as
+possible to increase occupancy: performance may be disappointing if we are forced to process data in small batches
+because the model uses up most of the on-board memory. This problem is not mitigated by putting multiple GPUs or TPUs in
+the same compute system because models are not shared between them. If memory requirements are beyond the capabilities
+of GPUs and TPUs, we are limited to running models on CPUs and system RAM, which has a much larger capacity but is
+slower. CPUs, however, may perform better for models or tasks that are not very parallelisable because different cores
+can perform completely different operations.
+
+
+</p>
+<div style="page-break-after: always;"/>
+<p>
+Finally, a note from our future selves: we should plan for more hardware than we strictly need right now to accommodate
+what are likely to be growing compute, memory and storage needs (<em>capacity planning</em>). Compute requirements for training
+machine learning models grew by a factor of 10 between 2012 and 2018 <span class="citation">(Jouppi et al. <a href="#ref-patterson2" role="doc-biblioref">2020</a>)</span>. In addition, automated model
+selection techniques (also known as “hyperparameter tuning” for some types of models) such as AutoML <span class="citation">(He, Zhao, and Chu <a href="#ref-automl" role="doc-biblioref">2021</a>)</span> are
+becoming increasingly common and use, on average, 50 times more compute power than what is needed to learn the type of
+model they select. The amount of data <span class="citation">(Katal, Wazid, and Goudar <a href="#ref-bigdata" role="doc-biblioref">2013</a>)</span> and the size of models <span class="citation">(Zellers et al. <a href="#ref-grover" role="doc-biblioref">2019</a>; Cohen, Pavlick, and Tellex <a href="#ref-opengpt2" role="doc-biblioref">2019</a>)</span> are likewise constantly
+growing over time, requiring more hot storage and more memory (of all types) to store and use them <span class="citation">(Beam, Manrai, and Ghassemi <a href="#ref-repro-health" role="doc-biblioref">2020</a>)</span>.</p>
+<p>
+Cloud computing may reduce the need for capacity planning: if instances are relatively inexpensive and if they can be
+quickly created and destroyed, we may buy less hardware up-front and scale it as needed. In fact, dynamic scaling
+algorithms can do that automatically in most cloud services. Furthermore, all major cloud providers offer instances with
+GPUs and, in the case of Google, TPUs for use in applications that require them. However, cloud computing is not a
+universal solution to capacity planning. Firstly, the cloud instances we rent from public cloud providers are billed
+based on how long they are in use and on how much/how quickly they allow us to scale in response to sudden changes in
+our needs. Therefore, it may be cheaper to buy the hardware outright if we foresee using them often enough or for long
+enough periods of time and if we have predictable workloads and network traffic patterns. Secondly, cloud computing can
+only give us <em>horizontal scalability</em> (increasing the number of systems we can use) and is ill-suited to achieve
+<em>vertical scalability</em> (increasing the computing power in individual systems). Horizontal scalability may not improve
+the performance of machine learning models that are not modular or parallelisable to at least some extent, and may not
+help at all if we need to work with large blocks of data that must be kept in memory. 
+Thirdly, cloud instances are more difficult to profile and trace, making it more difficult to understand their behaviour
+(the <em>observability</em> of the system is limited) and to diagnose any issue they may have. (More on this in Section
+<a href="design-code.html#monitoring-pipeline">5.3.6</a>.)
+
+
+
+</p>
+<!-- vim: set synmaxcol=600 textwidth=120 colorcolumn=120 spell wrap number: -->
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references hanging-indent">
+<div id="ref-trainium">
+<p>Amazon Web Services. 2022c. <em>AWS Trainium</em>. <a href="https://aws.amazon.com/machine-learning/trainium/">https://aws.amazon.com/machine-learning/trainium/</a>.</p>
+</div>
+<div id="ref-lapack">
+<p>Anderson, E., Z. Bai, C. Bishof, S. Blackford, J. Demmel, J. Dongarra, J. Du Croz, et al. 1999. <em>LAPACK Users’ Guide</em>. 3rd ed. SIAM.</p>
+</div>
+<div id="ref-repro-health">
+<p>Beam, A. L., A. K. Manrai, and M. Ghassemi. 2020. “Challenges to the Reproducibility of Machine Learning Models in Health Care.” <em>Journal of the American Medical Association</em> 323 (4): 305–6.</p>
+</div>
+<div id="ref-blas">
+<p>Blackford, L. S., J. Demmel, J. Dongarra, I. Duff, S. Hammarling, G. Henry,. Heroux, et al. 2002. “An Updated Set of Basic Linear Algebra Subprograms (BLAS).” <em>ACM Transactions on Mathematical Software</em> 28 (2): 135–51.</p>
+</div>
+<div id="ref-bonawitz">
+<p>Bonawitz, K., H. Eichner, W. Grieskamp, D. Huba, A. Ingerman, V. Ivanov, C. Kiddon, et al. 2019. “Towards Federated Learning at Scale: System Design.” In <em>Proceedings of Machine Learning and Systems</em>, 374–88.</p>
+</div>
+<div id="ref-rfc1925">
+<p>Callon, Ross. 1996. <em>The Twelve Networking Truths</em>. <a href="https://rfc-editor.org/rfc/rfc1925.txt">https://rfc-editor.org/rfc/rfc1925.txt</a>.</p>
+</div>
+<div id="ref-opengpt2">
+<p>Cohen, A. Gokaslan V., E. Pavlick, and S. Tellex. 2019. <em>OpenGPT-2: We Replicated GPT-2 Because You Can Too</em>. <a href="https://blog.usejournal.com/opengpt-2-we-replicated-gpt-2-because-you-can-too-45e34e6d36dc">https://blog.usejournal.com/opengpt-2-we-replicated-gpt-2-because-you-can-too-45e34e6d36dc</a>.</p>
+</div>
+<div id="ref-impala">
+<p>Espeholt, L., H. Soyer, R. Munos, K. Simonyan, V. Mnih, T. Ward, Y. Doron, et al. 2018. “IMPALA: Scalable Distributed Deep-RL with Importance Weighted Actor-Learner Architectures.” In <em>Proceedings of the 35th International Conference on Machine Learning (ICML)</em>, 1407–16.</p>
+</div>
+<div id="ref-monagan">
+<p>Fortin, P, A. Fleury, F. Lemaire, and M. Monagan. 2021. “High-Performance SIMD Modular Arithmetic for Polynomial Evaluation.” <em>Concurrency and Computation: Practice and Experience</em> 33 (16): e6270.</p>
+</div>
+<div id="ref-gsl">
+<p>Galassi, M., J. Davies, J. Theiler, B. Gough, G. Jungman, P. Alken, M. Booth, F. Rossi, and R. Ulerich. 2021. <em>GNU Scientific Library</em>. <a href="https://www.gnu.org/software/gsl/doc/latex/gsl-ref.pdf">https://www.gnu.org/software/gsl/doc/latex/gsl-ref.pdf</a>.</p>
+</div>
+<div id="ref-gregg">
+<p>Gregg, B. 2021. <em>Systems Performance: Enterprise and the Cloud</em>. 2nd ed. Addison-Wesley.</p>
+</div>
+<div id="ref-facebook-infra">
+<p>Hazelwood, K., S. Bird, D. Brooks, S. Chintala, U. Diril, D. Dzhulgakov, M. Fawzy, et al. 2018. “Applied Machine Learning at Facebook: A Datacenter Infrastructure Perspective.” In <em>Proceedings of the IEEE International Symposium on High Performance Computer Architecture (HPCA)</em>, 620–29.</p>
+</div>
+<div id="ref-automl">
+<p>He, X., K. Zhao, and X. Chu. 2021. “AutoML: A Survey of the State-of-the-Art.” <em>Knowledge-Based Systems</em> 212: 106622.</p>
+</div>
+<div id="ref-mkl">
+<p>Intel. 2021. <em>Intel oneAPI Math Kernel Library</em>. <a href="https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onemkl.html">https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onemkl.html</a>.</p>
+</div>
+<div id="ref-gpu-scheduling">
+<p>Jain, P., X. Mo, A. Jain, H. Subbaraj, R. Durrani, A. Tumanov, J. Gonzalez, and I. Stoica. 2018. “Dynamic Space-Time Scheduling for GPU Inference.” In <em>Workshop on Systems for ML and Open Source Software, NeurIPS 2018</em>, 1–9.</p>
+</div>
+<div id="ref-patterson2">
+<p>Jouppi, N. P., D. H. Yoon, G. Kurian, S. Li, N. Patil, J. Laudon, C. Young, and D. Patterson. 2020. “A Domain-Specific Supercomputer for Training Deep Neural Networks.” <em>Communications of the ACM</em> 63 (7): 67–78.</p>
+</div>
+<div id="ref-patterson">
+<p>Jouppi, N. P., C. Young, N. Patil, and D. Patterson. 2018. “A Domain-Specific Architexture for Deep Neural Networks.” <em>Communications of the ACM</em> 61 (9): 50–59.</p>
+</div>
+<div id="ref-bigdata">
+<p>Katal, A., M. Wazid, and R. H. Goudar. 2013. “Big Data: Issues, Challenges, Tools and Good Practices.” In <em>Proceedings of the International Conference on Contemporary Computing</em>, 404–9.</p>
+</div>
+<div id="ref-edge">
+<p>Khan, W. Z., E. Ahmed, S. Hakak, I. Yaqoob, and A. Ahmed. 2019. “Edge Computing: A Survey.” <em>Future Generation Computer Systems</em> 97: 219–35.</p>
+</div>
+<div id="ref-federated">
+<p>Li, Q., Z. Wen, Z. Wu, S. Hu, N. Wang, Y. Li, X. Liu, and B. He. 2021. “A Survey on Federated Learning Systems: Vision, Hype and Reality for Data Privacy and Protection.” <em>IEEE Transactions on Knowledge and Data Engineering</em> Advance publication.</p>
+</div>
+<div id="ref-gddr6">
+<p>Mujtaba, Hassan. 2018. <em>Samsung Powers NVIDIA Quadro RTX Graphics Cards with 16Gb GDDR6 Memory</em>. <a href="https://wccftech.com/nvidia-quadro-rtx-turing-gpu-samsung-gddr6-memory/">https://wccftech.com/nvidia-quadro-rtx-turing-gpu-samsung-gddr6-memory/</a>.</p>
+</div>
+<div id="ref-turing-architecture">
+<p>Nvidia. 2018. <em>Nvidia Turing GPU Architecture: Graphics Reinvented</em>. <a href="https://images.nvidia.com/aem-dam/en-zz/Solutions/design-visualization/technologies/turing-architecture/NVIDIA-Turing-Architecture-Whitepaper.pdf">https://images.nvidia.com/aem-dam/en-zz/Solutions/design-visualization/technologies/turing-architecture/NVIDIA-Turing-Architecture-Whitepaper.pdf</a>.</p>
+</div>
+<div id="ref-cuda">
+<p>Nvidia. 2021. <em>CUDA Toolkit Documentation</em>. <a href="https://docs.nvidia.com/cuda/">https://docs.nvidia.com/cuda/</a>.</p>
+</div>
+<div id="ref-overton">
+<p>Overton, M. L. 2001. <em>Numerical Computing with IEEE Floating Point Arithmetic</em>. SIAM.</p>
+</div>
+<div id="ref-pytorch">
+<p>Paszke, A., S. Gross, F. Massa, A. Lerer, J. Bradbury, G. Chanan, T. Killeen, et al. 2019. “PyTorch: An Imperative Style, High-Performance Deep Learning Library.” In <em>Advances in Neural Information Processing Systems (Nips)</em>, 32:8026–37.</p>
+</div>
+<div id="ref-ai-accelerators">
+<p>Reuther, A., P. Michaleas, M. Jones, V. Gadepally, S. Samsi, and J. Kepner. 2020. “Survey of Machine Learning Accelerators.” In <em>Proceedings of the 2020 Ieee High Performance Extreme Computing Conference (Hpec)</em>, 1–12.</p>
+</div>
+<div id="ref-xla">
+<p>Tensorflow. 2021. <em>XLA: Optimizing Compiler for Machine Learning</em>. <a href="https://www.tensorflow.org/xla">https://www.tensorflow.org/xla</a>.</p>
+</div>
+<div id="ref-tensorflow">
+<p>TensorFlow. 2021a. <em>TensorFlow</em>. <a href="https://www.tensorflow.org/overview/">https://www.tensorflow.org/overview/</a>.</p>
+</div>
+<div id="ref-benchmarking-gpus">
+<p>Volkov, V., and J. W. Demmel. 2008. “Benchmarking GPUs to Tune Dense Linear Algebra.” In <em>Proceedings of the 2008 ACM/IEEE Conference on Supercomputing</em>, 1–11.</p>
+</div>
+<div id="ref-young">
+<p>Williams-Young, D. B., and X. Li. 2019. <em>On the Efficacy and High-Performance Implementation of Quaternion Matrix Multiplication</em>. <a href="https://arxiv.org/abs/1903.05575">https://arxiv.org/abs/1903.05575</a>.</p>
+</div>
+<div id="ref-grover">
+<p>Zellers, R., A. Holtzman, H. Rashkin, Y. Bisk, A. Farhadi, F. Roesner, and Y. Choi. 2019. “Defending against Neural Fake News.” In <em>Advances in Neural Information Processing Systems (NeurIPS)</em>, 9054–65.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr/>
+<ol start="2">
+<li id="fn2"><p>For the
+moment, we will use “data” and “variables” interchangeably. How data are actually represented in different types of
+variables will be the topic of Chapter <a href="types-structures.html#types-structures">3</a>.<a href="hardware.html#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>Naming conventions vary by vendor. In
+Nvidia GPUs, they are called “streaming units” organised in “streaming multiprocessors”; in AMD GPUs they are called
+“compute units” and “workgroup processors”; in Intel GPUs “execution units” and “execution cores”.<a href="hardware.html#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p>For instance, each unit in an Nvidia RTX 2060 has 256kB of registers
+<span class="citation">(Nvidia <a href="#ref-turing-architecture" role="doc-biblioref">2018</a>)</span>, while a CPU only has 32 <span class="math inline">\(\times\)</span> 16 = 512 bytes worth of AVX512 registers for each core (hence
+the name of the instruction set).<a href="hardware.html#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>In describing TPUs, we follow
+Google’s naming conventions because, at the time of this writing, that is the only TPU in wide use in machine learning.<a href="hardware.html#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn6"><p>PCIe is in use in both x86-64 and ARM systems, and comes in several revisions and
+speeds. At the time of this writing, the current one is PCIe 4.0 which uses up to 16 channels in parallel to transfer up
+to 64GB/s.<a href="hardware.html#fnref6" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+                
+</body>
+</html>

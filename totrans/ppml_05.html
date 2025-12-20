@@ -1,0 +1,751 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Chapter 3 Variable Types and Data Structures</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Chapter 3 Variable Types and Data Structures</h1>
+<blockquote>原文：<a href="https://ppml.dev/types-structures.html">https://ppml.dev/types-structures.html</a></blockquote>
+<div id="types-structures" class="section level1 hasAnchor" number="3">
+
+<p>In exploring the components that machine learning systems are built on, we stressed that different types of hardware are
+optimised to work with data and models stored in specific formats. Both are complex entities comprising a variety of
+elements that are organised into <em>data structures</em> such as data frames (representing tabular data) or
+standardised model formats like ONNX <span class="citation">(ONNX <a href="#ref-onnx" role="doc-biblioref">2021</a>)</span>. The individual elements inside these data structures are <em>variables</em> of
+specific <em>types</em> such as integer numbers, floating point numbers and strings.</p>
+<p>In this chapter we revisit the variable types we mentioned in Chapter <a href="hardware.html#hardware">2</a>, as well as string
+representations, and we discuss possible reasons to choose one over another for different classes of data (Section
+<a href="types-structures.html#variable-types">3.1</a>). We then give some notable examples of how variables are organised in data structures such as
+vectors and lists (Section <a href="types-structures.html#vectors-lists">3.2.1</a>), data frames (Section <a href="types-structures.html#dataframes">3.2.2</a>) and matrices (Section
+<a href="types-structures.html#matrices">3.2.3</a>). Different choices of variable types (Section <a href="types-structures.html#right-variables">3.3</a>) and data structures (Section
+<a href="types-structures.html#right-data-structures">3.4</a>) represent different trade-offs both in terms of hardware support, as we saw in Chapter
+<a href="hardware.html#hardware">2</a>, and in terms of the computational complexity of the machine learning algorithms that will operate on
+them, as we will discuss in Chapter <a href="algorithms.html#algorithms">4</a>.</p>
+<div id="variable-types" class="section level2 hasAnchor" number="3.1">
+<h2><span class="header-section-number">3.1</span> Variable Types<a href="types-structures.html#variable-types" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>Machine learning software primarily deals with numbers that are the mathematical representation of the data we are
+modelling. Images can be represented using the values of the colour channels of each of their pixels; text can be
+encoded into strings, which are then converted to frequencies for particular words; sensor data are recorded as a time
+series. We can store each of them with different types of variables, each with pros and cons that we will discuss in
+Section <a href="types-structures.html#right-variables">3.3</a>.</p>
+<div id="integers" class="section level3 hasAnchor" number="3.1.1">
+<h3><span class="header-section-number">3.1.1</span> Integers<a href="types-structures.html#integers" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+Integer variables can be used to represent natural (<span class="math inline">\(\mathbb{N}\)</span>) or integer numbers (<span class="math inline">\(\mathbb{Z}\)</span>). They are often used
+to represent Boolean variables as <em>indicators</em> (also known as <em>dummy variables</em>) as follows.</p>
+<p><img src="../Images/4fb7610c15d4c942edbb576525b2157e.png" style="display: block; margin: auto;" data-original-src="https://ppml.dev/chapter03/figures/booleans.svg"/></p>
+<p>More generally, they can be used to give a numeric representation to finite sets by mapping each element to a different
+integer number.</p>
+<p><img src="../Images/c1e62830c60b87282430c1bc8318fba5.png" style="display: block; margin: auto;" data-original-src="https://ppml.dev/chapter03/figures/factors.svg"/></p>
+<p>Enumerations in C or factors in R are constructed exactly in this way to minimise memory usage. However, this numeric
+representation is not suitable for modelling discrete variables because it makes parameter estimates dependent on the
+specific mapping between elements and integer numbers.<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a> Instead, we map discrete variables to their <em>one-hot encoding</em>:<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a> each element in the set is assigned an indicator variable that takes a value of 1 if the element
+is observed, and 0 otherwise.</p>
+<p><img src="../Images/5d2db59281f543994669c64e9b01050d.png" style="display: block; margin: auto;" data-original-src="https://ppml.dev/chapter03/figures/onehot.svg"/></p>
+<p>The number of elements we want to represent determines how many bits of memory each integer will use: <span class="math inline">\(n\)</span> bits allow for
+<span class="math inline">\(2^n\)</span> distinct values. A single bit is enough for a Boolean value, although, in practice, it is usually stored using at
+least 1 byte. A finite set with <span class="math inline">\(k\)</span> elements can be represented with <span class="math inline">\(\log_2 k\)</span> bits: one-hot encoding side-steps this
+limitation by using indicator variables at the cost of using more memory.</p>
+<p>Natural and integer numbers cannot be completely represented by integer variables: that would require an infinite
+number of bits. For this reason, programming languages provide integer variables of different <em>sizes</em> such as 8, 16, 32
+and 64 bits. These sizes are all multiples of 8 bits because processors are optimised to work on bytes. The size of an
+integer variable determines the largest number it can represent. For instance, the largest (<em>unsigned</em>) natural number
+we can represent in 32 bits is <span class="math inline">\(2^{32} - 1 \approx 4.29 \times 10^9\)</span>, and the largest (<em>signed</em>) integer number is <span class="math inline">\(\pm 2^{31} - 1 \approx \pm 2.14 \times 10^{9}\)</span> because 1 bit is reserved for encoding the sign. (If that bit is set to
+zero, the number is considered to be positive.) Numbers that are outside of this range are said to <em>overflow</em>, meaning
+that their bit representation is larger than the size of the integer variable and thus overflows the memory reserved for
+that variable.</p>
+<p>For the sake of the example, consider the natural number 3134 represented as a 16-bit unsigned integer variable.</p>
+<p><img src="../Images/0928beb318cbdbc3da5ed86cbb81d2ce.png" style="display: block; margin: auto;" data-original-src="https://ppml.dev/chapter03/figures/binary-integer.svg"/></p>
+<p>It’s easy to check that this representation is equivalent to the “natural” one, they just use different bases:
+<span class="math display">\[\begin{equation*}
+  2^1 + 2^2 + 2^3 + 2^4 + 2^5 + 2^{10} + 2^{11} = 3134.
+\end{equation*}\]</span>
+The largest number that can be represented in 16 bits is <span class="math inline">\(2^{16} - 1 = 65535\)</span>, and 3134 is comfortably smaller than
+that: we can easily see that the 4 <em>most-significant bits</em> that represent the 4 largest powers of 2 (<span class="math inline">\(2^{15}\)</span>,
+<span class="math inline">\(2^{14}\)</span>, <span class="math inline">\(2^{13}\)</span> and <span class="math inline">\(2^{12}\)</span>) are all equal to zero. Now consider a much larger number: 247586.</p>
+<p><img src="../Images/70be4fcf3e6f53c305e5cdb47849431d.png" style="display: block; margin: auto;" data-original-src="https://ppml.dev/chapter03/figures/integer-overflow.svg"/></p>
+<p>Again, we can easily check that
+<span class="math display">\[\begin{equation*}
+  2^1 + 2^5 + 2^8 + 2^9 + 2^{10} + 2^{14} + 2^{15} + 2^{16} + 2^{17} = 247586.
+\end{equation*}\]</span></p>
+<p>Unfortunately, 247586 is larger than 65535 and cannot be represented in 16 bits. If we try to store it in 16 bits, we
+overflow: the integer variables will contain only the 16 <em>least-significant bits</em> representing the powers from <span class="math inline">\(2^0\)</span>
+to <span class="math inline">\(2^{15}\)</span>. The bits corresponding to <span class="math inline">\(2^{16}\)</span> and <span class="math inline">\(2^{17}\)</span> will be silently dropped, and the integer variable will
+contain the number
+<span class="math display">\[\begin{equation*}
+  2^1 + 2^5 + 2^8 + 2^9 + 2^{10} + 2^{14} + 2^{15} = 50978.
+\end{equation*}\]</span></p>
+<p>In the case of signed integers, the bits that overflow will overwrite the sign bit, and result in the integer variable
+storing a number that may be incorrect in both sign and absolute value. Consider again the number 247586, this time
+represented as a 16-bit signed integer variable.</p>
+<p><img src="../Images/1bd802543062fb519ba05462ed1f1c34.png" style="display: block; margin: auto;" data-original-src="https://ppml.dev/chapter03/figures/signed-overflow.svg"/></p>
+<p>The first 15 bits of the binary representation are stored correctly, the bit corresponding to <span class="math inline">\(2^{15}\)</span> overwrites the
+sign bit, and the last two bits corresponding to <span class="math inline">\(2^{16}\)</span> and <span class="math inline">\(2^{17}\)</span> are again silently dropped. As a result, the
+integer variable will contain the number
+<span class="math display">\[\begin{equation*}
+  - (2^1 + 2^5 + 2^8 + 2^9 + 2^{10} + 2^{14}) = -18210.
+\end{equation*}\]</span></p>
+<p>As an exception to the rule, R represents a missing integer value (<code>NA</code>) with the largest negative signed integer for a
+given precision. In Python, Pandas uses masked arrays for the same purpose and keeps a separate Boolean variable that
+indicates whether the integer is a missing value (denoted <code>pandas.NA</code>). NumPy does not support missing values for
+integer variables.</p>
+<p>Range limitations aside, integer variables allow <em>exact computer arithmetic</em>: their bit representation coincides with
+the mathematical representation of integer and natural numbers in base 2, so there is no rounding or loss of precision.
+</p>
+</div>
+<div id="floating-point" class="section level3 hasAnchor" number="3.1.2">
+<h3><span class="header-section-number">3.1.2</span> Floating Point<a href="types-structures.html#floating-point" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+Floating point variables are used to represent real (<span class="math inline">\(\mathbb{R}\)</span>) and complex numbers (<span class="math inline">\(\mathbb{C}\)</span>), the former with a
+single variable and the latter with two (one for the real part, one for the imaginary part). Each variable is composed
+of four parts: the <em>sign</em> <span class="math inline">\(S\)</span>, the <em>bias</em> or <em>offset</em> <span class="math inline">\(O\)</span>, an <em>exponent</em> <span class="math inline">\(E\)</span> and a <em>mantissa</em> <span class="math inline">\(M\)</span>. The floating point
+representation of a real number <span class="math inline">\(x\)</span> is then
+<span class="math display">\[\begin{equation*}
+  x = (-1)^S * (1 + M)  2^{E + O}.
+\end{equation*}\]</span>
+The overall size of the variable in bits is typically one of 16, 32, and 64 bits, often called <em>half-precision</em>,
+<em>single-precision</em>, <em>double-precision</em>. The number of bits assigned to each of the exponent (after adding the offset)
+and the mantissa depends on what encoding is used; the sign is always stored in a single bit. The variables defined in
+the IEEE 754 standard <span class="citation">(Overton <a href="#ref-overton" role="doc-biblioref">2001</a>)</span> reserve:</p>
+<table>
+<thead>
+<tr class="header">
+<th><strong>precision</strong></th>
+<th align="right"><strong>exponent</strong></th>
+<th align="right"><strong>mantissa</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>half (16 bit)</td>
+<td align="right">5 bits</td>
+<td align="right">10 bits</td>
+</tr>
+<tr class="even">
+<td>single (32 bit)</td>
+<td align="right">8 bits</td>
+<td align="right">23 bits</td>
+</tr>
+<tr class="odd">
+<td>double (64 bit)</td>
+<td align="right">11 bits</td>
+<td align="right">52 bits</td>
+</tr>
+</tbody>
+</table>
+<p>The value of the offset is determined as <span class="math inline">\(O = 2^{|E| - 1} - 1\)</span> where <span class="math inline">\(|E|\)</span> is the size of the exponent in bits.</p>
+<p>The alternative “brain” format devised by Google in the process of developing TPUs (see Section <a href="hardware.html#hardware-compute">2.1.1</a>)
+typically has size 16 bits and is known as “bfloat16”. It works in the same way as the IEEE 754 floating point, so we
+will not discuss it further; the only difference is that it allocates 8 bits to the exponent and 7 bits to the mantissa.</p>
+<p>What does this mean in terms of binary representation? Consider the number 435.25. In the usual scientific notation,
+which is in base 10, we can write it as <span class="math inline">\(4.3525 \times 10^2\)</span>. If we do the same in base 2, the scientific notation
+becomes <span class="math inline">\(1.7001953125 \times 2^8\)</span>. The exponent is <span class="math inline">\(8\)</span>, and the mantissa is <span class="math inline">\(0.7001953125\)</span>. As a half-precision floating
+point variable, 435.25 then has the following binary representation:</p>
+<p><img src="../Images/9a2d64045472ae45c5aeea4e31b91cf5.png" style="display: block; margin: auto;" data-original-src="https://ppml.dev/chapter03/figures/ieee754-16.svg"/></p>
+<p>The exponent is stored after adding the offset:
+<span class="math display">\[\begin{equation*}
+  8 + (2^{5 - 1} - 1) = 23 = 2^0 + 2^1 + 2^2 + 2^4.
+\end{equation*}\]</span>
+The resulting number is treated as unsigned, regardless of whether the original exponent was positive or negative. If
+the sign is stored in the most significant bit of the variable, the exponent is adjusted with the offset, and the
+mantissa is stored in the least significant bits, we can compare floating point numbers just by ranking their binary
+representations, which can be done efficiently with hardware instructions.</p>
+<p>The mantissa is
+<span class="math display">\[\begin{equation*}
+  2^{-1} + 2^{-3} + 2^{-4} + 2^{-7} + 2^{-8} + 2^{-10} = 0.7001953,
+\end{equation*}\]</span>
+which differs from <span class="math inline">\(0.7001953125\)</span> by <span class="math inline">\(1.25 \times 10^{-8}\)</span>. This difference is known as the <em>floating point error</em>
+arising from the limits in the precision that can be achieved with the number of bits of the mantissa. The only numbers
+that can be represented exactly are those that factorise into the powers of 2 available in the exponent and in the
+mantissa. This obviously excludes all numbers with an infinite number of digits, such as <span class="math inline">\(\pi\)</span>, <span class="math inline">\(e\)</span> or <span class="math inline">\(1/3\)</span>.</p>
+<p>What is the range of floating point numbers? The largest number (positive or negative) that we can represent is limited
+by the size of the exponent: with <span class="math inline">\(|E|\)</span> bits we can represent up to <span class="math inline">\(2^{|E|}\)</span> exponents. The offset ensures that the
+available exponents are equally divided between positive and negative numbers ranging from <span class="math inline">\(-2^{|E| - 1} - 2\)</span> to
+<span class="math inline">\(2^{|E| - 1} - 1\)</span> due to the offset.</p>
+<table>
+<thead>
+<tr class="header">
+<th><strong>precision</strong></th>
+<th align="right"><strong>smallest exponent</strong></th>
+<th align="right"><strong>largest exponent</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>half</td>
+<td align="right"><span class="math inline">\(-(2^{4} - 2) = -14\)</span></td>
+<td align="right"><span class="math inline">\(2^{4} - 1 = 15\)</span></td>
+</tr>
+<tr class="even">
+<td>single</td>
+<td align="right"><span class="math inline">\(-(2^{7} - 2) = -126\)</span></td>
+<td align="right"><span class="math inline">\(2^{7} - 1 = 127\)</span></td>
+</tr>
+<tr class="odd">
+<td>double</td>
+<td align="right"><span class="math inline">\(-(2^{10} - 2) = -1022\)</span></td>
+<td align="right"><span class="math inline">\(2^{10} - 1 = 1023\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>This range is smaller than the theoretical <span class="math inline">\(2^{|E|}\)</span> values it could potentially contain because some combinations of
+bits are reserved for special classes of numbers:</p>
+<ul>
+<li>Zero is encoded with the exponent field and the mantissa filled with 0s.</li>
+<li>Positive and negative infinity (<code>+Inf</code>, <code>-Inf</code>) are encoded with the exponent field filled with 1s and a mantissa
+filled with 0s.</li>
+<li>Irrepresentable numbers (usually denoted <code>NaN</code>) are encoded with the exponent field filled with 1s and at least one
+non-zero bit in the mantissa. Different patterns of bits in the mantissa are used for different types of
+irrepresentable numbers: the most common is the missing value identifier <code>NA</code>. Typically, <code>NaN</code> arises from dividing a
+number by zero or by trying to apply a mathematical function to a value outside its domain, for instance, taking the
+logarithm of a negative number.</li>
+<li>Subnormal numbers, that is, numbers that are too small to be written in binary scientific notation with the available
+exponents. In other words, their leading exponent is smaller than the smallest available exponent. They are encoded
+with the exponent field filled with 0s. These numbers have reduced precision because they effectively use only part of
+the mantissa. As an example, <span class="math inline">\(2^{-10} \times 2^{-14} \approx 5.96 \times 10^{-8}\)</span> is represented as follows in half
+precision:</li>
+</ul>
+<p><img src="../Images/5e99bc399ccb5d3c2411b7aea644d999.png" style="display: block; margin: auto;" data-original-src="https://ppml.dev/chapter03/figures/ieee754-subnormal.svg"/></p>
+<p>How coarse is floating point rounding? For any given precision, that depends on the magnitude of the number. As we saw
+in the example above, the mantissa can encode only so many significant decimal digits: <span class="math inline">\(\log_{10}(2^{10}) \approx 3\)</span>
+digits for half-precision, <span class="math inline">\(\log_{10}(2^{23}) \approx 7\)</span> for single precision, <span class="math inline">\(\log_{10}(2^{51}) \approx 16\)</span> for double
+precision. This effectively creates a grid of values that can be represented exactly, and any other number is rounded to
+the nearest number that can be represented exactly or to <code>+Inf</code>/<code>-Inf</code>. The grid becomes coarser, in absolute terms, as
+the exponent becomes larger. Consider a number like 0.0002 that is small for a half-precision variable:</p>
+<p><img src="../Images/b9bb7a7170667c44853d8921c3a78e29.png" style="display: block; margin: auto;" data-original-src="https://ppml.dev/chapter03/figures/ieee754-small-16.svg"/></p>
+<p>The exponent is
+<span class="math display">\[\begin{equation*}
+  -13 + (2^{5 - 1} - 1) = 2^1
+\end{equation*}\]</span>
+and the mantissa is
+<span class="math display">\[\begin{equation*}
+  2^{-1} + 2^{-3} + 2^{-7} + 2^{-8} + 2^{-9} = 0.638671875,
+\end{equation*}\]</span>
+which gives
+<span class="math display">\[\begin{equation*}
+  1.638671875 \times 2^{-13} \approx 0.000200033.
+\end{equation*}\]</span>
+Increasing this number by the least possible amount by adding <span class="math inline">\(2^{-10}\)</span> and decreasing it by the same amount shows that
+the nearest numbers that can be represented in half precision are <span class="math inline">\(\approx 0.000200033 \pm 1.19 \times 10^{-7}\)</span>.</p>
+<p>Now consider a relatively large number (for half precision) like 10002:</p>
+<p><img src="../Images/6d21e052a7bdf6dde92199a309492390.png" style="display: block; margin: auto;" data-original-src="https://ppml.dev/chapter03/figures/ieee754-large-16.svg"/></p>
+<p>The exponent is
+<span class="math display">\[\begin{equation*}
+  13 + (2^{5 - 1} - 1) = 28 = 2^2 + 2^3 + 2^4
+\end{equation*}\]</span>
+and the mantissa is
+<span class="math display">\[\begin{equation*}
+  2^{-3} + 2^{-4} + 2^{-5} + 2^{-9} = 0.220703125,
+\end{equation*}\]</span>
+which gives <span class="math inline">\(1.220703125 \times 2^{13} = 10000\)</span>. The closest numbers that can be represented in half precision are 9992
+and 10008: all the numbers in between are rounded. This leaves an interval of <span class="math inline">\(\pm 8\)</span> around 10000. For large enough
+numbers, floating point variables cannot even represent integer numbers without rounding!</p>
+<div style="page-break-after: always;"/>
+<p>How can we keep the errors introduced by floating point rounding in check? Errors compound across operations, and
+machine learning models typically perform large numbers of operations compared to the size of their inputs. (More on
+that in Chapter <a href="algorithms.html#algorithms">4</a>.) Fortunately, probability theory and statistics have historically standardised
+computations to work on the logarithmic scale to make closed-form mathematical derivations easier. Working with the
+logarithmic transforms of floating point numbers reduces the chances that large numbers will overflow to <code>+Inf</code>/<code>-Inf</code>
+or that small numbers will be rounded down to zero. In the case of numbers with subnormal floating point
+representations, we also retain better precision because their logarithm will not be subnormal. This is particularly
+important in the common case of summing up large numbers of log-probabilities. Working with numbers on the same
+scale (that is, they have similar exponents) also helps in avoiding catastrophic losses in precision. When operations
+involve numbers on very different scales, the difference in the granularity of the floating point rounding may cause the
+result to have unacceptably large errors even though all the operands are accurate. As an extreme example, consider
+adding 10002 and 0.0002: the result would be 10000, the closest floating point number in half precision! A similar issue
+is <em>catastrophic cancellation</em>, which may happen when subtracting two floating point numbers that are very close to each
+other.</p>
+<p>Unlike integer arithmetic, floating point arithmetic is not exact because of the impact of floating point rounding. The
+results of operations involving floating point variables can differ in many ways from the mathematical operations they
+implement, even in common scenarios. It is easy to demonstrate with a simple recurrence such as
+<span class="math display">\[\begin{align*}
+  x_0 = 4, x_1 = 4.25, x_{n + 1} = 108 - \left(815 - \frac{1500}{x_{n - 1}}\right) \frac{1}{x_n},
+\end{align*}\]</span>
+which converges to 100 in double precision even though the true limit in <span class="math inline">\(\mathbb{R}\)</span> is 5 <span class="citation">(Rump <a href="#ref-wrongfp" role="doc-biblioref">2020</a><a href="#ref-wrongfp" role="doc-biblioref">b</a>)</span>. This can happen
+even if all the operands are exactly representable, as proved in <span class="citation">(Rump <a href="#ref-wrongfp2" role="doc-biblioref">2020</a><a href="#ref-wrongfp2" role="doc-biblioref">a</a>)</span>. Some effects of this discrepancy are:</p>
+<ul>
+<li>Numbers that should be equal are not equal. We should always compare numbers with a tolerance that is a function of
+the floating point precision we are using. The default in R is the square root of the smallest representable number,
+obtainable as <code>sqrt(.Machine$double.eps)</code>.</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="types-structures.html#cb1-1" aria-hidden="true"/><span class="kw">sqrt</span>(<span class="dv">2</span>) <span class="op">*</span><span class="st"> </span><span class="kw">sqrt</span>(<span class="dv">2</span>) <span class="op">==</span><span class="st"> </span><span class="dv">2</span></span></code></pre></div>
+<pre><code>## [1] FALSE</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="types-structures.html#cb3-1" aria-hidden="true"/><span class="kw">all.equal</span>(<span class="kw">sqrt</span>(<span class="dv">2</span>) <span class="op">*</span><span class="st"> </span><span class="kw">sqrt</span>(<span class="dv">2</span>), <span class="dv">2</span>, <span class="dt">tol =</span> <span class="kw">sqrt</span>(.Machine<span class="op">$</span>double.eps))</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<ul>
+<li>Conversely, numbers that should not be equal may end up being equal.</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="types-structures.html#cb5-1" aria-hidden="true"/><span class="fl">1e99</span> <span class="op">==</span><span class="st"> </span><span class="fl">1e99</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="types-structures.html#cb7-1" aria-hidden="true"/><span class="dv">1</span> <span class="op">-</span><span class="st"> </span><span class="fl">1e-20</span> <span class="op">==</span><span class="st"> </span><span class="dv">1</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<ul>
+<li>The order in which operations are performed matters, even when the mathematical operations or functions they implement
+are commutative and/or associative. Structuring code so that key computations are implemented only once and therefore
+ensuring that operations are always performed in the same sequences is the best way to prevent this issue.</li>
+</ul>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="types-structures.html#cb9-1" aria-hidden="true"/><span class="kw">print</span>(<span class="fl">0.6</span> <span class="op">+</span><span class="st"> </span><span class="fl">0.7</span> <span class="op">+</span><span class="st"> </span><span class="fl">0.8</span>, <span class="dt">digits =</span> <span class="dv">20</span>)</span></code></pre></div>
+<pre><code>## [1] 2.0999999999999996447</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="types-structures.html#cb11-1" aria-hidden="true"/><span class="kw">print</span>(<span class="fl">0.8</span> <span class="op">+</span><span class="st"> </span><span class="fl">0.7</span> <span class="op">+</span><span class="st"> </span><span class="fl">0.6</span>, <span class="dt">digits =</span> <span class="dv">20</span>)</span></code></pre></div>
+<pre><code>## [1] 2.1000000000000000888</code></pre>
+<div style="page-break-after: always;"/>
+<ul>
+<li><p>The order in which operations are performed matters also because intermediate results may underflow to zero or
+overflow to <code>+Inf</code>/<code>-Inf</code> unless we reorder operations to prevent that from happening.</p></li>
+<li><p>Working on a log-scale is the best option when dealing with the small probabilities that often arise from multivariate
+distributions or from a large number of data points. Otherwise, the final result is likely to underflow to zero.</p></li>
+</ul>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="types-structures.html#cb13-1" aria-hidden="true"/>probs =<span class="st"> </span><span class="kw">runif</span>(<span class="dv">10</span><span class="op">^</span><span class="dv">2</span>, <span class="dt">min =</span> <span class="dv">10</span><span class="op">^-</span><span class="dv">6</span>, <span class="dt">max =</span> <span class="dv">10</span><span class="op">^-</span><span class="dv">3</span>)</span>
+<span id="cb13-2"><a href="types-structures.html#cb13-2" aria-hidden="true"/><span class="kw">sqrt</span>(<span class="kw">prod</span>(probs))</span></code></pre></div>
+<pre><code>## [1] 0</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="types-structures.html#cb15-1" aria-hidden="true"/><span class="kw">exp</span>(<span class="fl">0.5</span> <span class="op">*</span><span class="st"> </span><span class="kw">sum</span>(<span class="kw">log</span>(probs)))</span></code></pre></div>
+<pre><code>## [1] 1.33e-169</code></pre>
+<p/>
+</div>
+<div id="string-types" class="section level3 hasAnchor" number="3.1.3">
+<h3><span class="header-section-number">3.1.3</span> Strings<a href="types-structures.html#string-types" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+Strings are sequences of characters encoded in binary form and stored into variables. Their binary format varies, but it
+typically is UTF-8 on Linux and MacOS X and UTF-16 on Windows. Both are Unicode standards <span class="citation">(Unicode <a href="#ref-unicode" role="doc-biblioref">2021</a>)</span> that use between 1
+and 4 bytes to encode each character and support many alphabets, mathematical symbols and pictograms such as emoji.</p>
+<p>In the context of machine learning software, character strings are typically only encountered as input data in natural
+language processing (NLP) applications. In other settings, they are used as human-readable labels for the items in a
+set and can be represented using integers as we saw in Section <a href="types-structures.html#integers">3.1.1</a>. In fact, they are eventually given a
+numerical representation even in NLP in order to feed them to algorithms such as word2vec <span class="citation">(Rong <a href="#ref-word2vec" role="doc-biblioref">2014</a>)</span>, GLOVE <span class="citation">(Pennington, Socher, and Manning <a href="#ref-glove" role="doc-biblioref">2014</a>)</span>
+and BERT <span class="citation">(Devlin et al. <a href="#ref-bert" role="doc-biblioref">2019</a>)</span>. In NLP, strings are also preprocessed taking into account their meaning and their grammatical
+and syntactical properties to facilitate later analyses. For instance:</p>
+<ul>
+<li>Common words that do not add meaning to a sentence, often called <em>stopwords</em>, are removed to reduce the
+dimensionality of the data.</li>
+<li>Words may be <em>stemmed</em>, that is, different words may be reduced to their common stem after removing suffixes and
+prefixes to identify which are in fact the same word.</li>
+<li>Words may be <em>tagged</em> with their syntactic role.</li>
+<li>Words may be <em>normalised</em> by making all characters lower-case and sometimes by removing accents and diacritics as
+well. Complex, composite characters can be encoded in different ways in both UTF-8 and UTF-16, and transforming them
+into their <em>canonical form</em> is essential to identify unique words correctly.</li>
+<li>Extraneous characters such as punctuation, hyphenation and numbers may be removed as non-informative. Abbreviations
+and acronyms may be expanded to make explicit the words they correspond to. Similarly, emoji may be replaced by a
+textual description.</li>
+</ul>
+<p>A detailed treatment of these topics is beyond the scope of this book, and we refer the reader to monographs such as
+<span class="citation">(Aggarwal <a href="#ref-mlfortext" role="doc-biblioref">2018</a>)</span> and to the documentation of relevant software libraries such as Spacy <span class="citation">(Explosion <a href="#ref-spacy" role="doc-biblioref">2021</a>)</span> and NLTK <span class="citation">(NLTK Team <a href="#ref-nltk" role="doc-biblioref">2021</a>)</span>.
+</p>
+</div>
+</div>
+<div id="data-structures" class="section level2 hasAnchor" number="3.2">
+<h2><span class="header-section-number">3.2</span> Data Structures<a href="types-structures.html#data-structures" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+Data structures are particular ways of organising variables of one or more types for effective and efficient processing.
+Different data structures will be most effective for different operations or different algorithms. We will discuss both
+aspects further in Section <a href="types-structures.html#right-data-structures">3.4</a> and later in Chapter <a href="algorithms.html#algorithms">4</a>, characterising memory
+and computational efficiency in terms of space and time complexity. Here we will only cover those data structures that
+are foundational for machine learning software, referring the reader to other excellent resources <span class="citation">(Brass <a href="#ref-brass" role="doc-biblioref">2008</a>; Cormen <a href="#ref-cormen" role="doc-biblioref">2013</a>)</span> for a
+broader coverage of the topic.</p>
+<p>Why use data structures? Firstly, they make code more compact by allowing us to abstract away basic variable
+manipulations that would otherwise be repeatedly implemented in different places. Our code will be clearer and most
+likely have fewer bugs as a result. Secondly, data structures tell the software how particular groups of variables
+belong together, both in terms of how they are laid out in memory and how we operate on them. This makes it possible
+for the software we write to be compiled or interpreted (see Section <a href="writing-code.html#programming-language">6.1</a>) to operate efficiently
+on the variables contained in the data structures. Thirdly, the information that particular groups of variables belong
+together will be useful to developers working on our code. Those variables may describe the parts of a single
+mathematical object or real-world entity, they may have the same semantic meaning or they may have attached metadata
+that can be used for interpretation and debugging purposes: all facts that are useful to know when reading and
+developing code.
+</p>
+<div id="vectors-lists" class="section level3 hasAnchor" number="3.2.1">
+<h3><span class="header-section-number">3.2.1</span> Vectors and Lists<a href="types-structures.html#vectors-lists" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>The most fundamental data structures in machine learning software are <em>vectors</em> and <em>lists</em>. Both can contain any type
+of variable, and are defined by their <em>length</em> (the number of elements they contain). Their conceptual structure is
+shown in Figure <a href="types-structures.html#fig:arrays">3.1</a>.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:arrays"/>
+<img src="../Images/21f8ba5543c0ba4d0732b529111bfe86.png" alt="A schematic view of the logical structure and the memory layout of vectors (left) and lists (right)." width="80%" data-original-src="https://ppml.dev/chapter03/figures/arrays-lists.svg"/>
+<p class="caption">
+Figure 3.1: A schematic view of the logical structure and the memory layout of vectors (left) and lists (right).
+</p>
+</div>
+<p>
+Vectors are <em>homogeneous</em> data structures holding sequences of variables of the same type. The variables are stored
+sequentially in a single block of memory, so vectors can be accessed with a single memory access using a <em>pointer</em> to
+their first element. (A pointer is itself a variable that contains a memory address.) Reading the variables stored in a
+vector is trivial because all elements occupy the same number of bytes in memory: the <span class="math inline">\(i\)</span>th element is located at a
+memory address that is that of the first element plus <span class="math inline">\(i\)</span> times the variable type size. Copying the whole vector is
+also trivial, since it is stored as a single block of memory. The same is true for subsets of variables that are
+adjacent to each other within a vector.
+</p>
+<p>
+Lists, on the other hand, are <em>heterogeneous</em> data structures that can contain different kinds of elements. They
+essentially act as vectors of pointers to arbitrary data structures or variable types. Therefore, each element in a list
+can be anything: a single variable of some type, a vector of any length, a second list, a matrix, etc. However, this
+means that accessing the elements of a list is less trivial since we need to locate each element and access it
+separately. However, copying the list and subsetting it can be easier: if we do not need to modify the contents of
+its elements, we can just copy (all or a subset of) the pointers to the elements to create a new list. This is called a
+<em>shallow copy</em>, and can significantly reduce memory use. However, we must duplicate the elements as well if we need to
+modify them later in the new list in order to avoid altering the original list they are attached to. Copying both the
+list and its elements is called a <em>deep copy</em>. In contrast, subsetting vectors requires a deep copy in the general case.
+Shallow copies are only possible when copying a whole vector or when subsetting a slice of adjacent elements.
+</p>
+<p>
+
+Storing variables into vectors makes <em>vectorised</em> computations possible: a function can be applied independently to each
+element of the vector, potentially leveraging hardware’s SIMD and FMA instructions to achieve instruction- and
+data-level parallelism as we discussed in Section <a href="hardware.html#hardware-using">2.2</a>. If the return value of the function is a
+scalar, the results can be saved in a second vector of the same length. Otherwise, the results can be saved in a dense
+matrix (Section <a href="types-structures.html#matrices">3.2.3</a>) or in a data frame (Section <a href="types-structures.html#dataframes">3.2.2</a>) in which each row or column contains the
+return values for a single input element. Vectorised computations are also possible for lists using thread-level
+parallelism, assuming that the function can handle all the types of variables stored in the list. Its outputs would then
+be stored in a second list regardless of whether each of them is a scalar or not.
+
+</p>
+</div>
+<div id="dataframes" class="section level3 hasAnchor" number="3.2.2">
+<h3><span class="header-section-number">3.2.2</span> Representing Data with Data Frames<a href="types-structures.html#dataframes" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+A data frame is a <em>heterogeneous</em> two-dimensional data structure with columns of potentially different types. Its
+primary task is storing tabular data and the associated metadata, such as column- and row-names. The implementations in
+Julia (DataFrame.jl) and Python (Pandas and Scikit-Learn <span class="citation">(Scikit-learn Developers <a href="#ref-sklearn" role="doc-biblioref">2022</a>)</span>) have been heavily inspired by R data frames: they
+only have minor differences in their semantics. The most notable is that operations on two data frames will match cells
+by position in R and Julia (regardless of row- and column-names) and by row- and column-names in Python (regardless of
+the cell positions).</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:dataframes"/>
+<img src="../Images/5f584445c8c6e64e3d25eec8eb938cc9.png" alt="A schematic view of tabular data (bottom right) encoded as a data frame (left, top)." width="90%" data-original-src="https://ppml.dev/chapter03/figures/dataframes.svg"/>
+<p class="caption">
+Figure 3.2: A schematic view of tabular data (bottom right) encoded as a data frame (left, top).
+</p>
+</div>
+<p>The fundamental structure of a data frame is that of a list: each column in the tabular data is a vector that is stored
+as an element along with its own metadata as shown in Figure <a href="types-structures.html#fig:dataframes">3.2</a>. Therefore, each column is stored in
+a separate block of memory, and there are no constraints on the types of variables that can be stored in different
+columns. In addition, a data frame typically contains its dimensions and the labels of the rows and of the columns as
+metadata, making it possible to access its contents as we would with a table. The dimensions are the number of rows and
+columns of the data frame. The labels of the columns (called “column names” in R) can be used to access them by their
+names instead of by their positions in the data frame, which improves the readability of code and thus our ability to
+debug it. It makes the code invariant to the data layout as well. The labels of the rows (“row names” in R) serve the
+same function but are not used as often: they usually have no practical use in the common case in which we assume that
+data points are independent and identically distributed.</p>
+<p>Data frames make it efficient to operate on columns. Creating a new data frame with a subset of columns is like
+subsetting a list, with the additional step of carrying over row and column labels as needed. Copying it can be done
+efficiently with a shallow copy. Adding a column to a data frame is similar: we perform a shallow copy into a new data
+frame with an empty slot in which we can insert the vector storing the column’s values. Applying a function to each
+column of a data frame can be vectorised and performed in parallel, and the appropriate method can be called for each
+column in the case of generic functions.
+</p>
+<p>However, operating on rows is not efficient in most cases. Adding or removing data points involves modifying the length
+of each column, which will likely involve copying the chosen data points to newly-allocated vectors of the appropriate
+length.
+</p>
+</div>
+<div id="matrices" class="section level3 hasAnchor" number="3.2.3">
+<h3><span class="header-section-number">3.2.3</span> Dense and Sparse Matrices<a href="types-structures.html#matrices" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+A matrix is a <em>homogeneous</em> two-dimensional data structure holding a grid of variables of the same type arranged into
+rows and columns. It is the programming construct that represents the mathematical objects of the same name studied in
+linear algebra. Matrices can be <em>dense</em> or <em>sparse</em>. Most of the elements of dense matrices are informative (that is,
+non-zero cells) and therefore must be stored in the data structure. On the other hand, most of the elements of sparse
+matrices are equal to zero so we can save considerable amounts of memory by storing only the locations and the values of
+the few non-zero elements. We will cover the trade-off between speed and memory use for these two types of matrices in
+Section <a href="algorithms.html#bigO-sparsem">4.5.2</a> while discussing computational complexity.
+</p>
+<p>
+In Python, dense matrices are implemented in NumPy as a special case of multidimensional arrays along with vectors
+<span class="citation">(Harris et al. <a href="#ref-numpy" role="doc-biblioref">2020</a>)</span>. The same is true in R. In both cases, the data structure encoding a multidimensional array comprises the
+<em>pointer</em> to the first element of the array; the <em>variable type</em> of the elements; and the <em>dimensions of the array</em>,
+which determine its shape (Figure <a href="types-structures.html#fig:multidimensional-arrays">3.3</a>). The dimensions and the variable type of the
+elements determine the <em>strides</em>: the number of bytes skipped in memory to proceed to the next element along a given
+dimension. They are pre-calculated and stored in NumPy but not in R. On the other hand, R arrays contain labels for
+their dimensions (row and column names in the case of matrices). The elements are stored as a vector, typically in
+<em>column-major order</em>: the columns of the matrix are concatenated starting from the left-most one.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:multidimensional-arrays"/>
+<img src="../Images/1e7a82e4cfe3f8a0799d3e4ca549f856.png" alt="A schematic view of a dense matrix (left) encoded as a multidimensional array with variables stored in column-major format (right)." width="90%" data-original-src="https://ppml.dev/chapter03/figures/multidimensional-arrays.svg"/>
+<p class="caption">
+Figure 3.3: A schematic view of a dense matrix (left) encoded as a multidimensional array with variables stored in column-major format (right).
+</p>
+</div>
+<p>Storing dense matrices as a list of columns, or as a list of rows, is typical in C and but it is less common in
+higher-level languages, where we can use data frames for the same purpose.</p>
+<p>The fact that multidimensional arrays store their dimensions as metadata allows three types of operations on their
+elements. The first is vectorised operations in which a function is applied individually to each element. The second is
+what is called <em>broadcasting</em> in Python and Julia and <em>recycling</em> in R: when a function operates on two arrays with
+different dimensions, the shorter array is repeated (that is, virtually concatenated to itself) to make the shapes of
+the operands match. The third is <em>marginalisation</em> or <em>reduction</em>: aggregating elements across one or more dimensions of
+an array, for instance, by summing or averaging them, to produce a second array with fewer dimensions.
+</p>
+<p>
+Sparse matrices are supported in R through the Matrix package <span class="citation">(Bates and Maechler <a href="#ref-matrixpkg" role="doc-biblioref">2021</a>)</span> and in Python through the SciPy package
+<span class="citation">(Virtanen et al. <a href="#ref-scipy" role="doc-biblioref">2020</a>)</span>. For brevity, we will only illustrate in detail the <em>compressed sparse column</em> data structure that is
+the most widely used in both packages. Consider the sparse matrix shown in Figure <a href="types-structures.html#fig:matrices">3.4</a> along with its
+compressed representation from the Matrix package. The three vectors in the data structure contain, from top to bottom:
+the <em>start</em> and <em>end indexes</em> of each column (<span class="math inline">\(C\)</span>), the <em>row</em> of each non-zero cell in the matrix (<span class="math inline">\(R\)</span>) and its <em>value</em>
+(<span class="math inline">\(V\)</span>). This representation assumes that the non-zero cells are stored in position order, starting from the top-left
+cell, moving down within each column, and considering columns from left to right.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:matrices"/>
+<img src="../Images/dd1cef84f415d779187ba250d16f5dc9.png" alt="A schematic view of a sparse matrix (left) and its compressed sparse column (right) format representation." width="90%" data-original-src="https://ppml.dev/chapter03/figures/matrices.svg"/>
+<p class="caption">
+Figure 3.4: A schematic view of a sparse matrix (left) and its compressed sparse column (right) format representation.
+</p>
+</div>
+<div style="page-break-after: always;"/>
+<p>Say, for instance, that we would like to read the value of the cell (2, 3) in the matrix from the data structure. The
+required steps are:</p>
+<ol style="list-style-type: decimal">
+<li>Use the column delimiters in <span class="math inline">\(C\)</span> to find which subset of <span class="math inline">\(R\)</span> and <span class="math inline">\(V\)</span> to read. The <span class="math inline">\(i\)</span>th column of the matrix starts
+at the index stored in the <span class="math inline">\(i\)</span>th element of <span class="math inline">\(C\)</span> (<span class="math inline">\(C[3] = 3\)</span>) and ends by the index stored in the <span class="math inline">\((i + 1)\)</span>th element
+of <span class="math inline">\(C\)</span> (<span class="math inline">\(C[4] = 5\)</span>), where the next column starts. This implies that there are <span class="math inline">\(5 - 3 = 2\)</span> non-zero elements in the
+third column. If the start and end indexes are identical, there are no non-zero cells in the column.</li>
+<li>We read the two row coordinates stored in <span class="math inline">\(R[3]\)</span> and <span class="math inline">\(R[4]\)</span>.
+<ol style="list-style-type: lower-alpha">
+<li>If we do not find the row coordinate we are looking for, the cell has value zero.</li>
+<li>Otherwise, the value of the cell will be stored in the element of <span class="math inline">\(V\)</span> that has the same index as the row
+coordinate. In our case, the row coordinates of the non-zero elements of the third column are <span class="math inline">\(R[3] = 2\)</span> and
+<span class="math inline">\(R[4] = 3\)</span>. Row coordinate <span class="math inline">\(2\)</span> is in <span class="math inline">\(R[3]\)</span>, so we can read the corresponding cell value from <span class="math inline">\(V[3]\)</span>.</li>
+</ol></li>
+</ol>
+<p>Other data structures for sparse matrices include the <em>compressed row column</em>, which is identical to the above save that
+the roles of <span class="math inline">\(R\)</span> and <span class="math inline">\(C\)</span> are reversed and the <em>coordinate list</em> (called the “triplet format”), which stores row and column
+coordinates directly in <span class="math inline">\(R\)</span> and <span class="math inline">\(C\)</span>.
+</p>
+</div>
+</div>
+<div id="right-variables" class="section level2 hasAnchor" number="3.3">
+<h2><span class="header-section-number">3.3</span> Choosing the Right Variable Types for the Job<a href="types-structures.html#right-variables" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+The floating point format used to represent real numbers in Section <a href="types-structures.html#floating-point">3.1.2</a> has a more complex structure
+than the fixed point format for integer variables in Section <a href="types-structures.html#integers">3.1.1</a>. Intuitively, this might suggest that
+the same operation is more efficient on integer variables than on floating point variables. This is not usually the case
+for two reasons. Firstly, high-level languages like Python and R have additional checks to deal with integer overflow.
+In R, integers are stored using 32 bits and they are either replaced with <code>NaN</code> or transformed into double-precision
+floating point variables when they overflow. In base Python, integers are stored with <em>arbitrary precision</em>: their size
+is extended as needed to prevent them from overflowing. Pandas <span class="citation">(McKinney <a href="#ref-pandas" role="doc-biblioref">2017</a>)</span> integer variables have size 64 bits, and NumPy
+<span class="citation">(Harris et al. <a href="#ref-numpy" role="doc-biblioref">2020</a>)</span> provides integer variables in sizes 8, 16, 32 and 64 bits: both can overflow and, unlike in R, are not replaced
+with <code>NaN</code>. Consider the following vector inner product benchmark in R:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="types-structures.html#cb17-1" aria-hidden="true"/><span class="kw">library</span>(microbenchmark)</span>
+<span id="cb17-2"><a href="types-structures.html#cb17-2" aria-hidden="true"/>floats.vec1 =<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="dv">10</span><span class="op">^</span><span class="dv">7</span>)</span>
+<span id="cb17-3"><a href="types-structures.html#cb17-3" aria-hidden="true"/>floats.vec2 =<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="dv">10</span><span class="op">^</span><span class="dv">7</span>)</span>
+<span id="cb17-4"><a href="types-structures.html#cb17-4" aria-hidden="true"/>integers.vec1 =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">10</span>, <span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="dv">10</span><span class="op">^</span><span class="dv">7</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb17-5"><a href="types-structures.html#cb17-5" aria-hidden="true"/>integers.vec2 =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">10</span>, <span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="dv">10</span><span class="op">^</span><span class="dv">7</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb17-6"><a href="types-structures.html#cb17-6" aria-hidden="true"/></span>
+<span id="cb17-7"><a href="types-structures.html#cb17-7" aria-hidden="true"/><span class="kw">microbenchmark</span>(integers.vec1 <span class="op">%*%</span><span class="st"> </span>integers.vec2,</span>
+<span id="cb17-8"><a href="types-structures.html#cb17-8" aria-hidden="true"/>               floats.vec1 <span class="op">%*%</span><span class="st"> </span>floats.vec2, <span class="dt">times =</span> <span class="dv">200</span>)</span></code></pre></div>
+<p>On average, the inner product takes 196.7% longer with integer vectors than it does with
+double-precision floating point vectors on a 7th-generation Intel Core processor. The same benchmark in Python and NumPy
+is shown below, and the results are similar: the inner product takes 40.5% longer
+with integer vectors.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="types-structures.html#cb18-1" aria-hidden="true"/><span class="im">import</span> timeit</span>
+<span id="cb18-2"><a href="types-structures.html#cb18-2" aria-hidden="true"/><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb18-3"><a href="types-structures.html#cb18-3" aria-hidden="true"/></span>
+<span id="cb18-4"><a href="types-structures.html#cb18-4" aria-hidden="true"/>ITERATION <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb18-5"><a href="types-structures.html#cb18-5" aria-hidden="true"/></span>
+<span id="cb18-6"><a href="types-structures.html#cb18-6" aria-hidden="true"/>float_vector1 <span class="op">=</span> np.random.normal(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span> <span class="op">*</span> <span class="bu">pow</span>(<span class="dv">10</span>, <span class="dv">7</span>))</span>
+<span id="cb18-7"><a href="types-structures.html#cb18-7" aria-hidden="true"/>float_vector2 <span class="op">=</span> np.random.normal(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span> <span class="op">*</span> <span class="bu">pow</span>(<span class="dv">10</span>, <span class="dv">7</span>))</span>
+<span id="cb18-8"><a href="types-structures.html#cb18-8" aria-hidden="true"/></span>
+<span id="cb18-9"><a href="types-structures.html#cb18-9" aria-hidden="true"/>int_vector1 <span class="op">=</span> np.random.choice(<span class="dv">10</span>, size<span class="op">=</span><span class="dv">2</span> <span class="op">*</span> <span class="bu">pow</span>(<span class="dv">10</span>, <span class="dv">7</span>))</span>
+<span id="cb18-10"><a href="types-structures.html#cb18-10" aria-hidden="true"/>int_vector2 <span class="op">=</span> np.random.choice(<span class="dv">10</span>, size<span class="op">=</span><span class="dv">2</span> <span class="op">*</span> <span class="bu">pow</span>(<span class="dv">10</span>, <span class="dv">7</span>))</span>
+<span id="cb18-11"><a href="types-structures.html#cb18-11" aria-hidden="true"/></span>
+<span id="cb18-12"><a href="types-structures.html#cb18-12" aria-hidden="true"/><span class="kw">def</span> product_int():</span>
+<span id="cb18-13"><a href="types-structures.html#cb18-13" aria-hidden="true"/>    np.dot(int_vector1, int_vector2)</span>
+<span id="cb18-14"><a href="types-structures.html#cb18-14" aria-hidden="true"/></span>
+<span id="cb18-15"><a href="types-structures.html#cb18-15" aria-hidden="true"/><span class="kw">def</span> product_float():</span>
+<span id="cb18-16"><a href="types-structures.html#cb18-16" aria-hidden="true"/>    np.dot(float_vector1, float_vector2)</span>
+<span id="cb18-17"><a href="types-structures.html#cb18-17" aria-hidden="true"/></span>
+<span id="cb18-18"><a href="types-structures.html#cb18-18" aria-hidden="true"/><span class="bu">print</span>(<span class="st">"Inner product with int by"</span>, ITERATION, <span class="st">"iteration, avg:"</span>,</span>
+<span id="cb18-19"><a href="types-structures.html#cb18-19" aria-hidden="true"/>      np.mean(timeit.repeat(</span>
+<span id="cb18-20"><a href="types-structures.html#cb18-20" aria-hidden="true"/>          repeat<span class="op">=</span>ITERATION,</span>
+<span id="cb18-21"><a href="types-structures.html#cb18-21" aria-hidden="true"/>          stmt<span class="op">=</span>product_int,</span>
+<span id="cb18-22"><a href="types-structures.html#cb18-22" aria-hidden="true"/>          number<span class="op">=</span><span class="dv">1</span>)))</span>
+<span id="cb18-23"><a href="types-structures.html#cb18-23" aria-hidden="true"/></span>
+<span id="cb18-24"><a href="types-structures.html#cb18-24" aria-hidden="true"/><span class="bu">print</span>(<span class="st">"Inner product with float by"</span>, ITERATION, <span class="st">"iteration, avg:"</span>,</span>
+<span id="cb18-25"><a href="types-structures.html#cb18-25" aria-hidden="true"/>      np.mean(timeit.repeat(</span>
+<span id="cb18-26"><a href="types-structures.html#cb18-26" aria-hidden="true"/>          repeat<span class="op">=</span>ITERATION,</span>
+<span id="cb18-27"><a href="types-structures.html#cb18-27" aria-hidden="true"/>          stmt<span class="op">=</span>product_float,</span>
+<span id="cb18-28"><a href="types-structures.html#cb18-28" aria-hidden="true"/>          number<span class="op">=</span><span class="dv">1</span>)))</span></code></pre></div>
+<p>
+
+Secondly, it should be apparent from Section <a href="hardware.html#hardware-compute">2.1.1</a> that in recent years much effort has been put into
+improving hardware support for floating point numbers. CPUs, GPUs and TPUs have all been optimised to handle single- and
+double-precision floating point variables with SIMD and FMA instructions as much as they have been optimised to handle
+integer variables, if not more. Therefore, depending on the available hardware and on the ability of compilers to
+leverage it, using floating point variables may lead to faster code when using low-level languages. However, whether
+that will be the case for a specific machine learning software depends on the exact combination of hardware and software
+used and can only be ascertained by benchmarking it. Matching software and hardware was a key point in Section
+<a href="hardware.html#hardware-using">2.2</a> and Section <a href="hardware.html#hardware-choice">2.4</a>.</p>
+<p>The size of the variables also matters: we saw in Section <a href="hardware.html#hardware-memory">2.1.2</a> how faster forms of memory are smaller,
+and how copying data between different types of memory can impact operational intensity. We should always choose the
+smallest size of integer or floating point variables that we can handle with SIMD and FMA hardware instructions, and
+that has a large enough range to represent the numbers we are working with. The effect on performance is noticeable even
+in the simple Python benchmark above: reducing the size of the floating point and integer variables in the vectors from
+64 bits (the default) to 32 bits and then to 16 bits produces interesting patterns in the normalised running times.</p>
+<table>
+<thead>
+<tr class="header">
+<th><strong>variable type</strong></th>
+<th align="right"><strong>64 bits</strong></th>
+<th align="right"><strong>32 bits</strong></th>
+<th align="right"><strong>16 bits</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>floating point</td>
+<td align="right">100%</td>
+<td align="right">54.1%</td>
+<td align="right">887.1%</td>
+</tr>
+<tr class="even">
+<td>integer</td>
+<td align="right">100%</td>
+<td align="right">62.2%</td>
+<td align="right">61.6%</td>
+</tr>
+</tbody>
+</table>
+<p>Reducing the size of both floating point and integer variables from 64 to 32 bits improves the speed of the inner
+product by a factor of 1.5–2, as we would expect. Reducing the size of the variables further to 16 bits provides
+only marginal benefits for integer variables but, surprisingly, slows floating point variables by a factor of nearly 9.
+That is a strong indication that we are unable to leverage SIMD and FMA instructions as we do for integers of the same
+size!
+
+</p>
+<p>Size matters even more in the case of floating point variables. As we noted in Section <a href="types-structures.html#floating-point">3.1.2</a>, the
+smaller the precision, the larger the floating point errors are likely to be. They also propagate with each operation
+and compound each other. This can become a critical issue with variables that are involved in most of the steps of an
+algorithm, such as the <em>accumulator variables</em> used to calculate a sum or product of a series of values, and with those
+that are rescaled to predefined ranges with other computed quantities. An example from classical statistics is
+computing the empirical correlation between two vectors:</p>
+<ol style="list-style-type: decimal">
+<li>We compute the average of each vector, which we store in two accumulator variables.</li>
+<li>We compute the variance of each vector by summing up the squared differences from its average, which we store in two
+more accumulator variables.</li>
+<li>We do the same with the cross-product of the differences to compute the covariance, which is an additional
+accumulator variable.</li>
+<li>We divide the covariance by the square root of the product of the variances.</li>
+</ol>
+<p>Each of these steps can potentially build up an error large enough to produce a correlation coefficient that is either
+greater than 1 or less than -1. Floating point errors compound and propagate from the means to the variances and the
+covariances, affecting the final division through the accumulator variables that store them. In such a situation, we
+should store accumulator variables with a higher precision than the variables they are accumulating to limit the
+magnitude of the errors of the individual operations: for instance, we should store the average of numbers stored in
+single precision as a double precision variable. Using FMA instructions may also help because, as we noted in Section
+<a href="hardware.html#hardware-compute">2.1.1</a>, they operate at higher precision and only round their final result. Choosing the scale of the
+numbers being accumulated may also help by keeping all variables in a range that is not prone to overflow or underflow.
+Keeping all variables on the same scale also prevents catastrophic loss of precision, particularly in multiplications
+and divisions. This is the reason why so much numeric software works with quantities on log-scales: large numbers are
+reduced in magnitude and do not overflow or lose precision easily, and small numbers become large negative numbers
+instead of underflowing or losing precision.</p>
+<p>Last but not least, floating point rounding may be unacceptable for legal reasons in some applications, particularly in
+finance and accounting. Fixed point integers may be used instead, with the convention that the smallest possible amount
+of currency (say, 1/100th of 0.01) is taken as the unit value. A rare open-source example of this approach in
+the commercial world is Oanda’s libfixed <span class="citation">(Oanda <a href="#ref-libfixed" role="doc-biblioref">2018</a>)</span> library.
+</p>
+</div>
+<div id="right-data-structures" class="section level2 hasAnchor" number="3.4">
+<h2><span class="header-section-number">3.4</span> Choosing the Right Data Structures for the Job<a href="types-structures.html#right-data-structures" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+The choice of data structures can have an even larger impact than that of variable types because it determines memory
+access patterns. Operational intensity depends crucially on efficient memory use and access, as we argued in Sections
+<a href="hardware.html#hardware-memory">2.1.2</a> and <a href="hardware.html#hardware-using">2.2</a>.</p>
+<p>Lists can be more memory efficient than vectors if we need to repeatedly subset them, for example, because we need to
+work on combinations or permutations of their values. If shallow copies are acceptable, lists are faster to duplicate as
+well because we do not have to allocate memory for and copy their elements. If shallow copies are not acceptable, then
+vectors are faster to copy because all their elements are stored as a single block of memory and can be copied with a
+single operation. And they are not less memory efficient, since their size is determined by their length. In fact, lists
+use more memory than vectors because they contain pointers to each element in addition to the elements themselves: the
+difference can be significant if the elements are small overall. These considerations are important for optimising
+performance given the effects on memory latency discussed in Sections <a href="hardware.html#hardware-memory">2.1.2</a> and <a href="hardware.html#hardware-using">2.2</a>.</p>
+<p>We can make similar considerations for data frames and matrices, since data frames essentially behave as lists whose
+elements are the columns storing the variables in the tabular data.</p>
+<p>Ideally, we should choose which data structures to use in our code taking into account what data structures are used in
+the libraries and in the other software that are part of the machine learning pipeline. If different parts of the
+pipeline encode data and models in different ways, we will be forced to convert between them, which is inefficient and
+increases memory use. For instance, R typically imports data as data frames. However, the underlying BLAS and LAPACK
+code that powers many models (all linear regressions among them) requires data to be stored as dense matrices in
+column-major format. Converting a data frame into a matrix requires copying all the data into a single memory block,
+column by column, which doubles memory use and wastes processor time.</p>
+<p>We should also choose data structures based on how the algorithms that use them access their contents. Data that are
+processed together should be stored together to allow algorithms to perform as few separate memory accesses as possible.
+For instance, if we mostly process whole columns in tabular data, then a data frame is ideal because a single column can
+be efficiently read from memory as a single memory block. However, a data frame makes memory access very inefficient if
+we need to process individual rows in various combinations because each variable in a row is stored in a separate memory
+block and because we need to access all variables to read each row. If the data are homogeneous, storing them in a dense
+matrix with cells stored in row-major order is a better choice.
+</p>
+<!-- vim: set synmaxcol=600 textwidth=120 colorcolumn=120 spell wrap number: -->
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references hanging-indent">
+<div id="ref-mlfortext">
+<p>Aggarwal, C. C. 2018. <em>Machine Learning for Text</em>. Springer.</p>
+</div>
+<div id="ref-matrixpkg">
+<p>Bates, D., and M. Maechler. 2021. <em>Matrix: Sparse and Dense Matrix Classes and Methods</em>. <a href="https://cran.r-project.org/web/packages/Matrix/">https://cran.r-project.org/web/packages/Matrix/</a>.</p>
+</div>
+<div id="ref-brass">
+<p>Brass, P. 2008. <em>Advanced Data Structures</em>. Cambridge University Press.</p>
+</div>
+<div id="ref-cormen">
+<p>Cormen, T. H. 2013. <em>Algorithms Unlocked</em>. The MIT Press.</p>
+</div>
+<div id="ref-bert">
+<p>Devlin, J., M.-W. Chang, K. Lee, and K. Toutanova. 2019. “BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.” In <em>Proceedings of the Annual Conference of the North American Chapter of the Association for Computational Linguistics (NNACL-HLT)</em>, 4171–86.</p>
+</div>
+<div id="ref-spacy">
+<p>Explosion. 2021. <em>Spacy: Industrial-Strength Natural Language Processing</em>. <a href="https://spacy.io/">https://spacy.io/</a>.</p>
+</div>
+<div id="ref-numpy">
+<p>Harris, C. R., K. J. Millman, Stéfan J. van der Walt, R. Gommers, P. Virtanen, D. Cournapeau, E. Wieser, et al. 2020. “Array Programming with NumPy.” <em>Nature</em> 585 (7285): 357–62.</p>
+</div>
+<div id="ref-pandas">
+<p>McKinney, W. 2017. <em>Python for Data Analysis</em>. 2nd ed. O’Reilly.</p>
+</div>
+<div id="ref-nltk">
+<p>NLTK Team. 2021. <em>NLTK: A Natural Language Toolkit</em>. <a href="https://www.nltk.org/">https://www.nltk.org/</a>.</p>
+</div>
+<div id="ref-libfixed">
+<p>Oanda. 2018. <em>A C++ Fixed Point Math Library Suitable for Financial Applications</em>. <a href="https://github.com/oanda/libfixed">https://github.com/oanda/libfixed</a>.</p>
+</div>
+<div id="ref-onnx">
+<p>ONNX. 2021. <em>Open Neural Network Exchange</em>. <a href="https://github.com/onnx/onnx">https://github.com/onnx/onnx</a>.</p>
+</div>
+<div id="ref-overton">
+<p>Overton, M. L. 2001. <em>Numerical Computing with IEEE Floating Point Arithmetic</em>. SIAM.</p>
+</div>
+<div id="ref-glove">
+<p>Pennington, J., R. Socher, and C. Manning. 2014. “Glove: Global Vectors for Word Representation.” In <em>Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP)</em>, 1532–43.</p>
+</div>
+<div id="ref-word2vec">
+<p>Rong, X. 2014. “Word2vec Parameter Learning Explained.” <em>arXiv Preprint arXiv:1411.2738</em>.</p>
+</div>
+<div id="ref-wrongfp2">
+<p>Rump, S. M. 2020a. “Addendum to ’On Recurrences Converging to the Wrong Limit in Finite Precision’.” <em>Electronic Transactions on Numerical Analysis</em> 52: 571–75.</p>
+</div>
+<div id="ref-wrongfp">
+<p>Rump, S. 2020b. “On Recurrences Converging to the Wrong Limit in Finite Precision.” <em>Electronic Transactions on Numerical Analysis</em> 52: 358–69.</p>
+</div>
+<div id="ref-sklearn">
+<p>Scikit-learn Developers. 2022. <em>Scikit-learn: Machine Learning in Python</em>. <a href="https://scikit-learn.org/">https://scikit-learn.org/</a>.</p>
+</div>
+<div id="ref-unicode">
+<p>Unicode. 2021. <em>Unicode Technical Documentation</em>. <a href="https://www.unicode.org/main.html">https://www.unicode.org/main.html</a>.</p>
+</div>
+<div id="ref-scipy">
+<p>Virtanen, P., R. Gommers, T. E. Oliphant, M. Haberland, T. Reddy, D. Cournapeau, E. Burovski, et al. 2020. “SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python.” <em>Nature Methods</em> 17: 261–72.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr/>
+<ol start="7">
+<li id="fn7"><p>If we use the colour in a regression model, the effect of
+“green” on the response will be twice that of “red”, which clearly does not make any sense since the numbers associated
+with the colours are arbitrary.<a href="types-structures.html#fnref7" class="footnote-back">↩︎</a></p></li>
+<li id="fn8"><p>One-hot encoding is a
+particular case of what are known as <em>contrasts</em> in statistics. Since they are collinear, we usually drop one before
+using them in a model.<a href="types-structures.html#fnref8" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+                
+</body>
+</html>

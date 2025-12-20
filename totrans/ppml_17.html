@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Chapter 10 Tools for Developing Pipelines</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Chapter 10 Tools for Developing Pipelines</h1>
+<blockquote>原文：<a href="https://ppml.dev/development-tools.html">https://ppml.dev/development-tools.html</a></blockquote>
+<div id="development-tools" class="section level1 hasAnchor" number="10">
+
+<p>In Part <a href="design-code.html#"><strong>2</strong></a> we discussed how we may adapt software engineering practices to the development of machine
+learning pipelines. Practices are predicated on the tools we adopt to implement them, which will be the focus of Part
+<a href="development-tools.html#"><strong>3</strong></a>.</p>
+<p>In this chapter, we present an up-to-date selection of tools for data exploration, experiment tracking (Section
+<a href="development-tools.html#exploration-experiment-tracking">10.1</a>), for developing code (Section <a href="development-tools.html#code-development">10.2</a>) and for building, testing
+and documenting it (Section <a href="development-tools.html#build-test-doc-tools">10.3</a>). Together, these tools provide a development environment
+suitable for creating machine learning pipelines. We will then move to those used to manage pipelines in production and
+maintain them (Chapter <a href="production-tools.html#production-tools">11</a>). We fully expect that the tools available at the time of this writing
+will consolidate over time, as has happened to other types of productivity tools in software engineering and systems
+administration.</p>
+<div id="exploration-experiment-tracking" class="section level2 hasAnchor" number="10.1">
+<h2><span class="header-section-number">10.1</span> Data Exploration and Experiment Tracking<a href="development-tools.html#exploration-experiment-tracking" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>Many issues in machine learning pipelines can be traced to data that are not sufficiently clean or well-structured and
+therefore are not suitable for training or inference. Early exploratory analyses, together with domain experts, will
+improve our understanding of the data and can help us improve their quality to the point where we can address the issues
+we discussed in Section <a href="design-code.html#data-debt">5.2.1</a> and <a href="troubleshooting-code.html#data-problems">9.1</a>. The code we write in these explorations is the
+initial prototype that, after much polishing and refactoring, will become the data ingestion and preparation modules of
+the pipeline (Section <a href="design-code.html#data-pipeline">5.3.3</a>). Using a programmatic approach to data exploration, cleaning and
+transformation is always preferable because it provides reproducible results and enables code versioning (Section
+<a href="writing-code.html#versioning">6.5</a>). The code we produce should be tested using property-based testing (Section <a href="troubleshooting-code.html#testing-what">9.4.2</a>) with
+sample data to check whether it works correctly; the same tests can be reused as quality gates for new data during the
+pipeline lifetime. We will suggest different tools to write such code in Section <a href="development-tools.html#code-development">10.2</a>: notebooks like
+Jupyter <span class="citation">(Project Jupyter <a href="#ref-jupyter" role="doc-biblioref">2022</a>)</span>; IDEs like RStudio <span class="citation">(RStudio <a href="#ref-r-studio" role="doc-biblioref">2022</a><a href="#ref-r-studio" role="doc-biblioref">a</a>)</span>; Python libraries like NumPy <span class="citation">(Harris et al. <a href="#ref-numpy" role="doc-biblioref">2020</a>)</span> and Pandas <span class="citation">(McKinney <a href="#ref-pandas" role="doc-biblioref">2017</a>)</span>; R packages
+like dplyr <span class="citation">(Wickham, François, et al. <a href="#ref-dplyr" role="doc-biblioref">2022</a>)</span>, tidyr <span class="citation">(Wickham, Girlich, and RStudio <a href="#ref-tidyr" role="doc-biblioref">2022</a>)</span> and janitor <span class="citation">(Firke et al. <a href="#ref-janitor" role="doc-biblioref">2022</a>)</span> are just a few examples. In addition, most integrated MLOps
+tools incorporate experiment tracking, so we can save these explorations in a centralised and versioned repository and
+then compare different approaches and their parameters on the basis of the metrics that we chose (Section
+<a href="design-code.html#scoping-pipeline">5.3.1</a>) for model evaluation and validation (Section <a href="design-code.html#model-pipeline">5.3.4</a>).
+
+</p>
+<p>
+
+In addition, high-level visual tools to explore and clean the data may be useful to involve domain experts who may not
+be comfortable with programming. Some examples are:</p>
+<ul>
+<li>Openrefine <span class="citation">(Openrefine <a href="#ref-openrefine" role="doc-biblioref">2022</a>)</span>: an open-source client-server solution that provides a collaborative web interface for
+working on data, as well as client libraries to automate tasks using the API exposed by the server.</li>
+<li>Trifacta <span class="citation">(Trifacta <a href="#ref-trifacta" role="doc-biblioref">2022</a>)</span>: a commercial solution that provides an easy-to-use interface to work on data quality, data
+transformation and data processing pipelines in general. It is designed for non-technical users and supports
+deployment on all major cloud providers.</li>
+<li>Tableau Prep Builder <span class="citation">(Tableau Software <a href="#ref-tableau" role="doc-biblioref">2022</a>)</span>: offers a straightforward interface to interactively clean, format and visualise data
+from different sources. It is available both as a local, graphical application and as a web application.</li>
+<li>Web solutions like Airtable <span class="citation">(Formagrid <a href="#ref-airtable" role="doc-biblioref">2022</a>)</span>, which provides the functionality of a database combined with the features of
+a spreadsheet, may also be suitable for working on small datasets in a collaborative manner.</li>
+</ul>
+<p>Data exploration is an iterative process: interactively visualising its outputs as they change is essential. We can do
+that directly from the Python and R code we use to explore the data if we are using either Jupyter or RMarkdown
+<span class="citation">(Xie, Allaire, and Grolemund <a href="#ref-rmarkdown" role="doc-biblioref">2022</a>)</span>. As an alternative, we can produce a dedicated interactive dashboard from Python, R, Julia or Bokeh
+<span class="citation">(Bokeh <a href="#ref-bokeh" role="doc-biblioref">2022</a>)</span> code and from Jupyter notebooks with a visual tool like Tableau <span class="citation">(Tableau Software <a href="#ref-tableau" role="doc-biblioref">2022</a>)</span> or with a programmatic tool like
+Dash <span class="citation">(Plotly <a href="#ref-dash" role="doc-biblioref">2022</a><a href="#ref-dash" role="doc-biblioref">a</a>)</span> that can generate one. We will discuss more tools in Section <a href="production-tools.html#production-dashboard">11.3</a>.</p>
+<p>If the data are too large for the tools above to handle, we can store them using “big data” frameworks based on Hadoop
+<span class="citation">(The Apache Software Foundation <a href="#ref-hadoop" role="doc-biblioref">2022</a><a href="#ref-hadoop" role="doc-biblioref">c</a>)</span> like Cloudera <span class="citation">(Cloudera <a href="#ref-cloudera" role="doc-biblioref">2022</a>)</span>. We can then use tools like Apache Pig <span class="citation">(The Apache Software Foundation <a href="#ref-pig" role="doc-biblioref">2022</a><a href="#ref-pig" role="doc-biblioref">e</a>)</span>, Apache Hive <span class="citation">(The Apache Software Foundation <a href="#ref-hive" role="doc-biblioref">2022</a><a href="#ref-hive" role="doc-biblioref">d</a>)</span>, Apache Impala
+<span class="citation">(Apache Software Foundation <a href="#ref-apache-impala" role="doc-biblioref">2022</a><a href="#ref-apache-impala" role="doc-biblioref">b</a>)</span> and Apache Spark <span class="citation">(The Apache Software Foundation <a href="#ref-spark" role="doc-biblioref">2022</a><a href="#ref-spark" role="doc-biblioref">f</a>)</span> to manipulate them and implement our own data ingestion and cleaning; or we
+can use integrated cloud-based solutions like Snowflake <span class="citation">(Snowflake <a href="#ref-snowflake" role="doc-biblioref">2022</a>)</span> and Databricks Lakehouse <span class="citation">(Databricks <a href="#ref-databricks" role="doc-biblioref">2022</a>)</span>. The
+advantage of these integrated solutions is that they handle all the aspects of data management as well as machine
+learning applications development and delivery, supporting integration with data engineering, data science and machine
+learning open-source projects.</p>
+<p>Databricks, for instance, includes many open-source components. One is Delta Lake <span class="citation">(The Delta Lake Project Authors <a href="#ref-delta-lake" role="doc-biblioref">2022</a><a href="#ref-delta-lake" role="doc-biblioref">a</a>)</span>: an abstraction layer
+for existing data lakes and object storage like S3 which is fully compatible with Apache Spark and which supports
+features such as ACID transactions, schema enforcing and data versioning. Databricks also offers a managed version of
+MLflow <span class="citation">(Zaharia and The Linux Foundation <a href="#ref-mlflow" role="doc-biblioref">2022</a>)</span> an open-source library-agnostic platform to manage machine learning pipelines which we will describe in
+more detail in Section <a href="production-tools.html#production-software">11.2</a>.
+</p>
+<p>
+DVC (Data Version Control) <span class="citation">(Iterative <a href="#ref-dvc" role="doc-biblioref">2022</a><a href="#ref-dvc" role="doc-biblioref">b</a>)</span> is an open-source tool that applies GitOps principles to data.<a href="#fn25" class="footnote-ref" id="fnref25"><sup>25</sup></a> DVC manages data and machine learning models through metadata stored in
+text files, and it uses Git <span class="citation">(The Git Development Team <a href="#ref-git-git" role="doc-biblioref">2022</a>)</span> to version them and to track their provenance. DVC is both a command-line tool
+and a library, and is language- and framework-agnostic.</p>
+<p>DVC and MLflow <span class="citation">(Zaharia and The Linux Foundation <a href="#ref-mlflow" role="doc-biblioref">2022</a>)</span> implement experiment tracking in two different ways. DVC organises experiments within Git
+projects using commits, branches and tags. It automatically tracks data dependencies, machine learning code, parameters
+and model artefacts: we can compare different experiments through the associated metrics using either its command line
+or its web interface. MLflow instead provides a tracking server and client libraries that can be integrated into Python,
+R and Java code as discussed in Section <a href="design-code.html#monitoring-pipeline">5.3.6</a>. The tracking server stores the metadata,
+parameters, metrics and tags collected by the clients for each experiment run into a file or a database. Larger outputs
+like data files, images and model artefacts are saved separately, for instance, in an object storage.</p>
+<p>In addition, there are also proprietary SaaS offerings with experiment tracking and model registry functionalities, to
+name a few: Neptune <span class="citation">(Neptune Labs <a href="#ref-neptune" role="doc-biblioref">2022</a>)</span>, Comet <span class="citation">(Comet <a href="#ref-comet" role="doc-biblioref">2022</a>)</span> and Weights &amp; Biases <span class="citation">(Weights &amp; Biases <a href="#ref-wab" role="doc-biblioref">2022</a>)</span>; more details on this type of software are in
+Section <a href="production-tools.html#production-software">11.2</a>.</p>
+<p/>
+</div>
+<div id="code-development" class="section level2 hasAnchor" number="10.2">
+<h2><span class="header-section-number">10.2</span> Code Development<a href="development-tools.html#code-development" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+
+
+Modern software development is a collaborative effort based on knowledge sharing, constant iteration and continuous
+feedback. Distributed version control systems and Git <span class="citation">(The Git Development Team <a href="#ref-git-git" role="doc-biblioref">2022</a>)</span> in particular make all this possible by setting the
+standard for code versioning and collaborative development and by powering popular platforms such as GitHub and GitLab.
+Our ability to deliver and deploy software using DevOps relies heavily on Git together with semantic versioning
+<span class="citation">(Preston-Werner <a href="#ref-sem-ver" role="doc-biblioref">2022</a>)</span> and commit tags. Therefore, Git is a tool that every software engineer should be familiar with. Machine
+learning and data science professionals should be familiar with it as well because it is used in and influences the
+design of software like DVC that is used to work with pipelines.</p>
+<p>
+Choosing the right set of tools for writing code is a matter of prior experience with specific tools and personal taste.
+It may be a decision made either by individual developers or at the level of the team, research group or company the
+developers belong to in order to standardise on a predetermined set of software. In either case, to work efficiently on
+a machine learning pipeline we will need support for:</p>
+<ul>
+<li>the programming languages that we will use (Section <a href="writing-code.html#programming-language">6.1</a>);</li>
+<li>enforcing coding standards (Section <a href="writing-code.html#coding-standards">6.3</a>);</li>
+<li>automated refactoring (Section <a href="writing-code.html#refactoring">6.7</a>);</li>
+<li>integrations with source code versioning (Section <a href="writing-code.html#versioning">6.5</a>);</li>
+<li>running software tests and summarising their results (Section <a href="troubleshooting-code.html#testing">9.4</a>);</li>
+<li>interactive debugging (Section <a href="troubleshooting-code.html#testing">9.4</a>);</li>
+<li>managing the containers (Section <a href="deploying-code.html#container-packaging">7.1.4</a>) that encapsulate the developing environment, and the
+ability to remotely work within them.</li>
+</ul>
+<p>Ensuring that all developers use similar tooling is useful for compliance, to simplify the training of new developers
+and to improve reproducibility. (For the same reasons, we should avoid polyglot programming as discussed in Section
+<a href="design-code.html#code-debt">5.2.4</a>). There is a wide variety of tools to choose from, falling into the following categories:</p>
+<ul>
+<li>modern and relatively lightweight <em>code editors</em> such as Atom <span class="citation">(Atom <a href="#ref-atom" role="doc-biblioref">2022</a>)</span> and Visual Studio Code <span class="citation">(Microsoft <a href="#ref-vs-code" role="doc-biblioref">2022</a><a href="#ref-vs-code" role="doc-biblioref">d</a>, also known as
+VS Code)</span> that can be extended to provide the features above with the use of third-party extensions;</li>
+<li><em>integrated development environments</em> (IDEs) such as Eclipse <span class="citation">(Eclipse Foundation <a href="#ref-eclipse-ide" role="doc-biblioref">2022</a><a href="#ref-eclipse-ide" role="doc-biblioref">a</a>)</span> and JetBrains IntelliJ IDEA
+<span class="citation">(JetBrains <a href="#ref-jetbrains-idea" role="doc-biblioref">2022</a><a href="#ref-jetbrains-idea" role="doc-biblioref">a</a>)</span>;</li>
+<li><em>shared interactive computing platforms</em> such as Jupyter notebooks <span class="citation">(Project Jupyter <a href="#ref-jupyter" role="doc-biblioref">2022</a>)</span>.
+</li>
+</ul>
+<div id="editors" class="section level3 hasAnchor" number="10.2.1">
+<h3><span class="header-section-number">10.2.1</span> Code Editors and IDEs<a href="development-tools.html#editors" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+The main difference between an IDE and a code editor is the amount of functionality that is built-in and configured with
+sane defaults. On the one hand, IDEs integrate most functionality out of the box on a single programming language. For
+instance, PyCharm <span class="citation">(JetBrains <a href="#ref-pycharm" role="doc-biblioref">2022</a><a href="#ref-pycharm" role="doc-biblioref">b</a>)</span> offers features such as code inspection, code completion, syntax highlighting, version
+control, debugging, refactoring, test execution and container integration like other major IDEs, but also supports the
+Python REPL and provides introspection into the objects created by scientific computing libraries such as NumPy and
+Pandas. The reference IDE for the R language is RStudio <span class="citation">(RStudio <a href="#ref-r-studio" role="doc-biblioref">2022</a><a href="#ref-r-studio" role="doc-biblioref">a</a>)</span>, which integrates a console, an editor that supports
+syntax highlighting and direct code execution, tools for plotting and inspecting R objects as well as history,
+debugging and workspace management.
+</p>
+<p>
+On the other hand, code editors are more limited out of the box, but they can reach feature parity with IDEs by
+installing and configuring third-party extensions. For example, VS Code can provide similar functionality to PyCharm by
+using a language server like the <em>Python Language Server</em> <span class="citation">(Palantir <a href="#ref-python-language-server" role="doc-biblioref">2022</a>)</span> that is compliant with the language
+server protocol specification <span class="citation">(Microsoft <a href="#ref-lsp" role="doc-biblioref">2022</a><a href="#ref-lsp" role="doc-biblioref">f</a>)</span>. Other alternatives are Mypy <span class="citation">(The mypy Project <a href="#ref-mypy" role="doc-biblioref">2014</a>)</span>, Pylance <span class="citation">(Microsoft <a href="#ref-pylance" role="doc-biblioref">2022</a><a href="#ref-pylance" role="doc-biblioref">a</a>)</span> (based on the
+Pyright <span class="citation">(Pyright <a href="#ref-pyright" role="doc-biblioref">2022</a>)</span> static type checker from Microsoft), Pytype <span class="citation">(Batchelder and et al. <a href="#ref-pytype" role="doc-biblioref">2022</a>)</span> (from Google) and Pyre <span class="citation">(Meta Platforms <a href="#ref-pyre" role="doc-biblioref">2022</a><a href="#ref-pyre" role="doc-biblioref">a</a>)</span> (from
+Facebook). The same level of integration can be accomplished with the languageserver package <span class="citation">(Lai and Ren <a href="#ref-r-languageserver" role="doc-biblioref">2022</a>)</span> and the
+VS Code R extension <span class="citation">(REditorSupport <a href="#ref-vs-code-r" role="doc-biblioref">2022</a>)</span> for R and with LanguageServer.jl <span class="citation">(Julia VS Code <a href="#ref-julia-languageserver" role="doc-biblioref">2022</a><a href="#ref-julia-languageserver" role="doc-biblioref">a</a>)</span> and the VS Code Julia
+extension <span class="citation">(Julia VS Code <a href="#ref-vs-code-julia" role="doc-biblioref">2022</a><a href="#ref-vs-code-julia" role="doc-biblioref">b</a>)</span> for Julia.</p>
+<p>
+
+
+
+Both code editors and IDEs can also run as web applications: a web browser session connects to a cloud instance
+replicating a common, unified development environment. This approach has two advantages: it reduces technical debt
+arising from polyglot programming (Section <a href="design-code.html#code-debt">5.2.4</a>) and makes it possible to develop in environments that
+are too complex or too resource-intensive to run locally (Section <a href="design-code.html#baseline-pipeline">5.3.2</a>). Code
+editors like VS Code provide web interfaces <span class="citation">(Microsoft <a href="#ref-vscode-dev" role="doc-biblioref">2022</a><a href="#ref-vscode-dev" role="doc-biblioref">j</a>)</span> to navigate files and repositories and to commit small code
+changes, while IDEs like GitHub Codespaces <span class="citation">(GitHub <a href="#ref-github-codespaces" role="doc-biblioref">2022</a><a href="#ref-github-codespaces" role="doc-biblioref">a</a>)</span> and AWS Cloud9 <span class="citation">(Amazon <a href="#ref-aws-cloud9" role="doc-biblioref">2022</a><a href="#ref-aws-cloud9" role="doc-biblioref">c</a>)</span> provide complete cloud
+development environments backed by virtual machines (Section <a href="deploying-code.html#vm-packaging">7.1.3</a>). We also have the option to self-host
+them using Docker <span class="citation">(Docker <a href="#ref-docker" role="doc-biblioref">2022</a><a href="#ref-docker" role="doc-biblioref">a</a>)</span> and Kubernetes <span class="citation">(The Kubernetes Authors <a href="#ref-kubernetes" role="doc-biblioref">2022</a><a href="#ref-kubernetes" role="doc-biblioref">a</a>)</span>: base container images are readily available for Eclipse Che
+<span class="citation">(Eclipse Che <a href="#ref-eclipse-che" role="doc-biblioref">2022</a>)</span>, Eclipse Theia <span class="citation">(Eclipse Foundation <a href="#ref-eclipse-theia" role="doc-biblioref">2022</a><a href="#ref-eclipse-theia" role="doc-biblioref">b</a>)</span> and GitPod <span class="citation">(Gitpod <a href="#ref-gitpod" role="doc-biblioref">2022</a>)</span>. As for R, RStudio Server <span class="citation">(RStudio <a href="#ref-r-studio-server" role="doc-biblioref">2022</a><a href="#ref-r-studio-server" role="doc-biblioref">b</a>)</span> makes
+available the same features as the RStudio IDE through a browser-based interface that is connected to R sessions running
+on a remote server. We would also like to point out DagsHub <span class="citation">(DagsHub <a href="#ref-dagshub" role="doc-biblioref">2022</a>)</span> as a collaboration platform: it provides a shared
+work environment for data science and machine learning projects that follows the development patterns and the practices
+presented in this book. It integrates with GitHub, DVC, MLflow, Jenkins <span class="citation">(Jenkins <a href="#ref-jenkins" role="doc-biblioref">2022</a><a href="#ref-jenkins" role="doc-biblioref">b</a>)</span> and many other open-source tools.
+
+
+</p>
+<p>Finally, we would like to mention one last set of code editors: Vim, Neovim <span class="citation">(Neovim <a href="#ref-neovim" role="doc-biblioref">2022</a>)</span> and Emacs <span class="citation">(GNU Project <a href="#ref-gnu-emacs" role="doc-biblioref">2022</a>)</span>. They are
+valued by developers who prefer to create a modular development environment that fits their specific needs. Both editors
+provide full support for R, Julia and Python through plug-ins that communicate with the respective language servers.
+Although their learning curve is steep at first, they allow for unparalleled speed of action on code bases of any size
+in the long run.
+</p>
+</div>
+<div id="notebooks" class="section level3 hasAnchor" number="10.2.2">
+<h3><span class="header-section-number">10.2.2</span> Notebooks<a href="development-tools.html#notebooks" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+In recent years, notebooks have seen widespread adoption in machine learning projects and, more in general, in
+scientific research. They are typically implemented as Jupyter notebooks <span class="citation">(Project Jupyter <a href="#ref-jupyter" role="doc-biblioref">2022</a>, from the programming languages
+<em>Ju</em>lia, <em>Pyt</em>hon and <em>R</em> they support)</span>, an interactive development tool that is ideal for building proofs of concept.
+Jupyter notebooks are designed to quickly test ideas, to evaluate the trade-offs of different alternatives and to share
+code, results and figures intermixed with documentation in Markdown format. They can be executed interactively directly
+from GitHub and GitLab, from a dedicated collaboration platform such as Google Colaboratory <span class="citation">(Google <a href="#ref-colab" role="doc-biblioref">2022</a><a href="#ref-colab" role="doc-biblioref">g</a>, also known as
+Colab)</span> or from MLOps platforms such as Amazon SageMaker <span class="citation">(Amazon <a href="#ref-sagemaker" role="doc-biblioref">2022</a><a href="#ref-sagemaker" role="doc-biblioref">d</a>)</span> or Azure Machine Learning <span class="citation">(Microsoft <a href="#ref-azureml" role="doc-biblioref">2022</a><a href="#ref-azureml" role="doc-biblioref">c</a>)</span>.</p>
+<p>Despite considerable programming language support and a significant adoption by the scientific community, the use of
+Jupyter notebooks has several shortcomings in the context of modern development practices (Chapter <a href="writing-code.html#writing-code">6</a>,
+in particular Section <a href="writing-code.html#coding-standards">6.3</a>). The Jupyter notebook file format stores code, outputs, images and
+Markdown text in a single huge JSON object to produce a self-contained, portable artefact. This architectural choice has
+four major shortcomings:</p>
+<ol style="list-style-type: decimal">
+<li>It is challenging to version a notebook correctly because stochastic outputs change every time it runs.</li>
+<li>Representing code in “cells” that can be executed in any order is at odds with the imperative nature of the
+programming languages used in machine learning software.</li>
+<li>Dividing code into cells to interleave their outputs and the surrounding text impacts code modularity and code reuse
+and reduces our ability to produce good abstractions. We can accept some level of coupling between cells (because
+they run code in a shared, hidden global environment) and add glue code to make things work, but that leads to an
+increase in technical debt (Sections <a href="design-code.html#architecture-debt">5.2.3</a> and <a href="design-code.html#code-debt">5.2.4</a>).</li>
+<li>Notebooks do not have any built-in support for automated testing (Section <a href="troubleshooting-code.html#testing">9.4</a>) or deployment (Chapter
+<a href="deploying-code.html#deploying-code">7</a>). While this can be acceptable for exploring data and prototyping models
+(Section <a href="design-code.html#baseline-pipeline">5.3.2</a>), it makes them unsuitable for developing production-level software.</li>
+</ol>
+<p>In particular, executing cells in a non-linear order can lead to inconsistent results because cells affect each other’s
+environment, effectively creating a “hidden state” that is very difficult to track. The only way to achieve
+reproducibility is to always execute all the code in the notebook from the top in a clean environment. For these
+reasons, we cannot use notebooks directly to serve machine learning models in a production environment. However,
+this may change in the future: there are ongoing efforts to develop tools for diffing and merging (nbtime <span class="citation">(Alnæs and Project Jupyter <a href="#ref-nbdime" role="doc-biblioref">2022</a>)</span> and
+nbstripout <span class="citation">(Rathgeber <a href="#ref-nbstripout" role="doc-biblioref">2022</a>)</span>), automatic testing (testbook <span class="citation">(Nteract Team <a href="#ref-testbook" role="doc-biblioref">2022</a><a href="#ref-testbook" role="doc-biblioref">b</a>)</span> and nbval <span class="citation">(Cortes-Ortuno et al. <a href="#ref-nbval" role="doc-biblioref">2022</a>)</span>), automation (Papermill
+<span class="citation">(Nteract Team <a href="#ref-papermill" role="doc-biblioref">2022</a><a href="#ref-papermill" role="doc-biblioref">a</a>)</span>) and quality assurance (nbQA <span class="citation">(nbQA Team <a href="#ref-nbqa" role="doc-biblioref">2022</a>)</span>).</p>
+<p>RMarkdown and Julia notebooks are fully reproducible because they execute all the code in the notebook from the top in a
+clean environment by default, so there is no state inconsistency after we change the code in a cell and re-run it.
+Furthermore, both are easier to version and to diff than Jupyter notebooks because they store text, outputs and figures
+in a separate Markdown, PDF or HTML file when compiled. RMarkdown notebooks are well supported by RStudio,
+which provides code auto-complete, linting and suggestions, but they can be edited with any text editor and compiled
+through the command line as well. We can also enhance them with the workflowr R package <span class="citation">(Blischak, Carbonetto, and Stephens <a href="#ref-workflowr" role="doc-biblioref">2022</a>)</span>, which combines
+literate programming (with knitr <span class="citation">(Xie <a href="#ref-knitr" role="doc-biblioref">2015</a>)</span>) and version control (with git2r <span class="citation">(Widgren and et al. <a href="#ref-git2r" role="doc-biblioref">2022</a>)</span>) to generate shareable HTML pages
+containing time-stamped, versioned code blocks and outputs. For reproducibility, each analysis is run in a new R
+session.</p>
+<p>Given how Jupyter notebooks are geared towards prototyping, we suggest that they should be integrated in a modern
+development workflow as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Experiment and build a prototype of the code using notebooks.</li>
+<li>When the prototype is complete, move the code to a new Git repository and start refactoring it using an IDE or a code
+editor to make it modular and scalable. At the same time, add software tests.</li>
+<li>Add docstrings <span class="citation">(Goodger and Rossum <a href="#ref-py-docstrings" role="doc-biblioref">2022</a>)</span> to the code using the text in Jupyter Markdown as a base.</li>
+<li>Package your artefact using pip <span class="citation">(Python Software Foundation <a href="#ref-pip" role="doc-biblioref">2022</a><a href="#ref-pip" role="doc-biblioref">a</a>)</span> and setuptool <span class="citation">(Python Packaging Authority <a href="#ref-setuptools" role="doc-biblioref">2022</a>)</span> (Section <a href="deploying-code.html#distribution-packaging">7.1.2</a>) for later
+use as a module within the machine learning pipeline or as a library that will be imported by other Jupyter
+notebooks.
+</li>
+</ol>
+</div>
+<div id="accessing-documentation" class="section level3 hasAnchor" number="10.2.3">
+<h3><span class="header-section-number">10.2.3</span> Accessing Data and Documentation<a href="development-tools.html#accessing-documentation" class="anchor-section" aria-label="Anchor link to header"/></h3>
+<p>
+
+Quickly accessing documentation during development is invaluable when working on complex code bases. We can use offline
+documentation browsers such as Velocity <span class="citation">(Silverlake Software <a href="#ref-velocity" role="doc-biblioref">2022</a>)</span> or Dash, or the open-source Zeal <span class="citation">(The Delta Lake Project Authors <a href="#ref-zeal" role="doc-biblioref">2022</a><a href="#ref-zeal" role="doc-biblioref">b</a>)</span>. All three can
+automatically download the <em>docsets</em> (HTML documentation archives for offline usage) for major programming languages and
+machine learning frameworks, and also integrate with the leading IDEs and code editors. Overall, they are
+interchangeable in terms of features.</p>
+<p>As for accessing data, object storage like AWS Amazon S3 is becoming the de facto standard for data interchange in
+data science and machine learning. Therefore, it is very useful to integrate code editors and IDEs with libraries
+capable of abstracting the listing, downloading and uploading of data into object storage buckets across multiple cloud
+vendors. A popular example is MinIO <span class="citation">(MinIO <a href="#ref-minio" role="doc-biblioref">2022</a>)</span>, which is fully compatible with the S3 APIs and provides an open-source SDK
+for multiple languages.
+
+</p>
+</div>
+</div>
+<div id="build-test-doc-tools" class="section level2 hasAnchor" number="10.3">
+<h2><span class="header-section-number">10.3</span> Build, Test and Documentation Tools<a href="development-tools.html#build-test-doc-tools" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>Using appropriate tools for building, testing and performing software quality assurance is important to improve
+ergonomics and reduce the likelihood of errors. In addition, we may want to use the same set of tools in all
+environments (developer workstations, staging and production environments) and in all stages of development, both to
+avoid inconsistencies and to maintain a common environment shared by all the people who work on the pipeline.</p>
+<p>
+
+Currently, containers (Section <a href="deploying-code.html#container-packaging">7.1.4</a>) are the most common way of packaging the modules of a machine
+learning pipeline: either individually with Docker, in groups with Docker compose <span class="citation">(Docker <a href="#ref-docker-compose" role="doc-biblioref">2022</a><a href="#ref-docker-compose" role="doc-biblioref">c</a>)</span> or Podman <span class="citation">(The Containers Organization <a href="#ref-podman" role="doc-biblioref">2022</a>)</span>,
+or as a single-node Kubernetes with Minikube <span class="citation">(The Kubernetes Authors <a href="#ref-minikube" role="doc-biblioref">2022</a><a href="#ref-minikube" role="doc-biblioref">c</a>)</span> or MicroK8s <span class="citation">(Canonical <a href="#ref-microk8s" role="doc-biblioref">2022</a><a href="#ref-microk8s" role="doc-biblioref">b</a>)</span>. All these solutions build on Docker,
+with different trade-offs in terms of architecture and functionality, and therefore support the deployment practices
+described in Chapter <a href="deploying-code.html#deploying-code">7</a>.</p>
+<p>One of the points of using containers is to isolate different modules and applications from each other. We can further
+decouple our code from the software installed within each container by using <code>pipenv</code> or <code>pip</code> <span class="citation">(Python Software Foundation <a href="#ref-pip" role="doc-biblioref">2022</a><a href="#ref-pip" role="doc-biblioref">a</a>)</span> plus <code>virtualenv</code>
+<span class="citation">(Python Packaging Authority (PyPA) <a href="#ref-virtualenv" role="doc-biblioref">2022</a>)</span> to create isolated Python environments and to manage dependencies on packages and on specific versions of
+the Python interpreter (without collisions with the globally installed ones). We can install and switch between multiple
+versions of Python using pyenv <span class="citation">(Yamashita, Stephenson, and et al. <a href="#ref-pyenv" role="doc-biblioref">2022</a>)</span> or Poetry <span class="citation">(Kalnytskyi <a href="#ref-poetry" role="doc-biblioref">2022</a><a href="#ref-poetry" role="doc-biblioref">a</a>)</span>, or a more general-purpose tool like asdf <span class="citation">(Manohar <a href="#ref-asdf" role="doc-biblioref">2022</a>)</span> that
+supports multiple runtime versions for the most used interpreters, compilers and development tools. If our needs are too
+complex for this approach, we might consider tools such as Pipenv <span class="citation">(Reitz and Python Packaging Authority (PyPA) <a href="#ref-pipenv" role="doc-biblioref">2022</a>)</span> and Conda <span class="citation">(Anaconda <a href="#ref-conda" role="doc-biblioref">2022</a><a href="#ref-conda" role="doc-biblioref">b</a>)</span>. Conda in particular has
+a broad support for machine learning and data science applications <span class="citation">(Anaconda <a href="#ref-conda-data-science" role="doc-biblioref">2022</a><a href="#ref-conda-data-science" role="doc-biblioref">a</a>)</span> but is rather cumbersome to
+use. The R counterpart of Pipenv is the packrat package <span class="citation">(Ushey et al. <a href="#ref-packrat" role="doc-biblioref">2022</a>)</span>, which also uses a locally installed R interpreter.
+</p>
+<p>
+Automated tests are another key feature of modern practices for developing (Section <a href="writing-code.html#versioning">6.5</a>), refactoring
+(Section <a href="writing-code.html#refactoring">6.7</a>) and maintaining software (Section <a href="troubleshooting-code.html#testing">9.4</a>). Each test should be run in a clean
+environment such as a container that is re-created at each run: we want to avoid the execution of one test influencing
+the results of another. (The automated and reproducible deployment practices we discussed in Chapter
+<a href="deploying-code.html#deploying-code">7</a> are a key enabler of automated testing!) Test results should be included as pass/fail by the CI/CD
+pipeline to facilitate code review (Section <a href="writing-code.html#code-review">6.6</a>) and to ensure that the pipeline is always in a
+functioning state. There are many frameworks and libraries that we can use to implement the types of tests described in
+Section <a href="troubleshooting-code.html#testing">9.4</a>. For individual modules, we can use the unittest <span class="citation">(Python Software Foundation <a href="#ref-unittest" role="doc-biblioref">2022</a><a href="#ref-unittest" role="doc-biblioref">c</a>)</span> and doctest <span class="citation">(Python Software Foundation <a href="#ref-doctest" role="doc-biblioref">2022</a><a href="#ref-doctest" role="doc-biblioref">b</a>)</span> packages in
+the Python standard library, the testthat R <span class="citation">(Wickham, RStudio, and R Core Team <a href="#ref-testthat" role="doc-biblioref">2022</a>)</span> package and the Julia test module.
+</p>
+<p>
+
+We should also test that the machine learning pipeline as a whole works as expected. Tools like Airflow <span class="citation">(The Apache Software Foundation <a href="#ref-airflow" role="doc-biblioref">2022</a><a href="#ref-airflow" role="doc-biblioref">a</a>)</span>, DVC
+and Pachyderm <span class="citation">(Pachyderm <a href="#ref-pachyderm" role="doc-biblioref">2022</a>)</span> use the DAG that maps the dependencies between the modules to allow for local, iterative
+testing. In DVC and Pachyderm, dependencies are specified in a declarative configuration file (say, <code>dvc.yaml</code> for DVC)
+which can be either written manually or built programmatically using helper commands. DVC does not have any built-in
+support for testing, so we should instrument modules ourselves (for unit tests) and embed the whole pipeline in a
+testing framework (for integration, system and acceptance tests). In Airflow, the pipeline is implemented in Python code
+and dependencies are encoded in a dedicated <code>DAG</code> object: this makes it easy to test individual modules with unittest
+and to validate data with frameworks such as Great Expectations <span class="citation">(Superconductive <a href="#ref-ge" role="doc-biblioref">2022</a>)</span>. As for pipelines running on GitHub, GitLab or
+Jenkins, we can use actions and runners <span class="citation">(Gitlab <a href="#ref-gitlab-runner" role="doc-biblioref">2022</a><a href="#ref-gitlab-runner" role="doc-biblioref">a</a>; Nektos <a href="#ref-act" role="doc-biblioref">2022</a>; Jenkins <a href="#ref-jenkinsfile-runner" role="doc-biblioref">2022</a><a href="#ref-jenkinsfile-runner" role="doc-biblioref">a</a>)</span> that, albeit with some limitations,
+can run the complete pipeline or some of its parts using containers. Another alternative is to validate the pipeline
+directly by iteratively committing changes to a test branch and pushing them to the mainline branch to force the CI to
+run any tests that may be relevant. Jenkins also provides a testing framework for implementing unit tests on the
+configuration and on the conditional logic of the pipeline code and a command-line tool for linting the pipeline. GitLab
+provides APIs to trigger validation and linting for the same purpose.
+
+
+</p>
+<p>
+Enforcing code styles and standards, which we discussed in Section <a href="writing-code.html#coding-standards">6.3</a>, is a crucial complement to
+testing to ensure that we produce maintainable, working software. Pylint <span class="citation">(Logilab and PyCQA and contributors <a href="#ref-pylint" role="doc-biblioref">2022</a>)</span> is the reference static code analyser
+and linter for Python: it is based on PEP-8 (Python Enhancement Proposal 8), the official document that contains the
+guidelines and best practices on how to write Python code. An alternative is Flake8 <span class="citation">(Stapleton Cordasco <a href="#ref-flake8" role="doc-biblioref">2022</a>)</span>, which builds on other
+tools such as pycodestyle (a style guide checker), pyflakes (a source files checker for errors) and mccabe (a tool to
+check the complexity of the code). A comprehensive linting step for Python code should apply a sequence of tools such as
+the following:</p>
+<ol style="list-style-type: decimal">
+<li>isort <span class="citation">(Crosley <a href="#ref-isort" role="doc-biblioref">2022</a>)</span> to sort imports alphabetically and separate into sections by type;</li>
+<li>black <span class="citation">(Langa and et al. <a href="#ref-black" role="doc-biblioref">2022</a>)</span> to format the code;</li>
+<li>flake8 to check the code style;</li>
+<li>pylint as the final step to run static code analysis.</li>
+</ol>
+<p>
+The styler package <span class="citation">(Müller and Walthert <a href="#ref-r-styler" role="doc-biblioref">2022</a><a href="#ref-r-styler" role="doc-biblioref">a</a>)</span>, which enforces compliance with the tidyverse style guide <span class="citation">(Wickham <a href="#ref-r-style" role="doc-biblioref">2022</a><a href="#ref-r-style" role="doc-biblioref">b</a>)</span>, and the lintr
+package <span class="citation">(Hester et al. <a href="#ref-r-lintr" role="doc-biblioref">2022</a>)</span>, which performs static code analysis and which identifies syntax errors and possible semantic issues,
+fill the roles of the Python packages above for R code. Both lintr (see <code>vignette("continuous-integration"</code>)) and
+styler support CI/CD integration <span class="citation">(Müller and Walthert <a href="#ref-r-styler-cicd" role="doc-biblioref">2022</a><a href="#ref-r-styler-cicd" role="doc-biblioref">b</a>)</span>, accept user-provided code style policies and integrate with RStudio.
+
+</p>
+<p>
+Writing documentation and keeping it up-to-date is also key to maintaining machine learning pipelines over time.
+Documentation should be versioned like code and kept as close as possible to the code it refers to. Documentation on
+module, function and class interfaces or on method definitions can placed in both Python <span class="citation">(Goodger and Rossum <a href="#ref-py-docstrings" role="doc-biblioref">2022</a>)</span> and Julia
+<span class="citation">(Krämer <a href="#ref-jl-docstrings" role="doc-biblioref">2022</a>)</span> code using structured comments in the docstring or native Sphinx format; Sphinx <span class="citation">(Brandl and the Sphinx Team <a href="#ref-sphinx" role="doc-biblioref">2022</a>)</span> can then
+compile those comments into documents in various file formats via the Sphinx <code>autodoc</code> extension (see Section
+<a href="documenting-code.html#apidocs">8.2</a> for an example). Sphinx can also be used to (re)compile documentation automatically using CI (with “Read
+the Docs” <span class="citation">(Read the Docs <a href="#ref-readthedocs" role="doc-biblioref">2022</a>)</span>) and to render OpenAPI specification files as static HTML pages <span class="citation">(Kalnytskyi <a href="#ref-sphinxcontrib-redoc" role="doc-biblioref">2022</a><a href="#ref-sphinxcontrib-redoc" role="doc-biblioref">c</a>)</span>. The
+OpenAPI specification files can in turn be automatically generated from docstrings using Sphinx <span class="citation">(Kalnytskyi <a href="#ref-sphinxcontrib-openapi" role="doc-biblioref">2022</a><a href="#ref-sphinxcontrib-openapi" role="doc-biblioref">b</a>)</span>,
+Apispec <span class="citation">(Loria and et al. <a href="#ref-apispec" role="doc-biblioref">2022</a>)</span> or a framework such as FastApi <span class="citation">(Ramírez <a href="#ref-fastapi" role="doc-biblioref">2022</a>)</span> and Flask <span class="citation">(Pallets Team <a href="#ref-flask" role="doc-biblioref">2022</a>)</span>.</p>
+<p>In R, we can use comments in the Doxygen <span class="citation">(van Heesch <a href="#ref-doxygen" role="doc-biblioref">2022</a>)</span> format for the same purpose: they can be parsed by the Roxygen2
+package <span class="citation">(Wickham, Danenberg, et al. <a href="#ref-roxygen2" role="doc-biblioref">2022</a>)</span> to generate R documentation in various formats as discussed in Section <a href="documenting-code.html#apidocs">8.2</a>.
+</p>
+<!-- vim: set synmaxcol=600 textwidth=120 colorcolumn=120 spell wrap number: -->
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references hanging-indent">
+<div id="ref-nbdime">
+<p>Alnæs, M. S., and Project Jupyter. 2022. <em>nbdime – Diffing and Merging of Jupyter Notebooks</em>. <a href="https://nbdime.readthedocs.io">https://nbdime.readthedocs.io</a>.</p>
+</div>
+<div id="ref-aws-cloud9">
+<p>Amazon. 2022c. <em>AWS Cloud9 Documentation</em>. <a href="https://docs.aws.amazon.com/cloud9">https://docs.aws.amazon.com/cloud9</a>.</p>
+</div>
+<div id="ref-sagemaker">
+<p>Amazon. 2022d. <em>Machine Learning: Amazon Sagemaker</em>. <a href="https://aws.amazon.com/sagemaker/">https://aws.amazon.com/sagemaker/</a>.</p>
+</div>
+<div id="ref-conda-data-science">
+<p>Anaconda. 2022a. <em>Conda for Data Scientists</em>. <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/data-science.html">https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/data-science.html</a>.</p>
+</div>
+<div id="ref-conda">
+<p>Anaconda. 2022b. <em>Package, Dependency and Environment Management for Any Language</em>. <a href="https://docs.conda.io">https://docs.conda.io</a>.</p>
+</div>
+<div id="ref-apache-impala">
+<p>Apache Software Foundation. 2022b. <em>Impala Documentation</em>. <a href="https://impala.apache.org/impala-docs.html">https://impala.apache.org/impala-docs.html</a>.</p>
+</div>
+<div id="ref-atom">
+<p>Atom. 2022. <em>A hackable text editor for the 21st Century</em>. <a href="https://atom.io/">https://atom.io/</a>.</p>
+</div>
+<div id="ref-pytype">
+<p>Batchelder, N., and et al. 2022. <em>A Static Type Analyzer for Python Code</em>. <a href="https://google.github.io/pytype">https://google.github.io/pytype</a>.</p>
+</div>
+<div id="ref-workflowr">
+<p>Blischak, J. D., P. Carbonetto, and M. Stephens. 2022. <em>workflowr: A Framework for Reproducible and Collaborative Data Science</em>. <a href="https://cran.r-project.org/web/packages/workflowr">https://cran.r-project.org/web/packages/workflowr</a>.</p>
+</div>
+<div id="ref-bokeh">
+<p>Bokeh. 2022. <em>Bokeh Documentation</em>. <a href="https://docs.bokeh.org/en/latest/">https://docs.bokeh.org/en/latest/</a>.</p>
+</div>
+<div id="ref-sphinx">
+<p>Brandl, G., and the Sphinx Team. 2022. <em>Sphinx: Python Documentation Generator</em>. <a href="https://www.sphinx-doc.org/en/master/">https://www.sphinx-doc.org/en/master/</a>.</p>
+</div>
+<div id="ref-microk8s">
+<p>Canonical. 2022b. <em>MicroK8s Documentation</em>. <a href="https://microk8s.io/docs">https://microk8s.io/docs</a>.</p>
+</div>
+<div id="ref-cloudera">
+<p>Cloudera. 2022. <em>Cloudera: The Hybrid Data Company</em>. <a href="https://www.cloudera.com/">https://www.cloudera.com/</a>.</p>
+</div>
+<div id="ref-comet">
+<p>Comet. 2022. <em>Comet Documentation</em>. <a href="https://www.comet.com/docs/v2">https://www.comet.com/docs/v2</a>.</p>
+</div>
+<div id="ref-nbval">
+<p>Cortes-Ortuno, D., O. Laslett, T. Kluyver, V. Fauske, M. Albert, MinRK, O. Hovorka, and H. Fangohr. 2022. <em>IPython Notebook Validation for py.test: Documentation</em>. <a href="https://nbval.readthedocs.io">https://nbval.readthedocs.io</a>.</p>
+</div>
+<div id="ref-isort">
+<p>Crosley, T. 2022. <em>A Python Utility and Library to Sort Imports</em>. <a href="https://pycqa.github.io/isort/">https://pycqa.github.io/isort/</a>.</p>
+</div>
+<div id="ref-dagshub">
+<p>DagsHub. 2022. <em>Welcome to the DagsHub Docs</em>. <a href="https://dagshub.com/docs/">https://dagshub.com/docs/</a>.</p>
+</div>
+<div id="ref-databricks">
+<p>Databricks. 2022. <em>Databricks Documentation</em>. <a href="https://docs.databricks.com/applications/machine-learning/index.html">https://docs.databricks.com/applications/machine-learning/index.html</a>.</p>
+</div>
+<div id="ref-docker">
+<p>Docker. 2022a. <em>Docker</em>. <a href="https://www.docker.com/">https://www.docker.com/</a>.</p>
+</div>
+<div id="ref-docker-compose">
+<p>Docker. 2022c. <em>Overview of Docker Compose</em>. <a href="https://docs.docker.com/compose">https://docs.docker.com/compose</a>.</p>
+</div>
+<div id="ref-eclipse-che">
+<p>Eclipse Che. 2022. <em>Run your favorite IDE on Kubernetes</em>. <a href="https://www.eclipse.org/che/technology/">https://www.eclipse.org/che/technology/</a>.</p>
+</div>
+<div id="ref-eclipse-ide">
+<p>Eclipse Foundation. 2022a. <em>Desktop IDEs</em>. <a href="https://www.eclipse.org/ide/">https://www.eclipse.org/ide/</a>.</p>
+</div>
+<div id="ref-eclipse-theia">
+<p>Eclipse Foundation. 2022b. <em>Theia: Cloud &amp; Desktop IDE</em>. <a href="https://theia-ide.org/docs/">https://theia-ide.org/docs/</a>.</p>
+</div>
+<div id="ref-janitor">
+<p>Firke, S., B. Denney, C. Haid, R. Knight, M. Grosser, and J. Zadra. 2022. <em>janitor: Simple Tools for Examining and Cleaning Dirty Data</em>. <a href="https://cran.r-project.org/web/packages/janitor">https://cran.r-project.org/web/packages/janitor</a>.</p>
+</div>
+<div id="ref-airtable">
+<p>Formagrid. 2022. <em>Airtable Is a Modern Spreadsheet Platform with Database Functionalities</em>. <a href="https://airtable.com">https://airtable.com</a>.</p>
+</div>
+<div id="ref-github-codespaces">
+<p>GitHub. 2022a. <em>GitHub Codespaces</em>. <a href="https://github.com/features/codespaces">https://github.com/features/codespaces</a>.</p>
+</div>
+<div id="ref-gitlab-runner">
+<p>Gitlab. 2022a. <em>GitLab Runner Documentation</em>. <a href="https://docs.gitlab.com/runner/">https://docs.gitlab.com/runner/</a>.</p>
+</div>
+<div id="ref-git-ops">
+<p>Gitlab. 2022b. <em>What Is GitOps?</em> <a href="https://about.gitlab.com/topics/gitops">https://about.gitlab.com/topics/gitops</a>.</p>
+</div>
+<div id="ref-gitpod">
+<p>Gitpod. 2022. <em>Gitpod: Always Ready to Code</em>. <a href="https://www.gitpod.io">https://www.gitpod.io</a>.</p>
+</div>
+<div id="ref-gnu-emacs">
+<p>GNU Project. 2022. <em>GNU EMacs</em>. <a href="https://www.gnu.org/software/emacs/">https://www.gnu.org/software/emacs/</a>.</p>
+</div>
+<div id="ref-py-docstrings">
+<p>Goodger, D., and G. van Rossum. 2022. <em>PEP 257: Docstring Conventions</em>. <a href="https://peps.python.org/pep-0257/\#what-is-a-docstring%5D">https://peps.python.org/pep-0257/\#what-is-a-docstring]</a>.</p>
+</div>
+<div id="ref-colab">
+<p>Google. 2022g. <em>Welcome to Colab!</em> <a href="https://colab.research.google.com">https://colab.research.google.com</a>.</p>
+</div>
+<div id="ref-numpy">
+<p>Harris, C. R., K. J. Millman, Stéfan J. van der Walt, R. Gommers, P. Virtanen, D. Cournapeau, E. Wieser, et al. 2020. “Array Programming with NumPy.” <em>Nature</em> 585 (7285): 357–62.</p>
+</div>
+<div id="ref-r-lintr">
+<p>Hester, J., F. Angly, R. Hyde, M. Chirico, K. Ren, and A. Rosenstock. 2022. <em>A Linter for R Code</em>. <a href="https://cran.r-project.org/web/packages/lintr">https://cran.r-project.org/web/packages/lintr</a>.</p>
+</div>
+<div id="ref-dvc">
+<p>Iterative. 2022b. <em>DVC: Data Version Control. Git for Data &amp; Models</em>. <a href="https://github.com/iterative/dvc">https://github.com/iterative/dvc</a>.</p>
+</div>
+<div id="ref-jenkinsfile-runner">
+<p>Jenkins. 2022a. <em>A Command Line Tool to Run Jenkinsfile as a Function</em>. <a href="https://github.com/jenkinsci/jenkinsfile-runner">https://github.com/jenkinsci/jenkinsfile-runner</a>.</p>
+</div>
+<div id="ref-jenkins">
+<p>Jenkins. 2022b. <em>Jenkins User Documentation</em>. <a href="https://www.jenkins.io/doc/">https://www.jenkins.io/doc/</a>.</p>
+</div>
+<div id="ref-jetbrains-idea">
+<p>JetBrains. 2022a. <em>IntelliJ IDEA</em>. <a href="https://www.jetbrains.com/idea/">https://www.jetbrains.com/idea/</a>.</p>
+</div>
+<div id="ref-pycharm">
+<p>JetBrains. 2022b. <em>PyCharm</em>. <a href="https://www.jetbrains.com/pycharm/">https://www.jetbrains.com/pycharm/</a>.</p>
+</div>
+<div id="ref-julia-languageserver">
+<p>Julia VS Code. 2022a. <em>An Implementation of the Microsoft Language Server Protocol for the Julia Language</em>. <a href="https://juliapackages.com/p/languageserver">https://juliapackages.com/p/languageserver</a>.</p>
+</div>
+<div id="ref-vs-code-julia">
+<p>Julia VS Code. 2022b. <em>Julia for Visual Studio Code</em>. <a href="https://www.julia-vscode.org">https://www.julia-vscode.org</a>.</p>
+</div>
+<div id="ref-poetry">
+<p>Kalnytskyi, I. 2022a. <em>Poetry Documentation</em>. <a href="https://python-poetry.org/docs">https://python-poetry.org/docs</a>.</p>
+</div>
+<div id="ref-sphinxcontrib-openapi">
+<p>Kalnytskyi, I. 2022b. <em>sphinxcontrib-openapi Is a Sphinx Extension to Generate APIs Docs from OpenAPI</em>. <a href="https://sphinxcontrib-openapi.readthedocs.io">https://sphinxcontrib-openapi.readthedocs.io</a>.</p>
+</div>
+<div id="ref-sphinxcontrib-redoc">
+<p>Kalnytskyi, I. 2022c. <em>The Sphinx Extension that Renders OpenAPI Specs Using ReDoc</em>. <a href="https://sphinxcontrib-redoc.readthedocs.io/en/stable">https://sphinxcontrib-redoc.readthedocs.io/en/stable</a>.</p>
+</div>
+<div id="ref-jl-docstrings">
+<p>Krämer, S. 2022. <em>Julia Autodoc</em>. <a href="https://bastikr.github.io/sphinx-julia/juliaautodoc.html\#julia-autodoc%5D">https://bastikr.github.io/sphinx-julia/juliaautodoc.html\#julia-autodoc]</a>.</p>
+</div>
+<div id="ref-r-languageserver">
+<p>Lai, R., and K. Ren. 2022. <em>An Implementation of the Language Server Protocol for R</em>. <a href="https://cran.r-project.org/web/packages/languageserver">https://cran.r-project.org/web/packages/languageserver</a>.</p>
+</div>
+<div id="ref-black">
+<p>Langa, and et al. 2022. <em>Black: The Uncompromising Code Formatter</em>. <a href="https://black.readthedocs.io/en/stable/">https://black.readthedocs.io/en/stable/</a>.</p>
+</div>
+<div id="ref-pylint">
+<p>Logilab and PyCQA and contributors. 2022. <em>Pylint is a Static Code Analyser for Python 2 or 3</em>. <a href="https://pylint.pycqa.org/en/latest/">https://pylint.pycqa.org/en/latest/</a>.</p>
+</div>
+<div id="ref-apispec">
+<p>Loria, S., and et al. 2022. <em>A Pluggable API Specification Generator</em>. <a href="https://apispec.readthedocs.io/en/latest">https://apispec.readthedocs.io/en/latest</a>.</p>
+</div>
+<div id="ref-asdf">
+<p>Manohar, A. 2022. <em>asdf Documentation</em>. <a href="https://asdf-vm.com/guide/getting-started.html">https://asdf-vm.com/guide/getting-started.html</a>.</p>
+</div>
+<div id="ref-pandas">
+<p>McKinney, W. 2017. <em>Python for Data Analysis</em>. 2nd ed. O’Reilly.</p>
+</div>
+<div id="ref-pyre">
+<p>Meta Platforms. 2022a. <em>A Performant Type-Checker for Python 3</em>. <a href="https://pyre-check.org">https://pyre-check.org</a>.</p>
+</div>
+<div id="ref-pylance">
+<p>Microsoft. 2022a. <em>A performant, Feature-Rich Language Server for Python in VS Code</em>. <a href="https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance">https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance</a>.</p>
+</div>
+<div id="ref-azureml">
+<p>Microsoft. 2022c. <em>Azure Machine Learning</em>. <a href="https://azure.microsoft.com/en-us/services/machine-learning/">https://azure.microsoft.com/en-us/services/machine-learning/</a>.</p>
+</div>
+<div id="ref-vs-code">
+<p>Microsoft. 2022d. <em>Code editing. Redefined.</em> <a href="https://code.visualstudio.com/">https://code.visualstudio.com/</a>.</p>
+</div>
+<div id="ref-lsp">
+<p>Microsoft. 2022f. <em>Language Server Protocol</em>. <a href="https://microsoft.github.io/language-server-protocol">https://microsoft.github.io/language-server-protocol</a>.</p>
+</div>
+<div id="ref-vscode-dev">
+<p>Microsoft. 2022j. <em>VS Code in the Web</em>. <a href="https://vscode.dev">https://vscode.dev</a>.</p>
+</div>
+<div id="ref-minio">
+<p>MinIO. 2022. <em>MinIO Documentation</em>. <a href="https://docs.min.io/docs">https://docs.min.io/docs</a>.</p>
+</div>
+<div id="ref-r-styler">
+<p>Müller, K., and L. Walthert. 2022a. <em>Non-Invasive Pretty Printing of R Code</em>. <a href="https://cran.r-project.org/web/packages/styler">https://cran.r-project.org/web/packages/styler</a>.</p>
+</div>
+<div id="ref-r-styler-cicd">
+<p>Müller, K., and L. Walthert. 2022a. <em>Non-Invasive Pretty Printing of R Code</em>. <a href="https://cran.r-project.org/web/packages/styler">https://cran.r-project.org/web/packages/styler</a>.</p> 2022b. <em>Third-Party Integrations</em>. <a href="https://styler.r-lib.org/articles/third-party-integrations.html">https://styler.r-lib.org/articles/third-party-integrations.html</a>.
+</div>
+<div id="ref-nbqa">
+<p>nbQA Team. 2022. <em>Run isort, pyupgrade, mypy, pylint, flake8, and More on Jupyter Notebooks</em>. <a href="https://github.com/nbQA-dev/nbQA">https://github.com/nbQA-dev/nbQA</a>.</p>
+</div>
+<div id="ref-act">
+<p>Nektos. 2022. <em>Run Your GitHub Actions Locally</em>. <a href="https://github.com/nektos/act">https://github.com/nektos/act</a>.</p>
+</div>
+<div id="ref-neovim">
+<p>Neovim. 2022. <em>Hyperextensible Vim-Based Text Editor</em>. <a href="https://neovim.io/">https://neovim.io/</a>.</p>
+</div>
+<div id="ref-neptune">
+<p>Neptune Labs. 2022. <em>Neptune Documentation</em>. <a href="https://docs.neptune.ai/">https://docs.neptune.ai/</a>.</p>
+</div>
+<div id="ref-papermill">
+<p>Nteract Team. 2022a. <em>Papermill Is a Tool for Parameterizing and Executing Jupyter Notebooks</em>. <a href="https://papermill.readthedocs.io">https://papermill.readthedocs.io</a>.</p>
+</div>
+<div id="ref-testbook">
+<p>Nteract Team. 2022b. <em>Testbook</em>. <a href="https://testbook.readthedocs.io/en/latest/">https://testbook.readthedocs.io/en/latest/</a>.</p>
+</div>
+<div id="ref-openrefine">
+<p>Openrefine. 2022. <em>A Free, Open Source, Powerful Tool for Working with Messy Data</em>. <a href="https://openrefine.org">https://openrefine.org</a>.</p>
+</div>
+<div id="ref-pachyderm">
+<p>Pachyderm. 2022. <em>Data-Centric Pipelines and Data Versioning</em>. <a href="https://docs.pachyderm.com/latest">https://docs.pachyderm.com/latest</a>.</p>
+</div>
+<div id="ref-python-language-server">
+<p>Palantir. 2022. <em>Python Language Server</em>. <a href="https://github.com/palantir/python-language-server">https://github.com/palantir/python-language-server</a>.</p>
+</div>
+<div id="ref-flask">
+<p>Pallets Team. 2022. <em>Flask Documentation</em>. <a href="https://flask.palletsprojects.com/en/latest">https://flask.palletsprojects.com/en/latest</a>.</p>
+</div>
+<div id="ref-dash">
+<p>Plotly. 2022a. <em>Analytical Web Apps for Python, R, Julia, and Jupyter. No JavaScript Required.</em> <a href="https://github.com/plotly/dash">https://github.com/plotly/dash</a>.</p>
+</div>
+<div id="ref-sem-ver">
+<p>Preston-Werner, T. 2022. <em>Semantic Versioning</em>. <a href="https://semver.org/">https://semver.org/</a>.</p>
+</div>
+<div id="ref-jupyter">
+<p>Project Jupyter. 2022. <em>Jupyter</em>. <a href="https://jupyter.org/">https://jupyter.org/</a>.</p>
+</div>
+<div id="ref-pyright">
+<p>Pyright. 2022. <em>Static Type Checker for Python</em>. <a href="https://github.com/microsoft/pyright">https://github.com/microsoft/pyright</a>.</p>
+</div>
+<div id="ref-setuptools">
+<p>Python Packaging Authority. 2022. <em>Building and Distributing Packages with Setuptools</em>. <a href="https://setuptools.pypa.io/en/latest/userguide/index.html">https://setuptools.pypa.io/en/latest/userguide/index.html</a>.</p>
+</div>
+<div id="ref-virtualenv">
+<p>Python Packaging Authority (PyPA). 2022. <em>Virtualenv Documentation</em>. <a href="https://virtualenv.pypa.io/en/latest/">https://virtualenv.pypa.io/en/latest/</a>.</p>
+</div>
+<div id="ref-pip">
+<p>Python Software Foundation. 2022a. <em>PyPI: The Python Package Index</em>. <a href="https://pypi.org/">https://pypi.org/</a>.</p>
+</div>
+<div id="ref-doctest">
+<p>Python Software Foundation. 2022b. <em>Test Interactive Python Examples</em>. <a href="https://docs.python.org/3/library/doctest.html">https://docs.python.org/3/library/doctest.html</a>.</p>
+</div>
+<div id="ref-unittest">
+<p>Python Software Foundation. 2022c. <em>unittest: Unit Testing Framework</em>. <a href="https://docs.python.org/3/library/unittest.html">https://docs.python.org/3/library/unittest.html</a>.</p>
+</div>
+<div id="ref-fastapi">
+<p>Ramírez, S. 2022. <em>FastAPI Framework, High Performance, Easy to Learn, Fast to Code, Ready for Production</em>. <a href="https://fastapi.tiangolo.com">https://fastapi.tiangolo.com</a>.</p>
+</div>
+<div id="ref-nbstripout">
+<p>Rathgeber, F. 2022. <em>Strip Output from Jupyter and IPython Notebooks</em>. <a href="https://github.com/kynan/nbstripout">https://github.com/kynan/nbstripout</a>.</p>
+</div>
+<div id="ref-readthedocs">
+<p>Read the Docs. 2022. <em>Read the Docs: Documentation Simplified</em>. <a href="https://docs.readthedocs.io">https://docs.readthedocs.io</a>.</p>
+</div>
+<div id="ref-vs-code-r">
+<p>REditorSupport. 2022. <em>R in Visual Studio Code</em>. <a href="https://marketplace.visualstudio.com/items?itemName=REditorSupport.r">https://marketplace.visualstudio.com/items?itemName=REditorSupport.r</a>.</p>
+</div>
+<div id="ref-pipenv">
+<p>Reitz, K., and Python Packaging Authority (PyPA). 2022. <em>Pipenv: Python Dev Workflow for Humans</em>. <a href="https://pipenv.pypa.io">https://pipenv.pypa.io</a>.</p>
+</div>
+<div id="ref-r-studio">
+<p>RStudio. 2022a. <em>Open Source and Enterprise-Ready Professional Software for Data Science</em>. <a href="https://www.rstudio.com">https://www.rstudio.com</a>.</p>
+</div>
+<div id="ref-r-studio-server">
+<p>RStudio. 2022b. <em>RStudio Server</em>. <a href="https://www.rstudio.com/products/rstudio/\#rstudio-server">https://www.rstudio.com/products/rstudio/\#rstudio-server</a>.</p>
+</div>
+<div id="ref-velocity">
+<p>Silverlake Software. 2022. <em>Velocity: The Documentation and Docset Viewer for Windows</em>. <a href="https://velocity.silverlakesoftware.com/">https://velocity.silverlakesoftware.com/</a>.</p>
+</div>
+<div id="ref-snowflake">
+<p>Snowflake. 2022. <em>Snowflake Documentation</em>. <a href="https://docs.snowflake.com">https://docs.snowflake.com</a>.</p>
+</div>
+<div id="ref-flake8">
+<p>Stapleton Cordasco, I. 2022. <em>Flake8: Your Tool for Style Guide Enforcement</em>. <a href="https://flake8.pycqa.org/en/latest/">https://flake8.pycqa.org/en/latest/</a>.</p>
+</div>
+<div id="ref-ge">
+<p>Superconductive. 2022. <em>Great Expectations</em>. <a href="https://docs.greatexpectations.io/docs">https://docs.greatexpectations.io/docs</a>.</p>
+</div>
+<div id="ref-tableau">
+<p>Tableau Software. 2022. <em>Tableau</em>. <a href="https://www.tableau.com/">https://www.tableau.com/</a>.</p>
+</div>
+<div id="ref-airflow">
+<p>The Apache Software Foundation. 2022a. <em>Airflow Documentation</em>. <a href="https://airflow.apache.org/docs/">https://airflow.apache.org/docs/</a>.</p>
+</div>
+<div id="ref-hadoop">
+<p>The Apache Software Foundation. 2022c. <em>Apache Hadoop</em>. <a href="https://hadoop.apache.org/">https://hadoop.apache.org/</a>.</p>
+</div>
+<div id="ref-hive">
+<p>The Apache Software Foundation. 2022d. <em>Apache Hive Documentation</em>. <a href="https://cwiki.apache.org/confluence/display/Hive">https://cwiki.apache.org/confluence/display/Hive</a>.</p>
+</div>
+<div id="ref-pig">
+<p>The Apache Software Foundation. 2022e. <em>Apache Pig Documentation</em>. <a href="https://pig.apache.org/docs/latest">https://pig.apache.org/docs/latest</a>.</p>
+</div>
+<div id="ref-spark">
+<p>The Apache Software Foundation. 2022f. <em>Apache Spark Documentation</em>. <a href="https://spark.apache.org/docs/latest">https://spark.apache.org/docs/latest</a>.</p>
+</div>
+<div id="ref-podman">
+<p>The Containers Organization. 2022. <em>podman</em>. <a href="https://podman.io">https://podman.io</a>.</p>
+</div>
+<div id="ref-delta-lake">
+<p>The Delta Lake Project Authors. 2022a. <em>Delta Lake Documentation</em>. <a href="https://docs.delta.io">https://docs.delta.io</a>.</p>
+</div>
+<div id="ref-zeal">
+<p>The Delta Lake Project Authors. 2022b. <em>Zeal Is an Offline Documentation Browser for Software Developers</em>. <a href="https://zealdocs.org">https://zealdocs.org</a>.</p>
+</div>
+<div id="ref-git-git">
+<p>The Git Development Team. 2022. <em>Git Source Code Mirror</em>. <a href="https://github.com/git/git">https://github.com/git/git</a>.</p>
+</div>
+<div id="ref-kubernetes">
+<p>The Kubernetes Authors. 2022a. <em>Kubernetes</em>. <a href="https://kubernetes.io/">https://kubernetes.io/</a>.</p>
+</div>
+<div id="ref-minikube">
+<p>The Kubernetes Authors. 2022c. <em>minikube</em>. <a href="https://minikube.sigs.k8s.io/docs">https://minikube.sigs.k8s.io/docs</a>.</p>
+</div>
+<div id="ref-mypy">
+<p>The mypy Project. 2014. <em>mypy: Optional Static Typing for Python</em>. <a href="http://mypy-lang.org/">http://mypy-lang.org/</a>.</p>
+</div>
+<div id="ref-trifacta">
+<p>Trifacta. 2022. <em>Profile, Prepare, and Pipeline Data for Analytics and Machine Learning</em>. <a href="https://www.trifacta.com">https://www.trifacta.com</a>.</p>
+</div>
+<div id="ref-packrat">
+<p>Ushey, K., J. McPherson, J. Cheng, A. Atkins, JJ. Allaire, and T. Allen. 2022. <em>Packrat: Reproducible Package Management for R</em>. <a href="https://rstudio.github.io/packrat/">https://rstudio.github.io/packrat/</a>.</p>
+</div>
+<div id="ref-doxygen">
+<p>van Heesch, D. 2022. <em>Doxygen</em>. <a href="https://www.doxygen.nl/index.html">https://www.doxygen.nl/index.html</a>.</p>
+</div>
+<div id="ref-wab">
+<p>Weights &amp; Biases. 2022. <em>Weights &amp; Biases Documentation</em>. <a href="https://docs.wandb.ai/">https://docs.wandb.ai/</a>.</p>
+</div>
+<div id="ref-r-style">
+<p>Wickham, H. 2022b. <em>The tidyverse Style Guide</em>. <a href="https://style.tidyverse.org/">https://style.tidyverse.org/</a>.</p>
+</div>
+<div id="ref-roxygen2">
+<p>Wickham, H., P. Danenberg, G. Csárdi, M. Eugster, and RStudio. 2022. <em>roxygen2: In-Line Documentation for R</em>.</p>
+</div>
+<div id="ref-dplyr">
+<p>Wickham, H., R. François, L.Henry, and K. Müller. 2022. <em>A Fast, Consistent Tool for Working with Data Frame Like Objects, Both in Memory and Out of Memory</em>. <a href="https://cloud.r-project.org/web/packages/dplyr">https://cloud.r-project.org/web/packages/dplyr</a>.</p>
+</div>
+<div id="ref-tidyr">
+<p>Wickham, H., M. Girlich, and RStudio. 2022. <em>tidyr: Tidy Messy Data</em>. <a href="https://cloud.r-project.org/web/packages/tidyr">https://cloud.r-project.org/web/packages/tidyr</a>.</p>
+</div>
+<div id="ref-testthat">
+<p>Wickham, H., RStudio, and R Core Team. 2022. <em>Unit Testing for R</em>. <a href="https://cloud.r-project.org/web/packages/testthat">https://cloud.r-project.org/web/packages/testthat</a>.</p>
+</div>
+<div id="ref-git2r">
+<p>Widgren, S., and et al. 2022. <em>git2r: Provides Access to Git Repositories</em>. <a href="https://cran.r-project.org/web/packages/git2r/index.html">https://cran.r-project.org/web/packages/git2r/index.html</a>.</p>
+</div>
+<div id="ref-knitr">
+<p>Xie, Y. 2015. <em>Dynamic Documents with R and knitr</em>. 2nd ed. CRC Press.</p>
+</div>
+<div id="ref-rmarkdown">
+<p>Xie, Y., J. J. Allaire, and G. Grolemund. 2022. <em>R Markdown: The Definitive Guide</em>. <a href="https://bookdown.org/yihui/rmarkdown/">https://bookdown.org/yihui/rmarkdown/</a>.</p>
+</div>
+<div id="ref-pyenv">
+<p>Yamashita, Y., S. Stephenson, and et al. 2022. <em>pyenv: Simple Python Version Management</em>. <a href="https://github.com/pyenv/pyenv">https://github.com/pyenv/pyenv</a>.</p>
+</div>
+<div id="ref-mlflow">
+<p>Zaharia, M., and The Linux Foundation. 2022. <em>MLflow Documentation</em>. <a href="https://www.mlflow.org/docs/latest/index.html">https://www.mlflow.org/docs/latest/index.html</a>.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr/>
+<ol start="25">
+<li id="fn25"><p>GitOps is an
+application of DevOps practices such as version control, collaboration, compliance, and CI/CD, and applies them to
+automate infrastructure management <span class="citation">(Gitlab <a href="#ref-git-ops" role="doc-biblioref">2022</a><a href="#ref-git-ops" role="doc-biblioref">b</a>)</span>.<a href="development-tools.html#fnref25" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+                
+</body>
+</html>

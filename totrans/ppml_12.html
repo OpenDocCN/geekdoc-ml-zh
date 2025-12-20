@@ -1,0 +1,968 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Chapter 6 Writing Machine Learning Code</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Chapter 6 Writing Machine Learning Code</h1>
+<blockquote>原文：<a href="https://ppml.dev/writing-code.html">https://ppml.dev/writing-code.html</a></blockquote>
+<div id="writing-code" class="section level1 hasAnchor" number="6">
+
+<p>Programming is, in many ways, a conversation with a computer, but it is also conversation with other developers
+<span class="citation">(Fowler <a href="#ref-refactoring" role="doc-biblioref">2018</a>)</span>. As vague as it sounds, we should strive to write code that is simple to read and whose meaning is
+obvious <span class="citation">(Ousterhout <a href="#ref-philo" role="doc-biblioref">2018</a>)</span>. Code is read much more often than it is written: most of the cost of a piece of software is in its
+maintenance, which is typically performed by people other than those who first wrote the code.</p>
+<p>Achieving clarity involves effort on several fronts. Different trade-offs between clarity, consistency, development
+speed and the existence of useful libraries may motivate the use of particular programming languages for different
+modules (Section <a href="writing-code.html#programming-language">6.1</a>). Things should be named appropriately (Section <a href="writing-code.html#naming">6.2</a>), code should
+be formatted and laid out consistently (Section <a href="writing-code.html#coding-standards">6.3</a>), functions and modules should be organised
+tidily in files and directories (Section <a href="writing-code.html#filesystem-structure">6.4</a>).</p>
+<p>Finally, having multiple people go through the code and <em>review</em> it (Section <a href="writing-code.html#code-review">6.6</a>) helps in identifying
+how to improve it. We can then change it gradually by <em>refactoring</em> it (Section <a href="writing-code.html#refactoring">6.7</a>), which is the safest
+way to make sure we do not introduce any new bugs. Both activities require an efficient use of source <em>version control</em>
+(Section <a href="writing-code.html#versioning">6.5</a>), which will also be key for deploying (Chapter <a href="deploying-code.html#deploying-code">7</a>), documenting (Chapter
+<a href="documenting-code.html#documenting-code">8</a>) and testing (Chapter <a href="troubleshooting-code.html#troubleshooting-code">9</a>) our machine learning pipeline. As an example,
+we will refactor a sample of code used for teaching in academia (Section <a href="writing-code.html#reworking">6.8</a>).</p>
+<div id="programming-language" class="section level2 hasAnchor" number="6.1">
+<h2><span class="header-section-number">6.1</span> Choosing Languages and Libraries<a href="writing-code.html#programming-language" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>The choice of what programming languages to use to write machine learning software is mainly determined by their
+performance, their observability, the availability of libraries whose functionality we can use and ease of programming.</p>
+<p>The performance of a programming language depends mainly on whether it is <em>compiled</em> (like C, and Rust) or
+<em>interpreted</em> (like R and Python). Compilation takes a program and generates machine instructions that are stored in
+binary executable files or libraries, which can then be run repeatedly. Compiled code is generally high-performance
+because it does not require further processing when run: all the work of finding the most efficient sequence of machine
+instructions is done ahead of runtime. This includes deciding what instructions are appropriate to use for taking
+advantage of the CPUs, GPUs and TPUs on the system the program will run on. In contrast, interpreted languages execute a
+program by translating it into machine instruction during runtime. Interpreted code, therefore, does not necessarily
+exhibit high performance but is typically higher level (in the sense that it is more abstracted from hardware specifics,
+such as managing memory) and is easier to program because we can work with it interactively in REPLs.<a href="#fn14" class="footnote-ref" id="fnref14"><sup>14</sup></a> In practice, programming languages used for machine learning exist on a
+spectrum between these two extremes. Both R and Python, despite being interpreted languages, have packages that are just
+thin wrappers around high-performance libraries like BLAS, LAPACK, TensorFlow or Torch that are written in compiled
+code. Depending on what packages we use in our machine learning code, we may achieve performance comparable to that of
+compiled code without sacrificing ease of programming for those parts of our code that are not computationally
+intensive. Julia, on the other hand, uses <em>just-in-time compilation</em> to compile and optimise code just before each
+module or function is called at runtime. As a result, the time it takes to start executing Julia code is fairly slow but
+has little overhead once running.</p>
+<p>
+Compiled and interpreted languages are very different in terms of observability as well. We can observe the behaviour of
+compiled code easily by profiling it (recording relevant metrics at regular intervals) or by tracing it (recording the
+program and the compute system status when particular events are recorded) at the system level because it runs exactly
+the same sequence of instructions every time it is executed. On the other hand, interpreted code is mapped to machine
+instructions dynamically by the interpreter as the software is run. Mapping performance to specific blocks of code is
+more difficult unless the interpreter can expose its internal state to a profiler while running the program. As a
+result, interpreted code is often studied by simply adding print statements and timestamps. A more rigorous alternative
+is to <em>instrument</em> the code itself, that is, to ask the interpreter to record its state at predetermined intervals or
+events. However, most types of instrumentation dramatically increase execution time and are unwieldy to use even for
+debugging. This is well known to be the case for R’s <code>Rprof()</code> and <code>Rprofmem()</code>, for instance.
+</p>
+<p>In terms of ease of programming, all compiled languages in common use are <em>low-level languages</em>: the code we write in
+them is not abstracted away from the compute system it will run on. Manual memory management, dependency management,
+heavy focus on the implementation details of data structures (Chapter <a href="types-structures.html#types-structures">3</a>), structuring code to take
+advantage of specific hardware capabilities (Chapter <a href="hardware.html#hardware">2</a>) are everyday concerns when working with languages
+like C or . In contrast, interpreted languages in common use are <em>high-level languages</em>. They allow us to write code
+that is in many respects like pseudocode and to concentrate to a greater extent on the models and the algorithms we are
+implementing. As a result, they make it easier to keep track of the overall design and of the structure of the machine
+learning pipeline. High-level languages such as R, Python and Julia also come with package repositories and dependency
+management <span class="citation">(CRAN Team <a href="#ref-cran" role="doc-biblioref">2022</a>; Python Software Foundation <a href="#ref-pip" role="doc-biblioref">2022</a><a href="#ref-pip" role="doc-biblioref">a</a>; JuliaLang <a href="#ref-juliapkg" role="doc-biblioref">2022</a>)</span>. Once more, this suggests that the best trade-off is to use low-level, compiled
+languages for the few parts of the machine learning pipeline that are performance-critical and to use high-level
+languages for everything else. The former will include model training and inference; the latter may include data
+cleaning, visualisation and performance monitoring. Orchestrating the different parts of the pipeline may or may not be
+performance-critical, depending on its scale and complexity.</p>
+<p>Finally, the availability of libraries that we can build on is important as well. Ideally, we want to focus our efforts
+on implementing, optimising and running our machine learning systems and pipelines instead of reimplementing
+functionality that is already available elsewhere. And even if we were fine with reinventing the wheel, we are unlikely
+to match the design quality and performance optimisations of most popular software libraries. There is a significant
+overlap in the machine learning models available in various languages, but some have better implementations than others
+in particular cases. Python is probably the best choice for neural networks, for probabilistic programming and for
+applications in computer vision and natural language processing. R has the widest selection of models from classical and
+modern statistics, including the reference implementation of popular ones such as mixed-effects models and the elastic
+net penalised regression. Behind the scenes, both languages (and Julia as well) use the same standard numerical
+libraries so they often have similar levels of performance.</p>
+<p>Last but not least, consider again the discussion on the modular nature of machine learning software in Section
+<a href="design-code.html#processing-pipeline">5.3</a>. When modules in our software have well-defined interfaces that specify what their inputs and
+outputs are, and both inputs and outputs are serialised using standard formats, we can implement them in different
+languages. Model training and inference modules (Sections <a href="design-code.html#model-pipeline">5.3.4</a> and <a href="design-code.html#production-pipeline">5.3.5</a>) are more
+computationally intensive and, therefore, should be implemented in compiled languages like C or . Modules that do
+not require as many resources like user interfaces, dashboards (Section <a href="design-code.html#monitoring-pipeline">5.3.6</a>) and often data
+ingestion (Section <a href="design-code.html#data-pipeline">5.3.3</a>) may be implemented in interpreted languages like R or Python. Orchestration,
+model deployment and serving (Section <a href="design-code.html#production-pipeline">5.3.5</a>), logging and monitoring (Section
+<a href="design-code.html#monitoring-pipeline">5.3.6</a>) are usually provided by third-party software; any glue code that complements them may be in
+a completely unrelated systems or scripting language. The isolation between the modules, and between the modules and the
+underlying compute systems, makes the choice of the language used internally in each module irrelevant for all the
+others. However, some degree of homogeneity in programming languages and module structures is desirable to make it
+easier for different people to work on the code (Section <a href="design-code.html#code-debt">5.2.4</a>).
+</p>
+</div>
+<div id="naming" class="section level2 hasAnchor" number="6.2">
+<h2><span class="header-section-number">6.2</span> Naming Things<a href="writing-code.html#naming" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>Carefully naming variables, functions, models and modules is essential to convey their meaning to other people reading
+the code <span class="citation">(Ousterhout <a href="#ref-philo" role="doc-biblioref">2018</a>; Thomas and Hunt <a href="#ref-pragpro" role="doc-biblioref">2019</a>)</span>. But who are those people in the case of machine learning software? They will be a
+combination of <em>final users</em>, <em>developers</em>, <em>machine learning experts</em> and <em>domain experts</em>. Each group will have a
+different view of what names are meaningful to them. Similarly, we will argue in Chapter <a href="documenting-code.html#documenting-code">8</a> that we
+should complement software with documentation written from different perspectives to make sure that all the people
+working on it can understand it well.</p>
+<p>Names that are most useful to users and domain experts describe what a function is supposed to do, what a variable
+contains or how it is supposed to be used, which model is implemented by a module, and so on. They can do that by
+leveraging the naming conventions of the domain the software is used in. Such names do not describe how a function works
+internally, what is the type of a variable or other implementation details: most users and domain experts will not be
+developers themselves, so this type of information will not be useful to them. They will mainly be interested in using
+functions, modules, etc. for their own purposes without having to understand the implementation of every piece of code
+they call. Doing so would increase the cognitive load involved in working with any complex piece of software beyond what
+is reasonable. For the same reason, we suggested using names that come from the domain in pseudocode (Section
+<a href="algorithms.html#pseudocode">4.1</a>).</p>
+<p>
+Names that describe the implementation details of what they refer to can be useful to other developers working on the
+same module. Similarly, short names that map directly to the mathematical notation used in the scientific literature
+will be most useful to machine learning experts. Both types of names assume familiarity with the mathematical and
+implementation details of the relevant models and algorithms, and assume that whoever is reading the code will refer to
+the literature to understand what the code does and why it does it that way. Such names are usually quite short, making
+for terse code. Users and domain experts are unlikely to be familiar with the notation and they will find such code
+impossible to understand without a significant amount of effort and the help of extensive comments (Section
+<a href="documenting-code.html#comments">8.1</a>).  On the other hand, people who are familiar with the mathematical notation can grasp
+the code much faster if the naming convention is the same as in the literature. This is advantageous when writing
+research code that will only be shared among collaborators working on similar topics. However, using mathematical
+notation can also be a source of misunderstandings because the same concepts are expressed with different notation and,
+vice versa, the same notation is used to represent very different concepts in different subfields of machine learning.
+</p>
+<p>Therefore, in practice it is impossible to establish a single suitable naming convention across a machine learning
+pipeline: the code it contains is too varied, as will be the people interacting with it. (This is true more in general
+for any kind of coding convention, as we will see in the next section.) However, the general guidelines from Kernigham
+and Pike <span class="citation">(Kernigham and Pike <a href="#ref-kernigham" role="doc-biblioref">1999</a>)</span> apply even across naming conventions. <em>Use descriptive names for globals, short names for
+locals</em>: it may be fine to adhere to mathematical notation inside modules implementing machine learning models and
+algorithms because only developers and machine learning experts are likely to touch such code. Both the module scope and
+the comments it contains will narrow down the context (Section <a href="documenting-code.html#comments">8.1</a>) and make short names as understandable
+as longer names would be (but faster to read). Variables and functions that can be accessed from outside the module, on
+the other hand, are better named following their domain meaning because they are likely to be used by final users and
+domain experts. Public interface documentation (Section <a href="documenting-code.html#apidocs">8.2</a>) can help in fleshing out their relationships
+with models and data as well as expand on their meaning.  <em>Be consistent:</em> code of the same
+type should follow the same naming convention across all modules in the machine learning pipeline, practising either the
+same ubiquitous language used in the comments, interface and architecture documentation (Section <a href="documenting-code.html#designdocs">8.3</a>) or
+the same mathematical notation established in the technical documentations (Section <a href="documenting-code.html#domaindocs">8.4</a>).
+ <em>Be accurate:</em> avoid vague names and names that can be misunderstood to mean different
+things to people from different backgrounds.<a href="#fn15" class="footnote-ref" id="fnref15"><sup>15</sup></a></p>
+</div>
+<div id="coding-standards" class="section level2 hasAnchor" number="6.3">
+<h2><span class="header-section-number">6.3</span> Coding Styles and Coding Standards<a href="writing-code.html#coding-standards" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+Code clarity is also a function of its readability. At a low level, we can improve readability by adopting <em>code styles</em>
+that standardise how code is formatted (indentation, use of braces, name casing, line length, etc.) and that give it a
+uniform look across the whole machine learning software. The idea is that consistently using the same style makes code
+easier to read and to understand both by the person who wrote it and by others. Therefore, adhering to a coding style
+reduces the risk of mistakes and makes it easier to collaborate within and across teams of developers. All programming
+languages in common use in machine learning software including Python <span class="citation">(van Rossum, Warsaw, and Coghlan <a href="#ref-pep8" role="doc-biblioref">2001</a>; Google <a href="#ref-python-style" role="doc-biblioref">2022</a><a href="#ref-python-style" role="doc-biblioref">d</a>)</span>, R <span class="citation">(Wickham <a href="#ref-r-style" role="doc-biblioref">2022</a><a href="#ref-r-style" role="doc-biblioref">b</a>)</span> and Julia
+<span class="citation">(Bezanson et al. <a href="#ref-julia-style" role="doc-biblioref">2022</a>)</span> have industry-standard code styles which apply well in this context. However, a machine learning pipeline
+will comprise code written in different programming languages (Section <a href="writing-code.html#programming-language">6.1</a>): we may want to
+consider making small changes to these styles to make them more similar to each other and to reduce friction when
+working with more than one language at the same time.
+</p>
+<p>
+
+
+At a higher level, we may want to adopt <em>code standards</em> that limit what programming constructs are considered safe to
+use and that lay out best practices to structure code at a local level (say, blocks within a function, or functions
+within a module). Such standards are language-agnostic and complement rather than replace code styles: for instance,
+they may describe how to handle exceptions, how inputs and outputs should be structured at the function and module
+level, how to track software dependencies, how code should be instrumented for logging and observability, and what code
+patterns to avoid for performance reasons. Lopes <span class="citation">(Lopes <a href="#ref-programming-styles" role="doc-biblioref">2020</a>)</span> shows how much of a difference these choices can
+make in practice. At an even higher level, code standards may also address software security concerns. Unlike code
+styles, there are no universal code standards: their breadth makes them necessarily application- or domain-specific.
+Combining both with a modular pipeline design (Section <a href="design-code.html#processing-pipeline">5.3</a>) allows us to make assumptions about
+the code’s behaviour, which in turn makes it easier to read, to deploy, to maintain and to integrate with other code by
+reducing the need for refactoring (Section <a href="writing-code.html#refactoring">6.7</a>) and by making code easier to test (Section
+<a href="troubleshooting-code.html#testing">9.4</a>). They can be adopted systematically by having automated tools to check for compliance and by enforcing
+them during code review (Section <a href="writing-code.html#code-review">6.6</a>).
+
+
+</p>
+<p>
+
+The adoption of code styles and standards is, at the time of this writing, one of the low-hanging fruits to pick to
+improve machine learning software across the board. The prevalence of Jupyter notebooks <span class="citation">(Project Jupyter <a href="#ref-jupyter" role="doc-biblioref">2022</a>)</span> as a development
+platform encourages one-off code that does not need to follow any particular convention because it does not interact
+with other software and interacts with users in very limited ways. As a result, code in Jupyter notebooks is not well
+organised into functions (which are 1.5 times more coupled compared to normal software, even though they are
+individually simpler), its dependencies are not well managed (twice as many undeclared, indirect, or unused imports),
+and, in general, code has more quality issues (1.3 times more) <span class="citation">(Grotov et al. <a href="#ref-jupyter-style" role="doc-biblioref">2022</a>)</span>. Even disregarding Jupyter notebooks, all
+systematic analyses of open-source machine learning code have found significant and widespread issues. After controlling
+for age and popularity, machine learning software has similar complexity and open tickets to other types of software.
+However, individual projects seem to have fewer contributors and more forks, suggesting code may not be reviewed as
+thoroughly <span class="citation">(Simmons et al. <a href="#ref-simmons" role="doc-biblioref">2020</a>)</span>. Reproducibility and maintainability are problematic because software dependencies are often not
+properly tracked <span class="citation">(van Oort et al. <a href="#ref-oort" role="doc-biblioref">2021</a>)</span>: either they are not listed, they are vendored (Section <a href="design-code.html#code-debt">5.2.4</a>), their versions are
+not pinned, or they are unresolvable because they are detected automatically and never vetted. Pylint’s inability to
+reliably check local imports and imports in packages with C/backends (that is, all foundational packages including
+TensorFlow, NumPy and PyTorch) makes this worse for Python projects. Furthermore, users are often unaware of the
+documented issues and pitfalls of the machine learning software they use <span class="citation">(Zhang, Cruz, and van Deursen <a href="#ref-zhang" role="doc-biblioref">2022</a>)</span>, in part because they are only
+reported in independent blog posts if they are library-specific.
+
+</p>
+<p>
+These general issues are made worse by several smells that are specific to machine learning code and that arise from how
+such code is developed. Many of the sources we have referenced <span class="citation">(Sculley et al. <a href="#ref-hidden-debt" role="doc-biblioref">2015</a>; Simmons et al. <a href="#ref-simmons" role="doc-biblioref">2020</a>; van Oort et al. <a href="#ref-oort" role="doc-biblioref">2021</a>; Zhang, Cruz, and van Deursen <a href="#ref-zhang" role="doc-biblioref">2022</a>; Tang et al. <a href="#ref-tang" role="doc-biblioref">2021</a>)</span> point out
+issues with module interfaces and functions having too many arguments (because they map to the mathematical notation of
+the underlying models too closely); duplicate code (because of experimentation by cut-and-paste and no pruning of dead
+code); functions being too long, with too many variables and too many branches (because they perform multiple tasks and
+were never refactored into smaller functions); and lack of configuration management (such as the experiment tracking and
+infrastructure-as-code approaches we argued for in Chapter <a href="design-code.html#design-code">5</a>). Some of these issues could be tolerated
+as inherent to machine learning code: we argued earlier (Section <a href="writing-code.html#naming">6.2</a>) that naming local variables after
+mathematical notation is fine even if names are not descriptive. However, most should not. To be fair, we acknowledge
+that many of these issues cannot be addressed on a purely technical level because they arise from wrong incentives. In
+academia, code is treated as a one-off throwaway <span class="citation">(Nature <a href="#ref-repro1" role="doc-biblioref">2016</a>; Tatman, VanderPlas, and Dane <a href="#ref-repro2" role="doc-biblioref">2018</a>)</span> because job performance is measured by the number of
+publications (“publish or perish!”), not by the quality of the code itself. The resulting software is typically neither
+maintained nor deployed to a production system. In the industry, many professionals working on machine learning
+pipelines have little or no background in software engineering <span class="citation">(Sculley et al. <a href="#ref-hidden-debt" role="doc-biblioref">2015</a>)</span> and companies have come to accept
+re-implementing machine learning code from scratch to use it in production as inevitable. A culture change is
+needed for the adoption of best practices such as code styles and code standards (as well as modular pipeline design) to
+become the norm.</p>
+</div>
+<div id="filesystem-structure" class="section level2 hasAnchor" number="6.4">
+<h2><span class="header-section-number">6.4</span> Filesystem Structure<a href="writing-code.html#filesystem-structure" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>Keeping code organised into files and directories contributes to clarity by making it easier to find any
+specific piece of code. This is true for machine learning pipelines as much as for other types of software: functions
+performing related tasks should be stored together, and functions performing orthogonal tasks should be stored in
+separate parts of the filesystem. (The Single Responsibility Principle <span class="citation">(Thomas and Hunt <a href="#ref-pragpro" role="doc-biblioref">2019</a>)</span> applied to file hierarchies.) Each
+module should be stored in a separate directory, with functionality split coherently into files. Methods and variables
+exported from a module should be stored in a separate set of files than internal code, to make it easier for users to
+inspect them and to link them with interface documentation (Section <a href="documenting-code.html#apidocs">8.2</a>). Unit tests for the module (Section
+<a href="troubleshooting-code.html#local-vs-global">9.4.4</a>) should be placed in a separate subdirectory but versioned alongside the code they test.</p>
+<p>
+What is the best filesystem structure to use for a module in a machine learning pipeline? There is no single, universal
+standard: both language-agnostic <span class="citation">(Kriasoft <a href="#ref-kriasoft" role="doc-biblioref">2016</a>)</span> and language-specific proposals for Python <span class="citation">(Greenfeld <a href="#ref-cookiecutter" role="doc-biblioref">2022</a>; Alam et al. <a href="#ref-kedro" role="doc-biblioref">2022</a>)</span>, R
+<span class="citation">(Blagotic et al. <a href="#ref-projecttemplate" role="doc-biblioref">2021</a>)</span> and Go <span class="citation">(Quest <a href="#ref-goproject" role="doc-biblioref">2022</a>)</span> are available and have been used in real-world software. They overlap
+substantially, broadly agreeing on the following set of subdirectories and files:</p>
+<ul>
+<li>An <code>src</code> directory for the source code of the module, possibly subdivided into further subdirectories.</li>
+<li>A <code>build</code> or <code>dist</code> directory to store the artefacts created during the build process, like object files, machine
+learning models and the files used for testing, deployment and CI/CD.
+
+
+</li>
+<li>A directory for the specification files for any containers used in CI/CD, say, <code>docker</code> for Dockerfiles <span class="citation">(Docker <a href="#ref-docker" role="doc-biblioref">2022</a><a href="#ref-docker" role="doc-biblioref">a</a>)</span>.
+Further configuration files controlling how containers are deployed and managed, such as Kubernetes <span class="citation">(The Kubernetes Authors <a href="#ref-kubernetes" role="doc-biblioref">2022</a><a href="#ref-kubernetes" role="doc-biblioref">a</a>)</span>
+YAML configurations, may be placed in the same directory for convenience.</li>
+<li>A <code>config</code> directory containing the configuration files required to build and develop the module, including a
+complete list of versioned software dependencies (say, <code>requirements.txt</code> for Python modules) and IDE settings.</li>
+<li>A <code>test</code> directory for the unit tests and their reference outputs.  
+</li>
+<li>A <code>docs</code> directory containing the module documentation, either in source or final form. Interface documentation can be
+stored alongside the code it refers to as discussed in Section <a href="documenting-code.html#apidocs">8.2</a> as an alternative.</li>
+<li>A <code>vendor</code> directory to store third-party code and software tools to build the module.</li>
+<li>A <code>tools</code> directory for the executable files built from <code>src</code>.</li>
+<li>An <code>examples</code> directory to store sample usage patterns and other documents describing algorithms and domain knowledge
+such as those discussed in Sections <a href="documenting-code.html#domaindocs">8.4</a> and <a href="documenting-code.html#usecases">8.5</a>. Often in the form of Jupyter notebooks.
+
+</li>
+<li>A <code>.secrets</code> directory for credentials, certificates, authentication tokens and other privileged information that
+should be stored in encrypted form (for instance, using <code>git-crypt</code> <span class="citation">(Ayer <a href="#ref-git-crypt" role="doc-biblioref">2022</a>)</span>).</li>
+<li>The configuration file of the build system that produces the artefacts (stored in the <code>build</code> directory) and that runs
+the tests (in <code>test</code>). For instance, a <code>.Makefile</code>.</li>
+<li>A <code>README</code> file with short description of the module.</li>
+<li>A <code>LICENSE</code> file containing the copyright statement and the licence text if the module can be distributed as a
+self-contained, standalone piece of software.
+</li>
+</ul>
+<p>
+It is also interesting to consider how these directories and files should be stored in a source version control system
+(Section <a href="writing-code.html#versioning">6.5</a>). On the one hand, we can follow Google’s “monorepo” approach <span class="citation">(Potvin and Levenberg <a href="#ref-monorepo" role="doc-biblioref">2016</a>)</span> and store all of
+them (the code for the whole pipeline) in a single repository. This choice provides unified versioning with a single
+source of truth, simplifies dependency management, facilitates code reuse and large-scale refactoring spanning multiple
+modules, and increases code visibility by making it easier to collaborate between different teams of developers.
+Integration, system and acceptance tests (Section <a href="troubleshooting-code.html#local-vs-global">9.4.4</a>) become more straightforward to implement and
+to run as well. However, monorepos require more hardware resources and high-quality tooling to navigate code, to modify
+it and to keep it organised because of the size of the repository.
+
+
+</p>
+<p>On the other hand, we can store each module in a separate repository. Cross-module code and configurations are stored in
+separate “parent” repositories implementing the orchestration and the deployment of the “child” repositories for the
+modules using tools such as git-repo <span class="citation">(Google <a href="#ref-git-repo" role="doc-biblioref">2022</a><a href="#ref-git-repo" role="doc-biblioref">e</a>)</span> or meta git <span class="citation">(Walters and Lee Scott <a href="#ref-meta-git" role="doc-biblioref">2021</a>)</span>. In other words, these “parent” repositories
+clone, set up and manage the “child” repositories (say, using <code>docker-compose</code>) to give the illusion of working with a
+monorepo. Individual “child” repositories will be smaller, requiring less hardware resources, and working on individual
+modules will not require any particular tooling. However, tracking the dependencies between the modules and keeping the
+dependencies on third-party software consistent across the whole pipeline cannot be automated as easily as in a
+monorepo: this is an important source of technical debt (Section <a href="design-code.html#technical-debt">5.2</a>) that we should address manually
+in the “parent” repositories. Navigating the codebase of the whole pipeline requires additional tooling to hide the
+boundaries between the repositories and to give the appearance of a unified repository. Any task spanning multiple
+modules is no longer atomic: moving code between modules, splitting or merging modules, or changing the interface of a
+module along with all the places where that interface is used in other modules can no longer be performed as a single
+commit in a single repository.  Similarly, we are now required to create and maintain “parent” repositories
+to set up the environment to run integration and system tests. As with many other design choices, there is no optimal
+solution, just choices with different trade-offs: which one is best for a particular pipeline will depend on how large
+it is, on how many modules it contains, and on how models are trained and served.
+
+
+</p>
+</div>
+<div id="versioning" class="section level2 hasAnchor" number="6.5">
+<h2><span class="header-section-number">6.5</span> Effective Versioning<a href="writing-code.html#versioning" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+
+Storing code in a version control system (“versioning” for short) has become a standard practice in software engineering
+<span class="citation">(Duvall, Matyas, and Glover <a href="#ref-cicd" role="doc-biblioref">2007</a>; Fowler <a href="#ref-refactoring" role="doc-biblioref">2018</a>)</span>, and it benefits machine learning pipelines as much as traditional software. We can track the
+evolution of code over time, navigating its history and reverting it back to a functioning state if it breaks. We can
+also track the data, the models and the pipeline configurations together with the code as discussed in Section
+<a href="design-code.html#architecture-debt">5.2.3</a>. Multiple developers can work on the code at the same time, merge their changes, resolve any
+conflicts that may arise with the help of dedicated tools and produce releases tagged with a semantic versioning scheme
+<span class="citation">(Preston-Werner <a href="#ref-sem-ver" role="doc-biblioref">2022</a>)</span>. Versioning also ensures that all changes to the code are tracked (for code integrity and developer
+accountability) and applied by appending them to a read-only ledger of commits (to obtain immutable releases and
+snapshots). Therefore, versioning provides the “single source of truth” of our code that enables the automated workflows
+of MLOps (Section <a href="design-code.html#processing-pipeline">5.3</a>), continuous deployment (Chapter <a href="deploying-code.html#deploying-code">7</a>), software testing
+(Section <a href="troubleshooting-code.html#testing">9.4</a>) and refactoring (Section <a href="writing-code.html#refactoring">6.7</a>).
+
+
+</p>
+<p>
+How can we use versioning to the best effect when working on a machine learning pipeline? Two practices from modern
+software engineering are especially relevant. Firstly, <em>keeping the gap between development and production code as small
+as possible</em> (often called “dev-prod parity” <span class="citation">(Wiggins <a href="#ref-12factor" role="doc-biblioref">2017</a>)</span>) to use CI/CD development workflows to best advantage
+(Section <a href="design-code.html#processing-pipeline">5.3</a>). Introducing changes in <em>small, self-contained sets of commits</em> makes them easy to
+review (Section <a href="writing-code.html#code-review">6.6</a>), easy to test for continuous integration (because only a fraction of all tests will
+be relevant) and makes it possible to merge them into the mainline branch very frequently (say, daily). As a result,
+changes to the code are immediately visible to all developers allowing them to collaborate effectively. Dividing code
+into modules stored in separate directories and storing functions implementing different functionality in separate files
+(Section <a href="writing-code.html#filesystem-structure">6.4</a>) can drastically reduce the likelihood of conflicts: any two developers working on
+different features are unlikely to modify the same files. However, it cannot completely prevent higher-level problems
+such as correction cascades (Sections <a href="design-code.html#model-debt">5.2.2</a> and <a href="troubleshooting-code.html#troubleshooting-heterogeneous-data">9.1.2</a>) that may arise as
+the behaviour of various parts of the pipeline change. The best way to both reduce conflicts and detect such problems
+early is to <em>only use short-lived branches</em> that are immediately merged into the mainline branch from which the
+production releases are cut. Incomplete changes should be hidden behind <em>feature flags</em> that prevent new code from
+running by default and that can be <em>toggled</em> easily using environment variables. In other words:
+</p>
+<ol style="list-style-type: decimal">
+<li>Place the existing code we would like to change behind a feature flag that controls whether it is run or not,
+switched on to keep the code running.</li>
+<li>Introduce the new code behind the same flag, configuring it to run when the flag is switched off.</li>
+<li>Test the machine learning software with existing unit, integration and system tests with the flag switched off,
+checking whether there are any regressions and whether the new code is an improvement over the existing code.</li>
+<li>If the new code is suitable, remove the existing code and the feature flag. There are tools that do that
+automatically <span class="citation">(Uber <a href="#ref-piranha" role="doc-biblioref">2022</a>)</span> when flags become stale.</li>
+</ol>
+<p>
+
+
+This practice is known as “trunk-based development” <span class="citation">(Hammant <a href="#ref-trunk-based" role="doc-biblioref">2020</a>)</span> (“trunk” being a traditional name for the mainline
+branch, along with “master”). In the case of machine learning software, we should extend this approach to data and
+models as well. Versioning both data and models together with the code is crucial to reduce technical debt (Section
+<a href="design-code.html#data-as-code">5.1</a>) by allowing experiment tracking and reproducible model training. It also makes it possible to
+construct property-based tests in non-trivial settings by allowing us to match models, their inputs and their outputs
+(Section <a href="troubleshooting-code.html#testing-what">9.4.2</a>). Troubleshooting issues with the pipeline and reverting it to a known good release on
+botched updates (Section <a href="deploying-code.html#rollback">7.6</a>) also becomes possible, for the same reasons.
+
+</p>
+<p>
+Secondly, it is important to <em>write commit messages that are informative and that follow established conventions</em>: the
+Linux Kernel <span class="citation">(Linux Kernel Organization <a href="#ref-kernel-repo" role="doc-biblioref">2022</a>)</span> and Git <span class="citation">(The Git Development Team <a href="#ref-git-git" role="doc-biblioref">2022</a>)</span> are great examples of how to do this well. A commit message should
+provide enough context to the changes it describes to understand <em>what</em> changes were made, <em>why</em> they were made and
+<em>why</em> (not how) they were made in that particular way <span class="citation">(Tian et al. <a href="#ref-tian" role="doc-biblioref">2022</a>)</span>. Nontrivial code changes usually span multiple files, and
+often there is no single place where it makes sense to place a comment explaining their rationale. Duplicating that
+comment in all the places we modified increases the likelihood of stale comments (Section <a href="documenting-code.html#comments">8.1</a>) because we
+must remember to update all the copies of that comment at once every time we revisit the code we changed. The natural
+place to put such information is in the commit message since the commit references all changed files <span class="citation">(Ousterhout <a href="#ref-philo" role="doc-biblioref">2018</a>)</span>. In any
+long-running codebase, commit messages might be the only source of information left for future developers to understand
+changes to the code after the developers who originally made them have left. If practising trunk-based development, we
+can squash together the commits in our short-lived development branches and only write meaningful commit messages as we
+merge code into the mainline branch.  Furthermore, we should write a short title
+summarising the change (say, 50–60 characters) followed by a more thorough description. Navigating the history of the
+code will be much easier because we can now skim through the commit titles and read the detailed commit messages only
+for those commits that are relevant to us. If we use modern code review practices (Section <a href="writing-code.html#code-review">6.6</a>), we may
+also be able to read the comments of the developers who reviewed the commit: they are linked or included in the commit
+message by all current version control systems when the code is merged. Finally, we may want to include structured
+information: sign-off lines from the developers who performed code review, labels that identify the commit as part of a
+series, ticket numbers and their status. All this information can then be processed by CI/CD tools to automate merging
+and deploying the code in the commit. For reference, Tian et al. <span class="citation">(Tian et al. <a href="#ref-tian" role="doc-biblioref">2022</a>)</span> discuss in detail the characteristics of “good”
+commit messages and of their contents for different types of commits.
+
+
+
+</p>
+</div>
+<div id="code-review" class="section level2 hasAnchor" number="6.6">
+<h2><span class="header-section-number">6.6</span> Code Review<a href="writing-code.html#code-review" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+Code quality is crucial for the effectiveness of a machine learning pipeline: coding styles and standards (Section
+<a href="writing-code.html#coding-standards">6.3</a>), versioning (Section <a href="writing-code.html#versioning">6.5</a>), refactoring (Section <a href="writing-code.html#refactoring">6.7</a>), testing
+(Section <a href="troubleshooting-code.html#testing">9.4</a>), MLOps (Section <a href="design-code.html#processing-pipeline">5.3</a>) and continuous deployment (Chapter
+<a href="deploying-code.html#deploying-code">7</a>) all aim to minimise the number of defects. The increased risk of technical debt (Section
+<a href="design-code.html#technical-debt">5.2</a>) because of the interplay of data, models and code and because of their mutable nature
+(Sections <a href="troubleshooting-code.html#data-problems">9.1</a> and <a href="troubleshooting-code.html#model-problems">9.2</a>) makes code quality all the more important.</p>
+<p>However, the practices and the automated workflows described in this book are not enough in themselves: while they can
+significantly reduce the number of defects, there are classes of issues that can only be spotted and addressed by the
+developers themselves. This is the reason for <em>code review</em> <span class="citation">(Rigby and Bird <a href="#ref-microsoft-code-review" role="doc-biblioref">2013</a>)</span>. Developers other than those who
+wrote a particular piece of code should inspect it and work together to ensure that:</p>
+<ul>
+<li>It implements the desired functionality.</li>
+<li>It is efficient and accompanied by software tests.</li>
+<li>It follows the spirit and the letter of coding styles, coding standards and naming conventions.</li>
+<li>It is well organised and documented.</li>
+</ul>
+<p>The benefits are many:</p>
+<ul>
+<li>We ensure that each developer writes code that other developers can understand.</li>
+<li>Exchanging constructive criticism is a valuable way of teaching junior and future developers.</li>
+<li>More people working on the machine learning pipeline will have a practical understanding of its design, making it more
+likely to find ways to improve it.</li>
+<li>We encourage a feeling of collective ownership of the code.</li>
+</ul>
+<p>Clearly, each module will have a primary “owner” who is ultimately responsible for it and controls what changes are
+merged into the mainline branch. That developer will be the ideal reviewer for changes to that module because he will be
+the person who knows its code and design best. However, other people should feel comfortable contributing to it,
+fixing it, and providing feedback on the quality and design of the code. At the same time nobody should be
+able to commit code without oversight, which code review provides.</p>
+<p>Reviewing code is usually performed in two complementary ways:</p>
+<ul>
+<li>Taking advantage of <em>code review tools</em> <span class="citation">(Toro <a href="#ref-shopify-review" role="doc-biblioref">2020</a>; Sadowski et al. <a href="#ref-google-code-review" role="doc-biblioref">2018</a>)</span>: the developer proposing a code change
+prepares a commit and submits it to some software tool that tests it and then assigns it to one or more reviewers.
+The review itself is asynchronous and informal in nature, with developer and reviewers exchanging comments and
+refining code via the tool until they are satisfied with the commit’s quality. The tool then merges the commit into
+the mainline branch, linking the comments in the commit message.
+
+</li>
+</ul>
+<p>
+</p>
+<ul>
+<li>Practising <em>pair</em> (<em>mob</em>) <em>programming</em> <span class="citation">(Popescu <a href="#ref-shopify-pair" role="doc-biblioref">2019</a>; Swoboda <a href="#ref-shopify-mob" role="doc-biblioref">2021</a>)</span> while developing software: two (or more)
+developers write, debug, or explore code together. One of the developers (the “driver”) is responsible for the
+implementation, focusing on writing high-quality and error-free code. The other developer(s) (the “navigators”)
+focus on the broader scope of the problem and on keeping the process on track. The navigator(s) in practice act as
+reviewers “live” as the code is written. At fairly short intervals (say, 30 minutes), the current “driver” commits
+the code it is working on and passes the role to another developer, who will pull the code and become the next
+“navigator”.
+</li>
+</ul>
+<p>
+
+Both approaches encourage writing small incremental changes and submitting them frequently, like in trunk-based
+development (Section <a href="writing-code.html#versioning">6.5</a>): it is difficult to find experienced reviewers with a deep knowledge of larger
+portions of a machine learning pipeline, and it is more difficult for reviewers to find the time to review a large piece
+of code. Ideally, the code to be reviewed should address a single issue and do that completely, involving just one or
+two reviewers. This makes it easier to identify where errors were introduced if something goes wrong and to roll back
+just the offending change.</p>
+<p>
+In a tool-based code review setting, the developer writing the code should first perform a personal code review in order
+not to waste the reviewers’ time. Having code automatically tested by linters, static code analysers and our suite of
+software tests before sending it out for review will also speed code review iterations up: the reviewer will be
+presented with their outputs to help examine the commit. For the same reason, the developer should add comments to the
+code (Section <a href="documenting-code.html#comments">8.1</a>) and write a descriptive commit message (Section <a href="writing-code.html#versioning">6.5</a>) covering the reason
+for the proposed change, its possible impact and any relevant design decisions.
+
+
+</p>
+<p>
+With pair and mob programming, repeatedly rotating the “driver” and “navigator” roles effectively ensures that the code
+is reviewed, and helps in engaging more developers with the code. Domain experts can be involved as well: even if they
+have only marginal familiarity with programming, they can be guided by developers when they are acting as the “driver”;
+and they can contribute their knowledge to the developer writing code when they are acting as the “navigator”. However,
+this approach works smoothly only if development environments can be set up quickly and if pulling and pushing code is
+effortless: frequent and smooth role transitions are crucial in keeping everybody engaged and discussing with each
+other, which is the main point of this approach. Particularly hard coding tasks benefit the most from having more
+eyeballs looking at problems and collaborating on both the low- and high-level design of the code.
+</p>
+<p>Both approaches to code review require effort and an initial investment to establish as a standard practice but they
+will pay themselves back by making developers more productive. And, perhaps unlike other practices, the overwhelming
+majority of programmers enjoy them <span class="citation">(Sadowski et al. <a href="#ref-google-code-review" role="doc-biblioref">2018</a>; Williams, Kessler, and Cunningham <a href="#ref-pair-strength1" role="doc-biblioref">2000</a>)</span>! Tool-based review processes require the
+appropriate tooling to be well-maintained and scalable. Pair and mob programming require developers to coordinate and to
+spend time together working on the same piece of code. But that does not mean that the people involved will be less
+productive.</p>
+<p>
+In the case of tool-based code review, one or at most two developers are sufficient to review a commit, and if the
+commit touches only one or two files, the reviewers can easily provide feedback within a few hours or a day at most
+<span class="citation">(Sadowski et al. <a href="#ref-google-code-review" role="doc-biblioref">2018</a>; Rigby and Bird <a href="#ref-microsoft-code-review" role="doc-biblioref">2013</a>)</span>. Developers will produce increasingly better code over time, resulting in
+faster reviews and fewer comments on each commit. Bugs and architectural issues will be identified quickly, so they will
+be easier and faster to fix <span class="citation">(Tornhill and Borg <a href="#ref-tornhill" role="doc-biblioref">2022</a>)</span>. As a result, we will reduce the need for large-scale refactorings and outright
+code rewrites, leaving more time to write better code, tests and documentation. (By definition, this means productivity
+will increase over time since we will make progress faster instead of running in circles.) In addition, senior
+developers will widen their understanding of the architecture of the machine learning pipeline as they review code for
+different modules. Furthermore, reviewing patches does not have to be time-consuming for the reviewer: at Google,
+developers review about 4 commits in 2.6 hours (median) per week, taking about 40 minutes per commit
+<span class="citation">(Sadowski et al. <a href="#ref-google-code-review" role="doc-biblioref">2018</a>)</span>; at Microsoft, developers devote 20 minutes per day (1.6 hours per week) on average to code review
+<span class="citation">(Jacek et al. <a href="#ref-microsoft-code-review2" role="doc-biblioref">2018</a>)</span>.
+</p>
+<p>
+We can make similar considerations for pair and mob programming: several studies over the last 30 years
+<span class="citation">(Williams, Kessler, and Cunningham <a href="#ref-pair-strength1" role="doc-biblioref">2000</a>; de Lima Salge and Berente <a href="#ref-pair-strength2" role="doc-biblioref">2016</a>; Shiraishi et al. <a href="#ref-mob-strength" role="doc-biblioref">2019</a>)</span>, including some on machine learning software and data science
+applications <span class="citation">(Saltz and Shamshurin <a href="#ref-saltz" role="doc-biblioref">2017</a>)</span>, have found that they improve productivity and code quality. For them to be most effective, we
+need tasks that are complex enough to warrant the attention of more than one person (trivial tasks have little margin
+for errors) and enough experience to address them effectively in the pair (either a senior and a junior developer, or
+two “intermediate” developers) or in the mob <span class="citation">(Arisholm et al. <a href="#ref-arisholm" role="doc-biblioref">2007</a>; Popescu <a href="#ref-shopify-pair" role="doc-biblioref">2019</a>)</span>.
+
+</p>
+</div>
+<div id="refactoring" class="section level2 hasAnchor" number="6.7">
+<h2><span class="header-section-number">6.7</span> Refactoring<a href="writing-code.html#refactoring" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>
+
+
+Formally, <em>refactoring</em> is the process of changing a piece of code in a way that does not alter its external behaviour
+yet improves its internal structure and clarifies its intent and assumptions <span class="citation">(Fowler <a href="#ref-refactoring" role="doc-biblioref">2018</a>)</span>. Following Section
+<a href="writing-code.html#versioning">6.5</a>, we do that with a sequence of small incremental changes which are individually validated by running
+our suite of tests (Chapter <a href="troubleshooting-code.html#testing">9.4</a>) with continuous integration tools. At the end of the process, we can
+squash all the commits together and submit them for review (Chapter <a href="writing-code.html#code-review">6.6</a>) as we do for other code changes.
+We refactor when adding a new feature, to alter the design of the existing code and accommodate it. We refactor when
+attacking bugs, both to fix them and to accommodate the tests that exercise them (and ensure that they stay fixed). We
+refactor to improve compliance with naming conventions (Section <a href="writing-code.html#naming">6.2</a>), coding styles and coding standards
+(Section <a href="writing-code.html#coding-standards">6.3</a>). Refactoring can make us confident that we start each commit from correct code, making
+it easy to track any bugs we might introduce, and that the code does not spend much time (if at all) in a broken state.
+
+</p>
+<p>
+Fowler <span class="citation">(Fowler <a href="#ref-refactoring" role="doc-biblioref">2018</a>)</span> provides an extensive catalogue of refactoring approaches. Depending on the programming language,
+some can be automated: for example, both PyCharm <span class="citation">(JetBrains <a href="#ref-pycharm" role="doc-biblioref">2022</a><a href="#ref-pycharm" role="doc-biblioref">b</a>)</span> and Visual Studio Code <span class="citation">(Microsoft <a href="#ref-vscode" role="doc-biblioref">2022</a><a href="#ref-vscode" role="doc-biblioref">i</a>)</span> have a “refactor” button
+for Python code. (This is another factor we may want to consider when choosing a programming language in addition to
+those we discussed in Section <a href="writing-code.html#programming-language">6.1</a>.) Only a few of them are commonly used for machine learning
+code, and there are refactoring approaches that are specific to it: Tang et al. <span class="citation">(Tang et al. <a href="#ref-tang" role="doc-biblioref">2021</a>)</span> constructed a taxonomy of both
+from a large survey of machine learning software. Machine learning code is only a small part of a typical pipeline, so
+mastering the refactoring approaches from Fowler <span class="citation">(Fowler <a href="#ref-refactoring" role="doc-biblioref">2018</a>)</span> is still valuable to address the code smells we
+discussed in Section <a href="writing-code.html#coding-standards">6.3</a>. Refactoring approaches that are specific to machine learning code, on the
+other hand, keep in check the various types of technical debt we covered in Section <a href="design-code.html#code-debt">5.2.4</a>. Tang et al.
+<span class="citation">(Tang et al. <a href="#ref-tang" role="doc-biblioref">2021</a>)</span> point out three in particular: using inheritance to reduce duplicate configuration and model code; changing
+variable types and data structures to allow for performance optimisations (Sections <a href="types-structures.html#right-variables">3.3</a> and
+<a href="types-structures.html#right-data-structures">3.4</a>); and hiding the raw model parameters and hyperparameters and exposing custom types that
+have a domain meaning to achieve better separation between training and inference on one side and general metaheuristics
+and domain rules on the other.
+</p>
+<p>
+There is, however, an additional point that makes the code implementing machine learning models inherently different
+from other code as far as refactoring is concerned: we cannot slice and dice it in the process of refactoring it as
+easily as we would other code.
+Some models
+perform a single task (say, smoothing or prediction) and compose well with other code, but others are black-boxes that
+integrate multiple tasks (say, feature extraction and prediction) in ways that make it impossible to split them. Deep
+neural networks are a prime example of this. And even if we can refactor a model and the associated code into
+well-separated sub-models, it is not a given that we can change them as we would like. The probabilistic properties of
+each sub-model are inherited from the model we started from: we should make sure that the probabilistic properties of
+any new sub-model we introduce are compatible with those of the others. Failing to do so will produce outputs that
+are biased in ways that are difficult to diagnose and impossible to correct because they lack the mathematical
+properties we usually take for granted. (The same is true for swapping whole models in an existing pipeline.) A possibly
+obvious example: we should match a model that uses a quadratic loss function, such as most linear regressions, with
+feature selection and extraction that work on variances and linear correlations and with model selection strategies that
+evaluate models using the same quadratic loss function on a validation set. If we extract features in ways that do not
+necessarily preserve linear dependencies, we may lose information that the model could capture from the data. If we
+evaluate the model with a different loss function than that it was optimised for, we may end up with a fragile model
+that will misbehave easily on new data. In other words, <em>refactoring a machine learning model means refactoring both the
+code implementing it and its mathematical formulation at the same time</em>. We want to preserve both the external behaviour
+of the code and the probabilistic behaviour of the inputs and the outputs of the model. Property-based testing can help
+with the latter, as we will discuss in Section <a href="troubleshooting-code.html#testing-what">9.4.2</a>.
+
+</p>
+</div>
+<div id="reworking" class="section level2 hasAnchor" number="6.8">
+<h2><span class="header-section-number">6.8</span> Reworking Academic Code: An Example<a href="writing-code.html#reworking" class="anchor-section" aria-label="Anchor link to header"/></h2>
+<p>Consider the following piece of code used in teaching machine learning to graduate students at a top-10 university in
+the QS rankings <span class="citation">(QS Quacquarelli Symonds <a href="#ref-qs" role="doc-biblioref">2022</a>)</span>. It is fairly representative of what we can find in many GitHub repositories and in many answers
+in Stack Overflow, which end up imported or cut-and-pasted in machine learning codebases.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="writing-code.html#cb30-1" aria-hidden="true"/>f&lt;-<span class="cf">function</span>(x,mu1,mu2,S1i,S2i,<span class="dt">p1=</span><span class="fl">0.5</span>) {</span>
+<span id="cb30-2"><a href="writing-code.html#cb30-2" aria-hidden="true"/>  <span class="co">#mixture of normals, density up to constant factor</span></span>
+<span id="cb30-3"><a href="writing-code.html#cb30-3" aria-hidden="true"/>  c1&lt;-<span class="kw">exp</span>(<span class="op">-</span><span class="kw">t</span>(x<span class="op">-</span>mu1)<span class="op">%*%</span>S1i<span class="op">%*%</span>(x<span class="op">-</span>mu1))</span>
+<span id="cb30-4"><a href="writing-code.html#cb30-4" aria-hidden="true"/>  c2&lt;-<span class="kw">exp</span>(<span class="op">-</span><span class="kw">t</span>(x<span class="op">-</span>mu2)<span class="op">%*%</span>S2i<span class="op">%*%</span>(x<span class="op">-</span>mu2))</span>
+<span id="cb30-5"><a href="writing-code.html#cb30-5" aria-hidden="true"/>  <span class="kw">return</span>(p1<span class="op">*</span>c1<span class="op">+</span>(<span class="dv">1</span><span class="op">-</span>p1)<span class="op">*</span>c2)</span>
+<span id="cb30-6"><a href="writing-code.html#cb30-6" aria-hidden="true"/>}</span>
+<span id="cb30-7"><a href="writing-code.html#cb30-7" aria-hidden="true"/></span>
+<span id="cb30-8"><a href="writing-code.html#cb30-8" aria-hidden="true"/>a=<span class="dv">3</span></span>
+<span id="cb30-9"><a href="writing-code.html#cb30-9" aria-hidden="true"/>n=<span class="dv">2000</span></span>
+<span id="cb30-10"><a href="writing-code.html#cb30-10" aria-hidden="true"/>mu1=<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>)</span>
+<span id="cb30-11"><a href="writing-code.html#cb30-11" aria-hidden="true"/>mu2=<span class="kw">c</span>(<span class="dv">4</span>,<span class="dv">4</span>)</span>
+<span id="cb30-12"><a href="writing-code.html#cb30-12" aria-hidden="true"/>S=<span class="kw">diag</span>(<span class="dv">2</span>)</span>
+<span id="cb30-13"><a href="writing-code.html#cb30-13" aria-hidden="true"/>S1i=S2i=<span class="kw">solve</span>(S)</span>
+<span id="cb30-14"><a href="writing-code.html#cb30-14" aria-hidden="true"/>X=<span class="kw">matrix</span>(<span class="ot">NA</span>,<span class="dv">2</span>,n)</span>
+<span id="cb30-15"><a href="writing-code.html#cb30-15" aria-hidden="true"/>X[,<span class="dv">1</span>]=x=mu1</span>
+<span id="cb30-16"><a href="writing-code.html#cb30-16" aria-hidden="true"/><span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>(n<span class="dv">-1</span>)) {</span>
+<span id="cb30-17"><a href="writing-code.html#cb30-17" aria-hidden="true"/>y&lt;-x<span class="op">+</span>(<span class="dv">2</span><span class="op">*</span><span class="kw">runif</span>(<span class="dv">2</span>)<span class="op">-</span><span class="dv">1</span>)<span class="op">*</span>a</span>
+<span id="cb30-18"><a href="writing-code.html#cb30-18" aria-hidden="true"/>MHR&lt;-<span class="kw">f</span>(y,mu1,mu2,S1i,S2i)<span class="op">/</span><span class="kw">f</span>(x,mu1,mu2,S1i,S2i)</span>
+<span id="cb30-19"><a href="writing-code.html#cb30-19" aria-hidden="true"/><span class="cf">if</span> (<span class="kw">runif</span>(<span class="dv">1</span>)<span class="op">&lt;</span>MHR)</span>
+<span id="cb30-20"><a href="writing-code.html#cb30-20" aria-hidden="true"/>x&lt;-y</span>
+<span id="cb30-21"><a href="writing-code.html#cb30-21" aria-hidden="true"/>X[,t<span class="op">+</span><span class="dv">1</span>]&lt;-x</span>
+<span id="cb30-22"><a href="writing-code.html#cb30-22" aria-hidden="true"/>}</span></code></pre></div>
+<p>Guessing what this code is supposed to implement is harder than it should be, because functions and variables have
+nondescript names that mirror some mathematical notation. This does not help in itself since there is no comment in the
+code giving a literature reference we could use to look up what the notation is. The only hints we have are a comment
+mentioning mixtures of normals and a variable named <code>MHR</code>.</p>
+<p>Attending the lecture this code was presented in would tell us that this code implements the Metropolis-Hasting
+algorithm for sampling from a mixture of normals. Knowing this, we can give more descriptive names to both functions and
+variables: naming some of the variables after their <em>de facto</em> standard notation <span class="citation">(say, from Marin and Robert <a href="#ref-robert" role="doc-biblioref">2014</a>)</span> is an acceptable
+trade-off between conciseness and clarity. We can now guess that <code>MHR</code> is the Metropolis-Hastings ratio used to accept
+or reject a new random sample from the mixture. At the same time, we can add spacing and indentation to make the code
+easier to read.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="writing-code.html#cb31-1" aria-hidden="true"/>dmix2norm =<span class="st"> </span><span class="cf">function</span>(x, mu, Sigma, pi, <span class="dt">log =</span> <span class="ot">FALSE</span>) {</span>
+<span id="cb31-2"><a href="writing-code.html#cb31-2" aria-hidden="true"/></span>
+<span id="cb31-3"><a href="writing-code.html#cb31-3" aria-hidden="true"/>  Omega1 =<span class="st"> </span>MASS<span class="op">::</span><span class="kw">ginv</span>(Sigma[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])</span>
+<span id="cb31-4"><a href="writing-code.html#cb31-4" aria-hidden="true"/>  Omega2 =<span class="st"> </span>MASS<span class="op">::</span><span class="kw">ginv</span>(Sigma[<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>, <span class="dv">3</span><span class="op">:</span><span class="dv">4</span>])</span>
+<span id="cb31-5"><a href="writing-code.html#cb31-5" aria-hidden="true"/></span>
+<span id="cb31-6"><a href="writing-code.html#cb31-6" aria-hidden="true"/>  elem1 =<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span><span class="kw">t</span>(x <span class="op">-</span><span class="st"> </span>mu[<span class="dv">1</span>]) <span class="op">%*%</span><span class="st"> </span>Omega1 <span class="op">%*%</span><span class="st"> </span>(x <span class="op">-</span><span class="st"> </span>mu[<span class="dv">1</span>]))</span>
+<span id="cb31-7"><a href="writing-code.html#cb31-7" aria-hidden="true"/>  elem2 =<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span><span class="kw">t</span>(x <span class="op">-</span><span class="st"> </span>mu[<span class="dv">2</span>]) <span class="op">%*%</span><span class="st"> </span>Omega2 <span class="op">%*%</span><span class="st"> </span>(x <span class="op">-</span><span class="st"> </span>mu[<span class="dv">2</span>]))</span>
+<span id="cb31-8"><a href="writing-code.html#cb31-8" aria-hidden="true"/></span>
+<span id="cb31-9"><a href="writing-code.html#cb31-9" aria-hidden="true"/>  <span class="kw">return</span>(pi[<span class="dv">1</span>] <span class="op">*</span><span class="st"> </span>elem1 <span class="op">+</span><span class="st"> </span>pi[<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span>elem2)</span>
+<span id="cb31-10"><a href="writing-code.html#cb31-10" aria-hidden="true"/></span>
+<span id="cb31-11"><a href="writing-code.html#cb31-11" aria-hidden="true"/>}<span class="co">#DMIX2NORM</span></span>
+<span id="cb31-12"><a href="writing-code.html#cb31-12" aria-hidden="true"/></span>
+<span id="cb31-13"><a href="writing-code.html#cb31-13" aria-hidden="true"/>metropolis.hastings =<span class="st"> </span><span class="cf">function</span>(mu, Sigma, pi, iter) {</span>
+<span id="cb31-14"><a href="writing-code.html#cb31-14" aria-hidden="true"/></span>
+<span id="cb31-15"><a href="writing-code.html#cb31-15" aria-hidden="true"/>  X =<span class="st"> </span><span class="kw">matrix</span>(<span class="ot">NA</span>, <span class="dv">2</span>, iter)</span>
+<span id="cb31-16"><a href="writing-code.html#cb31-16" aria-hidden="true"/>  X[, <span class="dv">1</span>] =<span class="st"> </span>old =<span class="st"> </span>mu[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]</span>
+<span id="cb31-17"><a href="writing-code.html#cb31-17" aria-hidden="true"/>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="kw">seq</span>(iter <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)) {</span>
+<span id="cb31-18"><a href="writing-code.html#cb31-18" aria-hidden="true"/></span>
+<span id="cb31-19"><a href="writing-code.html#cb31-19" aria-hidden="true"/>    new =<span class="st"> </span>old <span class="op">+</span><span class="st"> </span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">runif</span>(<span class="dv">2</span>) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span><span class="st"> </span>a</span>
+<span id="cb31-20"><a href="writing-code.html#cb31-20" aria-hidden="true"/>    acceptance.probability =</span>
+<span id="cb31-21"><a href="writing-code.html#cb31-21" aria-hidden="true"/><span class="st">      </span><span class="kw">dmix2norm</span>(new, <span class="dt">mu =</span> mu, <span class="dt">Sigma =</span> Sigma, <span class="dt">pi =</span> pi) <span class="op">/</span></span>
+<span id="cb31-22"><a href="writing-code.html#cb31-22" aria-hidden="true"/><span class="st">      </span><span class="kw">dmix2norm</span>(old, <span class="dt">mu =</span> mu, <span class="dt">Sigma =</span> Sigma, <span class="dt">pi =</span> pi)</span>
+<span id="cb31-23"><a href="writing-code.html#cb31-23" aria-hidden="true"/></span>
+<span id="cb31-24"><a href="writing-code.html#cb31-24" aria-hidden="true"/>    <span class="cf">if</span> (<span class="kw">runif</span>(<span class="dv">1</span>) <span class="op">&lt;</span><span class="st"> </span>acceptance.probability)</span>
+<span id="cb31-25"><a href="writing-code.html#cb31-25" aria-hidden="true"/>      old =<span class="st"> </span>new</span>
+<span id="cb31-26"><a href="writing-code.html#cb31-26" aria-hidden="true"/>    <span class="cf">else</span></span>
+<span id="cb31-27"><a href="writing-code.html#cb31-27" aria-hidden="true"/>      old =<span class="st"> </span>old</span>
+<span id="cb31-28"><a href="writing-code.html#cb31-28" aria-hidden="true"/></span>
+<span id="cb31-29"><a href="writing-code.html#cb31-29" aria-hidden="true"/>    X[, t <span class="op">+</span><span class="st"> </span><span class="dv">1</span>] =<span class="st"> </span>old</span>
+<span id="cb31-30"><a href="writing-code.html#cb31-30" aria-hidden="true"/></span>
+<span id="cb31-31"><a href="writing-code.html#cb31-31" aria-hidden="true"/>  }<span class="co">#FOR</span></span>
+<span id="cb31-32"><a href="writing-code.html#cb31-32" aria-hidden="true"/></span>
+<span id="cb31-33"><a href="writing-code.html#cb31-33" aria-hidden="true"/>  <span class="kw">return</span>(X)</span>
+<span id="cb31-34"><a href="writing-code.html#cb31-34" aria-hidden="true"/></span>
+<span id="cb31-35"><a href="writing-code.html#cb31-35" aria-hidden="true"/>}<span class="co">#METROPOLIS.HASTINGS</span></span>
+<span id="cb31-36"><a href="writing-code.html#cb31-36" aria-hidden="true"/></span>
+<span id="cb31-37"><a href="writing-code.html#cb31-37" aria-hidden="true"/>mu =<span class="st"> </span><span class="kw">c</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">4</span>))</span>
+<span id="cb31-38"><a href="writing-code.html#cb31-38" aria-hidden="true"/>Sigma =<span class="st"> </span><span class="kw">diag</span>(<span class="kw">rep</span>(<span class="dv">1</span>, <span class="dv">4</span>))</span>
+<span id="cb31-39"><a href="writing-code.html#cb31-39" aria-hidden="true"/>pi =<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>)</span>
+<span id="cb31-40"><a href="writing-code.html#cb31-40" aria-hidden="true"/><span class="kw">metropolis.hastings</span>(<span class="dt">mu =</span> mu, <span class="dt">Sigma =</span> Sigma, <span class="dt">pi =</span> pi, <span class="dt">iter =</span> <span class="dv">2000</span>)</span></code></pre></div>
+<p>We complete this first refactoring step by creating a temporary (local) commit and testing it. While better organised
+and easier to read, this code falls short of what it purports to do in two ways: the number of components in the mixture
+is hard-coded to two, and the densities themselves are hard-coded to be normals. Now that we have organised the code
+into functions, we can move on to the next refactoring step: adding two arguments to <code>metropolis.hastings()</code> to allow
+the user to control the definition of the mixture. We can call them <code>density</code>, for the density function to be called for
+each component of the mixture, and <code>density.args</code>, a list of additional arguments to that function. To keep the existing
+behaviour of the code, we update <code>dmix2norm()</code> to work with more than two components while making sure that its return
+value remains unchanged when the mixture has only two components. Furthermore, we do the same for the proposal function
+that generates the new random sample, adding two further arguments <code>proposal</code> and <code>proposal.args</code> to
+<code>metropolis.hastings()</code>.</p>
+<p>
+These changes make the code more flexible and more readable. The functional programming approach we have adopted allows
+us to rewrite <code>metropolis.hastings()</code> in such a way that it almost looks like pseudocode (Section <a href="algorithms.html#pseudocode">4.1</a>). As
+a result, there is less of a need for comments on <em>what</em> the code is doing, apart from a reference to some textbook in
+which we can find the pseudocode for Metropolis-Hastings and an in-depth explanation of how and why it works. Comments
+on <em>why</em> the code is structured the way it is may of course still be useful, since they will contain information that is
+specific to this particular implementation and that cannot be found anywhere else.
+</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="writing-code.html#cb32-1" aria-hidden="true"/>dmix2norm =<span class="st"> </span><span class="cf">function</span>(x, mu, Sigma, pi, <span class="dt">log =</span> <span class="ot">FALSE</span>) {</span>
+<span id="cb32-2"><a href="writing-code.html#cb32-2" aria-hidden="true"/></span>
+<span id="cb32-3"><a href="writing-code.html#cb32-3" aria-hidden="true"/>  nmix =<span class="st"> </span><span class="kw">length</span>(mu)</span>
+<span id="cb32-4"><a href="writing-code.html#cb32-4" aria-hidden="true"/>  mixture.component.density =<span class="st"> </span><span class="cf">function</span>(x, mu, Sigma)</span>
+<span id="cb32-5"><a href="writing-code.html#cb32-5" aria-hidden="true"/>    <span class="kw">exp</span>(<span class="op">-</span><span class="kw">t</span>(x <span class="op">-</span><span class="st"> </span>mu[<span class="dv">1</span>]) <span class="op">%*%</span><span class="st"> </span>MASS<span class="op">::</span><span class="kw">ginv</span>(Sigma) <span class="op">%*%</span><span class="st"> </span>(x <span class="op">-</span><span class="st"> </span>mu[<span class="dv">1</span>]))</span>
+<span id="cb32-6"><a href="writing-code.html#cb32-6" aria-hidden="true"/></span>
+<span id="cb32-7"><a href="writing-code.html#cb32-7" aria-hidden="true"/>  comp =<span class="st"> </span><span class="kw">sapply</span>(<span class="kw">seq</span>(nmix), <span class="cf">function</span>(i)</span>
+<span id="cb32-8"><a href="writing-code.html#cb32-8" aria-hidden="true"/>           <span class="kw">mixture.component.density</span>(x, mu[[i]], Sigma[[i]]))</span>
+<span id="cb32-9"><a href="writing-code.html#cb32-9" aria-hidden="true"/></span>
+<span id="cb32-10"><a href="writing-code.html#cb32-10" aria-hidden="true"/>  <span class="kw">return</span>(<span class="kw">sum</span>(pi <span class="op">*</span><span class="st"> </span>comp))</span>
+<span id="cb32-11"><a href="writing-code.html#cb32-11" aria-hidden="true"/></span>
+<span id="cb32-12"><a href="writing-code.html#cb32-12" aria-hidden="true"/>}<span class="co">#DMIX2NORM</span></span>
+<span id="cb32-13"><a href="writing-code.html#cb32-13" aria-hidden="true"/></span>
+<span id="cb32-14"><a href="writing-code.html#cb32-14" aria-hidden="true"/>proposal.update =<span class="st"> </span><span class="cf">function</span>(<span class="dt">dim =</span> <span class="dv">2</span>, a) {</span>
+<span id="cb32-15"><a href="writing-code.html#cb32-15" aria-hidden="true"/></span>
+<span id="cb32-16"><a href="writing-code.html#cb32-16" aria-hidden="true"/>  <span class="kw">return</span>((<span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">runif</span>(dim) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span><span class="st"> </span>a)</span>
+<span id="cb32-17"><a href="writing-code.html#cb32-17" aria-hidden="true"/></span>
+<span id="cb32-18"><a href="writing-code.html#cb32-18" aria-hidden="true"/>}<span class="co">#PROPOSAL.UPDATE</span></span>
+<span id="cb32-19"><a href="writing-code.html#cb32-19" aria-hidden="true"/></span>
+<span id="cb32-20"><a href="writing-code.html#cb32-20" aria-hidden="true"/>metropolis.hastings =<span class="st"> </span><span class="cf">function</span>(density, density.args, proposal,</span>
+<span id="cb32-21"><a href="writing-code.html#cb32-21" aria-hidden="true"/>                               proposal.args, pi, start, iter) {</span>
+<span id="cb32-22"><a href="writing-code.html#cb32-22" aria-hidden="true"/></span>
+<span id="cb32-23"><a href="writing-code.html#cb32-23" aria-hidden="true"/>  X =<span class="st"> </span><span class="kw">matrix</span>(<span class="ot">NA</span>, <span class="kw">length</span>(start), iter)</span>
+<span id="cb32-24"><a href="writing-code.html#cb32-24" aria-hidden="true"/>  X[, <span class="dv">1</span>] =<span class="st"> </span>old =<span class="st"> </span>start</span>
+<span id="cb32-25"><a href="writing-code.html#cb32-25" aria-hidden="true"/>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="kw">seq</span>(iter <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)) {</span>
+<span id="cb32-26"><a href="writing-code.html#cb32-26" aria-hidden="true"/></span>
+<span id="cb32-27"><a href="writing-code.html#cb32-27" aria-hidden="true"/>    new =<span class="st"> </span>old <span class="op">+</span></span>
+<span id="cb32-28"><a href="writing-code.html#cb32-28" aria-hidden="true"/><span class="st">      </span><span class="kw">do.call</span>(proposal, <span class="kw">c</span>(<span class="kw">list</span>(<span class="dt">dim =</span> <span class="kw">nrow</span>(X)), proposal.args))</span>
+<span id="cb32-29"><a href="writing-code.html#cb32-29" aria-hidden="true"/></span>
+<span id="cb32-30"><a href="writing-code.html#cb32-30" aria-hidden="true"/>    update.threshold =</span>
+<span id="cb32-31"><a href="writing-code.html#cb32-31" aria-hidden="true"/><span class="st">      </span><span class="kw">do.call</span>(density, <span class="kw">c</span>(<span class="kw">list</span>(<span class="dt">x =</span> new, <span class="dt">pi =</span> pi), density.args)) <span class="op">/</span></span>
+<span id="cb32-32"><a href="writing-code.html#cb32-32" aria-hidden="true"/><span class="st">      </span><span class="kw">do.call</span>(density, <span class="kw">c</span>(<span class="kw">list</span>(<span class="dt">x =</span> old, <span class="dt">pi =</span> pi), density.args))</span>
+<span id="cb32-33"><a href="writing-code.html#cb32-33" aria-hidden="true"/></span>
+<span id="cb32-34"><a href="writing-code.html#cb32-34" aria-hidden="true"/>    <span class="cf">if</span> (<span class="kw">runif</span>(<span class="dv">1</span>) <span class="op">&lt;</span><span class="st"> </span>update.threshold)</span>
+<span id="cb32-35"><a href="writing-code.html#cb32-35" aria-hidden="true"/>      old =<span class="st"> </span>new</span>
+<span id="cb32-36"><a href="writing-code.html#cb32-36" aria-hidden="true"/>    <span class="cf">else</span></span>
+<span id="cb32-37"><a href="writing-code.html#cb32-37" aria-hidden="true"/>      old =<span class="st"> </span>old</span>
+<span id="cb32-38"><a href="writing-code.html#cb32-38" aria-hidden="true"/></span>
+<span id="cb32-39"><a href="writing-code.html#cb32-39" aria-hidden="true"/>    X[, t <span class="op">+</span><span class="st"> </span><span class="dv">1</span>] =<span class="st"> </span>old</span>
+<span id="cb32-40"><a href="writing-code.html#cb32-40" aria-hidden="true"/></span>
+<span id="cb32-41"><a href="writing-code.html#cb32-41" aria-hidden="true"/>  }<span class="co">#FOR</span></span>
+<span id="cb32-42"><a href="writing-code.html#cb32-42" aria-hidden="true"/></span>
+<span id="cb32-43"><a href="writing-code.html#cb32-43" aria-hidden="true"/>  <span class="kw">return</span>(X)</span>
+<span id="cb32-44"><a href="writing-code.html#cb32-44" aria-hidden="true"/></span>
+<span id="cb32-45"><a href="writing-code.html#cb32-45" aria-hidden="true"/>}<span class="co">#METROPOLIS.HASTINGS</span></span>
+<span id="cb32-46"><a href="writing-code.html#cb32-46" aria-hidden="true"/></span>
+<span id="cb32-47"><a href="writing-code.html#cb32-47" aria-hidden="true"/>mu =<span class="st"> </span><span class="kw">list</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">4</span>))</span>
+<span id="cb32-48"><a href="writing-code.html#cb32-48" aria-hidden="true"/>Sigma =<span class="st"> </span><span class="kw">list</span>(<span class="kw">diag</span>(<span class="dv">2</span>), <span class="kw">diag</span>(<span class="dv">2</span>))</span>
+<span id="cb32-49"><a href="writing-code.html#cb32-49" aria-hidden="true"/><span class="kw">metropolis.hastings</span>(<span class="dt">density =</span> dmix2norm,</span>
+<span id="cb32-50"><a href="writing-code.html#cb32-50" aria-hidden="true"/>  <span class="dt">density.args =</span> <span class="kw">list</span>(<span class="dt">mu =</span> mu, <span class="dt">Sigma =</span> Sigma),</span>
+<span id="cb32-51"><a href="writing-code.html#cb32-51" aria-hidden="true"/>  <span class="dt">proposal =</span> proposal.update, <span class="dt">proposal.args =</span> <span class="kw">list</span>(<span class="dt">a =</span> <span class="dv">3</span>),</span>
+<span id="cb32-52"><a href="writing-code.html#cb32-52" aria-hidden="true"/>  <span class="dt">pi =</span> <span class="kw">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>), <span class="dt">start =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="dt">iter =</span> <span class="dv">2000</span>)</span></code></pre></div>
+<p>We create one more temporary commit and test whether the code is still working. Finally, we want to make the code more
+reusable. In order to do that, we store the instance of the Metropolis-Hastings simulation we run in
+<code>metropolis.hastings()</code> into a data structure that contains both the random samples that we generated and the functions
+that we passed via the <code>density</code> and <code>proposal</code> arguments to generate them, along with the respective argument sets
+<code>density.args</code> and <code>proposal.args</code>. For convenience, we assign the class name <code>"metropolis-hastings"</code> to this data
+structure to be able to write methods for it later.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="writing-code.html#cb33-1" aria-hidden="true"/>metropolis.hastings =<span class="st"> </span><span class="cf">function</span>(density, density.args, proposal,</span>
+<span id="cb33-2"><a href="writing-code.html#cb33-2" aria-hidden="true"/>                               proposal.args, pi, start, iter) {</span>
+<span id="cb33-3"><a href="writing-code.html#cb33-3" aria-hidden="true"/></span>
+<span id="cb33-4"><a href="writing-code.html#cb33-4" aria-hidden="true"/>  [...]</span>
+<span id="cb33-5"><a href="writing-code.html#cb33-5" aria-hidden="true"/></span>
+<span id="cb33-6"><a href="writing-code.html#cb33-6" aria-hidden="true"/>  <span class="kw">return</span>(<span class="kw">structure</span>(<span class="kw">list</span>(<span class="dt">values =</span> X, <span class="dt">call =</span> <span class="kw">match.call</span>(),</span>
+<span id="cb33-7"><a href="writing-code.html#cb33-7" aria-hidden="true"/>           <span class="dt">density =</span> density, <span class="dt">density.args =</span> density.args,</span>
+<span id="cb33-8"><a href="writing-code.html#cb33-8" aria-hidden="true"/>           <span class="dt">proposal =</span> proposal, <span class="dt">proposal.args =</span> proposal.args,</span>
+<span id="cb33-9"><a href="writing-code.html#cb33-9" aria-hidden="true"/>           <span class="dt">start =</span> start), <span class="dt">class =</span> <span class="st">"metropolis.hastings"</span>))</span>
+<span id="cb33-10"><a href="writing-code.html#cb33-10" aria-hidden="true"/></span>
+<span id="cb33-11"><a href="writing-code.html#cb33-11" aria-hidden="true"/>}<span class="co">#METROPOLIS.HASTINGS</span></span></code></pre></div>
+<p>If we are satisfied with how the code now looks (or we have other stuff to do), we can create one last temporary commit
+and squash it together with the previous two. A suitable commit message for the new commit could be:</p>
+<pre><code>Refactoring Metropolis-Hastings mixture of Gaussians.
+
+* Clarify function and variable names, following Bayesian Essentials
+    with R (Marin and Robert, 2014).
+* Switch to a functional implementation that takes arbitrary density
+    functions as arguments, each with separate optional arguments.
+* Store the simulation in an S3 object, to allow for methods.</code></pre>
+<p>
+Before submitting this commit for code review, we should write some unit tests to exercise the new functional interface
+of <code>metropolis.hastings()</code>. We will discuss this topic at length in Chapter <a href="troubleshooting-code.html#troubleshooting-code">9</a>: for the moment,
+let’s say we want to ensure that <code>metropolis.hastings()</code> only accepts valid values for all its arguments. For this
+purpose, we add code to sanitise them and to produce informative error messages along the lines of</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="writing-code.html#cb35-1" aria-hidden="true"/>  <span class="cf">if</span> (<span class="kw">missing</span>(density))</span>
+<span id="cb35-2"><a href="writing-code.html#cb35-2" aria-hidden="true"/>    <span class="kw">stop</span>(<span class="st">"missing a 'density' a function, with no default."</span>)</span>
+<span id="cb35-3"><a href="writing-code.html#cb35-3" aria-hidden="true"/>  <span class="cf">if</span> (<span class="op">!</span><span class="kw">is.function</span>(density))</span>
+<span id="cb35-4"><a href="writing-code.html#cb35-4" aria-hidden="true"/>    <span class="kw">stop</span>(<span class="st">"the 'density' argument must be a density function."</span>)</span></code></pre></div>
+<p>and then we add tests to check that valid values are accepted and invalid values are rejected.</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="writing-code.html#cb36-1" aria-hidden="true"/>error =<span class="st"> </span><span class="kw">try</span>(<span class="kw">metropolis.hastings</span>(<span class="dt">density =</span> dmix2norm, [...])</span>
+<span id="cb36-2"><a href="writing-code.html#cb36-2" aria-hidden="true"/><span class="kw">stopifnot</span>(<span class="op">!</span><span class="kw">is</span>(error, <span class="st">"try-error"</span>))</span>
+<span id="cb36-3"><a href="writing-code.html#cb36-3" aria-hidden="true"/><span class="dt">error =</span> <span class="kw">try</span>(<span class="kw">metropolis.hastings</span>(<span class="dt">density =</span> <span class="st">"not.a.function"</span>, [...])</span>
+<span id="cb36-4"><a href="writing-code.html#cb36-4" aria-hidden="true"/><span class="kw">stopifnot</span>(<span class="kw">is</span>(error, <span class="st">"try-error"</span>))</span></code></pre></div>
+<p>We should do the same for the function passed via the <code>proposal</code> argument. Furthermore, we should call both functions
+with the respective lists of optional arguments <code>density.args</code> and <code>proposal.args</code> to make sure that they execute
+successfully: individual argument values may look fine in isolation, but make <code>metropolis.hastings()</code> fail when passed
+together. As an example, the code to sanitise <code>proposal.args</code> may look like</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="writing-code.html#cb37-1" aria-hidden="true"/>  <span class="cf">if</span> (<span class="kw">missing</span>(proposal.args))</span>
+<span id="cb37-2"><a href="writing-code.html#cb37-2" aria-hidden="true"/>    proposal.args =<span class="st"> </span><span class="kw">list</span>()</span>
+<span id="cb37-3"><a href="writing-code.html#cb37-3" aria-hidden="true"/>  <span class="cf">if</span> (<span class="op">!</span><span class="kw">is.list</span>(proposal.args))</span>
+<span id="cb37-4"><a href="writing-code.html#cb37-4" aria-hidden="true"/>    <span class="kw">stop</span>(<span class="st">"the 'proposal.args' argument must be a list."</span>)</span></code></pre></div>
+<p>where we set <code>proposal.args</code> to an empty list as a fallback, default choice if the user does not provide it. The code to
+sanitise both <code>proposal</code> and <code>proposal.args</code> can then check that the <code>proposal</code> function runs and that its output has
+the right type and dimension.</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="writing-code.html#cb38-1" aria-hidden="true"/>  try.proposal =<span class="st"> </span><span class="kw">try</span>(<span class="kw">do.call</span>(proposal, proposal.args))</span>
+<span id="cb38-2"><a href="writing-code.html#cb38-2" aria-hidden="true"/>  <span class="cf">if</span> (<span class="kw">is</span>(try.proposal, <span class="st">"try-error"</span>))</span>
+<span id="cb38-3"><a href="writing-code.html#cb38-3" aria-hidden="true"/>    <span class="kw">stop</span>(<span class="st">"the 'proposal' function fails to run with "</span>,</span>
+<span id="cb38-4"><a href="writing-code.html#cb38-4" aria-hidden="true"/>         <span class="st">"the arguments in 'proposal.args'."</span>)</span>
+<span id="cb38-5"><a href="writing-code.html#cb38-5" aria-hidden="true"/>  <span class="cf">if</span> (<span class="op">!</span><span class="kw">is.numeric</span>(try.proposal) <span class="op">||</span></span>
+<span id="cb38-6"><a href="writing-code.html#cb38-6" aria-hidden="true"/><span class="st">      </span>(<span class="kw">length</span>(try.proposal) <span class="op">!=</span><span class="st"> </span><span class="kw">length</span>(start)))</span>
+<span id="cb38-7"><a href="writing-code.html#cb38-7" aria-hidden="true"/>    <span class="kw">stop</span>(<span class="st">"the 'proposal' function returns invalid samples."</span>)</span></code></pre></div>
+<p>The tests that exercise this code should call <code>metropolis.hastings()</code> with and without valid proposal
+functions, and with proposal functions with valid and invalid sets of optional arguments.</p>
+<p>As another example, we should check the number of iterations in the <code>iter</code> argument, picking again a sensible default
+value.</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="writing-code.html#cb39-1" aria-hidden="true"/>  <span class="cf">if</span> (<span class="kw">missing</span>(iter))</span>
+<span id="cb39-2"><a href="writing-code.html#cb39-2" aria-hidden="true"/>    iter =<span class="st"> </span><span class="dv">10</span></span>
+<span id="cb39-3"><a href="writing-code.html#cb39-3" aria-hidden="true"/>  <span class="cf">if</span> (<span class="op">!</span><span class="kw">is.numeric</span>(iter) <span class="op">||</span><span class="st"> </span>((x <span class="op">%/%</span><span class="st"> </span><span class="dv">1</span>) <span class="op">==</span><span class="st"> </span>x))</span>
+<span id="cb39-4"><a href="writing-code.html#cb39-4" aria-hidden="true"/>    <span class="kw">stop</span>(<span class="st">"the 'iter' argument must be a non-negative integer."</span>)</span></code></pre></div>
+<p>The corresponding software tests can then try boundary values (<code>0</code>), valid values (<code>10</code>), invalid values (<code>Inf</code>) and
+special values (<code>NaN</code>) to confirm that the sanitisation code is working as expected.</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="writing-code.html#cb40-1" aria-hidden="true"/>error =<span class="st"> </span><span class="kw">try</span>(<span class="kw">metropolis.hastings</span>([...], <span class="dt">iter =</span> <span class="dv">0</span>)</span>
+<span id="cb40-2"><a href="writing-code.html#cb40-2" aria-hidden="true"/><span class="kw">stopifnot</span>(<span class="op">!</span><span class="kw">is</span>(error, <span class="st">"try-error"</span>))</span>
+<span id="cb40-3"><a href="writing-code.html#cb40-3" aria-hidden="true"/><span class="dt">error =</span> <span class="kw">try</span>(<span class="kw">metropolis.hastings</span>([...], <span class="dt">iter =</span> <span class="dv">10</span>)</span>
+<span id="cb40-4"><a href="writing-code.html#cb40-4" aria-hidden="true"/><span class="kw">stopifnot</span>(<span class="op">!</span><span class="kw">is</span>(error, <span class="st">"try-error"</span>))</span>
+<span id="cb40-5"><a href="writing-code.html#cb40-5" aria-hidden="true"/><span class="dt">error =</span> <span class="kw">try</span>(<span class="kw">metropolis.hastings</span>([...], <span class="dt">iter =</span> <span class="ot">Inf</span>)</span>
+<span id="cb40-6"><a href="writing-code.html#cb40-6" aria-hidden="true"/><span class="kw">stopifnot</span>(<span class="kw">is</span>(error, <span class="st">"try-error"</span>))</span>
+<span id="cb40-7"><a href="writing-code.html#cb40-7" aria-hidden="true"/><span class="dt">error =</span> <span class="kw">try</span>(<span class="kw">metropolis.hastings</span>([...], <span class="dt">iter =</span> <span class="ot">NaN</span>)</span>
+<span id="cb40-8"><a href="writing-code.html#cb40-8" aria-hidden="true"/><span class="kw">stopifnot</span>(<span class="kw">is</span>(error, <span class="st">"try-error"</span>))</span></code></pre></div>
+<p>The sanitisation code should be included in one commit, and the tests in another: they will be in different files and
+have different purposes, so it would be inappropriate to commit them together. After doing that, our new implementation
+of Metropolis-Hastings is ready to be submitted for code review.</p>
+<!-- vim: set synmaxcol=600 textwidth=120 colorcolumn=120 spell wrap number: -->
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references hanging-indent">
+<div id="ref-kedro">
+<p>Alam, S., L. Bălan, N. L. Chan, G. Comym, Y. Dada, I. Danov, L. Hoang, et al. 2022. <em>Kedro</em>. <a href="https://github.com/kedro-org/kedro">https://github.com/kedro-org/kedro</a>.</p>
+</div>
+<div id="ref-arisholm">
+<p>Arisholm, E., H. Gallis, T. Dybå, and D. I. K. Sjøberg. 2007. “Evaluating Pair Programming with Respect to System Complexity and Programmer Expertise.” <em>IEEE Transactions on Software Engineering</em> 33 (2): 5–86.</p>
+</div>
+<div id="ref-git-crypt">
+<p>Ayer, A. 2022. <em>git-crypt: Transparent File Encryption in Git</em>. <a href="https://github.com/AGWA/git-crypt">https://github.com/AGWA/git-crypt</a>.</p>
+</div>
+<div id="ref-julia-style">
+<p>Bezanson, J., S. Karpinski, V. B. Shah, and et al. 2022. <em>Style Guide: The Julia Language</em>. <a href="https://docs.julialang.org/en/v1/manual/style-guide/index.html">https://docs.julialang.org/en/v1/manual/style-guide/index.html</a>.</p>
+</div>
+<div id="ref-projecttemplate">
+<p>Blagotic, A., D. Valle-Jones, J. Breen, J. Lundborg, J. M. White, J. Bode, K. White, et al. 2021. <em>ProjectTemplate: Automates the Creation of New Statistical Analysis Projects</em>. <a href="https://cran.r-project.org/web/packages/ProjectTemplate/">https://cran.r-project.org/web/packages/ProjectTemplate/</a>.</p>
+</div>
+<div id="ref-cran">
+<p>CRAN Team. 2022. <em>The Comprehensive R Archive Network</em>. <a href="https://cran.r-project.org/">https://cran.r-project.org/</a>.</p>
+</div>
+<div id="ref-pair-strength2">
+<p>de Lima Salge, C. A., and N. Berente. 2016. “Pair Programming vs. Solo Programming: What Do We Know After 15 Years of Research?” In <em>Proceedings of the Annual Hawaii International Conference on System Sciences</em>, 5398–5406.</p>
+</div>
+<div id="ref-docker">
+<p>Docker. 2022a. <em>Docker</em>. <a href="https://www.docker.com/">https://www.docker.com/</a>.</p>
+</div>
+<div id="ref-cicd">
+<p>Duvall, P. M., S. Matyas, and A. Glover. 2007. <em>Continuous Integration: Improving Software Quality and Reducing Risk</em>. Addison-Wesley.</p>
+</div>
+<div id="ref-refactoring">
+<p>Fowler, M. 2018. <em>Refactoring: Improving the Design of Existing Code</em>. 2nd ed. Addison-Wesley.</p>
+</div>
+<div id="ref-python-style">
+<p>Google. 2022d. <em>Google Python Style Guide</em>. <a href="https://google.github.io/styleguide/pyguide.html">https://google.github.io/styleguide/pyguide.html</a>.</p>
+</div>
+<div id="ref-git-repo">
+<p>Google. 2022e. <em>repo: The Multiple Git Repository Tool</em>. <a href="https://github.com/GerritCodeReview/git-repo">https://github.com/GerritCodeReview/git-repo</a>.</p>
+</div>
+<div id="ref-cookiecutter">
+<p>Greenfeld, A. R. 2022. <em>Cookiecutter Data Science</em>. <a href="https://drivendata.github.io/cookiecutter-data-science/">https://drivendata.github.io/cookiecutter-data-science/</a>.</p>
+</div>
+<div id="ref-jupyter-style">
+<p>Grotov, K., S. Titov, V. Sotnikov, Y. Golubev, and T. Bryksin. 2022. “A Large-Scale Comparison of Python Code in Jupyter Notebooks and Scripts.” In <em>Proceedings of the 19th Working Conference on Mining Software Repositories</em>, 1–12.</p>
+</div>
+<div id="ref-trunk-based">
+<p>Hammant, P. 2020. <em>Trunk Based Development</em>. <a href="https://trunkbaseddevelopment.com/">https://trunkbaseddevelopment.com/</a>.</p>
+</div>
+<div id="ref-microsoft-code-review2">
+<p>Jacek, C., M. Greiler, C. Bird, L. Panjer, and T. Coatta. 2018. “CodeFlow: Improving the Code Review Process at Microsoft.” <em>ACM Queue</em> 6 (5): 1–20.</p>
+</div>
+<div id="ref-pycharm">
+<p>JetBrains. 2022b. <em>PyCharm</em>. <a href="https://www.jetbrains.com/pycharm/">https://www.jetbrains.com/pycharm/</a>.</p>
+</div>
+<div id="ref-juliapkg">
+<p>JuliaLang. 2022. <em>Pkg: Package Manager for the Julia Programming Language</em>. <a href="https://pkgdocs.julialang.org/v1/">https://pkgdocs.julialang.org/v1/</a>.</p>
+</div>
+<div id="ref-kernigham">
+<p>Kernigham, B. W., and R. Pike. 1999. <em>The Practice of Programming</em>. Addison-Wesley.</p>
+</div>
+<div id="ref-kriasoft">
+<p>Kriasoft. 2016. <em>Folder Structure Conventions</em>. <a href="https://github.com/kriasoft/Folder-Structure-Conventions">https://github.com/kriasoft/Folder-Structure-Conventions</a>.</p>
+</div>
+<div id="ref-kernel-repo">
+<p>Linux Kernel Organization. 2022. <em>The Linux Kernel Archives</em>. <a href="https://kernel.org/">https://kernel.org/</a>.</p>
+</div>
+<div id="ref-programming-styles">
+<p>Lopes, C. V. 2020. <em>Exercises in Programming Style</em>. CRC Press.</p>
+</div>
+<div id="ref-robert">
+<p>Marin, J.-M., and C. P. Robert. 2014. <em>Bayesian Essentials with R</em>. 2nd ed. Springer.</p>
+</div>
+<div id="ref-vscode">
+<p>Microsoft. 2022i. <em>Visual Studio Code: Code Editing, Redefined</em>. <a href="https://code.visualstudio.com/">https://code.visualstudio.com/</a>.</p>
+</div>
+<div id="ref-repro1">
+<p>Nature. 2016. “Reality Check on Reproducibility.” <em>Nature</em> 533 (437).</p>
+</div>
+<div id="ref-philo">
+<p>Ousterhout, J. 2018. <em>A Philosophy of Software Design</em>. Yaknyam Press.</p>
+</div>
+<div id="ref-shopify-pair">
+<p>Popescu, M. 2019. <em>Pair Programming Explained</em>. <a href="https://shopify.engineering/pair-programming-explained">https://shopify.engineering/pair-programming-explained</a>.</p>
+</div>
+<div id="ref-monorepo">
+<p>Potvin, R., and J. Levenberg. 2016. “Why Google Stores Billions of Lines of Code in a Single Repository.” <em>Communications of the ACM</em> 59 (7): 78–87.</p>
+</div>
+<div id="ref-sem-ver">
+<p>Preston-Werner, T. 2022. <em>Semantic Versioning</em>. <a href="https://semver.org/">https://semver.org/</a>.</p>
+</div>
+<div id="ref-jupyter">
+<p>Project Jupyter. 2022. <em>Jupyter</em>. <a href="https://jupyter.org/">https://jupyter.org/</a>.</p>
+</div>
+<div id="ref-pip">
+<p>Python Software Foundation. 2022a. <em>PyPI: The Python Package Index</em>. <a href="https://pypi.org/">https://pypi.org/</a>.</p>
+</div>
+<div id="ref-qs">
+<p>QS Quacquarelli Symonds. 2022. <em>QS World University Rankings</em>. <a href="https://www.topuniversities.com/qs-world-university-rankings">https://www.topuniversities.com/qs-world-university-rankings</a>.</p>
+</div>
+<div id="ref-goproject">
+<p>Quest, K. 2022. <em>Standard Go Project Layout</em>. <a href="https://github.com/golang-standards/project-layout">https://github.com/golang-standards/project-layout</a>.</p>
+</div>
+<div id="ref-microsoft-code-review">
+<p>Rigby, P., and C. Bird. 2013. “Convergent Contemporary Software Peer Review Practices.” In <em>Proceedings of the 9th Joint Meeting of the European Software Engineering Conference and the ACM SIGSOFT Symposium on the Foundations of Software Engineering</em>, 202–12.</p>
+</div>
+<div id="ref-google-code-review">
+<p>Sadowski, C., E. Söderberg, L. Church, M. Sipko, and A. Bacchelli. 2018. “Modern Code Review: A Case Study at Google.” In <em>Proceedings of the 40th International Conference on Software Engineering: Software Engineering in Practice</em>, 181–90.</p>
+</div>
+<div id="ref-saltz">
+<p>Saltz, J. S., and I. Shamshurin. 2017. “Does Pair Programming Work in a Data Science Context? An Initial Case Study.” In <em>Proceedings of the IEEE International Conference on Big Data</em>, 2348–54.</p>
+</div>
+<div id="ref-hidden-debt">
+<p>Sculley, D., G. Holt, D. Golovin, E. Davydov, T. Phillips, D. Ebner, V. Chaudhary, M. Young, J.-F. Crespo, and D. Dennison. 2015. “Hidden Technical Debt in Machine Learning Systems.” In <em>Proceedings of the 28th International Conference on Neural Information Processing Systems (NIPS)</em>, 2:2503–11.</p>
+</div>
+<div id="ref-mob-strength">
+<p>Shiraishi, M., H. Washizaki, Y. Fukazawa, and J. Yoder. 2019. “Mob Programming: A Systematic Literature Review.” In <em>Proceedings of the IEEE 43rd Annual Computer Software and Applications Conference</em>, 616–21.</p>
+</div>
+<div id="ref-simmons">
+<p>Simmons, A. J., S. Barnett, J. Rivera-Villicana, A. Bajaj, and R. Vasa. 2020. “A Large-Scale Comparative Analysis of Coding Standard Conformance in Open-Source Data Science Projects.” In <em>Proceedings of the 14th ACM / IEEE International Symposium on Empirical Software Engineering and Measurement (ESEM)</em>, 1–11.</p>
+</div>
+<div id="ref-shopify-mob">
+<p>Swoboda, S. 2021. <em>Connecting with Mob Programming</em>. <a href="https://shopify.engineering/mob-programming">https://shopify.engineering/mob-programming</a>.</p>
+</div>
+<div id="ref-tang">
+<p>Tang, Y., R. Khatchadouriant, M. Bagherzadeh, R. Singh, A. Stewart, and A. Raja. 2021. “An Empirical Study of Refactorings and Technical Debt in Machine Learning Systems.” In <em>Proceedings of the 2021 IEEE/ACM 43rd International Conference on Software Engineering</em>, 238–50.</p>
+</div>
+<div id="ref-repro2">
+<p>Tatman, R., J. VanderPlas, and S. Dane. 2018. “A Practical Taxonomy of Reproducibility for Machine Learning Research.” In <em>Proceedings of 2nd the Reproducibility in Machine Learning Workshop at ICML 2018</em>.</p>
+</div>
+<div id="ref-git-git">
+<p>The Git Development Team. 2022. <em>Git Source Code Mirror</em>. <a href="https://github.com/git/git">https://github.com/git/git</a>.</p>
+</div>
+<div id="ref-kubernetes">
+<p>The Kubernetes Authors. 2022a. <em>Kubernetes</em>. <a href="https://kubernetes.io/">https://kubernetes.io/</a>.</p>
+</div>
+<div id="ref-pragpro">
+<p>Thomas, D., and A. Hunt. 2019. <em>The Pragmatic Programmer: Your Journey to Mastery</em>. Anniversary. Addison-Wesley.</p>
+</div>
+<div id="ref-tian">
+<p>Tian, Y., Y. Zhang, K.-J. Stol, L. Jiang, and H. Liu. 2022. “What Makes a Good Commit Message?” In <em>Proceedings of the 44th International Conference on Software Engineering</em>, 1–13.</p>
+</div>
+<div id="ref-tornhill">
+<p>Tornhill, A., and M. Borg. 2022. “Code Red: The Business Impact of Code Quality: A Quantitative Study of 39 Proprietary Production Codebases.” In <em>Proceedings of International Conference on Technical Debt</em>, 1–10.</p>
+</div>
+<div id="ref-shopify-review">
+<p>Toro, A. L. 2020. <em>Great Code Reviews–the Superpower Your Team Needs</em>. <a href="https://shopify.engineering/great-code-reviews">https://shopify.engineering/great-code-reviews</a>.</p>
+</div>
+<div id="ref-piranha">
+<p>Uber. 2022. <em>Piranha: A Tool for Refactoring Code Related to Feature Flag APIs</em>. <a href="https://github.com/uber/piranha">https://github.com/uber/piranha</a>.</p>
+</div>
+<div id="ref-oort">
+<p>van Oort, B., L. Cruz, M. Aniche, and A. van Deursen. 2021. “The Prevalence of Code Smells in Machine Learning Projects.” In <em>Proceedings of the 2021 IEEE/ACM 1st Workshop on AI Engineering: Software Engineering for AI</em>, 35–42.</p>
+</div>
+<div id="ref-pep8">
+<p>van Rossum, G., B. Warsaw, and N. Coghlan. 2001. <em>PEP 8: Style Guide for Python Code</em>. <a href="https://peps.python.org/pep-0008/">https://peps.python.org/pep-0008/</a>.</p>
+</div>
+<div id="ref-meta-git">
+<p>Walters, M., and P. Lee Scott. 2021. <em>meta-git: Manage Your Meta Repo and Child Git Repositories</em>. <a href="https://www.npmjs.com/package/meta-git">https://www.npmjs.com/package/meta-git</a>.</p>
+</div>
+<div id="ref-r-style">
+<p>Wickham, H. 2022b. <em>The tidyverse Style Guide</em>. <a href="https://style.tidyverse.org/">https://style.tidyverse.org/</a>.</p>
+</div>
+<div id="ref-12factor">
+<p>Wiggins, A. 2017. <em>The Twelve Factor App</em>. <a href="https://12factor.net">https://12factor.net</a>.</p>
+</div>
+<div id="ref-pair-strength1">
+<p>Williams, L., R. R. Kessler, and W. Cunningham. 2000. “Strengthening the Case for Pair Programming.” <em>IEEE Software</em> 17 (4): 19–25.</p>
+</div>
+<div id="ref-zhang">
+<p>Zhang, H., L. Cruz, and A. van Deursen. 2022. “Code Smells for Machine Learning Applications.” In <em>Proceedings of the 1st International Conference on AI Engineering: Software Engineering for AI</em>, 1–12.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr/>
+<ol start="14">
+<li id="fn14"><p>A REPL
+(“Read-Eval-Print Loop”) is an interactive programming environment where the user can write code statements that are
+instantly evaluated and whose outputs are returned to the user. They are invaluable to run software piecewise and
+understand the behaviour of its components.<a href="writing-code.html#fnref14" class="footnote-back">↩︎</a></p></li>
+<li id="fn15"><p>Many technical terms have completely different meanings in software
+engineering: consider “test” (statistical test vs unit test), “regression” (the statistical model vs adversely affecting
+existing software functionality) or “feature” (a variable in a data set vs a distinguishing characteristic of a piece of
+software). Similar conflicts may happen with the terminology from other domains as well.<a href="writing-code.html#fnref15" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+                
+</body>
+</html>
