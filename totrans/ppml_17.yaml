@@ -1,16 +1,22 @@
 - en: Chapter 10 Tools for Developing Pipelines
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第十章 开发管道的工具
 - en: 原文：[https://ppml.dev/development-tools.html](https://ppml.dev/development-tools.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://ppml.dev/development-tools.html](https://ppml.dev/development-tools.html)
 - en: In Part [**2**](design-code.html#) we discussed how we may adapt software engineering
     practices to the development of machine learning pipelines. Practices are predicated
     on the tools we adopt to implement them, which will be the focus of Part [**3**](development-tools.html#).
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 在第[**2**](design-code.html#)部分，我们讨论了如何将软件工程实践应用于机器学习管道的开发。这些实践依赖于我们采用的工具来实现，这将是第[**3**](development-tools.html#)部分的重点。
 - en: In this chapter, we present an up-to-date selection of tools for data exploration,
     experiment tracking (Section [10.1](development-tools.html#exploration-experiment-tracking)),
     for developing code (Section [10.2](development-tools.html#code-development))
@@ -21,12 +27,16 @@
     We fully expect that the tools available at the time of this writing will consolidate
     over time, as has happened to other types of productivity tools in software engineering
     and systems administration.
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本章中，我们展示了最新的数据探索、实验跟踪（第[10.1](development-tools.html#exploration-experiment-tracking)节）、代码开发（第[10.2](development-tools.html#code-development)节）以及构建、测试和文档化（第[10.3](development-tools.html#build-test-doc-tools)节）的工具选择。这些工具共同提供了一个适合创建机器学习管道的开发环境。然后，我们将转向用于在生产中管理和维护管道的工具（第[11](production-tools.html#production-tools)章）。我们完全预期，在撰写本文时可用到的工具将随着时间的推移而巩固，正如软件工程和系统管理中其他类型的生产力工具所发生的那样。
 - en: 10.1 Data Exploration and Experiment Tracking
+  id: totrans-4
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 10.1 数据探索和实验跟踪
 - en: 'Many issues in machine learning pipelines can be traced to data that are not
     sufficiently clean or well-structured and therefore are not suitable for training
     or inference. Early exploratory analyses, together with domain experts, will improve
@@ -52,38 +62,53 @@
     repository and then compare different approaches and their parameters on the basis
     of the metrics that we chose (Section [5.3.1](design-code.html#scoping-pipeline))
     for model evaluation and validation (Section [5.3.4](design-code.html#model-pipeline)).'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 机器学习管道中的许多问题都可以追溯到不够干净或结构良好的数据，因此不适合用于训练或推理。早期的探索性分析和领域专家的参与将提高我们对数据的理解，并有助于提高其质量，使其达到我们可以解决第[5.2.1](design-code.html#data-debt)节和[9.1](troubleshooting-code.html#data-problems)节中讨论的问题的程度。在这些探索中编写的代码是初始原型，经过多次打磨和重构后，将成为管道的数据摄取和准备模块（第[5.3.3](design-code.html#data-pipeline)节）。使用程序化方法进行数据探索、清理和转换始终是首选，因为它提供了可重复的结果，并使代码版本化（第[6.5](writing-code.html#versioning)节）。我们应使用基于属性的测试（第[9.4.2](troubleshooting-code.html#testing-what)节）来测试我们产生的代码，使用样本数据检查其是否正确工作；相同的测试可以在管道生命周期内作为新数据的质量门重用。我们将在第[10.2](development-tools.html#code-development)节中建议不同的工具来编写此类代码：如Jupyter笔记本（Project
+    Jupyter [2022](#ref-jupyter)）；如RStudio（RStudio [2022](#ref-r-studio)[a](#ref-r-studio)）这样的IDE；如NumPy（Harris等人[2020](#ref-numpy)）和Pandas（McKinney
+    [2017](#ref-pandas)）这样的Python库；如dplyr（Wickham, François等人[2022](#ref-dplyr)）、tidyr（Wickham,
+    Girlich和RStudio [2022](#ref-tidyr)）和janitor（Firke等人[2022](#ref-janitor)）这样的R包，只是其中的一小部分例子。此外，大多数集成MLOps工具都包含实验跟踪，因此我们可以将这些探索保存在一个集中式和版本化的存储库中，然后根据我们选择的指标（第[5.3.1](design-code.html#scoping-pipeline)节）对模型进行评估和验证（第[5.3.4](design-code.html#model-pipeline)节）。
 - en: 'In addition, high-level visual tools to explore and clean the data may be useful
     to involve domain experts who may not be comfortable with programming. Some examples
     are:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，高级可视化工具可以用于探索和清理数据，这可能有助于涉及那些可能不熟悉编程的领域专家。以下是一些例子：
 - en: 'Openrefine (Openrefine [2022](#ref-openrefine)): an open-source client-server
     solution that provides a collaborative web interface for working on data, as well
     as client libraries to automate tasks using the API exposed by the server.'
+  id: totrans-7
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Openrefine (Openrefine [2022](#ref-openrefine))：这是一个开源的客户端-服务器解决方案，它提供了一个协作的Web界面来处理数据，以及客户端库，用于通过服务器公开的API自动化任务。
 - en: 'Trifacta (Trifacta [2022](#ref-trifacta)): a commercial solution that provides
     an easy-to-use interface to work on data quality, data transformation and data
     processing pipelines in general. It is designed for non-technical users and supports
     deployment on all major cloud providers.'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Trifacta (Trifacta [2022](#ref-trifacta))：这是一个商业解决方案，提供了一个易于使用的界面来处理数据质量、数据转换和一般的数据处理管道。它为非技术用户设计，并支持在所有主要云服务提供商上部署。
 - en: 'Tableau Prep Builder (Tableau Software [2022](#ref-tableau)): offers a straightforward
     interface to interactively clean, format and visualise data from different sources.
     It is available both as a local, graphical application and as a web application.'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Tableau Prep Builder（Tableau Software [2022](#ref-tableau)）：提供了一个直观的界面，可以交互式地清理、格式化和可视化来自不同来源的数据。它既可作为本地图形应用程序，也可作为Web应用程序使用。
 - en: Web solutions like Airtable (Formagrid [2022](#ref-airtable)), which provides
     the functionality of a database combined with the features of a spreadsheet, may
     also be suitable for working on small datasets in a collaborative manner.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 类似于Airtable（Formagrid [2022](#ref-airtable)）这样的Web解决方案，它结合了数据库的功能和电子表格的特性，也可能适合以协作方式处理小型数据集。
 - en: 'Data exploration is an iterative process: interactively visualising its outputs
     as they change is essential. We can do that directly from the Python and R code
     we use to explore the data if we are using either Jupyter or RMarkdown (Xie, Allaire,
@@ -92,8 +117,13 @@
     code and from Jupyter notebooks with a visual tool like Tableau (Tableau Software
     [2022](#ref-tableau)) or with a programmatic tool like Dash (Plotly [2022](#ref-dash)[a](#ref-dash))
     that can generate one. We will discuss more tools in Section [11.3](production-tools.html#production-dashboard).'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据探索是一个迭代的过程：交互式地可视化其输出随时间变化是至关重要的。如果我们使用Jupyter或RMarkdown（Xie, Allaire, and
+    Grolemund [2022](#ref-rmarkdown)）来探索数据，我们可以直接从Python和R代码中这样做。作为替代方案，我们可以使用Python、R、Julia或Bokeh（Bokeh
+    [2022](#ref-bokeh)）代码以及Jupyter笔记本，通过Tableau（Tableau Software [2022](#ref-tableau)）或Dash（Plotly
+    [2022](#ref-dash)[a](#ref-dash)）等可视化工具生成一个专门的交互式仪表板。我们将在第[11.3](production-tools.html#production-dashboard)节中讨论更多工具。
 - en: If the data are too large for the tools above to handle, we can store them using
     “big data” frameworks based on Hadoop (The Apache Software Foundation [2022](#ref-hadoop)[c](#ref-hadoop))
     like Cloudera (Cloudera [2022](#ref-cloudera)). We can then use tools like Apache
@@ -108,8 +138,15 @@
     as well as machine learning applications development and delivery, supporting
     integration with data engineering, data science and machine learning open-source
     projects.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果数据量太大，无法使用上述工具处理，我们可以使用基于Hadoop（Apache Software Foundation [2022](#ref-hadoop)[c](#ref-hadoop)）的“大数据”框架来存储，例如Cloudera（Cloudera
+    [2022](#ref-cloudera)）。然后我们可以使用Apache Pig（Apache Software Foundation [2022](#ref-pig)[e](#ref-pig)）、Apache
+    Hive（Apache Software Foundation [2022](#ref-hive)[d](#ref-hive)）、Apache Impala（Apache
+    Software Foundation [2022](#ref-apache-impala)[b](#ref-apache-impala)）和Apache
+    Spark（Apache Software Foundation [2022](#ref-spark)[f](#ref-spark)）等工具来操作它们，并实现我们自己的数据摄取和清洗；或者我们可以使用集成的云解决方案，如Snowflake（Snowflake
+    [2022](#ref-snowflake)）和Databricks Lakehouse（Databricks [2022](#ref-databricks)）。这些集成解决方案的优势在于，它们处理数据管理的各个方面以及机器学习应用的开发和交付，支持与数据工程、数据科学和机器学习开源项目的集成。
 - en: 'Databricks, for instance, includes many open-source components. One is Delta
     Lake (The Delta Lake Project Authors [2022](#ref-delta-lake)[a](#ref-delta-lake)):
     an abstraction layer for existing data lakes and object storage like S3 which
@@ -118,16 +155,24 @@
     version of MLflow (Zaharia and The Linux Foundation [2022](#ref-mlflow)) an open-source
     library-agnostic platform to manage machine learning pipelines which we will describe
     in more detail in Section [11.2](production-tools.html#production-software).'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，Databricks包含许多开源组件。其中一个是Delta Lake（The Delta Lake Project Authors [2022](#ref-delta-lake)[a](#ref-delta-lake)）：一个用于现有数据湖和对象存储（如S3）的抽象层，与Apache
+    Spark完全兼容，并支持诸如ACID事务、模式强制和数据版本化等功能。Databricks还提供MLflow（Zaharia and The Linux
+    Foundation [2022](#ref-mlflow)）的托管版本，这是一个开源库无关的平台，用于管理机器学习管道，我们将在第[11.2](production-tools.html#production-software)节中更详细地描述。
 - en: DVC (Data Version Control) (Iterative [2022](#ref-dvc)[b](#ref-dvc)) is an open-source
     tool that applies GitOps principles to data.[^(25)](#fn25) DVC manages data and
     machine learning models through metadata stored in text files, and it uses Git
     (The Git Development Team [2022](#ref-git-git)) to version them and to track their
     provenance. DVC is both a command-line tool and a library, and is language- and
     framework-agnostic.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: DVC（数据版本控制）（迭代 [2022](#ref-dvc)[b](#ref-dvc)）是一个开源工具，它将 GitOps 原则应用于数据。[^(25)](#fn25)
+    DVC 通过存储在文本文件中的元数据来管理数据和机器学习模型，并使用 Git（Git 开发团队 [2022](#ref-git-git)）来对其进行版本控制和跟踪其来源。DVC
+    既是命令行工具也是库，且与语言和框架无关。
 - en: 'DVC and MLflow (Zaharia and The Linux Foundation [2022](#ref-mlflow)) implement
     experiment tracking in two different ways. DVC organises experiments within Git
     projects using commits, branches and tags. It automatically tracks data dependencies,
@@ -139,18 +184,28 @@
     by the clients for each experiment run into a file or a database. Larger outputs
     like data files, images and model artefacts are saved separately, for instance,
     in an object storage.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: DVC 和 MLflow（Zaharia 和 Linux 基金会 [2022](#ref-mlflow)）以两种不同的方式实现实验跟踪。DVC 使用提交、分支和标签在
+    Git 项目中组织实验。它自动跟踪数据依赖、机器学习代码、参数和模型工件：我们可以通过关联的指标使用其命令行或其网页界面来比较不同的实验。MLflow 则提供跟踪服务器和客户端库，这些库可以集成到
+    Python、R 和 Java 代码中，如第 [5.3.6](design-code.html#monitoring-pipeline) 节所述。跟踪服务器将客户端为每个实验运行收集的元数据、参数、指标和标签存储到文件或数据库中。较大的输出，如数据文件、图像和模型工件，则分别保存，例如，在对象存储中。
 - en: 'In addition, there are also proprietary SaaS offerings with experiment tracking
     and model registry functionalities, to name a few: Neptune (Neptune Labs [2022](#ref-neptune)),
     Comet (Comet [2022](#ref-comet)) and Weights & Biases (Weights & Biases [2022](#ref-wab));
     more details on this type of software are in Section [11.2](production-tools.html#production-software).'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，还有一些专有 SaaS 提供具有实验跟踪和模型注册功能的解决方案，例如：Neptune（Neptune Labs [2022](#ref-neptune)）、Comet（Comet
+    [2022](#ref-comet)）和 Weights & Biases（Weights & Biases [2022](#ref-wab)）；关于此类软件的更多详细信息请参阅第
+    [11.2](production-tools.html#production-software) 节。
 - en: 10.2 Code Development
+  id: totrans-17
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 10.2 代码开发
 - en: Modern software development is a collaborative effort based on knowledge sharing,
     constant iteration and continuous feedback. Distributed version control systems
     and Git (The Git Development Team [2022](#ref-git-git)) in particular make all
@@ -162,75 +217,108 @@
     and data science professionals should be familiar with it as well because it is
     used in and influences the design of software like DVC that is used to work with
     pipelines.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 现代软件开发是一种基于知识共享、持续迭代和持续反馈的协作努力。特别是分布式版本控制系统和 Git（Git 开发团队 [2022](#ref-git-git)）通过设定代码版本控制和协作开发的行业标准，并通过支持流行的平台如
+    GitHub 和 GitLab，使得所有这一切成为可能。我们使用 DevOps 提供和部署软件的能力在很大程度上依赖于 Git 以及语义版本控制（Preston-Werner
+    [2022](#ref-sem-ver)）和提交标签。因此，Git 是每个软件工程师都应该熟悉的工具。机器学习和数据科学专业人士也应该熟悉它，因为它被用于并影响了像
+    DVC 这样的软件的设计，这些软件用于处理管道。
 - en: 'Choosing the right set of tools for writing code is a matter of prior experience
     with specific tools and personal taste. It may be a decision made either by individual
     developers or at the level of the team, research group or company the developers
     belong to in order to standardise on a predetermined set of software. In either
     case, to work efficiently on a machine learning pipeline we will need support
     for:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 选择编写代码的正确工具集是一个关于特定工具的先前经验和个人品味的问题。这可能是由个人开发者或团队、研究小组或开发者所属的公司在标准化预定的软件集时做出的决定。在任何情况下，为了在机器学习管道上高效工作，我们都需要支持：
 - en: the programming languages that we will use (Section [6.1](writing-code.html#programming-language));
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将使用的编程语言（第[6.1节](writing-code.html#programming-language)）；
 - en: enforcing coding standards (Section [6.3](writing-code.html#coding-standards));
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 强制执行编码标准（第[6.3节](writing-code.html#coding-standards)）；
 - en: automated refactoring (Section [6.7](writing-code.html#refactoring));
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 自动重构（第[6.7节](writing-code.html#refactoring)）；
 - en: integrations with source code versioning (Section [6.5](writing-code.html#versioning));
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 与源代码版本控制的集成（第[6.5节](writing-code.html#versioning)）；
 - en: running software tests and summarising their results (Section [9.4](troubleshooting-code.html#testing));
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 运行软件测试并总结其结果（第[9.4节](troubleshooting-code.html#testing)）；
 - en: interactive debugging (Section [9.4](troubleshooting-code.html#testing));
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 交互式调试（第[9.4节](troubleshooting-code.html#testing)）；
 - en: managing the containers (Section [7.1.4](deploying-code.html#container-packaging))
     that encapsulate the developing environment, and the ability to remotely work
     within them.
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 管理封装开发环境的容器（第[7.1.4节](deploying-code.html#container-packaging)），以及在其中远程工作的能力。
 - en: 'Ensuring that all developers use similar tooling is useful for compliance,
     to simplify the training of new developers and to improve reproducibility. (For
     the same reasons, we should avoid polyglot programming as discussed in Section
     [5.2.4](design-code.html#code-debt)). There is a wide variety of tools to choose
     from, falling into the following categories:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 确保所有开发者使用类似的工具对于合规性、简化新开发者的培训以及提高可重复性是有用的。（出于同样的原因，我们应该避免在[第5.2.4节](design-code.html#code-debt)中讨论的多语言编程）。可供选择的各种工具很多，可以分为以下几类：
 - en: modern and relatively lightweight *code editors* such as Atom (Atom [2022](#ref-atom))
     and Visual Studio Code (Microsoft [2022](#ref-vs-code)[d](#ref-vs-code), also
     known as VS Code) that can be extended to provide the features above with the
     use of third-party extensions;
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 现代且相对轻量级的*代码编辑器*，如Atom（Atom [2022](#ref-atom)）和Visual Studio Code（Microsoft
+    [2022](#ref-vs-code)[d](#ref-vs-code)，也称为VS Code），可以通过使用第三方扩展来扩展以提供上述功能。
 - en: '*integrated development environments* (IDEs) such as Eclipse (Eclipse Foundation
     [2022](#ref-eclipse-ide)[a](#ref-eclipse-ide)) and JetBrains IntelliJ IDEA (JetBrains
     [2022](#ref-jetbrains-idea)[a](#ref-jetbrains-idea));'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*集成开发环境*，如Eclipse（Eclipse Foundation [2022](#ref-eclipse-ide)[a](#ref-eclipse-ide)）和JetBrains
+    IntelliJ IDEA（JetBrains [2022](#ref-jetbrains-idea)[a](#ref-jetbrains-idea)）；'
 - en: '*shared interactive computing platforms* such as Jupyter notebooks (Project
     Jupyter [2022](#ref-jupyter)).'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*共享交互式计算平台*，如Jupyter笔记本（Project Jupyter [2022](#ref-jupyter)）；'
 - en: 10.2.1 Code Editors and IDEs
+  id: totrans-31
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 10.2.1 代码编辑器和IDE；
 - en: The main difference between an IDE and a code editor is the amount of functionality
     that is built-in and configured with sane defaults. On the one hand, IDEs integrate
     most functionality out of the box on a single programming language. For instance,
@@ -243,8 +331,12 @@
     which integrates a console, an editor that supports syntax highlighting and direct
     code execution, tools for plotting and inspecting R objects as well as history,
     debugging and workspace management.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 集成开发环境（IDE）与代码编辑器之间的主要区别在于内置功能和默认设置的配置量。一方面，IDEs在单个编程语言上提供大多数功能。例如，PyCharm（JetBrains
+    [2022](#ref-pycharm)[b](#ref-pycharm)）提供了代码检查、代码补全、语法高亮、版本控制、调试、重构、测试执行以及容器集成等功能，就像其他主要IDE一样，还支持Python
+    REPL，并为NumPy和Pandas等科学计算库创建的对象提供内省。R语言的参考IDE是RStudio（RStudio [2022](#ref-r-studio)[a](#ref-r-studio)），它集成了控制台、支持语法高亮和直接代码执行的编辑器、用于绘图和检查R对象的工具以及历史记录、调试和工作区管理。
 - en: On the other hand, code editors are more limited out of the box, but they can
     reach feature parity with IDEs by installing and configuring third-party extensions.
     For example, VS Code can provide similar functionality to PyCharm by using a language
@@ -260,8 +352,18 @@
     VS Code [2022](#ref-julia-languageserver)[a](#ref-julia-languageserver)) and the
     VS Code Julia extension (Julia VS Code [2022](#ref-vs-code-julia)[b](#ref-vs-code-julia))
     for Julia.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，代码编辑器在出厂时功能较为有限，但通过安装和配置第三方扩展，它们可以达到与集成开发环境（IDE）相媲美的功能。例如，VS Code可以通过使用符合语言服务器协议规范的*Python
+    语言服务器*（Palantir [2022](#ref-python-language-server)）来提供与 PyCharm 相似的功能（Microsoft
+    [2022](#ref-lsp)[f](#ref-lsp)）。其他替代方案包括 Mypy（The mypy Project [2014](#ref-mypy)）、Pylance（Microsoft
+    [2022](#ref-pylance)[a](#ref-pylance)）（基于微软的 Pyright（Pyright [2022](#ref-pyright)）静态类型检查器）、Pytype（Batchelder
+    和等 [2022](#ref-pytype)）（来自 Google）和 Pyre（Meta Platforms [2022](#ref-pyre)[a](#ref-pyre)）（来自
+    Facebook）。通过语言服务器包（Lai 和 Ren [2022](#ref-r-languageserver)）和 VS Code R 扩展（REditorSupport
+    [2022](#ref-vs-code-r)）以及 R 语言，以及 LanguageServer.jl（Julia VS Code [2022](#ref-julia-languageserver)[a](#ref-julia-languageserver)）和
+    VS Code Julia 扩展（Julia VS Code [2022](#ref-vs-code-julia)[b](#ref-vs-code-julia)）为
+    Julia 提供相同级别的集成。
 - en: 'Both code editors and IDEs can also run as web applications: a web browser
     session connects to a cloud instance replicating a common, unified development
     environment. This approach has two advantages: it reduces technical debt arising
@@ -285,8 +387,20 @@
     that follows the development patterns and the practices presented in this book.
     It integrates with GitHub, DVC, MLflow, Jenkins (Jenkins [2022](#ref-jenkins)[b](#ref-jenkins))
     and many other open-source tools.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码编辑器和 IDE 也可以作为网络应用程序运行：一个网络浏览器会话连接到一个云实例，该实例复制了一个常见、统一的开发环境。这种方法有两个优点：它减少了因多语言编程而产生的技术债务（第
+    [5.2.4](design-code.html#code-debt) 节）并使得在本地运行过于复杂或资源密集的环境中也能进行开发成为可能（第 [5.3.2](design-code.html#baseline-pipeline)
+    节）。像 VS Code 这样的代码编辑器提供了网络界面（Microsoft [2022](#ref-vscode-dev)[j](#ref-vscode-dev)），用于导航文件和仓库以及提交小的代码更改，而像
+    GitHub Codespaces（GitHub [2022](#ref-github-codespaces)[a](#ref-github-codespaces)）和
+    AWS Cloud9（Amazon [2022](#ref-aws-cloud9)[c](#ref-aws-cloud9)）这样的 IDE 则提供了由虚拟机支持的完整云开发环境（第
+    [7.1.3](deploying-code.html#vm-packaging) 节）。我们还可以选择使用 Docker（Docker [2022](#ref-docker)[a](#ref-docker)）和
+    Kubernetes（The Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes)）来自行托管它们：Eclipse
+    Che（Eclipse Che [2022](#ref-eclipse-che)）、Eclipse Theia（Eclipse Foundation [2022](#ref-eclipse-theia)[b](#ref-eclipse-theia)）和
+    GitPod（Gitpod [2022](#ref-gitpod)）的基础容器镜像都很容易获得。至于 R，RStudio Server（RStudio [2022](#ref-r-studio-server)[b](#ref-r-studio-server)）通过连接到远程服务器上运行的
+    R 会话的基于浏览器的界面，提供了与 RStudio IDE 相同的功能。我们还想指出 DagsHub（DagsHub [2022](#ref-dagshub)）作为一个协作平台：它为遵循本书中介绍的开发模式和惯例的数据科学和机器学习项目提供了一个共享的工作环境。它集成了
+    GitHub、DVC、MLflow、Jenkins（Jenkins [2022](#ref-jenkins)[b](#ref-jenkins)）和许多其他开源工具。
 - en: 'Finally, we would like to mention one last set of code editors: Vim, Neovim
     (Neovim [2022](#ref-neovim)) and Emacs (GNU Project [2022](#ref-gnu-emacs)). They
     are valued by developers who prefer to create a modular development environment
@@ -294,12 +408,18 @@
     and Python through plug-ins that communicate with the respective language servers.
     Although their learning curve is steep at first, they allow for unparalleled speed
     of action on code bases of any size in the long run.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们想提及最后一组代码编辑器：Vim、Neovim（Neovim [2022](#ref-neovim)）和 Emacs（GNU Project
+    [2022](#ref-gnu-emacs)）。它们受到那些喜欢创建符合特定需求模块化开发环境的开发者的青睐。这两个编辑器都通过与各自语言服务器通信的插件，为
+    R、Julia 和 Python 提供了全面的支持。尽管它们的初始学习曲线很陡峭，但长期来看，它们允许在任意大小的代码库上实现无与伦比的操作速度。
 - en: 10.2.2 Notebooks
+  id: totrans-36
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 10.2.2 笔记本
 - en: In recent years, notebooks have seen widespread adoption in machine learning
     projects and, more in general, in scientific research. They are typically implemented
     as Jupyter notebooks (Project Jupyter [2022](#ref-jupyter), from the programming
@@ -312,8 +432,13 @@
     also known as Colab) or from MLOps platforms such as Amazon SageMaker (Amazon
     [2022](#ref-sagemaker)[d](#ref-sagemaker)) or Azure Machine Learning (Microsoft
     [2022](#ref-azureml)[c](#ref-azureml)).
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 近年来，笔记本在机器学习项目中得到了广泛的应用，更普遍地说，在科学研究中也得到了应用。它们通常实现为Jupyter笔记本（Project Jupyter
+    [2022](#ref-jupyter)，由支持*Ju*lia、*Pyt*hon和*R*的编程语言开发），这是一个理想的交互式开发工具，用于构建概念证明。Jupyter笔记本旨在快速测试想法，评估不同替代方案的权衡，并使用Markdown格式与文档混合共享代码、结果和图表。它们可以直接从GitHub和GitLab、专门的协作平台（如Google
+    Colaboratory [2022](#ref-colab)[g](#ref-colab)，也称为Colab）或MLOps平台（如Amazon SageMaker
+    [2022](#ref-sagemaker)[d](#ref-sagemaker))或Azure Machine Learning [2022](#ref-azureml)[c](#ref-azureml))执行。
 - en: 'Despite considerable programming language support and a significant adoption
     by the scientific community, the use of Jupyter notebooks has several shortcomings
     in the context of modern development practices (Chapter [6](writing-code.html#writing-code),
@@ -321,34 +446,44 @@
     notebook file format stores code, outputs, images and Markdown text in a single
     huge JSON object to produce a self-contained, portable artefact. This architectural
     choice has four major shortcomings:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管有相当多的编程语言支持以及科学界的广泛采用，但Jupyter笔记本在现代开发实践中存在一些缺点（见[6](writing-code.html#writing-code)章，特别是[6.3](writing-code.html#coding-standards)节）。Jupyter笔记本文件格式将代码、输出、图像和Markdown文本存储在一个单一的巨大JSON对象中，以产生一个自包含、可携带的工件。这种架构选择有四个主要缺点：
 - en: It is challenging to version a notebook correctly because stochastic outputs
     change every time it runs.
+  id: totrans-39
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 正确版本化笔记本是一项挑战，因为随机输出每次运行都会变化。
 - en: Representing code in “cells” that can be executed in any order is at odds with
     the imperative nature of the programming languages used in machine learning software.
+  id: totrans-40
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在“单元格”中表示代码，这些单元格可以按任何顺序执行，这与机器学习软件中使用的编程语言的命令式本质相矛盾。
 - en: Dividing code into cells to interleave their outputs and the surrounding text
     impacts code modularity and code reuse and reduces our ability to produce good
     abstractions. We can accept some level of coupling between cells (because they
     run code in a shared, hidden global environment) and add glue code to make things
     work, but that leads to an increase in technical debt (Sections [5.2.3](design-code.html#architecture-debt)
     and [5.2.4](design-code.html#code-debt)).
+  id: totrans-41
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将代码分成单元格以交错它们的输出和周围文本会影响代码的模块化和代码重用，并降低我们产生良好抽象的能力。我们可以接受单元格之间一定程度的耦合（因为它们在共享的、隐藏的全局环境中运行代码）并添加粘合代码来使事物工作，但这会导致技术债务的增加（见[5.2.3](design-code.html#architecture-debt)和[5.2.4](design-code.html#code-debt)节）。
 - en: Notebooks do not have any built-in support for automated testing (Section [9.4](troubleshooting-code.html#testing))
     or deployment (Chapter [7](deploying-code.html#deploying-code)). While this can
     be acceptable for exploring data and prototyping models (Section [5.3.2](design-code.html#baseline-pipeline)),
     it makes them unsuitable for developing production-level software.
+  id: totrans-42
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 笔记本没有内置对自动化测试（见[9.4](troubleshooting-code.html#testing)节）或部署（见[7](deploying-code.html#deploying-code)章）的支持。虽然这可以接受用于探索数据和原型设计（见[5.3.2](design-code.html#baseline-pipeline)节），但它使它们不适合开发生产级软件。
 - en: 'In particular, executing cells in a non-linear order can lead to inconsistent
     results because cells affect each other’s environment, effectively creating a
     “hidden state” that is very difficult to track. The only way to achieve reproducibility
@@ -361,8 +496,13 @@
     and nbval (Cortes-Ortuno et al. [2022](#ref-nbval))), automation (Papermill (Nteract
     Team [2022](#ref-papermill)[a](#ref-papermill))) and quality assurance (nbQA (nbQA
     Team [2022](#ref-nbqa))).'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 尤其是按照非线性顺序执行单元格可能会导致结果不一致，因为单元格会相互影响环境，从而实际上创建了一个非常难以追踪的“隐藏状态”。实现可重复性的唯一方法是从笔记本的顶部开始，始终在一个干净的环境中执行所有代码。因此，我们无法直接使用笔记本在生产环境中提供机器学习模型。然而，这种情况在未来可能会改变：目前正在进行开发用于比较和合并（nbtime（Alnæs
+    和 Project Jupyter [2022](#ref-nbdime)）和 nbstripout（Rathgeber [2022](#ref-nbstripout)））的工具，自动测试（testbook（Nteract
+    Team [2022](#ref-testbook)[b](#ref-testbook)）和 nbval（Cortes-Ortuno 等人 [2022](#ref-nbval)）），自动化（Papermill（Nteract
+    Team [2022](#ref-papermill)[a](#ref-papermill)））和质量保证（nbQA（nbQA Team [2022](#ref-nbqa)））。
 - en: RMarkdown and Julia notebooks are fully reproducible because they execute all
     the code in the notebook from the top in a clean environment by default, so there
     is no state inconsistency after we change the code in a cell and re-run it. Furthermore,
@@ -376,38 +516,59 @@
     (with git2r (Widgren and et al. [2022](#ref-git2r))) to generate shareable HTML
     pages containing time-stamped, versioned code blocks and outputs. For reproducibility,
     each analysis is run in a new R session.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: RMarkdown 和 Julia 笔记本由于默认情况下从顶部开始在一个干净的环境中执行笔记本中的所有代码，因此它们是完全可重复的，所以我们在单元格中更改代码并重新运行后，不会出现状态不一致。此外，它们比
+    Jupyter 笔记本更容易进行版本控制和比较，因为它们在编译时将文本、输出和图像存储在单独的 Markdown、PDF 或 HTML 文件中。RMarkdown
+    笔记本得到了 RStudio 的良好支持，它提供了代码自动完成、代码检查和建议，但它们可以用任何文本编辑器编辑，并通过命令行编译。我们还可以使用 workflowr
+    R 包（Blischak、Carbonetto 和 Stephens [2022](#ref-workflowr)）增强它们，该包结合了文献编程（使用 knitr（Xie
+    [2015](#ref-knitr)））和版本控制（使用 git2r（Widgren 和等人 [2022](#ref-git2r)））来生成包含时间戳和版本代码块及输出的可共享
+    HTML 页面。为了实现可重复性，每个分析都在新的 R 会话中运行。
 - en: 'Given how Jupyter notebooks are geared towards prototyping, we suggest that
     they should be integrated in a modern development workflow as follows:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 Jupyter 笔记本主要面向原型设计，我们建议它们应集成到现代开发工作流程中，如下所示：
 - en: Experiment and build a prototype of the code using notebooks.
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用笔记本进行实验并构建代码的原型。
 - en: When the prototype is complete, move the code to a new Git repository and start
     refactoring it using an IDE or a code editor to make it modular and scalable.
     At the same time, add software tests.
+  id: totrans-47
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当原型完成时，将代码移至新的 Git 仓库，并使用 IDE 或代码编辑器开始重构它，使其模块化和可扩展。同时，添加软件测试。
 - en: Add docstrings (Goodger and Rossum [2022](#ref-py-docstrings)) to the code using
     the text in Jupyter Markdown as a base.
+  id: totrans-48
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 Jupyter Markdown 中的文本作为基础，为代码添加文档字符串（Goodger 和 Rossum [2022](#ref-py-docstrings)）。
 - en: Package your artefact using pip (Python Software Foundation [2022](#ref-pip)[a](#ref-pip))
     and setuptool (Python Packaging Authority [2022](#ref-setuptools)) (Section [7.1.2](deploying-code.html#distribution-packaging))
     for later use as a module within the machine learning pipeline or as a library
     that will be imported by other Jupyter notebooks.
+  id: totrans-49
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 pip（Python 软件基金会 [2022](#ref-pip)[a](#ref-pip)）和 setuptool（Python 打包权威机构
+    [2022](#ref-setuptools)）（第 [7.1.2](deploying-code.html#distribution-packaging)
+    节）打包您的工件，以便以后作为机器学习管道中的模块或将被其他 Jupyter 笔记本导入的库使用。
 - en: 10.2.3 Accessing Data and Documentation
+  id: totrans-50
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 10.2.3 访问数据和文档
 - en: Quickly accessing documentation during development is invaluable when working
     on complex code bases. We can use offline documentation browsers such as Velocity
     (Silverlake Software [2022](#ref-velocity)) or Dash, or the open-source Zeal (The
@@ -416,8 +577,11 @@
     programming languages and machine learning frameworks, and also integrate with
     the leading IDEs and code editors. Overall, they are interchangeable in terms
     of features.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 在开发过程中快速访问文档对于处理复杂的代码库来说是无价的。我们可以使用离线文档浏览器，例如Velocity（Silverlake Software [2022](#ref-velocity)）或Dash，或者开源的Zeal（The
+    Delta Lake Project Authors [2022](#ref-zeal)[b](#ref-zeal)）。这三个都可以自动下载主要编程语言和机器学习框架的*docsets*（离线使用的HTML文档存档），并且可以与领先的IDE和代码编辑器集成。总的来说，它们在功能上可以互换。
 - en: As for accessing data, object storage like AWS Amazon S3 is becoming the de
     facto standard for data interchange in data science and machine learning. Therefore,
     it is very useful to integrate code editors and IDEs with libraries capable of
@@ -425,20 +589,27 @@
     buckets across multiple cloud vendors. A popular example is MinIO (MinIO [2022](#ref-minio)),
     which is fully compatible with the S3 APIs and provides an open-source SDK for
     multiple languages.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 至于访问数据，像AWS Amazon S3这样的对象存储正在成为数据科学和机器学习数据交换的事实标准。因此，将代码编辑器和IDE与能够抽象化跨多个云供应商的对象存储桶中数据的列出、下载和上传的库集成是非常有用的。一个流行的例子是MinIO（MinIO
+    [2022](#ref-minio)），它与S3 API完全兼容，并为多种语言提供开源SDK。
 - en: 10.3 Build, Test and Documentation Tools
+  id: totrans-53
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 10.3 构建测试和文档工具
 - en: Using appropriate tools for building, testing and performing software quality
     assurance is important to improve ergonomics and reduce the likelihood of errors.
     In addition, we may want to use the same set of tools in all environments (developer
     workstations, staging and production environments) and in all stages of development,
     both to avoid inconsistencies and to maintain a common environment shared by all
     the people who work on the pipeline.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用适当的工具进行构建、测试和执行软件质量保证对于提高人体工程学并减少错误的可能性很重要。此外，我们可能希望在所有环境中（开发者工作站、预生产和生产环境）以及开发的各个阶段使用相同的工具集，以避免不一致并维护所有在管道上工作的人共享的通用环境。
 - en: 'Currently, containers (Section [7.1.4](deploying-code.html#container-packaging))
     are the most common way of packaging the modules of a machine learning pipeline:
     either individually with Docker, in groups with Docker compose (Docker [2022](#ref-docker-compose)[c](#ref-docker-compose))
@@ -447,8 +618,14 @@
     or MicroK8s (Canonical [2022](#ref-microk8s)[b](#ref-microk8s)). All these solutions
     build on Docker, with different trade-offs in terms of architecture and functionality,
     and therefore support the deployment practices described in Chapter [7](deploying-code.html#deploying-code).'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前，容器（第[7.1.4](deploying-code.html#container-packaging)节）是机器学习管道模块打包的最常见方式：要么单独使用Docker，要么使用Docker
+    Compose（Docker [2022](#ref-docker-compose)[c](#ref-docker-compose)）或Podman（The
+    Containers Organization [2022](#ref-podman)）进行分组，或者作为单节点Kubernetes使用Minikube（The
+    Kubernetes Authors [2022](#ref-minikube)[c](#ref-minikube)）或MicroK8s（Canonical
+    [2022](#ref-microk8s)[b](#ref-microk8s)）。所有这些解决方案都基于Docker，在架构和功能方面有不同的权衡，因此支持第[7](deploying-code.html#deploying-code)章中描述的部署实践。
 - en: One of the points of using containers is to isolate different modules and applications
     from each other. We can further decouple our code from the software installed
     within each container by using `pipenv` or `pip` (Python Software Foundation [2022](#ref-pip)[a](#ref-pip))
@@ -466,8 +643,15 @@
     machine learning and data science applications (Anaconda [2022](#ref-conda-data-science)[a](#ref-conda-data-science))
     but is rather cumbersome to use. The R counterpart of Pipenv is the packrat package
     (Ushey et al. [2022](#ref-packrat)), which also uses a locally installed R interpreter.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用容器的一个要点是将不同的模块和应用程序彼此隔离。我们可以通过使用`pipenv`或`pip`（Python软件基金会[2022](#ref-pip)[a](#ref-pip)）加上`virtualenv`（Python打包权威机构（PyPA）[2022](#ref-virtualenv)）来创建隔离的Python环境，并管理对包和Python解释器特定版本的依赖（避免与全局安装的版本冲突）。我们可以使用pyenv（Yamashita,
+    Stephenson, and et al. [2022](#ref-pyenv)）或Poetry（Kalnytskyi [2022](#ref-poetry)[a](#ref-poetry)）安装和切换多个Python版本，或者使用支持最常用解释器、编译器和开发工具的多个运行时版本的通用工具，如asdf（Manohar
+    [2022](#ref-asdf)）。如果我们的需求过于复杂，我们可能需要考虑像Pipenv（Reitz and Python Packaging Authority
+    (PyPA) [2022](#ref-pipenv)）和Conda（Anaconda [2022](#ref-conda)[b](#ref-conda)）这样的工具。特别是，Conda对机器学习和数据科学应用的支持很广泛（Anaconda
+    [2022](#ref-conda-data-science)[a](#ref-conda-data-science)），但使用起来相当繁琐。Pipenv在R中的对应工具是packrat包（Ushey
+    et al. [2022](#ref-packrat)），它也使用本地安装的R解释器。
 - en: 'Automated tests are another key feature of modern practices for developing
     (Section [6.5](writing-code.html#versioning)), refactoring (Section [6.7](writing-code.html#refactoring))
     and maintaining software (Section [9.4](troubleshooting-code.html#testing)). Each
@@ -484,8 +668,11 @@
     and doctest (Python Software Foundation [2022](#ref-doctest)[b](#ref-doctest))
     packages in the Python standard library, the testthat R (Wickham, RStudio, and
     R Core Team [2022](#ref-testthat)) package and the Julia test module.'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 自动化测试是现代软件开发（第[6.5节](writing-code.html#versioning)）、重构（第[6.7节](writing-code.html#refactoring)）和维护（第[9.4节](troubleshooting-code.html#testing)）实践中的另一个关键特性。每个测试都应该在一个干净的环境中运行，例如每次运行时都会重新创建的容器：我们希望避免一个测试的执行影响另一个测试的结果。（我们在第[7章](deploying-code.html#deploying-code)中讨论的自动化和可重复部署实践是自动化测试的关键推动力！）测试结果应通过CI/CD管道以通过/失败的形式包含，以促进代码审查（第[6.6节](writing-code.html#code-review)）并确保管道始终处于工作状态。有许多框架和库可以用来实现第[9.4节](troubleshooting-code.html#testing)中描述的测试类型。对于单个模块，我们可以使用Python标准库中的unittest（Python软件基金会[2022](#ref-unittest)[c](#ref-unittest)）和doctest（Python软件基金会[2022](#ref-doctest)[b](#ref-doctest)）包，R的testthat包（Wickham,
+    RStudio, and R Core Team [2022](#ref-testthat)）以及Julia的测试模块。
 - en: 'We should also test that the machine learning pipeline as a whole works as
     expected. Tools like Airflow (The Apache Software Foundation [2022](#ref-airflow)[a](#ref-airflow)),
     DVC and Pachyderm (Pachyderm [2022](#ref-pachyderm)) use the DAG that maps the
@@ -508,8 +695,19 @@
     framework for implementing unit tests on the configuration and on the conditional
     logic of the pipeline code and a command-line tool for linting the pipeline. GitLab
     provides APIs to trigger validation and linting for the same purpose.'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还应该测试整个机器学习管道是否按预期工作。像 Airflow（Apache 软件基金会 [2022](#ref-airflow)[a](#ref-airflow)）、DVC
+    和 Pachyderm（Pachyderm [2022](#ref-pachyderm)）这样的工具使用 DAG 来映射模块之间的依赖关系，以便进行本地、迭代的测试。在
+    DVC 和 Pachyderm 中，依赖关系在声明性配置文件（例如，DVC 的 `dvc.yaml`）中指定，该文件可以手动编写或使用辅助命令程序化构建。DVC
+    没有任何内置的测试支持，因此我们应该自己为模块提供工具（用于单元测试）并将整个管道嵌入到测试框架中（用于集成、系统测试和验收测试）。在 Airflow 中，管道用
+    Python 代码实现，依赖关系编码在专门的 `DAG` 对象中：这使得使用 unittest 测试单个模块变得容易，并可以使用如 Great Expectations（Superconductive
+    [2022](#ref-ge)）等框架验证数据。至于在 GitHub、GitLab 或 Jenkins 上运行的管道，我们可以使用动作和运行器（Gitlab
+    [2022](#ref-gitlab-runner)[a](#ref-gitlab-runner)；Nektos [2022](#ref-act)；Jenkins
+    [2022](#ref-jenkinsfile-runner)[a](#ref-jenkinsfile-runner)），尽管有一些限制，但可以使用容器运行完整的管道或其部分。另一种选择是直接通过迭代提交更改到测试分支并将它们推送到主线分支来强制
+    CI 运行可能相关的任何测试。Jenkins 还提供用于在配置和管道代码的条件逻辑上实施单元测试的测试框架以及用于检查管道的命令行工具。GitLab 提供用于触发验证和代码检查的
+    API。
 - en: 'Enforcing code styles and standards, which we discussed in Section [6.3](writing-code.html#coding-standards),
     is a crucial complement to testing to ensure that we produce maintainable, working
     software. Pylint (Logilab and PyCQA and contributors [2022](#ref-pylint)) is the
@@ -520,25 +718,38 @@
     (a style guide checker), pyflakes (a source files checker for errors) and mccabe
     (a tool to check the complexity of the code). A comprehensive linting step for
     Python code should apply a sequence of tools such as the following:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 强制执行代码风格和标准，我们在第 [6.3](writing-code.html#coding-standards) 节中讨论过，这是测试的重要补充，以确保我们生产出可维护、可工作的软件。Pylint（Logilab
+    和 PyCQA 及其贡献者 [2022](#ref-pylint)）是 Python 的参考静态代码分析器和代码检查器：它基于 PEP-8（Python 增强提案
+    8），这是包含有关如何编写 Python 代码的指南和最佳实践的官方文档。另一种选择是 Flake8（Stapleton Cordasco [2022](#ref-flake8)），它基于其他工具，如
+    pycodestyle（风格指南检查器）、pyflakes（源文件错误检查器）和 mccabe（检查代码复杂性的工具）。Python 代码的全面代码检查步骤应应用以下工具序列：
 - en: isort (Crosley [2022](#ref-isort)) to sort imports alphabetically and separate
     into sections by type;
+  id: totrans-60
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: isort（Crosley [2022](#ref-isort)）用于按字母顺序排序导入并按类型分隔成部分；
 - en: black (Langa and et al. [2022](#ref-black)) to format the code;
+  id: totrans-61
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: black（Langa 和等 [2022](#ref-black)）用于格式化代码；
 - en: flake8 to check the code style;
+  id: totrans-62
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: flake8 用于检查代码风格；
 - en: pylint as the final step to run static code analysis.
+  id: totrans-63
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 作为最后一步运行静态代码分析的 pylint；
 - en: The styler package (Müller and Walthert [2022](#ref-r-styler)[a](#ref-r-styler)),
     which enforces compliance with the tidyverse style guide (Wickham [2022](#ref-r-style)[b](#ref-r-style)),
     and the lintr package (Hester et al. [2022](#ref-r-lintr)), which performs static
@@ -546,8 +757,14 @@
     fill the roles of the Python packages above for R code. Both lintr (see `vignette("continuous-integration"`))
     and styler support CI/CD integration (Müller and Walthert [2022](#ref-r-styler-cicd)[b](#ref-r-styler-cicd)),
     accept user-provided code style policies and integrate with RStudio.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: The styler 包（Müller 和 Walthert [2022](#ref-r-styler)[a](#ref-r-styler)），它强制执行
+    tidyverse 风格指南（Wickham [2022](#ref-r-style)[b](#ref-r-style)）的合规性，以及 lintr 包（Hester
+    等 [2022](#ref-r-lintr)），它执行静态代码分析并识别语法错误和可能的语义问题，填补了上述 Python 包在 R 代码中的角色。Both
+    lintr（参见 `vignette("continuous-integration"`））和 styler 支持CI/CD集成（Müller 和 Walthert
+    [2022](#ref-r-styler-cicd)[b](#ref-r-styler-cicd)），接受用户提供的代码风格策略，并与 RStudio 集成。
 - en: Writing documentation and keeping it up-to-date is also key to maintaining machine
     learning pipelines over time. Documentation should be versioned like code and
     kept as close as possible to the code it refers to. Documentation on module, function
@@ -564,417 +781,683 @@
     using Sphinx (Kalnytskyi [2022](#ref-sphinxcontrib-openapi)[b](#ref-sphinxcontrib-openapi)),
     Apispec (Loria and et al. [2022](#ref-apispec)) or a framework such as FastApi
     (Ramírez [2022](#ref-fastapi)) and Flask (Pallets Team [2022](#ref-flask)).
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 编写文档并保持其更新是维护机器学习管道随时间持续运行的关键。文档应像代码一样进行版本控制，并尽可能接近其引用的代码。模块、函数和类接口或方法定义的文档可以放置在Python（Goodger
+    和 Rossum [2022](#ref-py-docstrings)）和 Julia（Krämer [2022](#ref-jl-docstrings)）代码中，使用结构化注释在文档字符串或本地的
+    Sphinx 格式；然后 Sphinx（Brandl 和 Sphinx 团队 [2022](#ref-sphinx)）可以通过 Sphinx `autodoc`
+    扩展将这些注释编译成各种文件格式的文档（参见第 [8.2](documenting-code.html#apidocs) 节的示例）。Sphinx 还可以用于自动（重新）编译文档，使用
+    CI（“Read the Docs” (Read the Docs [2022](#ref-readthedocs)）），并将 OpenAPI 规范文件渲染为静态
+    HTML 页面（Kalnytskyi [2022](#ref-sphinxcontrib-redoc)[c](#ref-sphinxcontrib-redoc)）。OpenAPI
+    规范文件反过来可以自动从文档字符串生成，使用 Sphinx（Kalnytskyi [2022](#ref-sphinxcontrib-openapi)[b](#ref-sphinxcontrib-openapi)），Apispec（Loria
+    和等 [2022](#ref-apispec)）或如 FastApi（Ramírez [2022](#ref-fastapi)）和 Flask（Pallets
+    团队 [2022](#ref-flask)）这样的框架。
 - en: 'In R, we can use comments in the Doxygen (van Heesch [2022](#ref-doxygen))
     format for the same purpose: they can be parsed by the Roxygen2 package (Wickham,
     Danenberg, et al. [2022](#ref-roxygen2)) to generate R documentation in various
     formats as discussed in Section [8.2](documenting-code.html#apidocs).'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 R 中，我们可以使用 Doxygen（van Heesch [2022](#ref-doxygen)）格式的注释来达到相同的目的：它们可以被 Roxygen2
+    包（Wickham, Danenberg 等 [2022](#ref-roxygen2)）解析，以生成各种格式的 R 文档，如第 [8.2](documenting-code.html#apidocs)
+    节所述。
 - en: References
+  id: totrans-67
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: Alnæs, M. S., and Project Jupyter. 2022\. *nbdime – Diffing and Merging of Jupyter
     Notebooks*. [https://nbdime.readthedocs.io](https://nbdime.readthedocs.io).
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: Alnæs, M. S. 和 Project Jupyter. 2022. *nbdime – Jupyter Notebooks 的差异和合并*. [https://nbdime.readthedocs.io](https://nbdime.readthedocs.io).
 - en: Amazon. 2022c. *AWS Cloud9 Documentation*. [https://docs.aws.amazon.com/cloud9](https://docs.aws.amazon.com/cloud9).
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: Amazon. 2022c. *AWS Cloud9 文档*. [https://docs.aws.amazon.com/cloud9](https://docs.aws.amazon.com/cloud9).
 - en: 'Amazon. 2022d. *Machine Learning: Amazon Sagemaker*. [https://aws.amazon.com/sagemaker/](https://aws.amazon.com/sagemaker/).'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: Amazon. 2022d. *机器学习：Amazon Sagemaker*. [https://aws.amazon.com/sagemaker/](https://aws.amazon.com/sagemaker/).
 - en: Anaconda. 2022a. *Conda for Data Scientists*. [https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/data-science.html](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/data-science.html).
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: Anaconda. 2022a. *数据科学家使用的 Conda*. [https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/data-science.html](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/data-science.html).
 - en: Anaconda. 2022b. *Package, Dependency and Environment Management for Any Language*.
     [https://docs.conda.io](https://docs.conda.io).
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: Anaconda. 2022b. *任何语言的包、依赖和环境管理*. [https://docs.conda.io](https://docs.conda.io).
 - en: Apache Software Foundation. 2022b. *Impala Documentation*. [https://impala.apache.org/impala-docs.html](https://impala.apache.org/impala-docs.html).
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache 软件基金会. 2022b. *Impala 文档*. [https://impala.apache.org/impala-docs.html](https://impala.apache.org/impala-docs.html).
 - en: Atom. 2022\. *A hackable text editor for the 21st Century*. [https://atom.io/](https://atom.io/).
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: Atom. 2022\. *21 世纪可黑客攻击的文本编辑器*. [https://atom.io/](https://atom.io/).
 - en: Batchelder, N., and et al. 2022\. *A Static Type Analyzer for Python Code*.
     [https://google.github.io/pytype](https://google.github.io/pytype).
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: Batchelder, N. 和其他作者. 2022\. *Python 代码的静态类型分析器*. [https://google.github.io/pytype](https://google.github.io/pytype).
 - en: 'Blischak, J. D., P. Carbonetto, and M. Stephens. 2022\. *workflowr: A Framework
     for Reproducible and Collaborative Data Science*. [https://cran.r-project.org/web/packages/workflowr](https://cran.r-project.org/web/packages/workflowr).'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: Blischak, J. D., P. Carbonetto, and M. Stephens. 2022\. *workflowr：一个用于可重复和协作数据科学的框架*.
+    [https://cran.r-project.org/web/packages/workflowr](https://cran.r-project.org/web/packages/workflowr).
 - en: Bokeh. 2022\. *Bokeh Documentation*. [https://docs.bokeh.org/en/latest/](https://docs.bokeh.org/en/latest/).
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: Bokeh. 2022\. *Bokeh 文档*. [https://docs.bokeh.org/en/latest/](https://docs.bokeh.org/en/latest/).
 - en: 'Brandl, G., and the Sphinx Team. 2022\. *Sphinx: Python Documentation Generator*.
     [https://www.sphinx-doc.org/en/master/](https://www.sphinx-doc.org/en/master/).'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: Brandl, G. 和 Sphinx 团队. 2022\. *Sphinx：Python 文档生成器*. [https://www.sphinx-doc.org/en/master/](https://www.sphinx-doc.org/en/master/).
 - en: Canonical. 2022b. *MicroK8s Documentation*. [https://microk8s.io/docs](https://microk8s.io/docs).
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: Canonical. 2022b. *MicroK8s 文档*. [https://microk8s.io/docs](https://microk8s.io/docs).
 - en: 'Cloudera. 2022\. *Cloudera: The Hybrid Data Company*. [https://www.cloudera.com/](https://www.cloudera.com/).'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: Cloudera. 2022\. *Cloudera：混合数据公司*. [https://www.cloudera.com/](https://www.cloudera.com/).
 - en: Comet. 2022\. *Comet Documentation*. [https://www.comet.com/docs/v2](https://www.comet.com/docs/v2).
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: Comet. 2022\. *Comet 文档*. [https://www.comet.com/docs/v2](https://www.comet.com/docs/v2).
 - en: 'Cortes-Ortuno, D., O. Laslett, T. Kluyver, V. Fauske, M. Albert, MinRK, O.
     Hovorka, and H. Fangohr. 2022\. *IPython Notebook Validation for py.test: Documentation*.
     [https://nbval.readthedocs.io](https://nbval.readthedocs.io).'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: Cortes-Ortuno, D., O. Laslett, T. Kluyver, V. Fauske, M. Albert, MinRK, O. Hovorka,
+    and H. Fangohr. 2022\. *为 py.test 进行 IPython Notebook 验证的文档*. [https://nbval.readthedocs.io](https://nbval.readthedocs.io).
 - en: Crosley, T. 2022\. *A Python Utility and Library to Sort Imports*. [https://pycqa.github.io/isort/](https://pycqa.github.io/isort/).
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: Crosley, T. 2022\. *一个用于排序导入的 Python 工具和库*. [https://pycqa.github.io/isort/](https://pycqa.github.io/isort/).
 - en: DagsHub. 2022\. *Welcome to the DagsHub Docs*. [https://dagshub.com/docs/](https://dagshub.com/docs/).
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: DagsHub. 2022\. *欢迎来到 DagsHub 文档*. [https://dagshub.com/docs/](https://dagshub.com/docs/).
 - en: Databricks. 2022\. *Databricks Documentation*. [https://docs.databricks.com/applications/machine-learning/index.html](https://docs.databricks.com/applications/machine-learning/index.html).
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: Databricks. 2022\. *Databricks 文档*. [https://docs.databricks.com/applications/machine-learning/index.html](https://docs.databricks.com/applications/machine-learning/index.html).
 - en: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
 - en: Docker. 2022c. *Overview of Docker Compose*. [https://docs.docker.com/compose](https://docs.docker.com/compose).
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: Docker. 2022c. *Docker Compose 概述*. [https://docs.docker.com/compose](https://docs.docker.com/compose).
 - en: Eclipse Che. 2022\. *Run your favorite IDE on Kubernetes*. [https://www.eclipse.org/che/technology/](https://www.eclipse.org/che/technology/).
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: Eclipse Che. 2022\. *在 Kubernetes 上运行您最喜欢的集成开发环境*. [https://www.eclipse.org/che/technology/](https://www.eclipse.org/che/technology/).
 - en: Eclipse Foundation. 2022a. *Desktop IDEs*. [https://www.eclipse.org/ide/](https://www.eclipse.org/ide/).
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: Eclipse 基金会. 2022a. *桌面集成开发环境*. [https://www.eclipse.org/ide/](https://www.eclipse.org/ide/).
 - en: 'Eclipse Foundation. 2022b. *Theia: Cloud & Desktop IDE*. [https://theia-ide.org/docs/](https://theia-ide.org/docs/).'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: Eclipse 基金会. 2022b. *Theia：云和桌面集成开发环境*. [https://theia-ide.org/docs/](https://theia-ide.org/docs/).
 - en: 'Firke, S., B. Denney, C. Haid, R. Knight, M. Grosser, and J. Zadra. 2022\.
     *janitor: Simple Tools for Examining and Cleaning Dirty Data*. [https://cran.r-project.org/web/packages/janitor](https://cran.r-project.org/web/packages/janitor).'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: Firke, S., B. Denney, C. Haid, R. Knight, M. Grosser, 和 J. Zadra. 2022\. *janitor：用于检查和清理脏数据的简单工具*.
+    [https://cran.r-project.org/web/packages/janitor](https://cran.r-project.org/web/packages/janitor).
 - en: Formagrid. 2022\. *Airtable Is a Modern Spreadsheet Platform with Database Functionalities*.
     [https://airtable.com](https://airtable.com).
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: Formagrid. 2022\. *Airtable 是一个具有数据库功能的现代电子表格平台*. [https://airtable.com](https://airtable.com).
 - en: GitHub. 2022a. *GitHub Codespaces*. [https://github.com/features/codespaces](https://github.com/features/codespaces).
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: GitHub. 2022a. *GitHub Codespaces*. [https://github.com/features/codespaces](https://github.com/features/codespaces).
 - en: Gitlab. 2022a. *GitLab Runner Documentation*. [https://docs.gitlab.com/runner/](https://docs.gitlab.com/runner/).
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: Gitlab. 2022a. *GitLab Runner 文档*. [https://docs.gitlab.com/runner/](https://docs.gitlab.com/runner/).
 - en: Gitlab. 2022b. *What Is GitOps?* [https://about.gitlab.com/topics/gitops](https://about.gitlab.com/topics/gitops).
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: Gitlab. 2022b. *什么是 GitOps?*. [https://about.gitlab.com/topics/gitops](https://about.gitlab.com/topics/gitops).
 - en: 'Gitpod. 2022\. *Gitpod: Always Ready to Code*. [https://www.gitpod.io](https://www.gitpod.io).'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: Gitpod. 2022\. *Gitpod：始终准备编码*. [https://www.gitpod.io](https://www.gitpod.io).
 - en: GNU Project. 2022\. *GNU EMacs*. [https://www.gnu.org/software/emacs/](https://www.gnu.org/software/emacs/).
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: GNU Project. 2022\. *GNU EMacs*. [https://www.gnu.org/software/emacs/](https://www.gnu.org/software/emacs/).
 - en: 'Goodger, D., and G. van Rossum. 2022\. *PEP 257: Docstring Conventions*. [https://peps.python.org/pep-0257/\#what-is-a-docstring]](https://peps.python.org/pep-0257/\#what-is-a-docstring%5D).'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: Goodger, D., and G. van Rossum. 2022\. *PEP 257：文档字符串约定*. [https://peps.python.org/pep-0257/\#what-is-a-docstring]](https://peps.python.org/pep-0257/\#what-is-a-docstring%5D).
 - en: Google. 2022g. *Welcome to Colab!* [https://colab.research.google.com](https://colab.research.google.com).
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: Google. 2022g. *欢迎使用 Colab!* [https://colab.research.google.com](https://colab.research.google.com).
 - en: 'Harris, C. R., K. J. Millman, Stéfan J. van der Walt, R. Gommers, P. Virtanen,
     D. Cournapeau, E. Wieser, et al. 2020\. “Array Programming with NumPy.” *Nature*
     585 (7285): 357–62.'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Harris, C. R., K. J. Millman, Stéfan J. van der Walt, R. Gommers, P. Virtanen,
+    D. Cournapeau, E. Wieser, et al. 2020\. “NumPy 的数组编程.” *自然* 585 (7285): 357–62.'
 - en: Hester, J., F. Angly, R. Hyde, M. Chirico, K. Ren, and A. Rosenstock. 2022\.
     *A Linter for R Code*. [https://cran.r-project.org/web/packages/lintr](https://cran.r-project.org/web/packages/lintr).
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: Hester, J., F. Angly, R. Hyde, M. Chirico, K. Ren, and A. Rosenstock. 2022\.
+    *R 代码的代码检查器*. [https://cran.r-project.org/web/packages/lintr](https://cran.r-project.org/web/packages/lintr).
 - en: 'Iterative. 2022b. *DVC: Data Version Control. Git for Data & Models*. [https://github.com/iterative/dvc](https://github.com/iterative/dvc).'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Iterative. 2022b. *DVC: 数据版本控制。数据与模型的 Git*. [https://github.com/iterative/dvc](https://github.com/iterative/dvc).'
 - en: Jenkins. 2022a. *A Command Line Tool to Run Jenkinsfile as a Function*. [https://github.com/jenkinsci/jenkinsfile-runner](https://github.com/jenkinsci/jenkinsfile-runner).
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: Jenkins. 2022a. *运行 Jenkinsfile 作为函数的命令行工具*. [https://github.com/jenkinsci/jenkinsfile-runner](https://github.com/jenkinsci/jenkinsfile-runner).
 - en: Jenkins. 2022b. *Jenkins User Documentation*. [https://www.jenkins.io/doc/](https://www.jenkins.io/doc/).
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: Jenkins. 2022b. *Jenkins 用户文档*. [https://www.jenkins.io/doc/](https://www.jenkins.io/doc/).
 - en: JetBrains. 2022a. *IntelliJ IDEA*. [https://www.jetbrains.com/idea/](https://www.jetbrains.com/idea/).
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: JetBrains. 2022a. *IntelliJ IDEA*. [https://www.jetbrains.com/idea/](https://www.jetbrains.com/idea/).
 - en: JetBrains. 2022b. *PyCharm*. [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/).
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: JetBrains. 2022b. *PyCharm*. [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/).
 - en: Julia VS Code. 2022a. *An Implementation of the Microsoft Language Server Protocol
     for the Julia Language*. [https://juliapackages.com/p/languageserver](https://juliapackages.com/p/languageserver).
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: Julia VS Code. 2022a. *Microsoft 语言服务器协议的 Julia 语言实现*. [https://juliapackages.com/p/languageserver](https://juliapackages.com/p/languageserver).
 - en: Julia VS Code. 2022b. *Julia for Visual Studio Code*. [https://www.julia-vscode.org](https://www.julia-vscode.org).
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: Julia VS Code. 2022b. *Julia for Visual Studio Code*. [https://www.julia-vscode.org](https://www.julia-vscode.org).
 - en: Kalnytskyi, I. 2022a. *Poetry Documentation*. [https://python-poetry.org/docs](https://python-poetry.org/docs).
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: Kalnytskyi, I. 2022a. *Poetry 文档*. [https://python-poetry.org/docs](https://python-poetry.org/docs).
 - en: Kalnytskyi, I. 2022b. *sphinxcontrib-openapi Is a Sphinx Extension to Generate
     APIs Docs from OpenAPI*. [https://sphinxcontrib-openapi.readthedocs.io](https://sphinxcontrib-openapi.readthedocs.io).
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: Kalnytskyi, I. 2022b. *sphinxcontrib-openapi 是一个用于从 OpenAPI 生成 API 文档的 Sphinx
+    扩展*. [https://sphinxcontrib-openapi.readthedocs.io](https://sphinxcontrib-openapi.readthedocs.io).
 - en: Kalnytskyi, I. 2022c. *The Sphinx Extension that Renders OpenAPI Specs Using
     ReDoc*. [https://sphinxcontrib-redoc.readthedocs.io/en/stable](https://sphinxcontrib-redoc.readthedocs.io/en/stable).
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: Kalnytskyi, I. 2022c. *使用 ReDoc 渲染 OpenAPI 规范的 Sphinx 扩展*. [https://sphinxcontrib-redoc.readthedocs.io/en/stable](https://sphinxcontrib-redoc.readthedocs.io/en/stable).
 - en: Krämer, S. 2022\. *Julia Autodoc*. [https://bastikr.github.io/sphinx-julia/juliaautodoc.html\#julia-autodoc]](https://bastikr.github.io/sphinx-julia/juliaautodoc.html\#julia-autodoc%5D).
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: Krämer, S. 2022\. *Julia 自动文档*. [https://bastikr.github.io/sphinx-julia/juliaautodoc.html\#julia-autodoc]](https://bastikr.github.io/sphinx-julia/juliaautodoc.html\#julia-autodoc%5D).
 - en: Lai, R., and K. Ren. 2022\. *An Implementation of the Language Server Protocol
     for R*. [https://cran.r-project.org/web/packages/languageserver](https://cran.r-project.org/web/packages/languageserver).
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: Lai, R. 和 K. Ren. 2022. *R 语言服务器协议的实现*. [https://cran.r-project.org/web/packages/languageserver](https://cran.r-project.org/web/packages/languageserver).
 - en: 'Langa, and et al. 2022\. *Black: The Uncompromising Code Formatter*. [https://black.readthedocs.io/en/stable/](https://black.readthedocs.io/en/stable/).'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: Langa 及他人. 2022. *Black：无妥协的代码格式化工具*. [https://black.readthedocs.io/en/stable/](https://black.readthedocs.io/en/stable/).
 - en: Logilab and PyCQA and contributors. 2022\. *Pylint is a Static Code Analyser
     for Python 2 or 3*. [https://pylint.pycqa.org/en/latest/](https://pylint.pycqa.org/en/latest/).
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: Logilab 和 PyCQA 及贡献者. 2022. *Pylint 是 Python 2 或 3 的静态代码分析器*. [https://pylint.pycqa.org/en/latest/](https://pylint.pycqa.org/en/latest/).
 - en: Loria, S., and et al. 2022\. *A Pluggable API Specification Generator*. [https://apispec.readthedocs.io/en/latest](https://apispec.readthedocs.io/en/latest).
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: Loria, S. 及他人. 2022. *可插拔的 API 规范生成器*. [https://apispec.readthedocs.io/en/latest](https://apispec.readthedocs.io/en/latest).
 - en: Manohar, A. 2022\. *asdf Documentation*. [https://asdf-vm.com/guide/getting-started.html](https://asdf-vm.com/guide/getting-started.html).
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: Manohar, A. 2022. *asdf 文档*. [https://asdf-vm.com/guide/getting-started.html](https://asdf-vm.com/guide/getting-started.html).
 - en: McKinney, W. 2017\. *Python for Data Analysis*. 2nd ed. O’Reilly.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: McKinney, W. 2017. *Python 数据分析*. 2nd ed. O’Reilly.
 - en: Meta Platforms. 2022a. *A Performant Type-Checker for Python 3*. [https://pyre-check.org](https://pyre-check.org).
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: Meta Platforms. 2022a. *Python 3 的性能型类型检查器*. [https://pyre-check.org](https://pyre-check.org).
 - en: Microsoft. 2022a. *A performant, Feature-Rich Language Server for Python in
     VS Code*. [https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance).
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 微软. 2022a. *VS Code 中性能强大、功能丰富的 Python 语言服务器*. [https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance).
 - en: Microsoft. 2022c. *Azure Machine Learning*. [https://azure.microsoft.com/en-us/services/machine-learning/](https://azure.microsoft.com/en-us/services/machine-learning/).
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 微软. 2022c. *Azure 机器学习*. [https://azure.microsoft.com/en-us/services/machine-learning/](https://azure.microsoft.com/en-us/services/machine-learning/).
 - en: Microsoft. 2022d. *Code editing. Redefined.* [https://code.visualstudio.com/](https://code.visualstudio.com/).
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 微软. 2022d. *代码编辑，重新定义*. [https://code.visualstudio.com/](https://code.visualstudio.com/).
 - en: Microsoft. 2022f. *Language Server Protocol*. [https://microsoft.github.io/language-server-protocol](https://microsoft.github.io/language-server-protocol).
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 微软. 2022f. *语言服务器协议*. [https://microsoft.github.io/language-server-protocol](https://microsoft.github.io/language-server-protocol).
 - en: Microsoft. 2022j. *VS Code in the Web*. [https://vscode.dev](https://vscode.dev).
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 微软. 2022j. *VS Code 在网页上*. [https://vscode.dev](https://vscode.dev).
 - en: MinIO. 2022\. *MinIO Documentation*. [https://docs.min.io/docs](https://docs.min.io/docs).
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: MinIO. 2022. *MinIO 文档*. [https://docs.min.io/docs](https://docs.min.io/docs).
 - en: Müller, K., and L. Walthert. 2022a. *Non-Invasive Pretty Printing of R Code*.
     [https://cran.r-project.org/web/packages/styler](https://cran.r-project.org/web/packages/styler).
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: Müller, K. 和 L. Walthert. 2022a. *R 代码的无侵入式美观打印*. [https://cran.r-project.org/web/packages/styler](https://cran.r-project.org/web/packages/styler).
 - en: Müller, K., and L. Walthert. 2022a. *Non-Invasive Pretty Printing of R Code*.
     [https://cran.r-project.org/web/packages/styler](https://cran.r-project.org/web/packages/styler).
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: Müller, K. 和 L. Walthert. 2022a. *R 代码的无侵入式美观打印*. [https://cran.r-project.org/web/packages/styler](https://cran.r-project.org/web/packages/styler).
 - en: 2022b. *Third-Party Integrations*. [https://styler.r-lib.org/articles/third-party-integrations.html](https://styler.r-lib.org/articles/third-party-integrations.html).
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 2022b. *第三方集成*. [https://styler.r-lib.org/articles/third-party-integrations.html](https://styler.r-lib.org/articles/third-party-integrations.html).
 - en: nbQA Team. 2022\. *Run isort, pyupgrade, mypy, pylint, flake8, and More on Jupyter
     Notebooks*. [https://github.com/nbQA-dev/nbQA](https://github.com/nbQA-dev/nbQA).
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: nbQA 团队. 2022. *在 Jupyter 笔记本上运行 isort, pyupgrade, mypy, pylint, flake8 以及更多*.
+    [https://github.com/nbQA-dev/nbQA](https://github.com/nbQA-dev/nbQA).
 - en: Nektos. 2022\. *Run Your GitHub Actions Locally*. [https://github.com/nektos/act](https://github.com/nektos/act).
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: Nektos. 2022. *在本地运行 GitHub Actions*. [https://github.com/nektos/act](https://github.com/nektos/act).
 - en: Neovim. 2022\. *Hyperextensible Vim-Based Text Editor*. [https://neovim.io/](https://neovim.io/).
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: Neovim. 2022. *基于 Vim 的超扩展文本编辑器*. [https://neovim.io/](https://neovim.io/).
 - en: Neptune Labs. 2022\. *Neptune Documentation*. [https://docs.neptune.ai/](https://docs.neptune.ai/).
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: Neptune Labs. 2022. *Neptune 文档*. [https://docs.neptune.ai/](https://docs.neptune.ai/).
 - en: Nteract Team. 2022a. *Papermill Is a Tool for Parameterizing and Executing Jupyter
     Notebooks*. [https://papermill.readthedocs.io](https://papermill.readthedocs.io).
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: Nteract Team. 2022a. *Papermill 是一个用于参数化和执行 Jupyter 笔记本的工具*. [https://papermill.readthedocs.io](https://papermill.readthedocs.io).
 - en: Nteract Team. 2022b. *Testbook*. [https://testbook.readthedocs.io/en/latest/](https://testbook.readthedocs.io/en/latest/).
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: Nteract Team. 2022b. *Testbook*. [https://testbook.readthedocs.io/en/latest/](https://testbook.readthedocs.io/en/latest/).
 - en: Openrefine. 2022\. *A Free, Open Source, Powerful Tool for Working with Messy
     Data*. [https://openrefine.org](https://openrefine.org).
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: Openrefine. 2022. *一个免费、开源、强大的用于处理杂乱数据的工具*. [https://openrefine.org](https://openrefine.org).
 - en: Pachyderm. 2022\. *Data-Centric Pipelines and Data Versioning*. [https://docs.pachyderm.com/latest](https://docs.pachyderm.com/latest).
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: Pachyderm. 2022. *以数据为中心的管道和数据版本控制*. [https://docs.pachyderm.com/latest](https://docs.pachyderm.com/latest).
 - en: Palantir. 2022\. *Python Language Server*. [https://github.com/palantir/python-language-server](https://github.com/palantir/python-language-server).
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: Palantir. 2022. *Python 语言服务器*. [https://github.com/palantir/python-language-server](https://github.com/palantir/python-language-server).
 - en: Pallets Team. 2022\. *Flask Documentation*. [https://flask.palletsprojects.com/en/latest](https://flask.palletsprojects.com/en/latest).
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: Pallets Team. 2022. *Flask 文档*. [https://flask.palletsprojects.com/en/latest](https://flask.palletsprojects.com/en/latest).
 - en: Plotly. 2022a. *Analytical Web Apps for Python, R, Julia, and Jupyter. No JavaScript
     Required.* [https://github.com/plotly/dash](https://github.com/plotly/dash).
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: Plotly. 2022a. *Python、R、Julia 和 Jupyter 的分析型 Web 应用程序。无需 JavaScript.* [https://github.com/plotly/dash](https://github.com/plotly/dash).
 - en: Preston-Werner, T. 2022\. *Semantic Versioning*. [https://semver.org/](https://semver.org/).
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: Preston-Werner, T. 2022. *语义版本控制*. [https://semver.org/](https://semver.org/).
 - en: Project Jupyter. 2022\. *Jupyter*. [https://jupyter.org/](https://jupyter.org/).
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: Project Jupyter. 2022. *Jupyter*. [https://jupyter.org/](https://jupyter.org/).
 - en: Pyright. 2022\. *Static Type Checker for Python*. [https://github.com/microsoft/pyright](https://github.com/microsoft/pyright).
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: Pyright. 2022. *Python 静态类型检查器*. [https://github.com/microsoft/pyright](https://github.com/microsoft/pyright).
 - en: Python Packaging Authority. 2022\. *Building and Distributing Packages with
     Setuptools*. [https://setuptools.pypa.io/en/latest/userguide/index.html](https://setuptools.pypa.io/en/latest/userguide/index.html).
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: Python 打包权威机构. 2022. *使用 Setuptools 构建和分发包*. [https://setuptools.pypa.io/en/latest/userguide/index.html](https://setuptools.pypa.io/en/latest/userguide/index.html).
 - en: Python Packaging Authority (PyPA). 2022\. *Virtualenv Documentation*. [https://virtualenv.pypa.io/en/latest/](https://virtualenv.pypa.io/en/latest/).
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: Python 打包权威机构 (PyPA). 2022. *Virtualenv 文档*. [https://virtualenv.pypa.io/en/latest/](https://virtualenv.pypa.io/en/latest/).
 - en: 'Python Software Foundation. 2022a. *PyPI: The Python Package Index*. [https://pypi.org/](https://pypi.org/).'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Python 软件基金会. 2022a. *PyPI: Python 包索引*. [https://pypi.org/](https://pypi.org/).'
 - en: Python Software Foundation. 2022b. *Test Interactive Python Examples*. [https://docs.python.org/3/library/doctest.html](https://docs.python.org/3/library/doctest.html).
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: Python 软件基金会. 2022b. *测试交互式 Python 示例*. [https://docs.python.org/3/library/doctest.html](https://docs.python.org/3/library/doctest.html).
 - en: 'Python Software Foundation. 2022c. *unittest: Unit Testing Framework*. [https://docs.python.org/3/library/unittest.html](https://docs.python.org/3/library/unittest.html).'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Python 软件基金会. 2022c. *unittest: 单元测试框架*. [https://docs.python.org/3/library/unittest.html](https://docs.python.org/3/library/unittest.html).'
 - en: Ramírez, S. 2022\. *FastAPI Framework, High Performance, Easy to Learn, Fast
     to Code, Ready for Production*. [https://fastapi.tiangolo.com](https://fastapi.tiangolo.com).
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: Ramírez, S. 2022. *FastAPI 框架，高性能，易于学习，快速编码，适用于生产*. [https://fastapi.tiangolo.com](https://fastapi.tiangolo.com).
 - en: Rathgeber, F. 2022\. *Strip Output from Jupyter and IPython Notebooks*. [https://github.com/kynan/nbstripout](https://github.com/kynan/nbstripout).
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: Rathgeber, F. 2022. *从 Jupyter 和 IPython 笔记本中移除输出*. [https://github.com/kynan/nbstripout](https://github.com/kynan/nbstripout).
 - en: 'Read the Docs. 2022\. *Read the Docs: Documentation Simplified*. [https://docs.readthedocs.io](https://docs.readthedocs.io).'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Read the Docs. 2022. *Read the Docs: 简化文档*. [https://docs.readthedocs.io](https://docs.readthedocs.io).'
 - en: REditorSupport. 2022\. *R in Visual Studio Code*. [https://marketplace.visualstudio.com/items?itemName=REditorSupport.r](https://marketplace.visualstudio.com/items?itemName=REditorSupport.r).
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: REditorSupport. 2022. *Visual Studio Code 中的 R*. [https://marketplace.visualstudio.com/items?itemName=REditorSupport.r](https://marketplace.visualstudio.com/items?itemName=REditorSupport.r).
 - en: 'Reitz, K., and Python Packaging Authority (PyPA). 2022\. *Pipenv: Python Dev
     Workflow for Humans*. [https://pipenv.pypa.io](https://pipenv.pypa.io).'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Reitz, K. 和 Python 打包权威机构 (PyPA). 2022. *Pipenv: 适合人类的 Python 开发工作流程*. [https://pipenv.pypa.io](https://pipenv.pypa.io).'
 - en: RStudio. 2022a. *Open Source and Enterprise-Ready Professional Software for
     Data Science*. [https://www.rstudio.com](https://www.rstudio.com).
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: RStudio。2022a。*开源和面向企业的数据科学专业软件*。[https://www.rstudio.com](https://www.rstudio.com)。
 - en: RStudio. 2022b. *RStudio Server*. [https://www.rstudio.com/products/rstudio/\#rstudio-server](https://www.rstudio.com/products/rstudio/\#rstudio-server).
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: RStudio。2022b。*RStudio 服务器*。[https://www.rstudio.com/products/rstudio/\#rstudio-server](https://www.rstudio.com/products/rstudio/\#rstudio-server)。
 - en: 'Silverlake Software. 2022\. *Velocity: The Documentation and Docset Viewer
     for Windows*. [https://velocity.silverlakesoftware.com/](https://velocity.silverlakesoftware.com/).'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: Silverlake 软件公司。2022。*Velocity：Windows 的文档和 Docset 查看器*。[https://velocity.silverlakesoftware.com/](https://velocity.silverlakesoftware.com/)。
 - en: Snowflake. 2022\. *Snowflake Documentation*. [https://docs.snowflake.com](https://docs.snowflake.com).
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: Snowflake。2022。*Snowflake 文档*。[https://docs.snowflake.com](https://docs.snowflake.com)。
 - en: 'Stapleton Cordasco, I. 2022\. *Flake8: Your Tool for Style Guide Enforcement*.
     [https://flake8.pycqa.org/en/latest/](https://flake8.pycqa.org/en/latest/).'
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: Stapleton Cordasco, I. 2022。*Flake8：你的风格指南执行工具*。[https://flake8.pycqa.org/en/latest/](https://flake8.pycqa.org/en/latest/)。
 - en: Superconductive. 2022\. *Great Expectations*. [https://docs.greatexpectations.io/docs](https://docs.greatexpectations.io/docs).
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 超导技术。2022。*伟大的期望*。[https://docs.greatexpectations.io/docs](https://docs.greatexpectations.io/docs)。
 - en: Tableau Software. 2022\. *Tableau*. [https://www.tableau.com/](https://www.tableau.com/).
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: Tableau 软件公司。2022。*Tableau*。[https://www.tableau.com/](https://www.tableau.com/)。
 - en: The Apache Software Foundation. 2022a. *Airflow Documentation*. [https://airflow.apache.org/docs/](https://airflow.apache.org/docs/).
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache 软件基金会。2022a。*Airflow 文档*。[https://airflow.apache.org/docs/](https://airflow.apache.org/docs/)。
 - en: The Apache Software Foundation. 2022c. *Apache Hadoop*. [https://hadoop.apache.org/](https://hadoop.apache.org/).
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache 软件基金会。2022c。*Apache Hadoop*。[https://hadoop.apache.org/](https://hadoop.apache.org/)。
 - en: The Apache Software Foundation. 2022d. *Apache Hive Documentation*. [https://cwiki.apache.org/confluence/display/Hive](https://cwiki.apache.org/confluence/display/Hive).
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache 软件基金会。2022d。*Apache Hive 文档*。[https://cwiki.apache.org/confluence/display/Hive](https://cwiki.apache.org/confluence/display/Hive)。
 - en: The Apache Software Foundation. 2022e. *Apache Pig Documentation*. [https://pig.apache.org/docs/latest](https://pig.apache.org/docs/latest).
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache 软件基金会。2022e。*Apache Pig 文档*。[https://pig.apache.org/docs/latest](https://pig.apache.org/docs/latest)。
 - en: The Apache Software Foundation. 2022f. *Apache Spark Documentation*. [https://spark.apache.org/docs/latest](https://spark.apache.org/docs/latest).
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: Apache 软件基金会。2022f。*Apache Spark 文档*。[https://spark.apache.org/docs/latest](https://spark.apache.org/docs/latest)。
 - en: The Containers Organization. 2022\. *podman*. [https://podman.io](https://podman.io).
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 容器组织。2022。*podman*。[https://podman.io](https://podman.io)。
 - en: The Delta Lake Project Authors. 2022a. *Delta Lake Documentation*. [https://docs.delta.io](https://docs.delta.io).
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: Delta Lake 项目作者。2022a。*Delta Lake 文档*。[https://docs.delta.io](https://docs.delta.io)。
 - en: The Delta Lake Project Authors. 2022b. *Zeal Is an Offline Documentation Browser
     for Software Developers*. [https://zealdocs.org](https://zealdocs.org).
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: Delta Lake 项目作者。2022b。*Zeal：软件开发者的离线文档浏览器*。[https://zealdocs.org](https://zealdocs.org)。
 - en: The Git Development Team. 2022\. *Git Source Code Mirror*. [https://github.com/git/git](https://github.com/git/git).
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: Git 开发团队。2022。*Git 源代码镜像*。[https://github.com/git/git](https://github.com/git/git)。
 - en: The Kubernetes Authors. 2022a. *Kubernetes*. [https://kubernetes.io/](https://kubernetes.io/).
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: Kubernetes 作者。2022a。*Kubernetes*。[https://kubernetes.io/](https://kubernetes.io/)。
 - en: The Kubernetes Authors. 2022c. *minikube*. [https://minikube.sigs.k8s.io/docs](https://minikube.sigs.k8s.io/docs).
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: Kubernetes 作者。2022c。*minikube*。[https://minikube.sigs.k8s.io/docs](https://minikube.sigs.k8s.io/docs)。
 - en: 'The mypy Project. 2014\. *mypy: Optional Static Typing for Python*. [http://mypy-lang.org/](http://mypy-lang.org/).'
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: mypy 项目。2014。*mypy：Python 的可选静态类型*。[http://mypy-lang.org/](http://mypy-lang.org/)。
 - en: Trifacta. 2022\. *Profile, Prepare, and Pipeline Data for Analytics and Machine
     Learning*. [https://www.trifacta.com](https://www.trifacta.com).
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: Trifacta。2022。*为分析和机器学习配置、准备和管道数据*。[https://www.trifacta.com](https://www.trifacta.com)。
 - en: 'Ushey, K., J. McPherson, J. Cheng, A. Atkins, JJ. Allaire, and T. Allen. 2022\.
     *Packrat: Reproducible Package Management for R*. [https://rstudio.github.io/packrat/](https://rstudio.github.io/packrat/).'
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Ushey, K.，J. McPherson，J. Cheng，A. Atkins，JJ. Allaire，和 T. Allen。2022。*Packrat:
+    R 的可重复包管理*。[https://rstudio.github.io/packrat/](https://rstudio.github.io/packrat/)。'
 - en: van Heesch, D. 2022\. *Doxygen*. [https://www.doxygen.nl/index.html](https://www.doxygen.nl/index.html).
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: van Heesch, D. 2022。*Doxygen*。[https://www.doxygen.nl/index.html](https://www.doxygen.nl/index.html)。
 - en: Weights & Biases. 2022\. *Weights & Biases Documentation*. [https://docs.wandb.ai/](https://docs.wandb.ai/).
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: Weights & Biases. 2022. *Weights & Biases 文档*. [https://docs.wandb.ai/](https://docs.wandb.ai/).
 - en: Wickham, H. 2022b. *The tidyverse Style Guide*. [https://style.tidyverse.org/](https://style.tidyverse.org/).
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: Wickham, H. 2022b. *《tidyverse 风格指南》*. [https://style.tidyverse.org/](https://style.tidyverse.org/).
 - en: 'Wickham, H., P. Danenberg, G. Csárdi, M. Eugster, and RStudio. 2022\. *roxygen2:
     In-Line Documentation for R*.'
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Wickham, H., P. Danenberg, G. Csárdi, M. Eugster 和 RStudio. 2022. *roxygen2:
+    R 的内联文档*. '
 - en: Wickham, H., R. François, L.Henry, and K. Müller. 2022\. *A Fast, Consistent
     Tool for Working with Data Frame Like Objects, Both in Memory and Out of Memory*.
     [https://cloud.r-project.org/web/packages/dplyr](https://cloud.r-project.org/web/packages/dplyr).
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: Wickham, H., R. François, L.Henry 和 K. Müller. 2022. *一个快速、一致的工具，用于处理内存中和非内存中的数据框类对象*.
+    [https://cloud.r-project.org/web/packages/dplyr](https://cloud.r-project.org/web/packages/dplyr).
 - en: 'Wickham, H., M. Girlich, and RStudio. 2022\. *tidyr: Tidy Messy Data*. [https://cloud.r-project.org/web/packages/tidyr](https://cloud.r-project.org/web/packages/tidyr).'
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Wickham, H., M. Girlich 和 RStudio. 2022. *tidyr: 整洁混乱数据*. [https://cloud.r-project.org/web/packages/tidyr](https://cloud.r-project.org/web/packages/tidyr).'
 - en: Wickham, H., RStudio, and R Core Team. 2022\. *Unit Testing for R*. [https://cloud.r-project.org/web/packages/testthat](https://cloud.r-project.org/web/packages/testthat).
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: Wickham, H., RStudio 和 R Core Team. 2022. *R 的单元测试*. [https://cloud.r-project.org/web/packages/testthat](https://cloud.r-project.org/web/packages/testthat).
 - en: 'Widgren, S., and et al. 2022\. *git2r: Provides Access to Git Repositories*.
     [https://cran.r-project.org/web/packages/git2r/index.html](https://cran.r-project.org/web/packages/git2r/index.html).'
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Widgren, S. 和 等. 2022. *git2r: 提供对 Git 仓库的访问*. [https://cran.r-project.org/web/packages/git2r/index.html](https://cran.r-project.org/web/packages/git2r/index.html).'
 - en: Xie, Y. 2015\. *Dynamic Documents with R and knitr*. 2nd ed. CRC Press.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: Xie, Y. 2015. *使用 R 和 knitr 创建动态文档*. 2nd ed. CRC Press.
 - en: 'Xie, Y., J. J. Allaire, and G. Grolemund. 2022\. *R Markdown: The Definitive
     Guide*. [https://bookdown.org/yihui/rmarkdown/](https://bookdown.org/yihui/rmarkdown/).'
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Xie, Y., J. J. Allaire 和 G. Grolemund. 2022. *R Markdown: 官方指南*. [https://bookdown.org/yihui/rmarkdown/](https://bookdown.org/yihui/rmarkdown/).'
 - en: 'Yamashita, Y., S. Stephenson, and et al. 2022\. *pyenv: Simple Python Version
     Management*. [https://github.com/pyenv/pyenv](https://github.com/pyenv/pyenv).'
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Yamashita, Y., S. Stephenson 和 等. 2022. *pyenv: 简单的 Python 版本管理*. [https://github.com/pyenv/pyenv](https://github.com/pyenv/pyenv).'
 - en: Zaharia, M., and The Linux Foundation. 2022\. *MLflow Documentation*. [https://www.mlflow.org/docs/latest/index.html](https://www.mlflow.org/docs/latest/index.html).
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: Zaharia, M. 和 Linux 基金会. 2022. *MLflow 文档*. [https://www.mlflow.org/docs/latest/index.html](https://www.mlflow.org/docs/latest/index.html).
 - en: '* * *'
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: GitOps is an application of DevOps practices such as version control, collaboration,
     compliance, and CI/CD, and applies them to automate infrastructure management
     (Gitlab [2022](#ref-git-ops)[b](#ref-git-ops)).[↩︎](development-tools.html#fnref25)
+  id: totrans-187
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: GitOps 是 DevOps 实践（如版本控制、协作、合规性和 CI/CD）的应用，并将它们应用于自动化基础设施管理（Gitlab [2022](#ref-git-ops)[b](#ref-git-ops))[↩︎](development-tools.html#fnref25).

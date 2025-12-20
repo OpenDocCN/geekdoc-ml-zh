@@ -1,11 +1,15 @@
 - en: Chapter 9 Troubleshooting and Testing Pipelines
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第9章 故障排除和测试管道
 - en: 原文：[https://ppml.dev/troubleshooting-code.html](https://ppml.dev/troubleshooting-code.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://ppml.dev/troubleshooting-code.html](https://ppml.dev/troubleshooting-code.html)
 - en: 'Troubleshooting machine learning software is complicated for several reasons:
     the data may be huge (Section [9.1.1](troubleshooting-code.html#troubleshooting-large-data)),
     may be collated from a number of different sources fed by different pipelines
@@ -18,8 +22,10 @@
     issues that require updating models (Section [9.2.3](troubleshooting-code.html#troubleshooting-costly-models)),
     especially if we are using several of them chained together in the pipeline (Section
     [9.2.4](troubleshooting-code.html#troubleshooting-pipelines)).'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 故障排除机器学习软件复杂的原因有几个：数据可能很大（第[9.1.1节](troubleshooting-code.html#troubleshooting-large-data)），可能来自多个不同来源，由不同的管道收集（第[9.1.2节](troubleshooting-code.html#troubleshooting-heterogeneous-data)），或者随时间变化（第[9.1.3节](troubleshooting-code.html#troubleshooting-dynamic-data)）。模型可能太大，以至于人类无法解释其参数和观察到的错误行为模式（第[9.2.1节](troubleshooting-code.html#troubleshooting-large-models)），尤其是在黑盒模型的情况下（第[9.2.2节](troubleshooting-code.html#troubleshooting-black-boxes)）。训练它们的时间和成本也可能限制我们调查需要更新模型的问题的能力（第[9.2.3节](troubleshooting-code.html#troubleshooting-costly-models)），尤其是如果我们正在使用管道中链式连接的多个模型（第[9.2.4节](troubleshooting-code.html#troubleshooting-pipelines)）。
 - en: 'Software testing is a natural complement to troubleshooting: once we know where
     trouble lies (Sections [9.1](troubleshooting-code.html#data-problems) and [9.2](troubleshooting-code.html#model-problems)),
     we can either actively prevent it by “defining errors out of existence” (Ousterhout
@@ -33,12 +39,17 @@
     span local and global behaviour (Sections [9.4.4](troubleshooting-code.html#local-vs-global))
     as well as conceptual and implementation errors (Sections [9.4.5](troubleshooting-code.html#conceptual-vs-implementation)
     and [9.4.6](troubleshooting-code.html#test-coverage)).'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 软件测试是故障排除的自然补充：一旦我们知道麻烦所在（第[9.1节](troubleshooting-code.html#data-problems)和第[9.2节](troubleshooting-code.html#model-problems)），我们就可以通过“定义错误不存在”来主动预防它（Ousterhout
+    [2018](#ref-philo)），或者我们可以实施测试来在它有意义地降低我们软件性能之前检测到它。虽然每个错误都是独特的，但某些行为模式表明有问题，我们应该意识到（第[9.3节](troubleshooting-code.html#signs-of-trouble)）。当预期行为和观察到的行为明显不同时，值得调查！我们应该测试的内容（第[9.4.2节](troubleshooting-code.html#testing-what)）取决于数据（第[9.4.3节](troubleshooting-code.html#offline-vs-online)），但它应该涵盖局部和全局行为（第[9.4.4节](troubleshooting-code.html#local-vs-global)）以及概念性和实现性错误（第[9.4.5节](troubleshooting-code.html#conceptual-vs-implementation)和第[9.4.6节](troubleshooting-code.html#test-coverage)）。
 - en: 9.1 Data Are the Problem
+  id: totrans-4
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 9.1 数据问题是问题
 - en: 'Machine learning models effectively compile data into code and dictate to a
     large extent the behaviour of the software they are embedded in (Section [5.1](design-code.html#data-as-code)).
     Hence it is only logical that issues in the data will impact the software by affecting
@@ -47,8 +58,11 @@
     only 3% of data are acceptable in this respect even with pretty loose quality
     standards (Kenett and Redman [2019](#ref-kenett)) and technical debt arising from
     data is a common issue (Section [5.2.1](design-code.html#data-debt)).'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 机器学习模型有效地将数据编译成代码，并在很大程度上决定了它们嵌入的软件的行为（第[5.1节](design-code.html#data-as-code)）。因此，数据问题通过影响模型训练或预测来影响软件是合乎逻辑的。在我们做任何事情之前，我们应该确保数据被正确记录、适当标记且没有重复：即使质量标准相当宽松，也只有3%的数据是可接受的（Kenett和Redman
+    [2019](#ref-kenett)），并且由数据引起的技术债务是一个常见问题（第[5.2.1节](design-code.html#data-debt)）。
 - en: 'The shape of the data and how the data are collected can result in very different
     types of issues. For the former, we may have *tall data* (large sample size, few
     variables), *wide data* (small sample size, many variables; also known as “small
@@ -78,18 +92,28 @@
     remain chronically underrepresented (Popejoy and Fullerton [2016](#ref-genofail)).
     The practical consequence of this disparity is that personalised medicine treatments
     currently under development will not benefit individuals from those backgrounds.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据的形状以及数据的收集方式可能会导致非常不同类型的问题。对于前者，我们可能会有 *长数据*（大样本量，变量少），*宽数据*（小样本量，变量多；也称为“小
+    \(n\)，大 \(p\)”），以及 *大数据*（大样本量，变量多，随时间变化，可能是不结构化的（Katal, Wazid, 和 Goudar [2013](#ref-bigdata)））。对于后者，我们应该区分
+    *实验数据* 和 *观察数据*。实验数据是根据某些实验设计（Montgomery [20AD](#ref-montgomery)）收集的，该设计涉及从现有知识（领域专家、文献、小规模初步实验等）中识别出有限数量的感兴趣变量，以及我们希望干预的少量变量（如提供有针对性的折扣和推荐或实施特定的医疗治疗）。合格的数据点是根据其特征选择的，以确保我们从模型中得出的结论适用于感兴趣的群体，并且随机分配不同的干预措施。随机化确保观察到了所有类型的个体，并不同干预措施，这在一定程度上防止了混杂。（关于这一点，稍后还会详细介绍。）相比之下，观察数据是随着其出现而收集的。通常，当记录个体的信息时，个体会被添加到数据中，而不考虑他们的特征。这一点，加上我们没有进行任何随机干预的事实，可能会使我们从观察数据中学习的模型产生偏差：要么我们没有观察到具有某些特征的数据点（足够的数量，或者根本就没有），要么我们没有在足够广泛的情境中观察到它们以建模其行为。这个问题被称为
+    *抽样偏差*（第 [5.3.1](design-code.html#scoping-pipeline) 节）并影响了许多机器学习的应用。例如，2009年，全基因组研究的96%的参与者是欧洲血统；而针对亚洲人群的新研究到2016年将这一比例降至约80%，其他种族仍然长期代表性不足（Popejoy
+    和 Fullerton [2016](#ref-genofail)）。这种差异的实践后果是，目前正在开发中的个性化医疗治疗方法将不会惠及那些背景的个体。
 - en: 9.1.1 Large Data
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.1.1 大数据
 - en: 'Consider the three possible dimensions of data mentioned above: the sample
     size, the number of variables and the number of time points. The larger the data
     are in at least one of these dimensions, the more difficult it is to troubleshoot
     the models we learn from them.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑上述提到的数据的三个可能维度：样本量、变量数量和时间点数量。数据在这三个维度中的任何一个维度越大，我们对其从中学到的模型进行故障排除就越困难。
 - en: 'If the data are wide, changes in one variable may induce changes in the contributions
     of other variables to the model: this phenomenon is called *entanglement* (Sculley
     et al. [2015](#ref-hidden-debt), [2014](#ref-high-interest)). As the number of
@@ -109,13 +133,17 @@
     the more true for time series data because, in addition to different variables
     being entangled with each other, each variable is entangled with itself at previous
     time points (Section [9.1.3](troubleshooting-code.html#troubleshooting-dynamic-data)).'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果数据是宽的，一个变量的变化可能会引起其他变量对模型贡献的变化：这种现象被称为*纠缠*（Sculley等人[2015](#ref-hidden-debt)，[2014](#ref-high-interest)）。随着变量数量的增加（“为什么不添加一个额外的输入？”），多个变量以不同方式表达相同信息的可能性越来越大。在模型中编码该信息的参数将由这些变量共同决定。如果其中一个变量的分布发生变化，使其成为一个不再在模型中具有显著意义的*遗留特征*，其他变量的影响将增加以补偿。即使它仍然保留一些统计上的显著性，它也可能成为一个*epsilon特征*，对模型贡献极小，以至于不值得最初将其包括在内。（原则上，遗留和epsilon特征都应从模型中删除，但它们通常不会，因为它们与实际有用的特征捆绑在一起。）换句话说，“改变任何东西都会改变一切”（Sculley等人[2014](#ref-high-interest)），正如我们在[5.2.2节](design-code.html#model-debt)中讨论技术债务时所指出的。对于时间序列数据来说，这一点尤其正确，因为除了不同变量之间相互纠缠外，每个变量在先前的时间点上也与自身纠缠（见[9.1.3节](troubleshooting-code.html#troubleshooting-dynamic-data)）。
 - en: As a side effect, entanglement makes it difficult to identify true causal features[^(20)](#fn20)
     within a set of correlated features. This is problematic because it prevents us
     from keeping models simple and small without a significant amount of feature engineering.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为副作用，纠缠使得在相关特征集中识别真正的因果特征[^(20)](#fn20)变得困难。这是问题，因为它阻止我们在没有大量特征工程的情况下保持模型简单和紧凑。
 - en: 'The other problem in troubleshooting large data is latency: accessing the data
     takes time and computational resources, which in turn slows down our iteration
     speed. This is particularly true for models like deep neural networks that require
@@ -125,12 +153,16 @@
     keeping in mind that (repeated) subsampling also has a cost. Another is taking
     the last known-good snapshot of the model and working on it with a subset of recent
     data as if we were doing online training.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在调试大数据时遇到的另一个问题是延迟：访问数据需要时间和计算资源，这反过来又降低了我们的迭代速度。这对于需要GPU和TPU的模型尤其如此，如深度神经网络，它们具有有限的带宽和内存（见[2.2节](hardware.html#hardware-using)）。一个可能的解决方案是选择高质量、具有代表性的数据子集并以此为基础工作（更多内容见[9.1.2节](troubleshooting-code.html#troubleshooting-heterogeneous-data)），同时考虑到（重复的）子采样也有成本。另一个方法是使用模型最后已知的好版本，并使用最近的数据子集进行工作，就像我们在进行在线训练一样。
 - en: 9.1.2 Heterogeneous Data
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.1.2 异构数据
 - en: 'Furthermore, we must consider that data may be *heterogeneous*, comprising
     variables encoded with different data types and complex data structures. Data
     ingestion and preparation (Section [5.3.3](design-code.html#data-pipeline)) then
@@ -145,8 +177,10 @@
     a form of coupling between models that are (sometimes undeclared) consumers of
     each others’ outputs, effectively making them work as a single large model (Section
     [9.2.1](troubleshooting-code.html#troubleshooting-large-models)).'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们必须考虑数据可能是*异构的*，包括使用不同数据类型和复杂数据结构编码的变量。数据摄取和准备（见[5.3.3节](design-code.html#data-pipeline)）需要几个算法和辅助模型来过滤掉低质量数据点、填补缺失数据并提取相关特征。还可能需要额外的模型来后处理核心机器学习模型的输出。如果一个输入变量发生变化，它必然会影响这些模型中的一个或多个：它们的输出反过来会影响我们所说的*校正级联*（Sculley等人[2014](#ref-high-interest)）中的更多模型，见[5.2.1节](design-code.html#data-debt)。从某种意义上说，我们可以将其视为跨越多个模型的*纠缠*形式（见[9.1.1节](troubleshooting-code.html#troubleshooting-large-data)）；或者是一种模型之间的*耦合*形式，这些模型是（有时未声明）彼此输出消费者，实际上使它们作为一个单一的大模型工作（见[9.2.1节](troubleshooting-code.html#troubleshooting-large-models)）。
 - en: 'Heterogeneous data are difficult to subsample as well: choosing data points
     at random is unlikely to yield a subset that is representative of the overall
     data set. Observations belonging to less-frequent classes in imbalanced data are
@@ -159,12 +193,16 @@
     the issues we are troubleshooting (reliably or at all). All these problems become
     more and more pronounced as the difference in size between the original data and
     the subsamples grows.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 异构数据也难以进行子采样：随机选择数据点不太可能得到一个能代表整体数据集的子集。在不平衡数据中属于较少出现类别的观测值不太可能以足够的数量或根本不会出现在随机子样本中：即使机器学习模型的预测始终错误，我们对其预测准确性的估计也可能保持较高。与整体数据相比，子集也可能具有不同的分布（如通过汇总统计量捕获），这可能会引发校准问题。可能引起原始数据问题的异常值可能会被丢弃，这使得我们难以复制我们在调试的问题（可靠地或根本无法复制）。随着原始数据与子样本之间大小的差异越来越大，所有这些问题都变得越来越明显。
 - en: 9.1.3 Dynamic Data
+  id: totrans-15
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.1.3 动态数据
 - en: 'The data, the models, the code and the architecture can all be sources of technical
     debt in a machine learning pipeline (Section [5.2](design-code.html#technical-debt)).
     The data sources we use to feed our machine learning models, in particular, are
@@ -172,8 +210,10 @@
     dependencies (Sculley et al. [2015](#ref-hidden-debt)): it takes more effort to
     troubleshoot their behaviour and to quantify and mitigate their potential impact
     on the performance of our pipeline.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在机器学习流程中（见[5.2节](design-code.html#technical-debt)），数据、模型、代码和架构都可能成为技术债务的来源。我们用来喂养机器学习模型的数据源，尤其是，通常超出了我们的控制范围。因此，数据依赖比代码依赖成本更高（Sculley等人[2015](#ref-hidden-debt)）：解决它们的行为需要更多的努力，以及量化并减轻它们对我们流程性能潜在影响的努力。
 - en: 'Data may change slowly over time, either following a medium- to long-term trend
     or in periodic patterns. (The former is known as *data drift*, and the latter
     is called *seasonality* in statistics.) Both can be encoded in machine learning
@@ -188,8 +228,10 @@
     to keep it up to date, possibly introducing an even longer lag. (This is an instance
     of the human-in-the-loop approach we recommended in different places in Chapter
     [5](design-code.html#design-code)).'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据可能随着时间的推移缓慢变化，要么遵循中到长期趋势，要么呈现周期性模式。（前者被称为*数据漂移*，后者在统计学中称为*季节性*。）两者都可以编码到机器学习模型中，但代价是增加模型复杂性。然而，模型需要时间来适应变化：如果变化突然或足够剧烈，预测将不准确。使用定期和频繁更新的动态阈值，允许模型适应变化，但可能会有明显的滞后。然而，设置此类阈值将需要额外的、专门的模型，从而引入额外的复杂性。任何固定的阈值，无论是隐含的还是显式的，都将需要领域专家不断监控（见[5.3.6节](design-code.html#monitoring-pipeline)）数据摄取和准备模块（见[5.3.3节](design-code.html#data-pipeline)）的输入和输出，以保持其最新状态，这可能会引入更长的滞后。（这是我们在第[5章](design-code.html#design-code)的不同地方推荐的人类在回路方法的一个实例。）
 - en: 'A type of change that is particularly difficult to identify is when a feature
     we are using in our models stops correlating with a causal feature. If we include
     the former instead of the latter by mistake (Section [9.1.1](troubleshooting-code.html#troubleshooting-large-data)),
@@ -200,23 +242,31 @@
     showed a significant degree of association at the time the models were trained,
     but gradually drifted apart over time, the (non-causal) feature we included may
     suddenly become irrelevant for no apparent reason.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种特别难以识别的变化是，我们模型中使用的特征停止与因果特征相关联。如果我们错误地包括前者而不是后者（见[9.1.1节](troubleshooting-code.html#troubleshooting-large-data)），我们突然失去了因果特征间接提供给模型的信息。恢复这些信息可能需要重新评估我们的数据源，以及对我们数据摄取和准备模块的广泛重新设计。而且可能很难理解发生了什么：如果两个特征在模型训练时显示出显著的相关性，但随着时间的推移逐渐分离，我们包括的（非因果）特征可能突然变得无关紧要，而没有任何明显的原因。
 - en: 9.2 Models Are the Problem
+  id: totrans-19
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 9.2 模型是问题
 - en: 'Machine learning models tend to be complex beasts: this is especially the case
     for deep neural networks but holds for many Bayesian hierarchical models as well.
     Our ability to troubleshoot models with a large number of parameters estimated
     from data (and with hyperparameters as well, usually) is severely limited by the
     sheer number of moving parts we need to track.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 机器学习模型往往很复杂：这尤其适用于深度神经网络，但许多贝叶斯层次模型也是如此。我们处理从数据中估计的大量参数（以及通常的超参数）的模型的能力，受到我们需要跟踪的移动部件数量的严重限制。
 - en: 9.2.1 Large Models
+  id: totrans-21
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.2.1 大型模型
 - en: Firstly, it is difficult to map the effect of any change in the model behaviour
     or in the data to individual parameters because parameters interact with each
     other. In order to capture complex patterns of behaviour from the data, machine
@@ -228,8 +278,12 @@
     effect on the parameters in other parts of the same model. Both these effects
     compound across the models in a pipeline as we discussed in Sections [5.2.2](design-code.html#model-debt)
     and [9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data).
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，由于参数之间存在相互作用，很难将模型行为或数据中任何变化的影响映射到单个参数上。为了从数据中捕捉复杂的行为模式，机器学习模型以许多（线性和非线性）方式混合单个输入变量中存在的信息，这些方式编码在不同的参数中。因此，即使单个变量的任何变化也会同时影响多个参数，其影响可能难以理解。以局部方式改变某些参数的值，以改善模型的一部分，可能会对同一模型其他部分的参数产生副作用。这两种效应在管道中的模型中会叠加，正如我们在第
+    [5.2.2](design-code.html#model-debt) 节和 [9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data)
+    节中讨论的那样。
 - en: 'Secondly, dealing with a large number of parameters makes it impractical to
     investigate them individually. Each parameter may have little or no real-world
     meaning by itself. As we just discussed, its behaviour will be intertwined with
@@ -241,12 +295,16 @@
     making bugs easily go undetected, and adding a second machine learning model may
     not be worth the additional complexity of ensuring that model is also working
     properly. It is troubleshooting all the way down!'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 其次，处理大量参数使得单独研究它们变得不切实际。每个参数本身可能只有很少或没有实际意义。正如我们刚才讨论的，它的行为将与其他参数交织在一起：它们应该被分组，并且每个组都应该作为一个单一的有意义的实体进行研究。因此，我们必须求助于一个辅助模型来为我们研究参数：这可能是一个简单的基于汇总统计的诊断图，或者是一个更复杂的第二、独立的机器学习模型。然而，由于汇总统计的本质会丢失信息，这使得错误容易被忽略，并且添加第二个机器学习模型可能不值得增加确保该模型也正常工作的额外复杂性。这就是一路上的故障排除！
 - en: 9.2.2 Black-Box Models
+  id: totrans-24
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.2.2 黑盒模型
 - en: 'Thirdly, most large machine learning models are effectively black boxes. Individual
     parameters are mathematical constructs that often have no real-world meaning,
     even when considered in groups. An entire research field, focusing on *explainability*
@@ -261,12 +319,20 @@
     and Lee [2017](#ref-shap)) can also provide insights: both approaches work by
     perturbing the inputs and checking whether the outputs are stable, and mapping
     any instabilities to specific subsets of parameters.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 第三，大多数大型机器学习模型实际上是黑盒。单个参数是数学结构，通常在组内考虑时也没有实际意义。为了将模型输入的变化与模型输出的变化联系起来，一个专注于
+    *可解释性* 和 *可解释性* 的整个研究领域应运而生。理想情况下，我们希望以使这些关系对领域专家有意义的方式进行：例如，在自然语言处理（Li 等人 [2016](#ref-nlp-viz)）中可视化单词相关性，在计算机视觉（Simonyan，Vedaldi
+    和 Zisserman [2014](#ref-cv-viz)）中可视化像素相关性，或者将图像分割成具有语义意义的层（Ribeiro，Singh 和 Guestrin
+    [2016](#ref-lime)）。使用 LIME（Ribeiro，Singh 和 Guestrin [2016](#ref-lime)）和 SHAP（Lundberg
+    和 Lee [2017](#ref-shap)）等局部方法观察模型在关键输入值周围的行为也可以提供见解：这两种方法都通过扰动输入并检查输出是否稳定，并将任何不稳定性映射到特定参数子集。
 - en: 9.2.3 Costly Models
+  id: totrans-26
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.2.3 成本高昂的模型
 - en: 'Fourthly, training large machine learning models is expensive and time-consuming.
     This makes for slow iterations and may very well make troubleshooting impractical.
     Among recent deep neural network architectures for NLP, Google’s XLNet (Yang et
@@ -282,8 +348,13 @@
     Medical Association has found that simply reproducing one of these models using
     publicly available resources can cost between $1 million to $3.2 million (Beam,
     Manrai, and Ghassemi [2020](#ref-repro-health)).'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 第四，训练大型机器学习模型既昂贵又耗时。这导致了迭代速度慢，可能使故障排除变得不切实际。在最近的NLP深度神经网络架构中，谷歌的XLNet（Yang等人[2019](#ref-xlnet)）的训练成本估计为61,440美元，需要2天时间，使用512个TPU
+    v3芯片（谷歌的专有AI协处理器）；华盛顿大学的Grover-Mega（Zellers等人[2019](#ref-grover)）需要两周时间和25,000美元；谷歌的BERT（Devlin等人[2019](#ref-bert)）的训练成本在500到6,912美元之间，需要4天到2周的时间。目前尚不清楚OpenAI的GPT-2（Radford等人[2019](#ref-gpt2)）最初训练的成本是多少，但开源的OpenGPT-2（Cohen，Pavlick和Tellex
+    [2019](#ref-opengpt2)）需要50,000美元。而这仅仅包括训练：超参数调整可能需要训练10-100个模型，才能找到一个表现良好的模型。美国医学协会最近的一项研究发现，仅使用公开资源重现这些模型中的一个，成本可能在100万到320万美元之间（Beam，Manrai和Ghassemi
+    [2020](#ref-repro-health)）。
 - en: 'The numbers above represent a worst-case scenario. Deep neural networks for
     applications other than NLP are typically much smaller and thus much cheaper and
     quicker to train. For instance, the ResNet-50 architecture for computer vision
@@ -300,18 +371,24 @@
     Using cloud resources as massive parallel compute facilities to divide-and-conquer
     training may complicate things rather than make them easier because remote debugging
     in the cloud comes with its own set of problems (Section [2.3](hardware.html#hardware-cloud)).'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的数字代表了一个最坏的情况。除了自然语言处理（NLP）以外的应用中的深度神经网络通常要小得多，因此成本更低，训练速度更快。例如，用于计算机视觉任务的ResNet-50架构可以在几分钟内以几美元的成本进行训练（Tabuchi等人[2019](#ref-resnet50-cost)），因为它只有2500万个参数（Grover-Mega和GPT-2有15亿，XLNet有3.4亿）。我们很少需要从头开始重新训练模型：通常使用当前模型作为预训练的起点，或者从商业供应商那里购买预训练模型。（然而，如第[5.2.2](design-code.html#model-debt)节所述，这种做法可能在模型级别产生技术债务。）我们还可以通过牺牲训练速度来换取成本，反之亦然：较慢的解决方案成本更低，而且近年来它们的成本一直在稳步下降。我们可能会被诱惑通过懒惰代码执行来降低整体计算成本，但这可能会引入非确定性行为，使故障排除变得更加困难。将云资源作为大规模并行计算设施来分割和征服训练可能会使事情变得更加复杂，而不是更容易，因为云中的远程调试带来了一组自己的问题（第[2.3](hardware.html#hardware-cloud)节）。
 - en: 'Finally, let’s not forget that there are machine learning models other than
     deep neural networks: random forests and gradient-boosted trees (Natekin and Knoll
     [2013](#ref-gbm)) are much faster and cheaper to train and quite often achieve
     competitive performance, especially on tabular data.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们不要忘记，除了深度神经网络之外，还有其他机器学习模型：随机森林和梯度提升树（Natekin和Knoll [2013](#ref-gbm)）训练速度快，成本低，而且通常能够达到有竞争力的性能，尤其是在表格数据上。
 - en: 9.2.4 Many Models
+  id: totrans-30
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.2.4 许多模型
 - en: As we mentioned in Section [9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data),
     dealing with complex data may require a complex machine learning pipeline involving
     several models linked by an orchestrator and to some extent by glue code. On the
@@ -327,24 +404,32 @@
     increases. This may be compounded by the presence of dead and experimental code
     paths that are not essential to the functioning of the machine learning models
     (Section [5.2.4](design-code.html#code-debt)).
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们在第[9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data)节中提到的，处理复杂数据可能需要一个复杂的机器学习管道，该管道涉及多个模型，这些模型通过一个编排器以及在一定程度上通过粘合代码相互连接。一方面，这样的代码可能有助于隔离不同模型及其实现所使用的库的独特性。另一方面，粘合代码可能会在模型交互中引入错误。没有广泛的集成测试，这些错误很难被发现，并且在我们在第[5.2.3](design-code.html#architecture-debt)节中讨论的“管道丛林”中很常见。单元测试将覆盖单个模型的正确性，但不会覆盖它们如何连接在一起的正确性。我们管道中包含的模型越多，排查它们交互的难度就越大，因为随着模型数量的增加，可能的管道配置数量以组合方式爆炸式增长。这可能会因为存在对机器学习模型功能不重要的死代码和实验性代码路径而加剧（第[5.2.4](design-code.html#code-debt)节）。
 - en: Another issue, which we covered in Section [5.2.2](design-code.html#model-debt),
     is that the more models we have in our pipeline, the more likely it is that they
     will create feedback loops or correction cascades.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个问题，我们在第[5.2.2](design-code.html#model-debt)节中讨论过，就是我们的管道中包含的模型越多，它们产生反馈循环或校正级联的可能性就越大。
 - en: 9.3 Common Signs That Something Is Up
+  id: totrans-33
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 9.3 常见迹象表明有问题发生
 - en: How can we tell whether one or more of the issues discussed above are affecting
     the performance of our machine learning pipeline? There are so many (combinations
     of) things that can go wrong that it is difficult to compile an exhaustive list
     of signs that something is up. There are, however, some common patterns of behaviour
     that should be regarded as suspicious.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何判断上述讨论的某个或多个问题是否影响了我们机器学习管道的性能？可能出错的事情（组合）太多了，很难列出详尽的迹象来表明有问题发生。然而，确实存在一些常见的异常行为模式，应该被视为可疑的。
 - en: '*Predictive accuracy is really bad.* Models may be unable to capture enough
     relevant information from the training data to be able to predict new data points.
     The data may not contain such relevant information in the first place. That information
@@ -355,8 +440,10 @@
     (Section [5.3.3](design-code.html#data-pipeline)) and model training (Section
     [5.3.4](design-code.html#model-pipeline)) modules. We should also re-evaluate
     our data sources: were there any changes that made (some of) them no longer useful?'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '*预测准确性真的很差*。模型可能无法从训练数据中捕获足够的相关信息来预测新的数据点。数据本身可能就不包含这样的相关信息。或者，这些信息可能存在，但由于计算问题或因为它们对数据的分布做出了错误的假设，模型未能捕获到这些信息。如果其中任何一点成立，我们应该将我们的故障排除努力集中在数据准备（第[5.3.3](design-code.html#data-pipeline)节）和模型训练（第[5.3.4](design-code.html#model-pipeline)节）模块上。我们还应该重新评估我们的数据来源：是否有任何变化使得（一些）它们不再有用？'
 - en: '*Predictive accuracy is really good.* If the models we are implementing are
     appropriate for the problem they are tasked to solve, and if the data provide
     relevant information to train them, we would expect them to perform “well”. How
@@ -375,8 +462,10 @@
     leakage between what we are trying to predict and the data we use to train our
     models, for instance because one of the variables is an alias[^(21)](#fn21) of
     the prediction target.'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: '*预测准确性非常好。* 如果我们实施的模型适合它们被分配解决的问题，并且如果数据提供了训练它们的相关信息，我们预期它们会“表现良好”。表现多好取决于这两个因素的组合，以及我们如何选择问题和定义成功的指标（见第[5.3.1节](design-code.html#scoping-pipeline)）。定义狭窄的任务更容易用精确的数学术语来表述，这使得它们更容易进行优化。另一方面，定义宽泛的任务通常将多个具有不同要求和目标的子任务混合在一起，这些子任务可能相互冲突。然而，如果一个任务非同寻常，我们应该将极高性能（例如，99.9%以上的分类准确率）视为可能的红旗。在数据集中，如果我们试图预测的某些类别没有得到很好的代表，那么如果模型总是预测最常见的1-2个类别而忽略其他类别，可能会导致不切实际的过高准确率。我们在第[5.2.2节](design-code.html#model-debt)中讨论的不同类型的反馈循环可能产生类似的效果。最后，高准确率可能表明我们试图预测的信息与用于训练模型的我们使用的数据之间存在信息泄露，例如，因为其中一个变量是预测目标的别名[^(21)](#fn21)。'
 - en: Furthermore, data leakage will also happen when part of the training set is
     implicitly used in the test or validation sets. This may involve different data
     points originating from the same individual or from related individuals being
@@ -389,8 +478,10 @@
     against data points they already know about at least to some extent. Hence our
     assessment will give us a biased estimate of the models’ predictive accuracy and
     overconfidence in their capabilities.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，当训练集的一部分被隐式地用于测试或验证集时，也会发生数据泄露。这可能涉及来自同一人或相关个体的不同数据点被包含在任一数据集中。例如，这些可能是来自同一页文本的两个句子，同一个人或同一家庭成员开设的两个网络产品账户，来自兄弟姐妹的健康信息或对同一个人在不同时间进行的在线问卷调查。在任何这些情况下，我们不是通过在它们将工作的生产环境中的真实模拟（完全新的数据点）来验证机器学习模型，而是通过它们至少在一定程度上已经了解的数据点来验证它们。因此，我们的评估将给我们一个对模型预测准确性的有偏估计，并对其能力过度自信。
 - en: '*Predictive accuracy suddenly changes.* Mathematical models of reality, including
     machine learning models, make various regularity assumptions that encode the idea
     that reality varies smoothly: small changes in the inputs of the models should
@@ -408,8 +499,10 @@
     facilities covering all the modules in the pipeline and to aggregate all metrics
     in a monitoring server, where they can be correlated and cross-referenced across
     time (Section [5.3.6](design-code.html#monitoring-pipeline)).'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '*预测准确性突然改变。* 现实的数学模型，包括机器学习模型，都做出了各种规律性假设，这些假设编码了现实平滑变化的思想：模型输入的微小变化应该产生其输出的微小变化；输入的变化越大，输出的潜在变化也越大。任何无法立即与已知现实世界事件联系在一起的行为上的明显变化，可能表明模型不正确，恰好工作了一段时间后最终崩溃，使得它最初就是错误的变得明显。（例如，在[9.1.1](troubleshooting-code.html#troubleshooting-large-data)和[9.1.3](troubleshooting-code.html#troubleshooting-dynamic-data)中描述的，训练数据与未观察到的因果特征之间的任何连接丢失。）这也可能表明某些输入以根本的方式改变（变量类型或意义的改变、反馈循环等）或变得不可用（[5.2.1](design-code.html#data-debt)和[5.2.2](design-code.html#model-debt)）。解决此类问题的唯一方法是在管道中的所有模块中实施全面的监控设施，并在监控服务器中汇总所有指标，以便可以在时间上关联和交叉引用（[5.3.6](design-code.html#monitoring-pipeline)）。'
 - en: '*The resources required to train the models or to make predictions with the
     machine learning pipeline are at odds with the computational complexity of the
     algorithms it implements.* As we discussed in Section [4.6](algorithms.html#bigO-performance),
@@ -426,12 +519,16 @@
     (overlapping) effects. Prediction, by comparison, is less likely to be problematic.
     As before, we should be able to point out any anomalies in resource usage by a
     combination of monitoring and logging across modules.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '*训练模型或使用机器学习管道进行预测所需资源与该算法实现的计算复杂性相矛盾。* 正如我们在[4.6](algorithms.html#bigO-performance)节中讨论的那样，现实世界的资源使用并不完美地反映大O表示法：它不考虑常数因子和不同的硬件能力（并行执行、缓存大小等），也无法轻易地结合现代编译器和语言解释器执行的优化。然而，这两者之间应该存在某种可识别的关系。大的差异表明，训练数据或输入特征可能破坏了模型的一些假设，或者数据点太少。在任何情况下，模型训练和超参数调整都难以识别最优模型，所需时间比预期更长。大量相关的变量簇（[9.1.1](troubleshooting-code.html#troubleshooting-large-data)）可能产生类似的效果，因为模型训练难以分离它们的（重叠的）影响。相比之下，预测不太可能有问题。像以前一样，我们应该能够通过模块间的监控和日志记录的组合来指出资源使用中的任何异常。'
 - en: 9.4 Tests Are the Solution
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 9.4 测试是解决方案
 - en: 'Current practices from software engineering strongly suggest that the most
     reliable way of identifying defects in software is *testing*. Much has been written
     on this topic in classic books such as “The Pragmatic Programmer” (Thomas and
@@ -449,146 +546,203 @@
     not influenced by external factors (including other tests). That is typically
     implemented by using the base container images we use for our production systems
     in our continuous integration setup.'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 软件工程中的现行做法强烈表明，在软件中识别缺陷最可靠的方法是*测试*。关于这个主题，经典书籍如“实用程序员”（托马斯和亨特 [2019](#ref-pragpro)）和“测试驱动开发”（贝克
+    [2002](#ref-tdd)）中已经有很多论述。关于测试机器学习软件的资源很少，其中之一是Alice Zheng的《评估机器学习模型》（Zheng [2015](#ref-evaluatingml)），谷歌研究中的“ML测试评分”标准（Breck
+    et al. [2017](#ref-mlrubric)），以及学术文献中的一些调查论文（Braiek and Khomh [2020](#ref-braiek)；张等
+    [2020](#ref-mltesting)）。我们将尽力在本章的剩余部分概述测试机器学习管道的所有方面，以补充我们在第[5](design-code.html#design-code)章和第[6](writing-code.html#writing-code)章中关于软件测试的讨论。我们还将大量依赖第[7](deploying-code.html#deploying-code)章中讨论的自动化和可重复部署实践：我们应该在干净的环境中运行每个测试，以确保其结果不受外部因素的影响（包括其他测试）。这通常是通过在我们的持续集成设置中使用我们用于生产系统的基本容器镜像来实现的。
 - en: 9.4.1 What Do We Want to Achieve?
+  id: totrans-42
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.4.1 我们想要实现什么？
 - en: 'Following (Zhang et al. [2020](#ref-mltesting)), we can summarise our goals
     as:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据（张等 [2020](#ref-mltesting)），我们可以总结我们的目标如下：
 - en: '*Model correctness*: if input data follow the distribution we expect them to,
     outputs should be correct and predictions should be accurate with high probability.'
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*模型正确性*：如果输入数据遵循我们期望的分布，输出应该是正确的，并且预测应该具有很高的准确性。'
 - en: '*Empirical correctness*: outputs should be correct and predictions accurate
     for new data points, that is, the empirical performance of the models should be
     reliably above the threshold we set for our metrics (Section [5.3.1](design-code.html#scoping-pipeline)).'
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*经验正确性*：对于新的数据点，输出应该是正确的，预测应该是准确的，也就是说，模型的实证性能应该可靠地高于我们为我们的指标设定的阈值（第[5.3.1](design-code.html#scoping-pipeline)节）。'
 - en: '*Model relevance*: models should be able to represent the distribution of the
     data and to fit them well without overfitting.'
+  id: totrans-46
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*模型相关性*：模型应该能够表示数据的分布，并且能够很好地拟合数据而不过度拟合。'
 - en: '*Robustness*: models should handle invalid or extreme inputs gracefully.'
+  id: totrans-47
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*鲁棒性*：模型应该能够优雅地处理无效或极端的输入。'
 - en: '*Adversarial robustness*: models should also handle malicious inputs that are
     crafted to be hard to detect and to produce specific outputs.'
+  id: totrans-48
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*对抗鲁棒性*：模型还应该能够处理精心制作的恶意输入，这些输入难以检测并产生特定的输出。'
 - en: '*Efficiency*: model training and inference should use the least possible amount
     of compute and memory that produces the desired level of predictive accuracy.'
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*效率*：模型训练和推理应使用尽可能少的计算和内存，以产生所需的预测准确性水平。'
 - en: '*Interpretability*, *fairness* and *privacy*: as discussed in Section [5.3.1](design-code.html#scoping-pipeline).'
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*可解释性*、*公平性*和*隐私性*：如第[5.3.1](design-code.html#scoping-pipeline)节所述。'
 - en: Tests should strive to ensure that these goals are met by investigating a variety
     of valid and invalid inputs and outputs for both individual models and the machine
     learning pipeline as a whole. They should give confidence in the ability of the
     pipeline to perform its assigned task well for common inputs and to degrade gracefully
     otherwise.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 测试应努力通过调查单个模型和整个机器学习管道的有效和无效输入和输出，以确保这些目标得到满足。它们应该对管道在常见输入下执行其分配的任务的能力以及在其他情况下优雅降级的能力有信心。
 - en: 9.4.2 What Should We Test?
+  id: totrans-52
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.4.2 我们应该测试什么？
 - en: 'In principle, a comprehensive test suite should cover:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 在原则上，一个全面的测试套件应该包括：
 - en: 'The *raw data*, covering invalid or missing values, variable representations
     (scaling, one-hot encoding, etc.), variables that are of little to no use along
     with those that are redundant because they encode the same information (legacy
     and epsilon variables). We should also have offline and online tests for:'
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*原始数据*，包括无效或缺失值、变量表示（缩放、独热编码等）、几乎无用或无用的变量，以及由于它们编码相同信息而冗余的变量（遗留和epsilon变量）。我们还应该对以下内容进行离线和在线测试：'
 - en: 'Insufficient sample size: Do we have enough data points to (re)train the model?
     Is the sample size large enough to make it possible to observe infrequent configurations
     of the variables?'
+  id: totrans-55
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 样本量不足：我们是否有足够的数据点来（重新）训练模型？样本量是否足够大，以便观察变量不常见的配置？
 - en: 'Data drift: Does new data have a distribution comparable to that of the data
     the model was trained from?'
+  id: totrans-56
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据漂移：新的数据分布是否与模型训练数据相似？
 - en: 'Outliers: Are there any data points with values different enough from the rest
     that we may think of them as recording errors?'
+  id: totrans-57
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 异常值：是否存在任何与其它数据点值差异足够大的数据点，以至于我们可能认为它们是记录错误？
 - en: 'The key components of the *models*:'
+  id: totrans-58
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*模型*的关键组件：'
 - en: 'Models: Are they appropriate for the data? Can they regularise (smooth) noisy
     outputs?'
+  id: totrans-59
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模型：它们是否适合数据？它们能否对噪声输出进行正则化（平滑）？
 - en: 'Parameters: Are parameter values unusually large or small? Are there parameters
     that have no effect on predictions (for instance, because they are equal to zero)?'
+  id: totrans-60
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 参数：参数值是否异常大或小？是否存在对预测没有影响的参数（例如，因为它们等于零）？
 - en: 'Hyperparameters: Do they encode expert knowledge correctly? Or, conversely,
     are they really non-informative? Do they restrict the range of models we can learn?'
+  id: totrans-61
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 超参数：它们是否正确编码了专家知识？或者相反，它们是否真的没有信息量？它们是否限制了我们可以学习的模型范围？
 - en: 'Loss functions: Do they express meaningful properties of the model outputs
     (Section [5.3.4](design-code.html#model-pipeline))? Can they differentiate between
     models well, picking models that predict well and that capture the key relationships
     between the variables?'
+  id: totrans-62
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 损失函数：它们是否表达了模型输出的有意义属性（见章节 [5.3.4](design-code.html#model-pipeline)）？它们能否很好地区分模型，选择预测良好且能够捕捉变量之间关键关系的模型？
 - en: 'Optimisers: Can they explore a wide range of models efficiently? Do they converge
     reliably or are they prone to settling for suboptimal models?'
+  id: totrans-63
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 优化器：它们能否高效地探索广泛的模型？它们是否可靠地收敛，或者它们倾向于接受次优模型？
 - en: The *post-processed data* and *inference outputs* to spot features that become
     problematic or are not worth keeping and to ensure that predictions are accurate
     enough to be fit for purpose.
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*后处理数据*和*推理输出*用于识别变得有问题或不值得保留的特征，并确保预测足够准确，以适用于目的。'
 - en: Any *glue code* that is used to wrap models, to help access their inference
     capabilities or to orchestrate them (Sections [5.2.3](design-code.html#architecture-debt)
     and [5.2.4](design-code.html#code-debt)).
+  id: totrans-65
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 任何用于包装模型、帮助访问其推理能力或编排它们的*粘合代码*（参见章节 [5.2.3](design-code.html#architecture-debt)
+    和 [5.2.4](design-code.html#code-debt)）。
 - en: This is, of course, in addition to any tests required to ensure that the underlying
     infrastructure is working, feeding inputs to the pipeline and putting its outputs
     to use. For this to be possible, we must be able to track data, models, predictions,
     hyperparameters and parameters simultaneously through configuration management
     under version control (see also Sections [5.1](design-code.html#data-as-code)
     and [5.2](design-code.html#technical-debt)).
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 这当然还包括任何必要的测试，以确保基础架构正常工作，向管道提供输入，并使用其输出。为此，我们必须能够通过配置管理在版本控制下同时跟踪数据、模型、预测、超参数和参数（参见章节
+    [5.1](design-code.html#data-as-code) 和 [5.2](design-code.html#technical-debt)）。
 - en: 'Even if we can effectively test all the above, a crucial problem remains: how
     do we determine whether a test should pass or fail? In order to do so we must
     be able to determine what is the expected behaviour of each individual model and
@@ -608,15 +762,21 @@
     them as pseudo-oracles and validate our models. This practice is called *differential
     testing*, and can supplement property-based testing for models without easily-testable
     properties like black-box models (Section [9.2.2](troubleshooting-code.html#troubleshooting-black-boxes)).'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使我们可以有效地测试上述所有内容，仍然存在一个关键问题：我们如何确定一个测试应该通过还是失败？为了做到这一点，我们必须能够确定每个单独的模型以及整个管道的预期行为，这在处理机器学习模型的随机性时是困难的。通常，我们无法访问到一个先知：[^(22)](#fn22)我们事先不知道“正确的行为”应该是什么，否则我们一开始就不需要模型！模型通过它们的假设以及它们的数学和概率性质给我们一些线索：前者确定哪些是有效的输入，后者建议对于给定的输入我们应该得到什么输出。模型的不变性（即，输入的变化不应该改变输出）提供了更多的理论属性，这些属性应该通过经验得到满足。这是一种基于属性的测试形式，其中要测试的属性是我们可以从模型定义中推导出的数学陈述。如果我们使用具有多个实现的模型，我们还可以将我们使用的实现与其它实现的输出进行比较。如果它们在某个容差阈值内一致，并且我们信任那些其他实现是正确的，我们可以将它们作为伪先知来验证我们的模型。这种做法被称为*差异测试*，可以补充对没有易于测试的属性（如黑盒模型）的模型进行基于属性的测试（见第[9.2.2](troubleshooting-code.html#troubleshooting-black-boxes)节）。
 - en: 9.4.3 Offline and Online Data
+  id: totrans-68
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.4.3 离线和在线数据
 - en: Tests based on *offline data* and *online data* are quite different.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于离线数据和在线数据的测试相当不同。
 - en: 'Offline data are mainly used for tuning hyperparameters and training models,
     and they are collected by combining historical data and new data points into a
     static sample until its size is large enough (Section [5.3.4](design-code.html#model-pipeline)).
@@ -630,8 +790,10 @@
     closest thing to ground truth we can access in most settings. In a sense, it allows
     us to train a model and compare its performance against human performance (assuming
     labelling is done by domain experts, see Section [5.2.1](design-code.html#data-debt)).'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 离线数据主要用于调整超参数和训练模型，它们是通过将历史数据和新的数据点组合成一个静态样本，直到其大小足够大（见第[5.3.4](design-code.html#model-pipeline)节）来收集的。然后，这些数据将被标记以获得一个真实标签来训练模型。图像将根据它们显示的项目进行标记；句子将根据它们的主要主题进行标记；实验室样本将被测试以检测我们希望模型识别的现象。（注意，在许多情况下，标签是一个离散的、分类的变量，但不必是。它可以是顺序变量，如年龄组，或者是一个数值。）标记过程充当一个伪先知：它成本高昂、耗时，并且有非零的错误率，但它是大多数情况下我们可以访问到的最接近真实标签的东西。从某种意义上说，它允许我们训练一个模型，并将其性能与人类性能进行比较（假设标记是由领域专家完成的，见第[5.2.1](design-code.html#data-debt)节）。
 - en: Therefore, testing model training and hyperparameter tuning with offline data
     together with the offline data themselves is relatively straightforward. We have
     a large sample, which allows us to test the pre-processing of raw data and feature
@@ -646,8 +808,11 @@
     it possible to perform hyperparameter tuning and to rank different model choices.
     The accuracy observed during training will also serve as a benchmark to monitor
     the performance of the models in production (Section [5.3.6](design-code.html#monitoring-pipeline)).
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，使用离线数据本身以及与模型训练和超参数调整一起进行测试相对简单。我们有一个大样本，这使我们能够测试原始数据的预处理和特征工程，以确保它们为模型生成合适的输入。在基于属性的测试精神下，我们可以测试当模型被喂食满足其假设的特征时，模型的行为是否正确；否则，它们会报告错误或优雅地降级。从数据的经验分布和模型假设中，我们可以识别出测试极限行为的边缘情况，以及在样本空间中分布良好且覆盖各种典型行为的案例。多亏了标签，我们可以通过某种形式的训练-测试-验证数据拆分来估计模型的预测性能，这使得进行超参数调整和排名不同的模型选择成为可能。训练期间观察到的准确性也将作为基准，用于监控模型在生产中的性能（第
+    [5.3.6](design-code.html#monitoring-pipeline) 节）。
 - en: Online data are generated as a constant stream from external sources in the
     form of individual data points or small batches. Therefore, testing takes the
     form of online monitoring, A/B testing (which is covered in depth in (Zheng [2015](#ref-evaluatingml)))
@@ -665,8 +830,12 @@
     that the model is now out of date and must be retrained automatically. In practice,
     such tests can fail in benign ways for a number of reasons, so keeping a human
     in the loop to check why failing tests are failing is preferable (Section [5.3.4](design-code.html#model-pipeline)).
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 在线数据以恒定流的形式从外部来源生成，形式为单个数据点或小批量。因此，测试采取在线监控、A/B 测试（这在（Zheng [2015](#ref-evaluatingml)）中有深入探讨）或其他在第
+    [7.2](deploying-code.html#deployment-strategies) 节中概述的策略的形式。在线数据通常没有标签，因此我们无法直接评估模型是否正确处理它们。我们可以通过收集短期内的数据点并测试它们的经验分布是否与我们预期的不同，来测试我们在生产中看到的数据是否遵循与训练数据相同的分布。如果数据未标记，我们将受到限制，要么是领域专家在短时间内进行标记的可用性，要么是机器学习模型在此任务上的有限准确性。然后，我们可以设置动态阈值来检测准确性的突然和渐进性损失。同样，我们可以测试输入特征分布的变化。在两种情况下，我们都可以标记测试以供领域专家审查，或者假设模型现在已过时，必须自动重新训练。在实践中，由于多种原因，此类测试可能会以良性的方式失败，因此最好让人类参与其中，检查失败测试失败的原因（第
+    [5.3.4](design-code.html#model-pipeline) 节）。
 - en: 'If we do not have enough data to both train the models and to test them, we
     can generate more either by resampling or by stochastic simulation. Both bootstrap
     and cross-validation make it possible to create new data sets by resampling an
@@ -681,8 +850,12 @@
     cross-validation. The remaining data points can then be used to build test and
     validation sets to evaluate the models, as in random forests (Breiman [2001](#ref-randomforests)[a](#ref-randomforests),
     [1996](#ref-out-of-bag)).'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们没有足够的数据来训练模型和测试模型，我们可以通过重采样或随机模拟来生成更多数据。重采样和交叉验证都使得通过重采样离线数据集来创建新的数据集成为可能（例如，参见(M.
+    Kuhn 和 Johnson [2013](#ref-kuhn))，其中提供了简短介绍和几个示例）。它们都始于这样的想法，即数据是从感兴趣的总体中抽取的，因此数据中变量的分布是总体中变量分布的经验近似。再次从数据中抽取样本可以实施，以便重采样样本和交叉验证分割保持这一属性。结果数据集是原始数据的扰动版本，包含其数据点的子集：在重采样情况下为63.2%，在交叉验证情况下则按折叠结构成比例。剩余的数据点可以用来构建测试集和验证集，以评估模型，正如在随机森林中(Breiman
+    [2001](#ref-randomforests)[a](#ref-randomforests), [1996](#ref-out-of-bag))所做的那样。
 - en: 'Preserving the empirical distribution of a variable while resampling is a simple
     endeavour if all data points are independent, but it can become very complicated
     very quickly when the data have some kind of structure such as spatial and temporal
@@ -711,8 +884,12 @@
     of the data, we can consider bootstrap and cross-validation themselves as stochastic
     simulations! Which makes intuitive sense if we consider that they use random sampling
     with and without replacement, respectively.'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 在重采样时保留变量的经验分布是一个简单的任务，如果所有数据点都是独立的，但当数据具有某种结构，如空间和时间依赖性时，这可能会变得非常复杂。在这种情况下，使用随机模拟可能更为直接。一种简单的方法是对数据点进行扰动，无论是通过随机噪声还是随机选择的确定性变换（加法、减法、乘法等）。如果模型足够稳健，小扰动不应该改变模型的输出。它们通过有效地平滑数据来减少过拟合的可能性，就像岭回归（Bishop
+    [1995](#ref-tikhonov)）一样，这将帮助我们确定我们的模型是否过拟合或在某些地方是奇异的。另一方面，使用确定性变换有助于测试模型的不变量和一些类型的模型属性。如果一个变换是不变的，那么模型及其输出不应该改变：原始数据和变换后的数据属于同一个等价类，从意义上说，它们产生等效的模型。[^(23)](#fn23)
+    如果一个变换不是不变的，我们仍然可能能够根据模型属性将变换后的输入映射到相应的参数估计和预测。例如，使用数据的线性函数构建的模型，如线性回归模型，对线性变换是封闭的：将一个变量乘以一个常数将导致相关的回归系数发生等效变化；将一个常数加到一个变量上不应该改变相关的回归系数，该系数表示变量单位变化时响应的变化；将常数加到所有变量上将以相同的量移动模型的截距。这些都是容易测试且我们的模型实现必须满足的性质。如果我们认为包括和排除数据点是对数据的确定性变换，那么我们可以将自助法和交叉验证本身视为随机模拟！如果我们考虑到它们分别使用有放回和无放回的随机抽样，这从直观上是有意义的。
 - en: 'A more complex approach to stochastic simulation is to train a generative model
     on the data, and use it as an auxiliary model that generates new data points to
     build tests with. If the generative model captures the distribution of the data
@@ -731,42 +908,57 @@
     else, it means more models to test. A cheaper alternative may be an interpolation
     algorithm like SMOTE (Fernandez et al. [2018](#ref-smote)), which is more computationally
     efficient at the cost of being more limited in the data points it can generate.'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种更复杂的随机模拟方法是，在数据上训练一个生成模型，并使用它作为辅助模型来生成新的数据点以构建测试。如果生成模型很好地捕捉了数据的分布，那么它生成的数据点应该遵循相同的分布，从而成为有效的替代品。生成对抗网络（GANs）（Goodfellow等人[2014](#ref-gans)）是一个流行的选择，但图模型（Scutari和Denis
+    [2021](#ref-scutari)）可能提供了一种更简单易学且训练数据需求更少的替代方案。这种方法的优势在于它比我们上面讨论的方法更灵活：它可以调整以生成异常值和对抗性数据点，以及具有预期分布的数据点。我们还可以确保生成的数据集之间足够不同，以便在不同的场景下测试模型。然而，训练生成模型需要大量的数据，并且它增加了机器学习管道的复杂性（参见第[9.2.1](troubleshooting-code.html#troubleshooting-large-models)节和[9.2.4](troubleshooting-code.html#troubleshooting-pipelines)节）。至少，这意味着需要测试更多的模型。一个更经济的替代方案可能是一个插值算法，如SMOTE（Fernandez等人[2018](#ref-smote)），它在计算效率上更高效，但生成的数据点在数量上更为有限。
 - en: 9.4.4 Testing Local and Testing Global
+  id: totrans-76
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.4.4 测试局部和测试全局
 - en: 'We can only understand the emergent properties of a machine learning pipeline
     by considering it as a whole, which suggests that testing the whole pipeline is
     as important as testing the individual models it orchestrates. Hence the following
     classes of tests are all equally important to implement:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们只能通过将其视为整体来理解机器学习管道的涌现特性，这表明测试整个管道与测试其协调的单个模型同样重要。因此，以下测试类别都同等重要：
 - en: '*Unit tests:* testing that the individual models display the theoretical properties
     we know they have, including their resource usage based on big-O notation.'
+  id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*单元测试*：测试单个模型是否表现出我们所知的理论特性，包括基于大O符号的资源使用情况。'
 - en: '*Integration tests:* testing that all models accept valid inputs, reject invalid
     inputs, produce valid outputs, and generate errors instead of producing bad outputs.
     We want to make sure that if models are wired up properly they will not trip each
     other up.'
+  id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*集成测试*：测试所有模型是否接受有效输入，拒绝无效输入，产生有效输出，并在产生不良输出时生成错误。我们希望确保如果模型连接正确，它们不会相互干扰。'
 - en: '*System tests:* feeding raw data to the pipeline and testing that the final
     output is correct, insofar as we can determine that from theoretical considerations
     (like model evaluation in Section [5.3.4](design-code.html#model-pipeline)).'
+  id: totrans-80
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*系统测试*：将原始数据输入到管道中，并测试最终输出是否正确，只要我们能从理论考虑（如第[5.3.4](design-code.html#model-pipeline)节中的模型评估）中确定这一点。'
 - en: '*Acceptance tests:* checking whether the final outputs of the pipeline are
     of sufficient quality for their intended use (like model validation in Section
     [5.3.4](design-code.html#model-pipeline)).'
+  id: totrans-81
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*验收测试*：检查管道的最终输出是否足够质量以供其预期用途（如第[5.3.4](design-code.html#model-pipeline)节中的模型验证）。'
 - en: This list broadly follows standard naming conventions for different types of
     tests established in *Code Complete* (McConnell [2004](#ref-codecomplete)), but
     requires some clarifications to make sense in the context of machine learning
@@ -781,8 +973,14 @@
     in academia, that may very well not happen, leaving all the testing to us.) If
     we are implementing any machine learning models ourselves, we can make model evaluation
     code double as a suite of tests as well.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个列表大致遵循在 *Code Complete*（McConnell [2004](#ref-codecomplete)）中建立的针对不同类型测试的标准命名约定，但在机器学习管道的上下文中需要一些澄清。首先，什么是“单元”？传统的定义是“一个完整的类、例程或由单个程序员或程序员团队编写的简小程序”。在我们的情况下，我们认为这指的是管道中的一个单独的模型或执行相关任务（如数据摄取或数据准备[第
+    5.3.3](design-code.html#data-pipeline) 节]或推理[第 5.3.5](design-code.html#production-pipeline)
+    节]的模块）。通常，我们将能够使用已经在第三方库中实现的模型，在这种情况下，单元测试应由其开发者提供。（鉴于学术界产生的软件的现实情况，这很可能不会发生，所有的测试都留给我们。）如果我们自己实现任何机器学习模型，我们可以使模型评估代码同时充当测试套件。（Given
+    the realities of the software produced in academia, that may very well not happen,
+    leaving all the testing to us.)）
 - en: Integration testing is “the combined execution of two or more classes, packages,
     components or subsystems that have been created by multiple programmers or programming
     teams”. Since we are treating each machine learning model and each module as a
@@ -794,8 +992,11 @@
     about what a module inputs and outputs look like. As for machine learning models,
     their sample and parameter spaces are both very large and difficult to test in
     a comprehensive way.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 集成测试是指“由多个程序员或编程团队创建的两个或更多类、包、组件或子系统的组合执行”。由于我们将每个机器学习模型和每个模块视为一个单元，因此我们应该测试它们的输出是否是消费它们的模块的有效输入。特别是，涉及数据摄取和数据准备以及模型的集成测试确保我们的质量关卡是有效的（第
+    [5.3.3](design-code.html#data-pipeline) 节）。通常，这些测试只能非常基础，因为即使使用基于属性的测试，我们可能也只有一些非常一般的知识关于模块的输入和输出看起来像什么。至于机器学习模型，它们的样本和参数空间都非常大，难以进行全面测试。
 - en: This leaves system testing, “the execution of the software in its final form”
     focusing on “security, performance, resource loss, timing problems, and other
     issues that can’t be tested at lower levels of integration”. Ideally we can implement
@@ -811,8 +1012,10 @@
     absence of errors, we usually do not know what the distribution of the output
     of a model looks like, so it is difficult to simulate it to build integration
     tests.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就留下了系统测试，“软件在其最终形式下的执行”，重点关注“安全性、性能、资源损失、时序问题以及其他在较低集成级别无法测试的问题”。理想情况下，我们可以通过从有限的、代表性的数据集开始，追踪数据如何被流程中的所有模块所处理，从数据摄取（第[5.3.3](design-code.html#data-pipeline)节）到报告（第[5.3.6](design-code.html#monitoring-pipeline)节）进行。或者我们可以用随机生成数据进行同样的操作。系统测试提供了对流程正确性和性能的最现实评估，特别是如果我们使用真实世界数据来初始化测试的话。它允许我们测试错误的传播，这意味着既包括编程错误（如代码错误和浮点错误）也包括随机错误（其他模型作为输入的中间输出的分布错误）。即使在没有错误的情况下，我们通常也不知道模型输出的分布是什么样的，因此很难模拟它来构建集成测试。
 - en: 'If a machine learning pipeline passes unit, integration and system testing,
     we may have some degree of confidence that it works like it is supposed to. This,
     however, does not necessarily mean that it will prove to be useful to the people
@@ -835,17 +1038,23 @@
     issues are, per se, the concern of unit, integration or system tests. Nevertheless
     they are real issues for the users of the machine learning pipeline and thus we
     should give them serious consideration.'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一个机器学习流程通过了单元测试、集成测试和系统测试，我们可能对其按预期工作有一定的信心。然而，这并不一定意味着它将对设计者所设计的目标人群有用，无论是试图弄清楚自然界如何运作的科学家，还是试图让人们在广告上点击的营销人员。这就是验收测试的目的：检查该流程是否解决了在项目范围规划（第[5.3.1](design-code.html#scoping-pipeline)节）期间推动其发展的实际问题，以及它是否满足所有目标。软件可能运行得太慢，而用户需要实时反馈；它可能过于资源密集，因此不足以扩展到未来的数据集；或者它可能在其预测的准确性上不够，无法满足服务级别协议或相关法规。在技术上正确和有用之间的区别，从某种意义上说，反映了统计意义和实践意义之间的区别。即使一个机器学习模型比另一个模型表现更好，即使差异在统计上具有显著性，这也并不意味着我们应该选择该模型而不是其他替代方案。我们正在衡量的指标可能与我们试图建模的任务相关性不佳；两个模型之间的差异可能是真实的，但在实践中太小以至于无关紧要；或者更好的模型有一些不希望的特性，使其难以部署。这些问题本身并不是单元测试、集成测试或系统测试的担忧。然而，它们是机器学习流程用户面临的真实问题，因此我们应该认真考虑这些问题。
 - en: 9.4.5 Conceptual and Implementation Errors
+  id: totrans-86
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.4.5 概念和实现错误
 - en: What types of errors do we expect to catch with tests? If we exclude issues
     with infrastructure and input data, one way we can think about them is in terms
     of *conceptual errors* and *implementation errors*.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们期望通过测试捕捉到哪些类型的错误？如果我们排除基础设施和输入数据的问题，我们可以从*概念性错误*和*实现错误*的角度来考虑它们。
 - en: 'Machine learning models with a closed-form formulation, from simple logistic
     and ridge regression models (Hastie, Tibshirani, and Friedman [2009](#ref-elemstatlearn))
     to hierarchical Bayesian models implemented via variational inference (Blei, Kucukelbir,
@@ -863,8 +1072,11 @@
     or two and much eyeballing to identify, and they are especially difficult to detect
     when the model uses stochastic optimisation for hyperparameter tuning or inference
     because stochastic noise tends to hide errors with relatively small magnitudes.'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 具有闭式公式的机器学习模型，从简单的逻辑回归和岭回归模型（Hastie, Tibshirani, 和 Friedman [2009](#ref-elemstatlearn)）到通过变分推断实现的层次贝叶斯模型（Blei,
+    Kucukelbir, 和 McAuliffe [2017](#ref-blei)），通常具有闭式参数估计器和相应的分布（对于给定的超参数选择）以及损失函数和关键统计检验。构建它们所涉及的代数推导容易出错。其中一些错误可能是可以发现的错误代数操作，尽管难度较大，可以通过机器学习专家或用于数学表达式符号操作的软件来识别。涉及建模选择的错误更难捕捉：例如，对模型输入的错误假设、证明过于粗糙的近似、不成立的渐近考虑或无法捕捉变量之间特定依赖模式的情形。这类概念性错误可能需要一位经验丰富的机器学习专家或两位专家以及大量的仔细检查来识别，并且当模型使用随机优化进行超参数调整或推理时，这些错误尤其难以检测，因为随机噪声往往会隐藏相对较小的错误。
 - en: On the other hand, many machine learning models have an implicit formulation
     that relies on numeric or stochastic optimisation to learn a model that has some
     set of properties for some loss function. It is less common for such models to
@@ -888,12 +1100,18 @@
     instead of loading all data into memory. Another example is implementing machine
     learning models as distributed models over cheap cloud compute instances. (More
     on this in Chapter [2](hardware.html#hardware).)
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，许多机器学习模型具有隐式公式，这些公式依赖于数值或随机优化来学习具有某些属性集的模型，这些属性集适用于某些损失函数。这样的模型受概念错误影响的情况较少，这主要是因为它们的数学公式并不明确，因此需要较少的代数推导或概率假设。然而，隐式模型更容易出现实现问题。为了使优化在计算上可行，或者能够使用商业求解器，它们的实现通常与理论规范大相径庭。例如，在过去的20年里，许多机器学习模型都基于CUDA（Nvidia
+    [2021](#ref-cuda)）重新实现，以利用GPU线性代数操作的并行性。为了利用并行性，模型训练必须重构为尽可能多的小、独立的操作。除此之外，数学运算被限制在GPU和TPU上硅芯片上实现的那些运算，这意味着大部分运算都是向量矩阵上的线性运算。[^(24)](#fn24)
+    GPU和TPU的内存有限，这促使人们使用单精度浮点数而不是更常见的双精度浮点数，使得浮点误差和舍入成为需要考虑的紧迫问题。它们还有有限的带宽，因此运行的代码必须设计成不需要频繁与运行在CPU上的主程序交互。鉴于有限的内存和带宽，模型还必须仅在有限的数据子集上操作，并汇总结果，而不是将所有数据加载到内存中。另一个例子是将机器学习模型作为分布式模型在廉价的云计算实例上实现。（关于这一点，请参阅第[2](hardware.html#hardware)章。）
 - en: 9.4.6 Code Coverage and Test Prioritisation
+  id: totrans-90
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.4.6 代码覆盖率与测试优先级
 - en: 'Then, the more tests we put in place, the better? Not quite. Each test comes
     at a cost. Software tests are themselves software: they involve writing code,
     troubleshooting it and ensuring that it is correct. We should also keep them in
@@ -905,16 +1123,20 @@
     continuous integration will re-run all the tests (Section [5.3](design-code.html#processing-pipeline))
     and we will have to revisit those that fail. Furthermore, running tests to check
     whether they pass or not can take a significant amount of time and hardware resources.'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，我们放置的测试越多，就越好吗？并非如此。每个测试都有成本。软件测试本身就是软件：它们涉及编写代码、调试并确保其正确性。我们还应该确保它们与它们所测试的模块以及机器学习管道保持同步。每次我们引入新的模型或新的模块，删除或修改一个，以及每次我们重新审视它们的连接方式时，我们也应该审查相关的软件测试。换句话说，每次我们配置管理平台中管道的规范发生变化（第[5.1](design-code.html#data-as-code)节），持续集成将重新运行所有测试（第[5.3](design-code.html#processing-pipeline)节），我们也将不得不重新审视那些失败的测试。此外，运行测试以检查它们是否通过可能需要大量的时间和硬件资源。
 - en: We walk a fine line between having enough tests to ensure the pipeline works
     well and having as few tests as we can get away with. Given the constraints of
     what hardware we have available and of how much time is acceptable for the tests
     to complete, we should aim for the tests to cover as much of the functionality
     of the pipeline as possible. How can we prioritise tests to achieve the best possible
     *coverage* with limited resources?
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在确保管道工作良好和尽可能少测试之间走钢丝。考虑到我们可用的硬件限制以及测试完成可接受的时长限制，我们应该力求测试尽可能覆盖管道的功能。我们如何优先考虑测试，以有限的资源实现最佳可能的**覆盖率**？
 - en: 'For traditional software, the answer is to measure *code coverage* (Myers,
     Badgett, and Sandler [2012](#ref-coverage)): the proportion of the code executed
     by the tests. The goal is to make sure that as many functions, conditional branches
@@ -924,8 +1146,10 @@
     we test, the more we can ensure that the expected behaviour of the software matches
     our expectations. At the same time, we want tests to overlap as little as possible
     in terms of what they cover so as to implement as few as possible.'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于传统软件，答案是测量**代码覆盖率**（Myers, Badgett 和 Sandler [2012](#ref-coverage)）：测试执行代码的比例。目标是确保尽可能多的函数、条件分支和代码路径被执行，以便难以检测到错误。隐含地说，我们是在说我们在软件中实现的算法和逻辑被编码在代码中，因此测试的代码越多，我们就能越有信心确保软件的预期行为符合我们的期望。同时，我们希望测试尽可能少地重叠覆盖范围，以便尽可能少地实施。
 - en: 'Machine learning software, however, differs from traditional software in that
     its behaviour is determined by data as much as by code (Section [5.1](design-code.html#data-as-code)).
     Using different data for training, or predicting data points that are markedly
@@ -938,16 +1162,22 @@
     of coverage built on data, models and parameters. By all means, we should test
     code paths to be working to specification if in use, and remove them as dead code
     if not.'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，机器学习软件与传统软件不同，其行为由数据以及代码共同决定（第 [5.1](design-code.html#data-as-code) 节）。使用不同的数据进行训练，或者预测与模型预期显著不同的数据点，可能会执行与“典型数据”相同的代码路径，同时产生病态输出。因此，代码覆盖率不是衡量管道功能测试多少的有用指标，因为代码只是故事的一部分。输入和输出样本空间、参数空间和模型空间覆盖率是更有意义的指标。这并不是说代码覆盖率没有用：但它与基于数据、模型和参数构建的覆盖率度量是正交的。无论如何，如果代码在使用中，我们应该确保测试代码路径按规格工作，如果不在使用中，则将其作为死代码移除。
 - en: What does that mean in terms of choosing and prioritising tests? Sample space,
     parameter space and model space are effectively infinite in size so we cannot
     fully cover them. We can, however, make sure that we test a good selection of
     *boundary values*, *typical values* and *invalid values* (Thomas and Hunt [2019](#ref-pragpro)).
     In a very limited way, this is what we did at the end of the refactoring example
     in Section [6.8](writing-code.html#reworking).
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着在测试选择和优先级排序方面是什么意思？样本空间、参数空间和模型空间实际上无限大，因此我们无法完全覆盖它们。然而，我们可以确保测试一个良好的选择，包括**边界值**、**典型值**和**无效值**（Thomas
+    和 Hunt [2019](#ref-pragpro)）。在非常有限的意义上，这就是我们在第 [6.8](writing-code.html#reworking)
+    节重构示例结束时所做的事情。
 - en: Boundary values are data points or parameter values that are close either to
     the boundary of their domain or to a decision boundary. The former are typically
     corner cases that produce some sort of limit behaviour, like hugely inflated or
@@ -962,8 +1192,10 @@
     by hard thresholds. If one or more variables take values close to the boundary
     for a data point, a small change in their values will make the model choose different
     classes for practically identical data points.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 边界值是指那些接近其定义域边界或决策边界的数值点或参数值。前者通常是边界情况，会产生某种极限行为，例如在预测中产生极大或偏颇的值，或者在训练中产生奇异模型。一般来说，极限行为是不受欢迎的，因为极端的预测在大多数情况下都是错误的；并且因为奇异模型过度拟合了训练数据，将会有非常差的预测准确性。后者是那些使模型输出不稳定的价值，因为这种值的小幅变化会导致模型产生导致不同行动方案的输出。这在分类模型中很常见，我们通过将输入空间划分为由硬阈值分隔的区域，将连续输入（数据中的变量）映射到离散输出（类别集合）。如果一个或多个变量对于一个数据点取值接近边界，它们值的小幅变化将使模型为几乎相同的数据点选择不同的类别。
 - en: 'Typical values are data points or parameter values that the model should handle
     well, without displaying any kind of pathological behaviour. They are mainly useful
     to implement property-based tests verifying that the theoretical properties of
@@ -991,8 +1223,10 @@
     typical values for all variables and that puts the neural network in a variety
     of states, increasing the likelihood of finding instances of misbehaviour that
     would not be caught by the original test data.'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 典型值是模型应该很好地处理的数据点或参数值，不会显示任何类型的病态行为。它们主要用于实现基于属性的测试，以验证模型的理论属性在其软件实现中是否成立。理想情况下，我们希望用一个网格覆盖典型值的范围，使得网格中的每个点与其邻居足够不同，并且测试空间中的所有区域都得到测试。这将确保测试中几乎没有重复，同时确保样本空间（在数据点的情况下）或参数空间（在参数值的情况下）得到覆盖。我们可以选择网格点要么是确定性的（规则网格）要么是随机的（通过随机采样）；如果典型值的范围是高维的，或者我们对典型值的分布（例如，参数的先验分布）做出假设，那么后者可能更容易实现。这种方法的一个实际例子是用于神经网络的TensorFuzz调试库（Odena等人[2019](#ref-tensorfuzz)）。TensorFuzz实现了覆盖率引导的模糊测试：它从测试数据语料库中采样可能的神经网络输入，通过一组可能的变换来改变它们以创建新的输入，并检查由变换后的输入激活的神经元。如果变换后的输入导致与语料库中已存在的某个输入过于相似的激活模式，如辅助最近邻模型（Hastie，Tibshirani和Friedman[2009](#ref-elemstatlearn)）所确立的，那么它们将被丢弃，因为它们被认为不会增加覆盖率。另一方面，如果激活模式与我们已经观察到的足够不同，则变换后的输入将被添加到语料库中。因此，TensorFuzz逐渐构建一个包含所有变量典型值的数据点的语料库，并将神经网络置于各种状态，从而增加发现原始测试数据无法捕获的异常行为实例的可能性。
 - en: 'Finally, invalid values lie beyond the boundaries of the acceptable inputs
     or outputs of a model. If valid values are limited to an interval, that means
     any values outside of that interval. Values that are of the wrong type (say, a
@@ -1006,8 +1240,13 @@
     with an error. In general, we test invalid values to verify that model performance
     degrades gracefully and to make sure errors are generated when no meaningful output
     can be produced.'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，无效值位于模型可接受输入或输出的边界之外。如果有效值被限制在一个区间内，这意味着该区间之外的任何值。类型错误（例如，当期望实数时却得到一个字符串）和特殊值如
+    `NaN`、`+Inf` 或 `-Inf`（见[3.1](types-structures.html#variable-types)节）也应被视为无效值。`NA`
+    是否无效取决于上下文：对于机器学习模型能够处理缺失数据来说，这无疑是可取的；如果它们能够这样做，`NA` 应被视为边界值。否则，我们应该确保如果任何输入是
+    `NA`，则输出也是 `NA`，也就是说，我们正在正确地传播缺失值；或者模型应该因错误而失败。一般来说，我们测试无效值是为了验证模型性能能够优雅地下降，并确保在无法产生有意义的输出时生成错误。
 - en: 'Testing a good selection of boundary, typical and invalid values will provide
     insights on the behaviour of our machine learning software. Testing both typical
     values and corner or invalid values, we can ensure that models are robust and
@@ -1019,5 +1258,8 @@
     effect, we can also achieve some degree of code coverage: if different code paths
     map to different regions of the sample and parameter spaces, testing both well
     will execute many code paths.'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 测试一组良好的边界、典型和无效值将有助于了解我们机器学习软件的行为。测试典型值和边界或无效值，我们可以确保模型是健壮的，并显示出预期的理论特性。测试数据和参数的值对（除了单独的值）可以增加找到错误的概率从
+    67% 提高到 93%（D. R. Kuhn, Kacker, 和 Lei [2013](#ref-combinatorial-testing)）；测试更高阶的组合会产生快速减少的回报，并且可能不值得在非生命关键的应用中投入精力。作为副作用，我们还可以达到一定程度的代码覆盖率：如果不同的代码路径映射到样本和参数空间的不同区域，同时测试两者将执行许多代码路径。

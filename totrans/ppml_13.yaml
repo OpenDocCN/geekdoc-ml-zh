@@ -1,11 +1,15 @@
 - en: Chapter 7 Packaging and Deploying Pipelines
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第7章 打包和部署流程
 - en: 原文：[https://ppml.dev/deploying-code.html](https://ppml.dev/deploying-code.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://ppml.dev/deploying-code.html](https://ppml.dev/deploying-code.html)
 - en: Packaging machine learning models into artefacts is an important step in making
     pipelines reproducible. It also makes models easier to deploy, that is, to bring
     them into production (or another target) systems and to put them to use. Choosing
@@ -15,8 +19,11 @@
     with confidence because we have designed (Chapter [5](design-code.html#design-code)),
     implemented (Chapter [6](writing-code.html#writing-code)), documented (Chapter
     [8](documenting-code.html#documenting-code)) and tested it well (Chapter [9](troubleshooting-code.html#troubleshooting-code)).
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 将机器学习模型打包成工件是使流程可重复的重要步骤。这也使得模型更容易部署，即，将它们带入生产（或另一个目标）系统并投入使用。选择合适的打包格式和部署策略的组合，确保我们可以构建基于CI/CD解决方案（Duvall,
+    Matyas, and Glover [2007](#ref-cicd)）来高效且有效地完成这项工作。我们的最终目标是自信地交付流程，因为我们已经设计（见[第5章](design-code.html#design-code)）、实现（见[第6章](writing-code.html#writing-code)）、文档化（见[第8章](documenting-code.html#documenting-code)）和测试了它（见[第9章](troubleshooting-code.html#troubleshooting-code)）。
 - en: 'Models are part of a machine learning pipeline as much as code is, and are
     packaged (Section [7.1](deploying-code.html#deployment-prep)) and deployed (Sections
     [7.2](deploying-code.html#deployment-strategies) and [7.3](deploying-code.html#deployment-process))
@@ -26,22 +33,30 @@
     (Section [7.4](deploying-code.html#deployment-monitoring)). We should also have
     contingency plans for when they fail (Section [7.5](deploying-code.html#deployment-fails))
     so that we can restore the pipeline to a functional state (Section [7.6](deploying-code.html#rollback)).'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型与代码一样，是机器学习流程的一部分，它们以类似传统软件的方式打包（见[7.1节](deploying-code.html#deployment-prep)）和部署（见[7.2节](deploying-code.html#deployment-strategies)和[7.3节](deploying-code.html#deployment-process)）。然而，它们的行为预测性较低（见[5.2节](design-code.html#technical-debt)和[9.2节](troubleshooting-code.html#model-problems)）：当它们部署和在生产环境中运行时（见[7.4节](deploying-code.html#deployment-monitoring)），我们应该对其进行监控。我们还应该为它们失败的情况制定应急计划（见[7.5节](deploying-code.html#deployment-fails)），以便我们可以将流程恢复到功能状态（见[7.6节](deploying-code.html#rollback)）。
 - en: 7.1 Model Packaging
+  id: totrans-4
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 7.1 模型打包
 - en: Models can be stored into different types of artefacts, as we briefly discussed
     in Section [5.3.4](design-code.html#model-pipeline). There are several ways in
     which model artefacts can be integrated into a pipeline, with varying degrees
     of abstraction from the underlying machine learning systems.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型可以存储到不同类型的工件中，正如我们在[5.3.4节](design-code.html#model-pipeline)中简要讨论的那样。模型工件可以以不同程度从底层机器学习系统中抽象出来，有多种方式将其集成到流程中。
 - en: 7.1.1 Standalone Packaging
+  id: totrans-6
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 7.1.1 独立打包
 - en: 'The most minimalist form of packaging is simply the artefact produced by the
     machine learning framework that we used to train the model: for instance, a SavedModel
     file from TensorFlow (TensorFlow [2021](#ref-tensorflow)[a](#ref-tensorflow))
@@ -54,12 +69,19 @@
     (Sonatype [2022](#ref-nexus)). Tracking the version of the trained model, its
     parameters, its configurations and its dependencies is delegated to the configuration
     management platform supporting the pipeline (Section [5.3.5](design-code.html#production-pipeline)).'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 最简约的打包形式仅仅是机器学习框架产生的产物，我们用它来训练模型：例如，TensorFlow的SavedModel文件（TensorFlow [2021](#ref-tensorflow)[a](#ref-tensorflow)）或ONNX文件（ONNX
+    [2021](#ref-onnx)）。这样的文件易于提供给第三方，并且方便嵌入到库或（桌面或移动）应用程序中，例如使用Apple Core ML框架（Apple
+    [2022](#ref-tf-to-coreml)）。它们也可以通过通用的工件注册表（如GitHub提供的那些）作为独立包分发，例如GitLab（GitLab
+    [2022](#ref-gitlab-registry)[b](#ref-gitlab-registry)）或Nexus（Sonatype [2022](#ref-nexus)）。跟踪训练模型的版本、其参数、其配置及其依赖项的任务委托给支持管道的配置管理平台（第[5.3.5](design-code.html#production-pipeline)节）。
 - en: 7.1.2 Programming Language Package Managers
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 7.1.2 编程语言包管理器
 - en: Python has become the most popular programming language in machine learning
     applications because of the availability of mature and versatile frameworks such
     as TensorFlow (TensorFlow [2021](#ref-tensorflow)[a](#ref-tensorflow)) and PyTorch
@@ -73,18 +95,28 @@
     (Python Packaging Authority [2022](#ref-setuptools)) and Pip (Python Software
     Foundation [2022](#ref-pip)[a](#ref-pip)) to install them, and possibly uploading
     them to the central Python Package Index to make them easily accessible.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于成熟的、多功能的框架（如TensorFlow [2021](#ref-tensorflow)[a](#ref-tensorflow)和PyTorch
+    [2019](#ref-pytorch)）的可用性，Python已经成为机器学习应用中最受欢迎的编程语言（第[6.1](writing-code.html#programming-language)节）。因此，将模型作为Python包分发以简化部署过程，并使模型依赖于特定版本的Python解释器和那些框架变得越来越普遍。在整个管道中这样做有助于避免多语言编程带来的技术债务（第[5.2.4](design-code.html#code-debt)节）。在实践中，这涉及到按照Python标准（称为“分发包”）分发包、模块和资源文件，使用Setuptools（Python
+    Packaging Authority [2022](#ref-setuptools)）和Pip（Python Software Foundation [2022](#ref-pip)[a](#ref-pip)）等工具来安装它们，并且可能将它们上传到中央Python包索引以使其易于访问。
 - en: 7.1.3 Virtual Machines
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 7.1.3 虚拟机
 - en: '![Type-1 and type-2 hypervisor virtualisation architectures.](../Images/6545b549667e508a3380b4b811c253c6.png)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![类型1和类型2虚拟化架构。](../Images/6545b549667e508a3380b4b811c253c6.png)'
 - en: 'Figure 7.1: Type-1 and type-2 hypervisor virtualisation architectures.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7.1：类型1和类型2虚拟化架构。
 - en: 'All modern CPUs (Section [2.1.1](hardware.html#hardware-compute)) implement
     instruction sets to support hardware virtualisation: for instance, Intel CPUs
     have Virtualisation Technology (VT-x) and AMD CPUs have AMD-V. This has made *virtual
@@ -103,8 +135,14 @@
     (VMware [2022](#ref-vmware-workstation)), on the other hand, run on top of the
     host operating system. Both types are limited to executing applications compiled
     for the same type of CPU they are running on.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有现代CPU（见第[2.1.1](hardware.html#hardware-compute)节）都实现了指令集以支持硬件虚拟化：例如，英特尔CPU有虚拟化技术（VT-x），而AMD
+    CPU有AMD-V。这使得*虚拟机*（VMs，也称为“客户操作系统”）在本地硬件上成为一个方便的选择，并导致了云实例的广泛可用。虚拟机运行在*虚拟机管理程序*之上，这是一种专门软件，允许多个客户系统共享单个计算系统（宿主硬件）。虚拟机就像一个正常的计算系统：主要区别在于它的CPU、内存、存储和网络接口通过虚拟机管理程序与底层硬件共享，虚拟机管理程序根据需要将它们分配给客户。vSphere（VMware
+    [2022](#ref-vmware-vsphere)）、KVM（Open Virtualization Alliance [2022](#ref-kvm)）和HyperV（Microsoft
+    [2022](#ref-hyperv)[h](#ref-hyperv)）是虚拟机管理程序的一些例子（图[7.1](deploying-code.html#fig:t1-vs-t2)，左侧面板）：它们直接在宿主硬件上运行，要么作为独立的软件组件，要么集成在宿主操作系统内。虚拟机管理程序（图[7.1](deploying-code.html#fig:t1-vs-t2)，右侧面板）如Virtual
+    box（Oracle [2022](#ref-virtualbox)）和VMware Workstation（VMware [2022](#ref-vmware-workstation)），另一方面，运行在宿主操作系统之上。这两种类型都限于执行为它们运行的同一类型CPU编译的应用程序。
 - en: Thanks to hardware virtualisation, VMs can run on the host CPU and can access
     the host’s hardware resources with limited overhead via PCIe pass-through (GPUs
     are a typical example, see Section [2.1.1](hardware.html#hardware-compute)). Overhead
@@ -113,8 +151,10 @@
     The guest operating system is now aware of running in a virtualised environment,
     and it can use a special set system of calls (*hypercalls*) and I/O drivers (especially
     for storage and networking) to communicate directly with the hypervisor.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 多亏了硬件虚拟化，虚拟机可以在宿主CPU上运行，并且可以通过PCIe直通（GPU是一个典型的例子，见第[2.1.1](hardware.html#hardware-compute)节）以有限的开销访问宿主的硬件资源。通过从（完全）虚拟化迁移到*半虚拟化*，可以进一步减少开销，这种做法以牺牲客机的完全隔离为代价，换取更好的吞吐量和延迟。现在，客户操作系统已经意识到它正在虚拟化环境中运行，并且可以使用特殊的系统调用集（*超调用*）和I/O驱动程序（特别是存储和网络）来直接与虚拟机管理程序通信。
 - en: 'VMs are the second type of artefact we mentioned in Section [5.3.4](design-code.html#model-pipeline).
     We can either create them from scratch, installing and configuring the operating
     system and all the libraries we need, or we can start from *pre-baked images*
@@ -131,74 +171,108 @@
     automatically by the orchestrator of the machine learning pipeline through the
     hypervisor and the associated software tools, which can create, clone, snapshot,
     start and stop individual VMs.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 虚拟机（VMs）是我们第5.3.4节[5.3.4](design-code.html#model-pipeline)中提到的第二种工件。我们可以从头开始创建它们，安装和配置操作系统以及我们需要的所有库，或者我们可以从预先配置了大部分所需软件的*预配置镜像*开始。对于前者，我们有像Hashicorp
+    Packer（HashiCorp [2022](#ref-packer)[a](#ref-packer)）或Vagrant（HashiCorp [2022](#ref-vagrant)[d](#ref-vagrant)）这样的工具，它们可以安装操作系统，以及配置管理软件如Ansible（Ansible
+    Project [2022](#ref-ansible)），它们可以安装模型以及它们所依赖的软件栈。至于后者，云服务提供商提供了大量的预配置镜像：例如亚马逊机器镜像（AMIs）的目录（Amazon
+    Web Services [2022](#ref-amis)[b](#ref-amis)）。虚拟机配置和镜像通常存储在标准化的开放格式中，如开放虚拟化格式（OVF）（DMTF
+    [2022](#ref-ovf)）。最后，虚拟机可以通过机器学习管道的编排器通过虚拟机和相关的软件工具自动管理，这些工具可以创建、克隆、快照、启动和停止单个虚拟机。
 - en: 'VMs offer three main advantages:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 虚拟机提供三个主要优势：
 - en: 'They are *flexible to operate*: we can run multiple instances of different
     operating systems and of different software stacks on the same host, consolidating
     their configurations using pre-baked images and managing them centrally as individual
     entities.'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它们易于操作：我们可以在同一主机上运行不同操作系统和不同软件栈的多个实例，使用预配置镜像合并它们的配置，并将它们作为单个实体集中管理。
 - en: They can also be easily scaled to deal with peak loads, both by starting new
     ones (*horizontal scalability*) or by increasing the hardware resources they have
     access to (*vertical scalability*, Section [2.4](hardware.html#hardware-choice)).
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它们也可以轻松地进行扩展以处理峰值负载，无论是通过启动新的虚拟机（*水平扩展*）还是通过增加它们可以访问的硬件资源（*垂直扩展*，第[2.4](hardware.html#hardware-choice)节）。
 - en: They can be moved to another host (*portability*) and are easy to snapshot,
     facilitating disaster recovery in the case of hardware failure.
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它们可以被移动到另一个主机（*可移植性*），并且易于快照，便于在硬件故障的情况下进行灾难恢复。
 - en: 'However, VMs have one important disadvantage: they contain an entire operating
     system and therefore require large amounts of hot storage. As a result, the deployment
     time of a VM can range from tens of seconds (in the best case) to minutes (in
     the average case) (Hao, anang, and Kim [2021](#ref-hao)), depending on the cloud
     provider or the on-premises hypervisor configuration.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，虚拟机有一个重要的缺点：它们包含整个操作系统，因此需要大量的热存储。因此，虚拟机的部署时间可以从最佳情况下的几十秒到平均情况下的几分钟（Hao,
+    anang, and Kim [2021](#ref-hao)），这取决于云提供商或本地虚拟机管理程序的配置。
 - en: 7.1.4 Containers
+  id: totrans-21
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 7.1.4 容器
 - en: In contrast, *containers* are more lightweight (Espe et al. [2020](#ref-container-performance))
     because they only virtualise the libraries and the applications running on top
     of the operating system, not an entire machine learning system (Figure [7.2](deploying-code.html#fig:vm-vs-container)).
     Instead of a hypervisor, they are managed by a *container runtime* (sometimes
     called a “container engine”) like Docker (Docker [2022](#ref-docker)[a](#ref-docker))
     which controls the access to the hardware and to the operating system of the host.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 相比之下，*容器*更轻量级（Espe et al. [2020](#ref-container-performance)），因为它们仅虚拟化操作系统上运行的库和应用程序，而不是整个机器学习系统（图[7.2](deploying-code.html#fig:vm-vs-container)）。它们不是由虚拟机管理程序管理，而是由*容器运行时*（有时称为“容器引擎”）如Docker（Docker
+    [2022](#ref-docker)[a](#ref-docker)）管理，它控制对主机硬件和操作系统的访问。
 - en: 'Container runtimes are typically built on top of a set of Linux kernel capabilities
     (Rice [2020](#ref-rice)):'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 容器运行时通常建立在一系列Linux内核功能之上（Rice [2020](#ref-rice)）：
 - en: '*Namespaces*: an isolation layer that allows each process to see and access
     only those processes, directories and system resources of the host that are bound
     to the same namespace it is running in.'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*命名空间*：一种隔离层，允许每个进程只能看到和访问运行在同一命名空间中的宿主进程、目录和系统资源。'
 - en: '*Cgroups (control groups)*: a resource management layer that sets and limits
     CPU, memory and network bandwidth for a collection of processes.'
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Cgroups（控制组）*：一种资源管理层，为进程集合设置和限制CPU、内存和网络带宽。'
 - en: '*Seccomp (secure computing)*: a security layer that limits a container to a
     restricted subset of system calls (the kernel’s APIs).'
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Seccomp（安全计算）*：一种安全层，限制容器只能访问系统调用（内核的API）的受限子集。'
 - en: '![Virtualisation and containers high-level architectures.](../Images/f47c9c5be4812ae58329dc5f4d8e69bd.png)'
+  id: totrans-27
   prefs: []
   type: TYPE_IMG
+  zh: '![虚拟化和容器的高级架构](../Images/f47c9c5be4812ae58329dc5f4d8e69bd.png)'
 - en: 'Figure 7.2: Virtualisation and containers high-level architectures.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7.2：虚拟化和容器的高级架构。
 - en: 'As was the case with VMs, containers can package machine learning applications
     with all the associated libraries, dependencies and tools in a single self-contained
     artefact: a *container image* which is immutable, stateless and ephemeral by design.[^(16)](#fn16)
@@ -210,17 +284,23 @@
     this process are *base images* that provide a stripped-down environment (not a
     complete operating system, as was the case for pre-baked VM images) to which we
     can add our models and the libraries, tools and applications that complement them.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 与虚拟机的情况一样，容器可以将机器学习应用程序及其所有相关库、依赖项和工具打包在一个单一的自包含工件中：一个设计上不可变、无状态和短暂的*容器镜像*。[^(16)](#fn16)在Docker的情况下，我们通常称之为*Docker镜像*。容器镜像是由声明性配置文件创建的，也称为`Dockerfile`，它定义了所有必要的命令。每个命令都产生一个不可变的*层*，反映了该命令本身对镜像引入的变化，允许进行增量更改并最小化磁盘空间使用。此过程的起点是提供精简环境（不是完整的操作系统，如预制的虚拟机镜像那样）的*基础镜像*，我们可以向其中添加我们的模型以及补充它们的库、工具和应用程序。
 - en: Below is an example of a `Dockerfile` that creates an image for a FastAPI RESTful
     application (a framework to create web services and APIs). For reproducibility,
     both the `Dockerfile` and the `requirements.txt` file it references should be
     stored under version control in a configuration management platform (Section [6.4](writing-code.html#filesystem-structure)).
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是一个创建FastAPI RESTful应用程序（创建Web服务和API的框架）镜像的`Dockerfile`示例。为了保证可重复性，该`Dockerfile`及其引用的`requirements.txt`文件应存储在配置管理平台下的版本控制中（第[6.4](writing-code.html#filesystem-structure)节）。
 - en: '[PRE0]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Firstly, the `Dockerfile` explicitly identifies the system dependencies of
     the image it generates. The first line, “`FROM python:3.10.5-bullseye`” identifies
     a base image with the stable release of Debian GNU/Linux, codenamed “Bullseye”,
@@ -238,8 +318,14 @@
     the application files, the fifth line (“`COPY . .`”) copies them into the container
     image, and the last line defines the command that is run when the container is
     started.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，`Dockerfile`明确标识了它生成的镜像的系统依赖项。第一行，“`FROM python:3.10.5-bullseye`”标识了一个基于Debian
+    GNU/Linux稳定发布版“Bullseye”和Python解释器3.10.5版本的基镜像。其次，它标识了我们依赖的Python包。第三和第四行，“`COPY
+    requirements.txt .`”和“`RUN pip3 install -r requirements.txt`”，将列出Python依赖项的文件`requirements.txt`复制到镜像中，并使用Python包管理器（`pip`）进行安装。确保列出所有依赖项并将其固定到我们已测试的确切版本非常重要，以避免累积技术债务（章节
+    [5.2.4](design-code.html#code-debt) 和 [6.3](writing-code.html#coding-standards)）。如果我们升级一个或多个依赖项，相应的容器层将无效。Docker在创建层时会进行缓存：那些未受我们更改影响的层将从缓存中获取，而不是从头开始重新创建。第二行（“`WORKDIR
+    /app`”）将工作目录更改为包含应用程序文件的目录，第五行（“`COPY . .`”）将它们复制到容器镜像中，最后一行定义了容器启动时运行的命令。
 - en: After a successful build, we can store containers into a *container registry*
     such as Docker registry (Docker [2022](#ref-docker-registry)[b](#ref-docker-registry))
     or Harbour (Harbor [2022](#ref-harbor)). Container registries are server applications
@@ -250,8 +336,13 @@
     registry and image specifications are based on the Open Container Initiative (OCI)
     (Open Container Initiative [2022](#ref-oci)), an open standard by the Linux Foundation,
     and are therefore highly portable across platforms and vendors.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在构建成功后，我们可以将容器存储到诸如Docker registry（Docker [2022](#ref-docker-registry)[b](#ref-docker-registry)）或Harbour（Harbor
+    [2022](#ref-harbor)）这样的*容器注册库*中。容器注册库是提供标准化API的服务器应用程序，用于上传（推送）、版本控制（标记）和下载（拉取）容器镜像。注册库的结构组织成仓库（如Git（Git开发团队
+    [2022](#ref-git-git)）），每个仓库都保存了特定容器镜像的所有版本。容器的运行时、注册库和镜像规范基于开放容器倡议（OCI）（开放容器倡议
+    [2022](#ref-oci)），这是Linux基金会的一个开放标准，因此可以在不同平台和供应商之间高度可移植。
 - en: Like any other software artefact, container images may have security vulnerabilities
     (Bhupinder et al. [2021](#ref-image-vuln)) inherited from vulnerable libraries
     in an outdated base image, rogue images in an untrusted container registry or
@@ -265,8 +356,15 @@
     vanilla operating system installations to pre-configured machine learning stacks
     built on TensorFlow (TensorFlow [2021](#ref-tensorflow)[a](#ref-tensorflow)) and
     PyTorch (Paszke et al. [2019](#ref-pytorch)).
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 与任何其他软件工件一样，容器镜像可能存在安全漏洞（Bhupinder 等人 [2021](#ref-image-vuln)），这些漏洞可能来自过时基础镜像中的易受攻击库、不受信任容器注册表中的恶意镜像或易受攻击的
+    `Dockerfile`。为了识别这些漏洞，我们应该执行 *合规性和安全检查* 以验证 `Dockerfile`，例如使用 Hadolint（The Hadolint
+    Project [2022](#ref-hadolint)）工具，以及生成的镜像，使用静态分析和镜像扫描工具，如 Trivy（Aquasecurity [2022](#ref-trivy)）。云服务提供商，如
+    Amazon AWS（服务 [2022](#ref-aws-containers)）和 Google Cloud（Google [2022](#ref-gcp-containers)[b](#ref-gcp-containers)），拥有公共容器注册表，其中包含安全且经过测试的基础镜像，这些镜像从基本的操作系统安装到基于
+    TensorFlow（TensorFlow [2021](#ref-tensorflow)[a](#ref-tensorflow)）和 PyTorch（Paszke
+    等人 [2019](#ref-pytorch)）预配置的机器学习堆栈不等。
 - en: 'Container runtimes integrate with orchestrators to allow for a seamless use
     of container images. The orchestrator is responsible for managing a fleet of containers
     in terms of deployment, scaling, networking and security policies. The containers
@@ -277,8 +375,13 @@
     with CI to enable reproducible software testing: base container images provide
     a clean environment that ensures that test results are not tainted by external
     factors (Section [9.4](troubleshooting-code.html#testing) and [10.3](development-tools.html#build-test-doc-tools)).'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 容器运行时与编排器集成，以允许无缝使用容器镜像。编排器负责管理容器集群，包括部署、扩展、网络和安全策略。容器负责提供不同功能模块作为模块化和解耦的服务，通过网络进行通信，可以独立部署，并且具有高度的可见性。本质上，这是微服务架构（Newman
+    [2021](#ref-microservices)）。此外，容器运行时与 CI 集成，以实现可重复的软件测试：基础容器镜像提供了一个干净的环境，确保测试结果不受外部因素的影响（第
+    [9.4](troubleshooting-code.html#testing) 和 [10.3](development-tools.html#build-test-doc-tools)
+    节）。
 - en: 'Kubernetes (The Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes))
     is the de facto standard among orchestrators.[^(17)](#fn17) Orchestrators specialising
     in machine learning pipelines integrate Kubernetes with experiment tracking and
@@ -291,12 +394,21 @@
     Authors [2022](#ref-k8s-gpu)[b](#ref-k8s-gpu)) to each container and to schedule
     training and inference workloads on machine learning systems with the appropriate
     hardware (Section [2.1.1](hardware.html#hardware-compute)).'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: Kubernetes（The Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes)）在编排器中是事实上的标准。[^(17)](#fn17)
+    专注于机器学习管道的编排器将 Kubernetes 与实验跟踪和模型服务集成，以提供完整的 MLOps 解决方案：两个例子是更集成的 Kubeflow（The
+    Kubeflow Authors [2022](#ref-kubeflow)）和更程序化的 MLflow（Zaharia 和 The Linux Foundation
+    [2022](#ref-mlflow)）。容器运行时通过实现从物理主机到容器的 GPU 透传（在 Docker 的情况下使用“`--gpus`”标志）来增强它们。Kubernetes
+    可以使用此功能来为每个容器应用适当的 *标签选择器*（The Kubernetes Authors [2022](#ref-k8s-gpu)[b](#ref-k8s-gpu)），并在具有适当硬件的机器学习系统上调度训练和推理工作负载（第
+    [2.1.1](hardware.html#hardware-compute) 节）。
 - en: '7.2 Model Deployment: Strategies'
+  id: totrans-37
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 7.2 模型部署：策略
 - en: 'A *deployment strategy* or *deployment pattern* is a technique to replace or
     upgrade an artefact or a service in a production environment while minimising
     downtime and impact on users. Here we will focus on how we can deploy machine
@@ -307,8 +419,10 @@
     most cases using containers as artefacts (Section [7.1.4](deploying-code.html#container-packaging)).
     Furthermore, parts of a machine learning pipeline are in fact traditional software
     and are deployed as such.'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '*部署策略*或*部署模式*是一种在最小化停机时间和对用户影响的情况下，在生产环境中替换或升级工件或服务的技巧。在这里，我们将关注如何在不影响其消费者（即最终用户和依赖于模型输出的管道模块）的情况下部署机器学习模型（第[5.3.5](design-code.html#production-pipeline)节）。显然，这与传统软件的部署有相似之处：我们希望通过CI/CD实现自动化和可重复的发布，在大多数情况下使用容器作为工件（第[7.1.4](deploying-code.html#container-packaging)节）。此外，机器学习管道的部分实际上是传统软件，并以这种方式进行部署。'
 - en: 'Model deployment can take advantage of modern software deployment strategies
     from *progressive delivery*. A pipeline will usually contain multiple instances
     of each model (say, version `A`) to be able to process multiple inference requests
@@ -323,20 +437,28 @@
     (by reducing the amount of pre-deployment testing), decreases deployment risk
     (because most consumers will not be impacted by any issues that may emerge in
     the initial deployment) and makes rollbacks easier (Section [7.6](deploying-code.html#rollback)).'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型部署可以利用现代软件的渐进式交付策略。通常，管道将包含每个模型（例如，版本`A`）的多个实例，以便能够并行处理多个推理请求和数据准备队列。因此，我们最初可以用一个新模型（例如，版本`B`）替换这些实例中的一个小子集。如果没有出现任何问题，我们随后逐渐替换剩余的实例：新模型已经有效地通过了验收测试（第[9.4.4](troubleshooting-code.html#local-vs-global)节）。如果出现任何问题，我们的日志和监控设施（第[5.3.6](design-code.html#monitoring-pipeline)节）将记录我们需要的用于故障排除的信息。我们还可以同时部署多个模型，以比较它们在准确性、吞吐量和延迟方面的性能。因此，渐进式交付加快了模型部署（通过减少预部署测试的数量），降低了部署风险（因为大多数消费者不会受到初始部署中可能出现的问题的影响），并使回滚更容易（第[7.6](deploying-code.html#rollback)节）。
 - en: '![Blue-green (left), canary and A/B testing (top right) and shadow (bottom
     right) deployment strategies.](../Images/4aa8111e621b018d7623f2057a25b4bc.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![蓝绿（左侧）、金丝雀和A/B测试（右上角）以及影子（右下角）部署策略](../Images/4aa8111e621b018d7623f2057a25b4bc.png)'
 - en: 'Figure 7.3: Blue-green (left), canary and A/B testing (top right) and shadow
     (bottom right) deployment strategies.'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7.3：蓝绿（左侧）、金丝雀和A/B测试（右上角）以及影子（右下角）部署策略。
 - en: 'We can implement progressive delivery with a number of related deployment strategies
     (Tremel [2017](#ref-deployment-strategies)):'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用多种相关的部署策略来实现渐进式交付（Tremel [2017](#ref-deployment-strategies)）：
 - en: 'The *blue-green* deployment pattern (Humble and Farley [2011](#ref-devops))
     assumes that we are using a router (typically a load balancer) to spread requests
     over a pool of instances that serve the version `A` of a machine learning model
@@ -350,9 +472,15 @@
     be decommissioned. If any issues arise, rollback is simple: we can send all requests
     to the pool serving model `A` again. Keeping the two pools in separate environments
     or even separate machine learning systems will further reduce deployment risk.'
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 蓝绿部署模式（Humble 和 Farley [2011](#ref-devops)）假设我们正在使用一个路由器（通常是负载均衡器）来将请求分散到一组实例中，这些实例提供机器学习模型版本
+    `A` 的服务（图 [7.3](deploying-code.html#fig:deployment-strategies)，左侧）。当我们部署模型的新版本
+    `B` 时，我们创建第二个实例池来提供服务，并将新到达请求的一部分发送到这个新池。如果没有出现任何问题，路由器将逐渐将越来越多的请求发送到提供模型 `B`
+    的池，而不是提供模型 `A` 的池。正在由模型 `A` 处理的现有请求允许完成，以避免中断。提供模型 `A` 的池最终将不再分配任何请求，并可能随后被退役。如果出现任何问题，回滚很简单：我们可以将所有请求再次发送到提供模型
+    `A` 的池。将两个池保留在单独的环境或甚至单独的机器学习系统中将进一步降低部署风险。
 - en: 'We already mentioned the *canary* deployment pattern (Humble and Farley [2011](#ref-devops))
     in Section [5.3.4](design-code.html#model-pipeline): the main difference with
     the blue-green pattern is that we deploy instances with model `B` in the same
@@ -366,9 +494,14 @@
     data on the performance of model `B` with a small number of instances requires
     time. However, they provide an easy way to test new models in production with
     real data and in the same environment as existing models.'
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们已经在 [5.3.4](design-code.html#model-pipeline) 节中提到了 *金丝雀* 部署模式（Humble 和 Farley
+    [2011](#ref-devops)）：与蓝绿模式的主要区别在于，我们在已经提供模型 `A` 服务的同一池中部署了带有模型 `B` 的实例（图 [7.3](deploying-code.html#fig:deployment-strategies)，顶部右侧）。路由器将一小部分请求重定向到带有模型
+    `B` 的实例，并注意会话亲和性。[^(18)](#fn18) 其他请求作为我们的 *对照组*：我们可以在相同的环境中检查和比较两个模型的性能，而没有任何偏见。再次强调，如果没有出现任何问题，我们可以逐渐退役带有模型
+    `A` 的实例。金丝雀部署通常比其他部署模式慢，因为收集足够关于模型 `B` 性能的数据需要时间。然而，它们提供了一个简单的方法，在真实数据和与现有模型相同的环境中测试新模型。
 - en: In a *shadow* deployment (Microsoft [2022](#ref-shadow)[g](#ref-shadow)), a
     new model `B` is deployed in parallel to model `A` and each request is sent to
     both models (Figure [7.3](deploying-code.html#fig:deployment-strategies), bottom
@@ -379,16 +512,22 @@
     requires us to set up a different API endpoint for each model we are testing,
     and to allocate enough hardware resources to handle the increased inference workload.
     However, it allows for testing new models without disturbing operations.
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在 *影子* 部署（Microsoft [2022](#ref-shadow)[g](#ref-shadow)）中，一个新的模型 `B` 与模型 `A`
+    并行部署，并且每个请求都发送到这两个模型（图 [7.3](deploying-code.html#fig:deployment-strategies)，右下角）。我们可以通过它们从相同输入产生的输出、延迟以及我们通过日志和监控收集的任何其他指标来比较它们的准确性。实际上，我们可以并行部署多个模型来测试不同的方法，并仅保留表现最好的模型。因此，影子部署要求我们为每个测试的模型设置不同的
+    API 端点，并分配足够的硬件资源来处理增加的推理工作量。然而，它允许在不干扰操作的情况下测试新模型。
 - en: In the *rolling* or *ramped* deployment pattern, we simply replace the instances
     with model `A` in batches on a pre-determined schedule until all the running instances
     are serving model `B`. Rolling deployments are easy both to schedule and to roll
     back.
+  id: totrans-46
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在*滚动*或*阶梯式*部署模式中，我们只是在预定的时间表上分批替换模型`A`的实例，直到所有运行的实例都在服务模型`B`。滚动部署既容易安排，也容易回滚。
 - en: 'Another deployment pattern we mentioned elsewhere (Sections [5.3.4](design-code.html#model-pipeline)
     and [9.4.3](troubleshooting-code.html#offline-vs-online)) is *A/B testing* (Amazon
     [2021](#ref-amazon-ab-testing); Zheng [2015](#ref-evaluatingml)): the router randomly
@@ -398,17 +537,22 @@
     a small proportion of the requests is sent to instances with model `B` to reduce
     deployment risk: the split is 90%-10% or at most 80%-20% (Figure [7.3](deploying-code.html#fig:deployment-strategies),
     top right).'
+  id: totrans-47
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 另一种我们在其他地方提到的部署模式（第[5.3.4](design-code.html#model-pipeline)节和第[9.4.3](troubleshooting-code.html#offline-vs-online)节）是*A/B测试*（Amazon
+    [2021](#ref-amazon-ab-testing); Zheng [2015](#ref-evaluatingml)）：路由器随机将请求50%-50%分配给两个模型`A`和`B`，我们评估每个模型的相应指标，并且只有在模型`B`优于模型`A`的情况下，我们才提升模型`B`。与金丝雀部署的关键区别在于，在后者中，只有一小部分请求被发送到带有模型`B`的实例，以降低部署风险：分配比例是90%-10%或最多80%-20%（图[7.3](deploying-code.html#fig:deployment-strategies)，右上角）。
 - en: '*Destroy and re-create* is the most basic deployment strategy: we stop all
     the instances with model `A` and we create from scratch a new set of instances
     with model `B` to deploy in their place. As a result, the pipeline will be unavailable
     and consumers that are performing multiple requests in a sequence may receive
     inconsistent outputs.'
+  id: totrans-48
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*销毁并重新创建*是最基本的部署策略：我们停止所有带有模型`A`的实例，并从头开始创建一组新的实例，用模型`B`部署以替代它们。结果，管道将不可用，执行多个请求序列的消费者可能会收到不一致的输出。'
 - en: 'We can integrate these deployment patterns by adding feature flags (Section
     [6.5](writing-code.html#versioning)) to our models: then models `A` and `B` can
     share large portions of code. In this way, we can easily create new models just
@@ -416,20 +560,27 @@
     artefacts at all. However, both models will be served at the same time during
     the progressive delivery process: all consumers should support both their APIs
     or model `B` should be fully backward compatible with model `A`.'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过向我们的模型添加功能标志（第[6.5](writing-code.html#versioning)节）来整合这些部署模式：然后模型`A`和`B`可以共享大量代码。这样，我们只需切换不同的标志组合，就可以轻松创建新的模型，而无需构建和部署任何新工件。然而，在渐进式交付过程中，这两个模型将同时提供服务：所有消费者都应该支持它们的API，或者模型`B`应该完全与模型`A`向后兼容。
 - en: '7.3 Model Deployment: Infrastructure'
+  id: totrans-50
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 7.3 模型部署：基础设施
 - en: In a machine learning pipeline, model deployment is the part of the pipeline
     orchestration that enables models to be deployed and served in the development,
     testing and production environments (Section [5.3.5](design-code.html#production-pipeline)).
     Ideally, it should be completely automated via CI/CD to avoid catastrophic failures
     like that at Knight Capital (.Seven [2014](#ref-knights-capital)) which we touched
     on in Section [5.2.3](design-code.html#architecture-debt).
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 在机器学习管道中，模型部署是管道编排的一部分，它使得模型能够在开发、测试和生产环境中部署和提供服务（第[5.3.5](design-code.html#production-pipeline)节）。理想情况下，它应该通过CI/CD完全自动化，以避免像Knight
+    Capital (.Seven [2014](#ref-knights-capital))那样的灾难性失败，我们在第[5.2.3](design-code.html#architecture-debt)节中提到了这一点。
 - en: 'The nature of the continuous deployment part of CI/CD can vary depending on
     the type of artefact (Section [7.1](deploying-code.html#deployment-prep)) and
     on the type of compute systems (Section [2.4](hardware.html#hardware-choice))
@@ -447,8 +598,16 @@
     process to the point where it is largely the same to target orchestrator platforms
     like Kubernetes (The Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes))
     and commercial providers like Amazon AWS ECS.'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: CI/CD 中持续部署部分的性质可能因部署的工件类型（第 [7.1](deploying-code.html#deployment-prep) 节）和计算系统类型（第
+    [2.4](hardware.html#hardware-choice) 节）而异。我们的工件可能是封装并通过 API 提供服务的容器镜像：我们可以通过手动调用
+    Docker 在本地部署它们，或者通过指示 Kubernetes 调用存储在 CI/CD 配置中的自动化脚本来远程部署。在这两种情况下，如果本地不可用，则会在部署时从注册表中获取镜像。我们的工件也可能是虚拟机：在这种情况下，持续部署可以利用配置管理工具如
+    Ansible（Ansible 项目 [2022](#ref-ansible)）来部署和升级它们。在这两种情况下，CI/CD 管道标准化了部署过程，隐藏了本地和云环境之间的差异（第
+    [2.3](hardware.html#hardware-cloud) 节），并将复杂性从粘合代码转移到声明性配置文件（第 [5.2.3](design-code.html#architecture-debt)
+    节）。这已经将部署过程标准化到几乎与目标编排平台如 Kubernetes（Kubernetes 作者 [2022](#ref-kubernetes)[a](#ref-kubernetes)）和商业提供商如
+    Amazon AWS ECS 相同的程度。
 - en: 'We may also run machine learning pipelines on top of an integrated MLOps platform:
     model deployment then depends entirely on the platform’s opinionated workflows.
     For example, an MLOps platform like Databricks (Databricks [2022](#ref-databricks))
@@ -465,12 +624,21 @@
     an experiment tracking web interface (with an API to use it programmatically)
     to test new models and to visualise them along with their parameters and performance
     metrics.'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以在集成的 MLOps 平台上运行机器学习管道：模型部署完全取决于平台的主张工作流程。例如，Databricks（Databricks [2022](#ref-databricks)）这样的
+    MLOps 平台通过 MLflow（Zaharia 和 The Linux Foundation [2022](#ref-mlflow)）集成了许多开源组件，并通过支持多个部署目标的
+    API 将它们封装起来。这些 API 提供了一个标准化的接口，类似于 Docker 和 Kubernetes，无论我们选择哪个目标。云供应商的机器学习平台（“机器学习即服务”）如
+    Azure ML（Microsoft [2022](#ref-azureml)[c](#ref-azureml)）或 Amazon AWS SageMaker（Amazon
+    [2022](#ref-sagemaker)[d](#ref-sagemaker)）提供了更高层次的抽象。一方面，它们对我们如何实现管道以及如何部署模型几乎没有控制权。另一方面，它们对没有技能或预算来管理自己的
+    CI/CD、监控和日志记录基础设施的团队来说是可访问的。它们还提供了一个实验跟踪的 Web 界面（以及一个用于程序化使用的 API），用于测试新模型以及可视化它们的参数和性能指标。
 - en: '7.4 Model Deployment: Monitoring and Logging'
+  id: totrans-54
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 7.4 模型部署：监控和日志记录
 - en: 'We should track automated model deployments through all their stages with our
     logging and monitoring infrastructure to achieve the observability we need to
     diagnose any issue we may run into (Section [5.3.6](design-code.html#monitoring-pipeline)).
@@ -490,8 +658,14 @@
     automatically trigger external notification systems like PagerDuty (PagerDuty
     [2022](#ref-pagerduty)) to become aware of any issues during deployment as early
     as possible.'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该通过我们的日志和监控基础设施跟踪自动化模型部署的所有阶段，以实现我们诊断可能遇到任何问题的可观察性（第[5.3.6](design-code.html#monitoring-pipeline)节）。所有持续部署平台都允许这样做：MLflow（Zaharia和Linux基金会
+    [2022](#ref-mlflow)）有MLflow跟踪，Airflow（Apache软件基金会 [2022](#ref-airflow)[a](#ref-airflow)）可以使用Fluentd（Fluentd项目
+    [2022](#ref-fluentd)），以及像GitLab这样的通用CI/CD解决方案内置了发布指标和日志事件的机制，以及Prometheus（Prometheus作者和Linux基金会
+    [2022](#ref-prometheus)）的支持。记录每个模块的每个入口和出口点，以及任何重试和管道中所有任务的顺利完成是至关重要的：我们应该能够构建包含全面堆栈跟踪的描述性活动报告。机器学习管道有许多移动部件，可能在许多不同的地方以难以诊断的方式失败（第[9.1](troubleshooting-code.html#data-problems)、[9.2](troubleshooting-code.html#model-problems)和[9.3](troubleshooting-code.html#signs-of-trouble)节）。此外，日志应该自动触发外部通知系统，如PagerDuty（PagerDuty
+    [2022](#ref-pagerduty)），以便在部署过程中尽早意识到任何问题。
 - en: After a model is deployed, we should check that it is being served, that it
     is ready to accept inference requests (readiness) and that it produces correct
     results (liveness). The software that we use to serve the model may expose a health-check
@@ -504,12 +678,17 @@
     monitoring servers on dedicated systems to make sure that they are not affected
     by any of the issues caused by or affecting the models and that they can be used
     to perform a root cause analysis of what went wrong.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型部署后，我们应该检查它是否正在提供服务，是否准备好接受推理请求（就绪性）以及它是否产生正确的结果（活性）。我们用来提供模型服务的软件可能暴露一个健康检查API（如Kubernetes中的就绪性和活性探测（Kubernetes作者
+    [2022](#ref-kubernetes)[a](#ref-kubernetes)）），协调器可以使用它来仅将推理请求路由到能够处理它们的模型。模型内部的监控客户端可以通过公开指标来达到相同的目的，以检查性能是否随时间退化。正如我们在第[5.3.6](design-code.html#monitoring-pipeline)节中讨论的，我们应该将日志和监控服务器放置在专用系统上，以确保它们不受模型引起的任何问题的干扰，并且可以用来对发生错误的原因进行根本原因分析。
 - en: 7.5 What Can Possibly Go Wrong?
+  id: totrans-57
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 7.5 可能出什么问题？
 - en: 'Many kinds of issues can arise when we deploy a new model, for different reasons:
     lack of control or observability for either the deployment process or its targets
     (Section [2.4](hardware.html#hardware-choice)); manually executing pre- or post-deployment
@@ -519,8 +698,10 @@
     taking advantage of CI/CD (Chapter [5](design-code.html#design-code)) and following
     modern development practices (Chapter [6](writing-code.html#writing-code)), but
     some problems cannot be fully resolved or even detected automatically.'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们部署一个新的模型时，由于不同的原因，可能会出现许多问题：对部署过程或其目标缺乏控制或可观察性（见第[2.4](hardware.html#hardware-choice)节）；手动执行部署前或部署后的操作（见第[5.2.3](design-code.html#architecture-debt)节）；或者模型或模块中的关键缺陷在软件测试套件中漏网（见第[9.4](troubleshooting-code.html#testing)节）。我们可以通过利用CI/CD（见第[5](design-code.html#design-code)章）和遵循现代开发实践（见第[6](writing-code.html#writing-code)章）来最小化部署风险，但某些问题可能无法完全解决或甚至无法自动检测。
 - en: '*Hardware resources may be unavailable.* The environment we are deploying to
     may be running on machine learning systems that have inadequate resources (say,
     not enough storage space or memory), hardware faults or network connectivity issues
@@ -529,8 +710,10 @@
     local (on-premises) and remote (cloud) environments; in the latter, scheduling
     a new deployment will typically solve them since the underlying hardware will
     change (Section [2.3](hardware.html#hardware-cloud)).'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '*硬件资源可能不可用。* 我们部署的环境可能运行在资源不足的机器学习系统上（例如，存储空间或内存不足），硬件故障或网络连接问题（例如，系统本身无法访问，或它们无法访问模型所需的远程第三方资源）。[^(19)](#fn19)这些问题可能出现在本地（本地化）和远程（云）环境中；在后者中，通常通过安排新的部署来解决这些问题，因为底层硬件将发生变化（见第[2.3](hardware.html#hardware-cloud)节）。'
 - en: '*Hardware resources may not be accessible.* The machine learning systems may
     be fine, but there are access restrictions in place that prevent us from using
     them. Firewalls may be preventing us from connecting to them across networks;
@@ -548,8 +731,11 @@
     least privilege*, by tracking them with configuration management tools (Section
     [11.1](production-tools.html#production-infra)) and by including them in code
     reviews (Section [6.6](writing-code.html#code-review)) before applying them.'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '*硬件资源可能无法访问。* 机器学习系统可能没有问题，但存在访问限制，阻止我们使用它们。防火墙可能阻止我们在网络上连接到它们；文件权限可能阻止我们从它们的存储中读取数据和配置。这是云实例和管理服务中常见的问题，因为它们的身份和访问管理（IAM）策略难以编写和理解。实际上，通常只能通过交互式测试控制认证和授权这些服务的配置，这使得它们容易意外中断。因此，已经有许多机器学习工程师移除了过多的访问限制，导致AWS上的S3存储桶中充满了公开可访问的个人数据（Twilio（The
+    Register [2020](#ref-twilio-breach)）和Switch（VPNOverview [2022](#ref-switch-breach)）是近年来两个引人注目的例子）。这显然是不理想的，但可以通过根据*最小权限原则*编写IAM策略，通过配置管理工具（见第[11.1](production-tools.html#production-infra)节）跟踪它们，并在应用之前将它们纳入代码审查（见第[6.6](writing-code.html#code-review)节）来防止这种情况发生。'
 - en: '*People do not talk to each other.* Model deployment is when we actually put
     to use the models we trained and the code that supports them. Therefore, it is
     also when defects arising from the lack of communication between domain experts,
@@ -579,8 +765,10 @@
     should be avoided at all costs in favour of the shared responsibility and constant
     sharing of skills and knowledge originally advocated by DevOps (Humble and Farley
     [2011](#ref-devops)).'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: '*人们不互相交流。* 模型部署是我们实际应用我们训练的模型及其支持代码的时候。因此，这也是当领域专家、机器学习专家、软件工程师和用户之间缺乏沟通而产生的缺陷可能暴露出来的时候。范围和设计管道（第[5.3节](design-code.html#processing-pipeline)）、验证机器学习模型（第[5.3.4节](design-code.html#model-pipeline)）和推理输出（第[5.3.6节](design-code.html#monitoring-pipeline)）、设计和命名模块及其参数（第[6.2节](writing-code.html#naming)）、代码审查（第[6.6节](writing-code.html#code-review)）以及编写各种形式的文档（第[8章](documenting-code.html#documenting-code)）都应该是所有参与和使用管道的人的协作努力。当这种协作不有效时，不同的人将负责管道的不同部分，而由此产生的缺乏协调可能会导致不同责任区域边界的各种问题。机器学习工程师可能会在没有咨询领域专家（“这些模型有意义吗？我们是否有正确的数据来训练它们？”）或软件工程师（“这些模型能在可用的系统上运行并产生足够低的延迟的推理吗？”）的情况下开发模型。领域专家可能无法将他们的专业知识传达给机器学习工程师（“这个模型类别无法表达一些相关的领域事实！”）或软件工程师（“这个变量应该以特定的方式编码才有意义！”）。软件工程师可能会在实现机器学习模型时采取自由行动，改变其统计属性，而机器学习工程师没有注意到（“我可能可以用这个其他的库…或者自己重新实现它可能更快！”）或者以使领域专家难以理解的方式结构化代码（“这个`theta_hat`参数是什么意思？”）。角色的分割是一种应该不惜一切代价避免的组织反模式，而应该支持DevOps最初倡导的共享责任和持续共享技能和知识。'
 - en: '*Missing dependencies.* The deployment of a module may fail because one or
     more of its dependencies (inside or outside the pipeline) is missing or is not
     functional. For instance, if module `A` requires the outputs of module `B` as
@@ -593,8 +781,11 @@
     we can use liveness and readiness probes (Section [7.4](deploying-code.html#deployment-monitoring))
     together with “init containers” (specialised containers that run before app containers
     in a pod) for this purpose.'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '*缺失的依赖项。* 模块的部署可能失败，因为其中一个或多个依赖项（在管道内部或外部）缺失或未正常工作。例如，如果模块`A`需要模块`B`的输出作为输入，我们应该在部署模块`A`之前确保模块`B`存在且处于工作状态。在实践中，这需要两个模块的*协调部署*，这是我们努力使模块彼此解耦时的反模式。当然，我们也可以在模块`A`中实施适当的重试策略，使其能够抵御模块`B`暂时离线的情况。在Kubernetes（Kubernetes作者
+    [2022](#ref-kubernetes)[a](#ref-kubernetes)）上，我们可以使用存活性和就绪性探测（第[7.4节](deploying-code.html#deployment-monitoring)）以及“初始化容器”（在Pod中的应用容器之前运行的专用容器）来实现这一目的。'
 - en: '*Incomplete or incorrect configuration management.* Configuration management
     tools (Section [10.1](development-tools.html#exploration-experiment-tracking)
     and [11.1](production-tools.html#production-infra)) promote and automate the reuse
@@ -611,12 +802,16 @@
     the pipeline (training, software testing, inference, etc.) and any of the entities
     tracked by configuration management (database references, secrets, model parameters,
     features, etc.).'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '*不完整或不正确的配置管理。* 配置管理工具（第[10.1节](development-tools.html#exploration-experiment-tracking)和[11.1节](production-tools.html#production-infra)）促进并自动化模板、环境变量和配置文件的复用。然而，这意味着我们应该小心地将对应不同环境的这些内容分别存储，并始终保持它们干净和完整。在一个由许多模块和环境组成的复杂管道中，很容易错误地使用与我们意图不符的不同环境的配置。在最佳情况下，我们试图做的事情会失败，并记录异常。在最坏的情况下，我们似乎成功地完成了我们试图做的事情，但结果却默默地错误，因为我们访问的资源与我们认为的不同。例如，我们可能无意中通过访问训练数据而不是验证数据导致信息泄露。类似的*配置错误*问题可能涉及管道的任何部分（训练、软件测试、推理等）以及配置管理跟踪的任何实体（数据库引用、机密、模型参数、特征等）。'
 - en: 7.6 Rolling Back
+  id: totrans-64
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 7.6 回滚
 - en: 'When a model that is deployed in production fails to meet the required performance
     and quality standards (Section [8.3](documenting-code.html#designdocs)), we have
     two choices: either we replace it with a previous model that is still fit for
@@ -624,8 +819,10 @@
     the reason why the current model is failing (*rolling forward*). In the following,
     we will focus on rollbacks, but our discussion will be as relevant for rolling
     a model forward.'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 当在生产中部署的模型未能达到所需性能和质量标准（第[8.3节](documenting-code.html#designdocs)）时，我们有两个选择：要么用仍然适合使用的先前模型替换它（*回滚*），要么用我们专门训练以解决当前模型失败原因的新模型（*向前滚动*）。在以下内容中，我们将重点关注回滚，但我们的讨论对于模型向前滚动同样适用。
 - en: Model rollbacks are only possible if the model APIs are backward compatible
     between releases. Then every version of our model can be restored to any previous
     version at any given moment in time without disrupting the rest of the pipeline
@@ -638,8 +835,10 @@
     the models and the respective configurations. At a minimum, such a setup involves
     a model registry (Section [5.3.4](design-code.html#model-pipeline)) and a version
     control system for the code (Section [6.5](writing-code.html#versioning)).
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型回滚仅在模型API在版本之间向后兼容时才可行。这样，我们的模型任何版本都可以在任何时间点恢复到任何之前的版本，而不会干扰到整个管道的其他部分，因为我们能保证模型提供相同的功能，具有相同的协议规范和相同的签名。实现向后兼容需要大量的软件工程规划和努力。除了将模型封装在一个抽象和标准化的接口容器中，封装其特性和实现外，我们还需要一个实验管理平台，该平台对管道模块、模型及其相应的配置进行版本控制。至少，这样的设置包括一个模型注册表（第[5.3.4节](design-code.html#model-pipeline)）和代码的版本控制系统（第[6.5节](writing-code.html#versioning)）。
 - en: 'Sometimes maintaining backward compatibility is simply not possible: if we
     replace a model with another from a completely different model class, or if the
     task the model was trained for has changed, the APIs should change to reflect
@@ -653,16 +852,21 @@
     and the pipeline modules will be able to access both sets of APIs at the same
     time and without any ambiguity about what version they are using. This in turn
     makes it possible to update individual modules in an orderly transition.'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时保持向后兼容性根本不可能：如果我们用一个完全不同模型类的模型替换另一个模型，或者如果模型训练的任务已经改变，API应该改变以反映新的模型能力和目的。我们可以通过版本控制来在两组不同的API之间进行过渡。例如，旧的一组API可能从URL路径`https://api.mlmodel.local/v1/`提供，而新的一组可能从`https://api.mlmodel.local/v2/`提供，并且旧API可能会发出警告来表示它们已被弃用。（OpenAPI支持弃用API“操作”（SmartBear
+    Software [2021](#ref-swagger)））。然后我们可以使用在第[7.2节](deploying-code.html#deployment-strategies)中讨论的策略部署新的、不兼容的模型，并且管道模块将能够同时访问这两组API，而不会对它们使用哪个版本有任何混淆。这反过来又使得能够有序地更新单个模块成为可能。
 - en: If a model is shipped with a built-in configuration that is versioned along
     with its APIs, the function that loads it should support the older versions. Similarly,
     if a model is stateful and needs to access a database to retrieve assets and configurations,
     the function that accesses these resources should be able to deal with different
     database schemas. Our ability to perform rollbacks will then depend on our ability
     to perform database migrations.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一个模型与版本化的API一起打包内置配置，那么加载它的函数应该支持旧版本。同样，如果一个模型是状态性的并且需要访问数据库以检索资产和配置，那么访问这些资源的函数应该能够处理不同的数据库模式。我们执行回滚的能力将取决于我们执行数据库迁移的能力。
 - en: 'Whether rollbacks should be manual (that is, triggered by a human-in-the-loop
     domain expert) or automatic (that is, triggered by the pipeline orchestrator on
     the basis of the metrics collected by the monitoring infrastructure) is not a
@@ -681,225 +885,361 @@
     a newly deployed model uses too much memory or becomes unresponsive.) Even in
     such a case, the decision to roll back should be supported by monitoring and logging
     evidence (Section [5.3.6](design-code.html#monitoring-pipeline)).'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 是否应该手动回滚（即，由人工在环域专家触发）或自动回滚（即，由监控基础设施收集的指标触发的管道编排器）并不是一个简单的决定。从技术角度来看，我们应该评估我们计划使用的部署策略对我们计划使用的部署策略的影响，即管道恢复到完全功能状态所需的时间。从业务角度来看，领域专家在请求回滚之前可能需要更多的确凿证据：在获取更多数据点和更好地理解模型不再准确的根本原因时，他们可能对表现不佳的模型可以接受。机器学习专家可以通过部署具有金丝雀或影子部署策略的替代模型来帮助在此期间调查其性能，并将其与失败模型的性能进行比较。唯一一个自动回滚显然是最好的选择的情况是，模型的性能不佳不是由数据或推理请求的变化引起的，而是由管道下层的硬件和软件基础设施问题引起的。（例如，新部署的模型使用了过多的内存或变得无响应。）即使在这样的情况下，回滚的决定也应该由监控和日志证据支持（第[5.3.6节](design-code.html#monitoring-pipeline)）。
 - en: References
+  id: totrans-70
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: Alquraan, A., H. Takruri, M. Alfatafta, and S. Al-Kiswany. 2018\. “An Analysis
     of Network-Partitioning Failures in Cloud Systems.” In *13th USENIX Symposium
     on Operating Systems Design and Implementation (OSDI 18)*, 51–68.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: Alquraan, A., H. Takruri, M. Alfatafta, and S. Al-Kiswany. 2018\. “An Analysis
+    of Network-Partitioning Failures in Cloud Systems.” In *13th USENIX Symposium
+    on Operating Systems Design and Implementation (OSDI 18)*, 51–68.
 - en: Amazon. 2021\. *Dynamic A/B Testing for Machine Learning Models with Amazon
     SageMaker MLOps Projects*. [https://aws.amazon.com/blogs/machine-learning/dynamic-a-b-testing-for-machine-learning-models-with-amazon-sagemaker-mlops-projects/](https://aws.amazon.com/blogs/machine-learning/dynamic-a-b-testing-for-machine-learning-models-with-amazon-sagemaker-mlops-projects/).
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: Amazon. 2021\. *使用 Amazon SageMaker MLOps 项目进行机器学习模型的动态 A/B 测试*. [https://aws.amazon.com/blogs/machine-learning/dynamic-a-b-testing-for-machine-learning-models-with-amazon-sagemaker-mlops-projects/](https://aws.amazon.com/blogs/machine-learning/dynamic-a-b-testing-for-machine-learning-models-with-amazon-sagemaker-mlops-projects/).
 - en: 'Amazon. 2022d. *Machine Learning: Amazon Sagemaker*. [https://aws.amazon.com/sagemaker/](https://aws.amazon.com/sagemaker/).'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: Amazon. 2022d. *机器学习：Amazon Sagemaker*. [https://aws.amazon.com/sagemaker/](https://aws.amazon.com/sagemaker/).
 - en: Amazon Web Services. 2022b. *Amazon Machine Images (AMI)*. [https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html).
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: Amazon Web Services. 2022b. *Amazon Machine Images (AMI)*. [https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html).
 - en: Ansible Project. 2022\. *Ansible Documentation*. [https://docs.ansible.com/ansible/latest/index.html](https://docs.ansible.com/ansible/latest/index.html).
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: Ansible Project. 2022\. *Ansible 文档*. [https://docs.ansible.com/ansible/latest/index.html](https://docs.ansible.com/ansible/latest/index.html).
 - en: Apple. 2022\. *TensorFlow 2 Conversion*. [https://coremltools.readme.io/docs/tensorflow-2](https://coremltools.readme.io/docs/tensorflow-2).
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: Apple. 2022\. *TensorFlow 2 转换*. [https://coremltools.readme.io/docs/tensorflow-2](https://coremltools.readme.io/docs/tensorflow-2).
 - en: Aquasecurity. 2022\. *Trivy Documentation*. [https://aquasecurity.github.io/trivy/](https://aquasecurity.github.io/trivy/).
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: Aquasecurity. 2022\. *Trivy 文档*. [https://aquasecurity.github.io/trivy/](https://aquasecurity.github.io/trivy/).
 - en: 'Bhupinder, K., M. Dugré, A. Hanna, and T. Glatard. 2021\. “An Analysis of Security
     Vulnerabilities in Container Images for Scientific Data Analysis.” *GigaScience*
     10 (6): giab025.'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Bhupinder, K., M. Dugré, A. Hanna, and T. Glatard. 2021\. “An Analysis of Security
+    Vulnerabilities in Container Images for Scientific Data Analysis.” *GigaScience*
+    10 (6): giab025.'
 - en: Databricks. 2022\. *Databricks Documentation*. [https://docs.databricks.com/applications/machine-learning/index.html](https://docs.databricks.com/applications/machine-learning/index.html).
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: Databricks. 2022\. *Databricks文档*. [https://docs.databricks.com/applications/machine-learning/index.html](https://docs.databricks.com/applications/machine-learning/index.html).
 - en: DMTF. 2022\. *Open Virtualization Format*. [https://www.dmtf.org/standards/ovf](https://www.dmtf.org/standards/ovf).
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: DMTF. 2022\. *开放虚拟化格式*. [https://www.dmtf.org/standards/ovf](https://www.dmtf.org/standards/ovf).
 - en: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
 - en: Docker. 2022b. *Docker Registry HTTP API V2 Documentation*. [https://docs.docker.com/registry/spec/api/](https://docs.docker.com/registry/spec/api/).
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: Docker. 2022b. *Docker注册库HTTP API V2文档*. [https://docs.docker.com/registry/spec/api/](https://docs.docker.com/registry/spec/api/).
 - en: 'Duvall, P. M., S. Matyas, and A. Glover. 2007\. *Continuous Integration: Improving
     Software Quality and Reducing Risk*. Addison-Wesley.'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: Duvall, P. M., S. Matyas, and A. Glover. 2007\. *持续集成：提高软件质量和降低风险*. Addison-Wesley.
 - en: Espe, L., A. Jindal, V. Podolskiy, and M. Gerndt. 2020\. “Performance Evaluation
     of Container Runtimes.” In *Proceedings of the 10th International Conference on
     Cloud Computing and Services Science*, 273–81.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: Espe, L., A. Jindal, V. Podolskiy, and M. Gerndt. 2020\. “容器运行时性能评估。” In *第10届国际云计算与服务科学会议论文集*，273–81.
 - en: GitHub. 2022c. *Working with the Container Registry*. [https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: GitHub. 2022c. *与容器注册库一起工作*. [https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 - en: GitLab. 2022b. *GitLab Container Registry*. [https://docs.gitlab.com/ee/user/packages/container_registry/](https://docs.gitlab.com/ee/user/packages/container_registry/).
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: GitLab. 2022b. *GitLab容器注册库*. [https://docs.gitlab.com/ee/user/packages/container_registry/](https://docs.gitlab.com/ee/user/packages/container_registry/).
 - en: Google. 2022b. *Deep Learning Containers*. [https://cloud.google.com/deep-learning-containers](https://cloud.google.com/deep-learning-containers).
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: Google. 2022b. *深度学习容器*. [https://cloud.google.com/deep-learning-containers](https://cloud.google.com/deep-learning-containers).
 - en: 'Hao, J., T. Jiang anang, and K. Kim. 2021\. “An Empirical Analysis of VM Startup
     Times in Public IaaS Clouds: An Extended Report.” In *Proceedings of the 14th
     Ieee International Conference on Cloud Computing*, 398–403.'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: Hao, J., T. Jiang anang, and K. Kim. 2021\. “公共IaaS云中虚拟机启动时间的实证分析：扩展报告。” In
+    *第14届IEEE国际云计算会议论文集*，398–403.
 - en: Harbor. 2022\. *Harbor Documentation*. [https://goharbor.io/docs/](https://goharbor.io/docs/).
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: Harbor. 2022\. *Harbor文档*. [https://goharbor.io/docs/](https://goharbor.io/docs/).
 - en: HashiCorp. 2022a. *Packer Documentation*. [https://www.packer.io/docs](https://www.packer.io/docs).
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: HashiCorp. 2022a. *Packer文档*. [https://www.packer.io/docs](https://www.packer.io/docs).
 - en: HashiCorp. 2022d. *Vagrant Documentation*. [https://www.vagrantup.com/docs](https://www.vagrantup.com/docs).
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: HashiCorp. 2022d. *Vagrant文档*. [https://www.vagrantup.com/docs](https://www.vagrantup.com/docs).
 - en: Humble, J., and D. Farley. 2011\. *Continuous Delivery*. Addison Wesley.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: Humble, J., and D. Farley. 2011\. *持续交付*. Addison Wesley.
 - en: Microsoft. 2022c. *Azure Machine Learning*. [https://azure.microsoft.com/en-us/services/machine-learning/](https://azure.microsoft.com/en-us/services/machine-learning/).
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: Microsoft. 2022c. *Azure机器学习*. [https://azure.microsoft.com/en-us/services/machine-learning/](https://azure.microsoft.com/en-us/services/machine-learning/).
 - en: Microsoft. 2022g. *Shadow Testing*. [https://microsoft.github.io/code-with-engineering-playbook/automated-testing/shadow-testing/](https://microsoft.github.io/code-with-engineering-playbook/automated-testing/shadow-testing/).
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: Microsoft. 2022g. *影子测试*. [https://microsoft.github.io/code-with-engineering-playbook/automated-testing/shadow-testing/](https://microsoft.github.io/code-with-engineering-playbook/automated-testing/shadow-testing/).
 - en: Microsoft. 2022h. *Virtualization Documentation*. [https://docs.microsoft.com/en-us/virtualization/](https://docs.microsoft.com/en-us/virtualization/).
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: Microsoft. 2022h. *虚拟化文档*. [https://docs.microsoft.com/en-us/virtualization/](https://docs.microsoft.com/en-us/virtualization/).
 - en: 'Newman, S. 2021\. *Building Microservices: Designing Fine-Grained Systems*.
     O’Reilly.'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: Newman, S. 2021\. *构建微服务：设计细粒度系统*. O’Reilly.
 - en: ONNX. 2021\. *Open Neural Network Exchange*. [https://github.com/onnx/onnx](https://github.com/onnx/onnx).
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: ONNX. 2021\. *开放神经网络交换*. [https://github.com/onnx/onnx](https://github.com/onnx/onnx).
 - en: Open Container Initiative. 2022\. *Open Container Initiative*. [https://opencontainers.org/](https://opencontainers.org/).
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: Open Container Initiative. 2022\. *开放容器倡议*. [https://opencontainers.org/](https://opencontainers.org/).
 - en: Open Virtualization Alliance. 2022\. *Documents*. [https://www.linux-kvm.org/page/Documents](https://www.linux-kvm.org/page/Documents).
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: Open Virtualization Alliance. 2022. *文档*. [https://www.linux-kvm.org/page/Documents](https://www.linux-kvm.org/page/Documents).
 - en: Oracle. 2022\. *Oracle VM Virtualbox*. [https://www.virtualbox.org/](https://www.virtualbox.org/).
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: Oracle. 2022. *Oracle VM Virtualbox*. [https://www.virtualbox.org/](https://www.virtualbox.org/).
 - en: 'PagerDuty. 2022\. *PagerDuty: Uptime Is Money*. [https://www.pagerduty.com/](https://www.pagerduty.com/).'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: PagerDuty. 2022. *PagerDuty：上线即金钱*. [https://www.pagerduty.com/](https://www.pagerduty.com/).
 - en: 'Paszke, A., S. Gross, F. Massa, A. Lerer, J. Bradbury, G. Chanan, T. Killeen,
     et al. 2019\. “PyTorch: An Imperative Style, High-Performance Deep Learning Library.”
     In *Advances in Neural Information Processing Systems (Nips)*, 32:8026–37.'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Paszke, A., S. Gross, F. Massa, A. Lerer, J. Bradbury, G. Chanan, T. Killeen,
+    et al. 2019. “PyTorch: 一种命令式风格的、高性能的深度学习库。” In *Advances in Neural Information
+    Processing Systems (Nips)*, 32:8026–37.'
 - en: 'Prometheus Authors, and The Linux Foundation. 2022\. *Prometheus: Monitoring
     System and Time Series Databases*. [https://prometheus.io/](https://prometheus.io/).'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: Prometheus Authors, and The Linux Foundation. 2022. *Prometheus：监控系统和时间序列数据库*.
+    [https://prometheus.io/](https://prometheus.io/).
 - en: Python Packaging Authority. 2022\. *Building and Distributing Packages with
     Setuptools*. [https://setuptools.pypa.io/en/latest/userguide/index.html](https://setuptools.pypa.io/en/latest/userguide/index.html).
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: Python Packaging Authority. 2022. *使用 Setuptools 构建和分发包*. [https://setuptools.pypa.io/en/latest/userguide/index.html](https://setuptools.pypa.io/en/latest/userguide/index.html).
 - en: 'Python Software Foundation. 2022a. *PyPI: The Python Package Index*. [https://pypi.org/](https://pypi.org/).'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: Python Software Foundation. 2022a. *PyPI：Python 包索引*. [https://pypi.org/](https://pypi.org/).
 - en: 'Rice, L. 2020\. *Container Security: Fundamental Technology Concepts that Protect
     Containerized Applications*. O’Reilly.'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: Rice, L. 2020. *容器安全：保护容器化应用程序的基本技术概念*. O’Reilly.
 - en: Services, Amazon Web. 2022\. *AWS Deep Learning Containers*. [https://aws.amazon.com/en/machine-learning/containers/](https://aws.amazon.com/en/machine-learning/containers/).
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: Services, Amazon Web. 2022. *AWS 深度学习容器*. [https://aws.amazon.com/en/machine-learning/containers/](https://aws.amazon.com/en/machine-learning/containers/).
 - en: '.Seven, D. 2014\. *Knightmare: A DevOps Cautionary Tale*. [https://dougseven.com/2014/04/17/knightmare-a-devops-cautionary-tale/](https://dougseven.com/2014/04/17/knightmare-a-devops-cautionary-tale/).'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: .Seven, D. 2014. *Knightmare：一个 DevOps 警示故事*. [https://dougseven.com/2014/04/17/knightmare-a-devops-cautionary-tale/](https://dougseven.com/2014/04/17/knightmare-a-devops-cautionary-tale/).
 - en: SmartBear Software. 2021\. *OpenAPI Specification*. [https://swagger.io/specification/](https://swagger.io/specification/).
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: SmartBear Software. 2021. *OpenAPI 规范*. [https://swagger.io/specification/](https://swagger.io/specification/).
 - en: Sonatype. 2022\. *Nexus Repository Manager*. [https://www.sonatype.com/products/nexus-repository](https://www.sonatype.com/products/nexus-repository).
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: Sonatype. 2022. *Nexus 仓库管理器*. [https://www.sonatype.com/products/nexus-repository](https://www.sonatype.com/products/nexus-repository).
 - en: TensorFlow. 2021a. *TensorFlow*. [https://www.tensorflow.org/overview/](https://www.tensorflow.org/overview/).
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: TensorFlow. 2021a. *TensorFlow*. [https://www.tensorflow.org/overview/](https://www.tensorflow.org/overview/).
 - en: The Apache Software Foundation. 2022a. *Airflow Documentation*. [https://airflow.apache.org/docs/](https://airflow.apache.org/docs/).
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: The Apache Software Foundation. 2022a. *Airflow 文档*. [https://airflow.apache.org/docs/](https://airflow.apache.org/docs/).
 - en: 'The Fluentd Project. 2022\. *Fluentd: Open Source Data Collector*. [https://www.fluentd.org/](https://www.fluentd.org/).'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 'The Fluentd Project. 2022. *Fluentd: 开源数据收集器*. [https://www.fluentd.org/](https://www.fluentd.org/).'
 - en: The Git Development Team. 2022\. *Git Source Code Mirror*. [https://github.com/git/git](https://github.com/git/git).
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: The Git Development Team. 2022. *Git 源代码镜像*. [https://github.com/git/git](https://github.com/git/git).
 - en: 'The Hadolint Project. 2022\. *Hadolint: Haskell Dockerfile Linter Documentation*.
     [https://github.com/hadolint/hadolint](https://github.com/hadolint/hadolint).'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 'The Hadolint Project. 2022. *Hadolint: Haskell Dockerfile 检查器文档*. [https://github.com/hadolint/hadolint](https://github.com/hadolint/hadolint).'
 - en: The Kubeflow Authors. 2022\. *All of Kubeflow documentation*. [https://www.kubeflow.org/docs/](https://www.kubeflow.org/docs/).
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: The Kubeflow Authors. 2022. *所有 Kubeflow 文档*. [https://www.kubeflow.org/docs/](https://www.kubeflow.org/docs/).
 - en: The Kubernetes Authors. 2022a. *Kubernetes*. [https://kubernetes.io/](https://kubernetes.io/).
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: The Kubernetes Authors. 2022a. *Kubernetes*. [https://kubernetes.io/](https://kubernetes.io/).
 - en: 'The Kubernetes Authors. 2022b. *Kubernetes Documentation: Schedule GPUs*. [https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/](https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/).'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: The Kubernetes Authors. 2022b. *Kubernetes 文档：调度 GPU*. [https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/](https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/).
 - en: 'The Register. 2020\. *Twilio: Someone Waltzed into Our Unsecured AWS S3 Silo,
     Added Dodgy Code to Our JavaScript SDK for Customers*. [https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection](https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection).'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: The Register. 2020\. *Twilio：有人潜入我们未受保护的 AWS S3 存储桶，向我们的客户 JavaScript SDK 添加了可疑代码*.
+    [https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection](https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection).
 - en: Tremel, E. 2017\. *Deployment Strategies on Kubernetes*. [https://www.cncf.io/wp-content/uploads/2020/08/CNCF-Presentation-Template-K8s-Deployment.pdf](https://www.cncf.io/wp-content/uploads/2020/08/CNCF-Presentation-Template-K8s-Deployment.pdf).
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: Tremel, E. 2017\. *Kubernetes 上的部署策略*. [https://www.cncf.io/wp-content/uploads/2020/08/CNCF-Presentation-Template-K8s-Deployment.pdf](https://www.cncf.io/wp-content/uploads/2020/08/CNCF-Presentation-Template-K8s-Deployment.pdf).
 - en: VmWare. 2022\. *VMware vSphere Documentation*. [https://docs.vmware.com/en/VMware-vSphere/index.html](https://docs.vmware.com/en/VMware-vSphere/index.html).
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: VmWare. 2022\. *VMware vSphere 文档*. [https://docs.vmware.com/en/VMware-vSphere/index.html](https://docs.vmware.com/en/VMware-vSphere/index.html).
 - en: VMware. 2022\. *VMware Workstation Pro*. [https://www.vmware.com/products/workstation-pro.html](https://www.vmware.com/products/workstation-pro.html).
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: VMware. 2022\. *VMware Workstation Pro*. [https://www.vmware.com/products/workstation-pro.html](https://www.vmware.com/products/workstation-pro.html).
 - en: VPNOverview. 2022\. *Fintech App Switch Leaks Users’ Transactions, Personal
     IDs*. [https://vpnoverview.com/news/fintech-app-switch-leaks-users-transactions-personal-ids](https://vpnoverview.com/news/fintech-app-switch-leaks-users-transactions-personal-ids).
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: VPNOverview. 2022\. *金融科技应用切换泄露用户交易和个人身份信息*. [https://vpnoverview.com/news/fintech-app-switch-leaks-users-transactions-personal-ids](https://vpnoverview.com/news/fintech-app-switch-leaks-users-transactions-personal-ids).
 - en: Wiggins, A. 2017\. *The Twelve Factor App*. [https://12factor.net](https://12factor.net).
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: Wiggins, A. 2017\. *《十二要素应用》*. [https://12factor.net](https://12factor.net).
 - en: Zaharia, M., and The Linux Foundation. 2022\. *MLflow Documentation*. [https://www.mlflow.org/docs/latest/index.html](https://www.mlflow.org/docs/latest/index.html).
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: Zaharia, M. 和 The Linux Foundation. 2022\. *MLflow 文档*. [https://www.mlflow.org/docs/latest/index.html](https://www.mlflow.org/docs/latest/index.html).
 - en: Zheng, A. 2015\. *Evaluating Machine Learning Models*. O’Reilly.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: Zheng, A. 2015\. *评估机器学习模型*. O’Reilly.
 - en: '* * *'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Containers are *ephemeral* in the sense that they should be built with the
     expectation that they may go down at any time. Therefore, they should be easy
     to (re)create and to destroy, and they should be *stateless*: any valuable information
     they contain will be irrevocably lost when they are destroyed. These characteristics
     make them a key tool in “The Twelve-Factor App” (Wiggins [2017](#ref-12factor))
     and other modern software engineering practices.[↩︎](deploying-code.html#fnref16)'
+  id: totrans-128
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 容器是*短暂的*，这意味着它们应该被构建在它们可能随时崩溃的预期中。因此，它们应该易于（重新）创建和销毁，并且应该是*无状态的*：它们包含的任何有价值的信息在它们被销毁时将永远丢失。这些特性使它们成为“十二要素应用”（Wiggins
+    [2017](#ref-12factor)）和其他现代软件工程实践中的关键工具。[↩︎](deploying-code.html#fnref16)
 - en: A group of one or more containers that encapsulates an application is called
     a “pod” in the Kubernetes documentation.[↩︎](deploying-code.html#fnref17)
+  id: totrans-129
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在 Kubernetes 文档中，封装一个应用程序的一组一个或多个容器被称为“pod”。[↩︎](deploying-code.html#fnref17)
 - en: Each consumer or user is always served the same version of the model. This happens
     implicitly in the blue-green deployment pattern because each consumer or user
     is assigned to a pool, and all instances within each pool serve the same model.[↩︎](deploying-code.html#fnref18)
+  id: totrans-130
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 每个消费者或用户总是被提供相同的模型版本。这在蓝绿部署模式中是隐式发生的，因为每个消费者或用户都被分配到一个池中，并且每个池中的所有实例都提供相同的模型。[↩︎](deploying-code.html#fnref18)
 - en: Connectivity issues between compute systems, clusters or data centers due to
     the failure of network devices or network connections are also called “network
     splits” or “network partitioning” (Alquraan et al. [2018](#ref-network-partitioning)).[↩︎](deploying-code.html#fnref19)
+  id: totrans-131
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由于网络设备或网络连接故障导致的计算系统、集群或数据中心之间的连接问题也被称为“网络分裂”或“网络分区”（Alquraan 等人 [2018](#ref-network-partitioning))[↩︎](deploying-code.html#fnref19)

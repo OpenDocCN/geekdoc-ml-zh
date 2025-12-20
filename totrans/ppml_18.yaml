@@ -1,8 +1,10 @@
 - en: Chapter 11 Tools to Manage Pipelines in Production
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://ppml.dev/production-tools.html](https://ppml.dev/production-tools.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
@@ -15,9 +17,11 @@
     In addition to the tools and technologies we need to manage them, we also discuss
     those that we may use to complement pipelines with the dashboards and reporting
     capabilities that are common in data science (Section [11.3](production-tools.html#production-dashboard)).
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
 - en: 11.1 Infrastructure Management
+  id: totrans-3
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -34,6 +38,7 @@
     we find this definition unhelpful because it is too abstract to reason about the
     architecture and the performance of the application itself (Chapter [5](design-code.html#design-code)).
     The same goes for the even-more-abstracted view that “everything is just an API”.'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: 'Managing the compute systems and the software in a real-world pipeline either
@@ -44,6 +49,7 @@
     files use different languages and formats. Configuration management is the only
     possible approach to keep this complexity under control and to ensure that the
     pipeline is reproducible and auditable.'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: One of the most widely-used tools for this task is Terraform (HashiCorp [2022](#ref-terraform)[b](#ref-terraform)),
@@ -58,8 +64,13 @@
     a VM on a local vSphere (VmWare [2022](#ref-vmware-vsphere)). However, it does
     not handle the installation or the configuration of operating systems and software
     packages.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 用于此任务最广泛使用的工具之一是Terraform（HashiCorp [2022](#ref-terraform)[b](#ref-terraform)），它将自己定义为实现“基础设施即代码”的工具。Terraform本质上是一个广泛的服务的抽象层（HashiCorp
+    [2022](#ref-terraform-registry)[c](#ref-terraform-registry)），包括Amazon AWS、Microsoft
+    Azure、GitHub、GitLab和Airflow。每个平台都作为服务“提供者”公开，通过我们控制的API进行通信，有效地将我们的基础设施与原始服务的API解耦。Terraform负责在原始服务中初始化资源并配置它们。例如，我们可以用它来创建远程资源，如Amazon
+    AWS上的EC2实例、Azure上的对象存储或本地vSphere（VmWare [2022](#ref-vmware-vsphere)）上的虚拟机。然而，它不处理操作系统和软件包的安装或配置。
 - en: 'Cloud instances, VMs and development machines based on Vagrant (HashiCorp [2022](#ref-vagrant)[d](#ref-vagrant))
     and Packer (HashiCorp [2022](#ref-packer)[a](#ref-packer)) can be installed and
     configured using specialised tools such as Ansible (Ansible Project [2022](#ref-ansible)),
@@ -79,8 +90,14 @@
     configure). Puppet and Chef use Ruby-based domain-specific languages and have
     a *master-slave* architecture (that is, we install “agents” on the instances to
     configure them).'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于Vagrant（HashiCorp [2022](#ref-vagrant)[d](#ref-vagrant)）和Packer（HashiCorp
+    [2022](#ref-packer)[a](#ref-packer)）的云实例、虚拟机（VMs）和开发机器可以使用专门的工具如Ansible（Ansible
+    Project [2022](#ref-ansible)）、Puppet（Puppet [2022](#ref-puppet)）和Chef（Progress
+    Software [2022](#ref-chef)）进行安装和配置。这三个工具都提供了一套完整的配置管理解决方案：我们可以将所有资源和它们的配置定义为代码，并将这些代码存储在版本控制系统（VCS）中。它们还提供了测试配置管理代码的模块，用于在应用特定目标环境之前验证更改，以及用于识别配置文件的手动修改或篡改。因此，它们便于在CI/CD管道中集成和自动化。此外，Ansible、Puppet和Chef都可以在Terraform创建的实例和VMs的首次启动时通过cloud-init（Canonical
+    [2022](#ref-cloud-init)[a](#ref-cloud-init)）等软件调用。然而，它们的学习曲线不同，操作它们需要不同的技术技能。Ansible是用Python编写的，使用YAML声明性配置文件，并具有无代理架构（即，可以在不安装任何东西的情况下在要配置的实例上运行）。Puppet和Chef使用基于Ruby的领域特定语言，并具有主从架构（即，我们在实例上安装“代理”来配置它们）。
 - en: 'As for containers, the de facto standard management tool is Kubernetes (The
     Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes)), an open-source
     orchestration system originally developed by Google and now maintained by the
@@ -98,12 +115,23 @@
     and Ansible and integrate with other CNCF components like software-defined networking,
     monitoring and logging (Section [5.3.6](design-code.html#monitoring-pipeline))
     to facilitate the interoperability between cloud and local deployments.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于容器，事实上的标准管理工具是 Kubernetes（Kubernetes 作者 [2022](#ref-kubernetes)[a](#ref-kubernetes)），这是一个开源的编排系统，最初由谷歌开发，现在由云原生计算基金会（CNCF）维护。Kubeflow（Kubeflow
+    作者 [2022](#ref-kubeflow)）通过将其与流行的机器学习框架（如 Tensorflow）、笔记本（如 Jupyter）和数据管道（如 Pachyderm）集成来扩展
+    Kubernetes：结果是专门针对管理、开发、部署和扩展机器学习管道的集成平台。Kubeflow 可以部署在管理的 Kubernetes 服务上，如 Amazon
+    EKS（亚马逊网络服务 [2022](#ref-eks)[a](#ref-eks)）、Azure AKS（微软 [2022](#ref-aks)[b](#ref-aks)）或
+    Google Kubernetes Engine（谷歌 [2022](#ref-gke)[c](#ref-gke)），也可以部署在本地 Kubernetes
+    集群上。后者虽然运行起来更为复杂，但可以使用 CNCF 认证的开源解决方案（如 Kubernetes Fury Distribution（SIGHUP [2022](#ref-kfd)）和
+    Typhoon（波塞冬实验室 [2022](#ref-typhoon)）来设置。这两个解决方案都基于 Terraform 和 Ansible，并与其他 CNCF
+    组件（如软件定义网络、监控和日志记录）集成（第 [5.3.6](design-code.html#monitoring-pipeline) 节），以促进云和本地部署之间的互操作性。
 - en: 11.2 Machine Learning Software Management
+  id: totrans-9
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 11.2 机器学习软件管理
 - en: 'Machine learning applications can be designed, tested, maintained and delivered
     in production using integrated MLOps platforms that blend tooling and practices
     from DevOps (Section [5.3](design-code.html#processing-pipeline)) with data processing
@@ -133,8 +161,14 @@
     their trade-offs, and may limit our ability to develop software engineering skills.
     In contrast, manually integrating smaller open-source tools gives us more freedom
     but requires more work and some level of software engineering skills up front.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 机器学习应用可以通过集成MLOps平台来设计、测试、维护和交付到生产环境中，这些平台融合了DevOps（第[5.3](design-code.html#processing-pipeline)节）的工具和实践以及数据处理（第[5.3.3](design-code.html#data-pipeline)节）、模型训练和部署（第[5.3.4](design-code.html#model-pipeline)、[5.3.5](design-code.html#production-pipeline)和[7.2](deploying-code.html#deployment-strategies)节）。在撰写本文时，这是一个非常新的趋势，因此“MLOps平台”（或“机器学习平台”）这一标签已经附加到了相当多的工具上。在光谱的一端，我们有像AWS
+    Sagemaker（Amazon [2022](#ref-sagemaker)[d](#ref-sagemaker)）、Vertex AI（Google [2022](#ref-vertex)[f](#ref-vertex)）、Tensorflow
+    Extended（TensorFlow [2022](#ref-tfx)[d](#ref-tfx)）、Databricks（Databricks [2022](#ref-databricks)）和Neptune（Neptune
+    Labs [2022](#ref-neptune)）这样的在线平台。在另一端，我们有更轻量级的解决方案，如Airflow、MLflow和DVC，它们建立在一系列较小的开源工具之上，这些工具并不特定于机器学习应用。除此之外，我们还有像GitLab这样的CI/CD平台，它们正在开发MLOps功能（GitLab
+    [2022](#ref-gitlab-mlops)[c](#ref-gitlab-mlops)），这些功能与上述平台重叠。我们预计，在MLOps平台最终整合成少数几个明确的类别之前，可能还需要几年时间。在此期间，我们正在选择那些尚不成熟且具有不同、不明确的权衡的工具：目前肯定没有一种适合所有情况的解决方案！然而，我们可以安全地提到一个权衡点：集成平台存在局限性，因为它们通常具有偏见（它们使得支持作者设想之外的其他配置和工作流程变得困难）并且它们是透明的（其组件从外部不可见）。在管道的生命周期早期采用它们可能会限制我们在以后改变其架构的能力，可能会阻止我们探索不同的配置以研究它们的权衡，并可能限制我们发展软件工程技能的能力。相比之下，手动集成较小的开源工具给我们提供了更多的自由度，但需要更多的工作，并且需要具备一定程度的软件工程技能。
 - en: Solutions based on Kubernetes such as Kubeflow and Polyaxon (Polyaxon [2022](#ref-polyaxon))
     integrate and compose different tools, including Jupyter notebooks; model training
     (on both CPUs or GPUs) and experiment tracking for TensorFlow and other frameworks;
@@ -148,8 +182,13 @@
     like Kubeflow is over-complicated for managing our pipeline, we can also consider
     replacing it with Argo Workflow (Argo Project [2022](#ref-argo-workflow)), a simpler
     orchestrator that can run parallel jobs on a Kubernetes cluster.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于Kubernetes的解决方案，例如Kubeflow和Polyaxon（Polyaxon [2022](#ref-polyaxon)），集成了不同的工具，包括Jupyter笔记本；模型训练（在CPU或GPU上）和TensorFlow及其他框架的实验跟踪；以及使用不同解决方案的模型服务，如TensorFlow
+    Serving（TensorFlow [2022](#ref-tf-serving)[b](#ref-tf-serving)）、SeldonCore（Seldon
+    Technologies [2022](#ref-seldon-core)）和Kserve（The KServe Authors [2022](#ref-kserve)）。Kubeflow专注于端到端管理机器学习工作流程，而Polyaxon通过提供分布式训练、超参数调整和并行任务执行来补充它。Polyaxon还可以调度和管理Kubeflow操作员，跟踪指标、输出、模型和资源使用情况，以比较实验。如果像Kubeflow这样的解决方案对于管理我们的管道来说过于复杂，我们还可以考虑用Argo
+    Workflow（Argo Project [2022](#ref-argo-workflow)）来替换它，这是一个更简单的编排器，可以在Kubernetes集群上运行并行作业。
 - en: 'The architecture of Kubeflow builds on the same key ideas as Kubernetes, in
     particular operators and namespaces. In fact, each machine learning library that
     is supported by Kubeflow (TensorFlow (TensorFlow [2021](#ref-tensorflow)[a](#ref-tensorflow)),
@@ -158,8 +197,11 @@
     separate namespaces: each user can leverage the Kubernetes namespace isolation
     to prevent others from accessing notebooks, models or inference endpoints without
     proper authorisation (Section [5.2.2](design-code.html#model-debt)).'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: Kubeflow的架构建立在与Kubernetes相同的关键思想之上，特别是操作符和命名空间。实际上，Kubeflow支持的所有机器学习库（TensorFlow（TensorFlow
+    [2021](#ref-tensorflow)[a](#ref-tensorflow)）、PyTorch（Paszke et al. [2019](#ref-pytorch)）等）都被封装在一个可以运行本地和分布式作业的Kubernetes操作符中。管道在单独的命名空间内执行：每个用户都可以利用Kubernetes命名空间隔离来防止未经适当授权的其他人访问笔记本、模型或推理端点（第[5.2.2](design-code.html#model-debt)节）。
 - en: Seldon core (Seldon Technologies [2022](#ref-seldon-core)) and KServe (The KServe
     Authors [2022](#ref-kserve)) are specialised MLOps frameworks to package, deploy,
     monitor and manage machine learning models as custom resources on Kubernetes (The
@@ -178,6 +220,7 @@
     creating HTTP(S) services. The latter, which is from the same authors as DVC,
     stores model metadata as plain text files versioned in a Git repo, which becomes
     the single source of truth.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
 - en: 'Tensorflow Extended (TensorFlow [2022](#ref-tfx)[d](#ref-tfx), also known as
@@ -196,6 +239,7 @@
     at the cost of complexity and lack of flexibility in certain areas: choosing whether
     to use TFX requires a careful evaluation of our use case before deciding whether
     to adopt it or not.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
 - en: 'Unlike Kubeflow (built around Kubernetes) or TFX (built around Tensorflow),
@@ -203,26 +247,31 @@
     platform written in Python that can be integrated with any machine learning library
     through lightweight APIs. The goal of MLflow is to support MLOps by providing
     four key features:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
 - en: a project packaging format built on Conda (Anaconda [2022](#ref-conda)[b](#ref-conda))
     and Docker (Docker [2022](#ref-docker)[a](#ref-docker)) which guarantees reproducibility
     and which makes projects easy to share;
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: an experiment tracking API to log parameters, code and results together with
     an interactive user interface to compare models and data across experiments;
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: a model packaging format and a set of APIs for deploying models to target platforms
     such as Docker, Apache Spark and AWS Sagemaker; and
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: a model registry with a graphical interface and a set of APIs to work collaboratively
     on models.
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -238,6 +287,7 @@
     it can trigger pipelines automatically based on data changes, version data of
     any type and scale resources automatically (since it is built on containers and
     runs on Kubernetes).
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
 - en: 'We can implement experiment tracking using more lightweight tools than Kubeflow:
@@ -254,8 +304,13 @@
     [5.3.4](design-code.html#model-pipeline): in particular, saving model artefacts
     in a model registry along with references to the associated data, code, metrics
     and environment configurations.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用比Kubeflow更轻量级的工具来实现实验跟踪：两个例子是MLflow Tracking和DVC（与Gitlab的或Jenkins等CI/CD管道集成），这在第[10.1](development-tools.html#exploration-experiment-tracking)节中进行了讨论。一个相关的工具是CML（Iterative
+    [2022](#ref-cml)[a](#ref-cml)），它是由与DVC相同的作者开发的：一个开源的命令行工具，可以轻松集成到任何CI/CD管道中，以在每个pull
+    request/merge request中添加自动生成的带有模型指标图表的报告。为了做到这一点，CML监控数据的变化，并自动进行模型训练和评估，以及跨项目迭代的ML实验比较。Neptune（Neptune
+    Labs [2022](#ref-neptune)）也是专门为在多个实验中存储和跟踪元数据而设计的。它实现了我们在第[5.3.4](design-code.html#model-pipeline)节中提出的实践：特别是，在模型注册表中保存模型工件，并附带相关数据、代码、指标和环境配置的引用。
 - en: 'The other option we have is using managed cloud platforms such as Sagemaker
     and Vertex AI. Their strength is the deep integration with Amazon AWS and Google
     Cloud, respectively, which makes it straightforward to implement progressive delivery
@@ -270,19 +325,30 @@
     and to upload them to a dedicated model registry. In conclusion, both platforms
     are chasing each other’s features, and they are very comprehensive: but they can
     be confusing because of that.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还有另一个选择，即使用如Sagemaker和Vertex AI这样的托管云平台。它们的优势是与Amazon AWS和Google Cloud的深度集成，分别使得实施渐进式交付技术、集中日志和监控以及使用GPU训练和部署模型变得简单直接。AWS还提供与Redshift（Amazon
+    [2022](#ref-redshift)[a](#ref-redshift)）和Databricks的集成，以访问数据；Vertex AI同样与BigQuery（Google
+    [2022](#ref-big-query)[a](#ref-big-query)）进行集成，并支持与特征存储一起工作。这两个平台都支持Jupyter笔记本进行交互式探索，并且都支持管道：Sagemaker通过自定义Python库，Vertex
+    AI通过Kubeflow和TFX。此外，Vertex AI允许我们在Jupyter笔记本中开发机器学习模型，部署保存在对象存储桶中的模型，并将它们上传到专用的模型注册表。总之，这两个平台都在追逐彼此的功能，它们非常全面：但正因为如此，可能会让人感到困惑。
 - en: Finally, feature stores are increasing in popularity in MLOps for storing and
     cataloguing frequently used features and for enabling feature reuse across models,
     thus reducing coupling and duplication. They are available from open-source tools
     such as Feast (Feast Authors [2022](#ref-feast)) and Hopsworks (Hopsworks [2022](#ref-hopsworks)),
     Vertex AI and Databricks.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，特征存储在MLOps中的受欢迎程度正在增加，用于存储和编目常用特征，并允许模型间特征重用，从而减少耦合和重复。它们可以从如Feast（Feast
+    Authors [2022](#ref-feast)）和Hopsworks（Hopsworks [2022](#ref-hopsworks)）等开源工具、Vertex
+    AI和Databricks获得。
 - en: 11.3 Dashboards, Visualisation and Reporting
+  id: totrans-24
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 11.3 仪表板、可视化和报告
 - en: 'Data visualisation is an essential part of data science and machine learning:
     it helps explain complex data and makes them understandable by users and domain
     experts, allowing them to participate in the design and maintenance of the pipeline
@@ -290,12 +356,14 @@
     we can choose to implement it with a spectrum of solutions, from low-level libraries
     for data exploration to more comprehensive visualisation platforms that create
     interactive dashboards and data reports.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
 - en: The decade-old Matplotlib (Hunter [2022](#ref-matplotlib)) library is the most
     widely adopted Python package for basic data visualisation, followed by its descendant
     Seaborn (Waskom [2022](#ref-seaborn)), which tries to tackle some of the complexity
     of Matplotlib while producing figures with a more modern look.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
 - en: At a higher level, we have Plotly (Plotly [2022](#ref-plotly)[c](#ref-plotly)),
@@ -309,6 +377,7 @@
     as well. Ggplot2 has a Python port called Plotnine (Kibirige [2022](#ref-plotnine))
     and Altair has an R wrapper (Lyttle, Jeppson, and Altair Developers [2022](#ref-r-altair))
     based on the reticulate package (Ushey, Allaire, and Tang [2022](#ref-reticulate)).
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: These packages are the foundation upon which more advanced web dashboards like
@@ -326,6 +395,7 @@
     with data by composing widgets, tables and plots from Plotly, Bokeh and Altair,
     as well as viewable objects and controls. Panel has better support for Jupyter
     notebooks compared to Streamlit and Voilà.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: 'Applications for visual analytics and business intelligence like Tableau (Tableau
@@ -337,8 +407,12 @@
     PowerBI, on the other hand, does not yet have a complete integration with Python:
     it only allows reports to be placed within Jupyter notebooks but without a direct
     connection between the data in the notebook and the PowerBI report.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 用于视觉分析和商业智能的应用程序，如Tableau（Tableau Software [2022](#ref-tableau)）和Microsoft PowerBI（Microsoft
+    [2022](#ref-powerbi)[e](#ref-powerbi)），也适用于创建仪表板，并且对于需要创建自己的仪表板但可能不太熟悉编程的管理人员或领域专家特别有用。Tableau可以通过TabPy（Tableau
+    [2022](#ref-tab-py)）在运行时执行Python代码，并在Tableau可视化中显示其输出。另一方面，PowerBI尚未与Python完全集成：它仅允许在Jupyter笔记本中放置报告，但笔记本中的数据与PowerBI报告之间没有直接连接。
 - en: 'Finally, we can leverage standard monitoring and reporting tools such as Prometheus
     (Prometheus Authors and The Linux Foundation [2022](#ref-prometheus)) and Grafana
     (GrafanaLabs [2022](#ref-grafana)) to display metrics related to data, features
@@ -353,5 +427,10 @@
     opinionated approach using the TFX validation module on Google Vertex AI, which
     implements training-serving skew detection (TensorFlow [2022](#ref-tfx)[d](#ref-tfx)),
     or using Amazon Sagemaker with its Monitor (Amazon [2022](#ref-sagemaker-monitor)[b](#ref-sagemaker-monitor)).'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们可以利用标准的监控和报告工具，如Prometheus（Prometheus Authors and The Linux Foundation
+    [2022](#ref-prometheus)）和Grafana（GrafanaLabs [2022](#ref-grafana)），来显示与数据、特征和模型相关的指标。我们在第[5.3.6](design-code.html#monitoring-pipeline)节中讨论了监控管道的每个部分的重要性：这使得我们很可能会已经使用Prometheus和Grafana来监控其他事物，我们不妨也用它们来跟踪和比较不同环境中的数据和模型，以及其他指标。这种方法无疑是稳健的：它使用经过高度测试的组件。然而，它需要大量的工程努力来将训练和部署模块与Prometheus集成，并将仪表板集成到服务器端基础设施中。我们可以使用Google
+    Vertex AI上的TFX验证模块构建类似的设置，该模块实现了训练-部署偏差检测（TensorFlow [2022](#ref-tfx)[d](#ref-tfx)），或者使用带有其监控功能的Amazon
+    Sagemaker（Amazon [2022](#ref-sagemaker-monitor)[b](#ref-sagemaker-monitor)）。

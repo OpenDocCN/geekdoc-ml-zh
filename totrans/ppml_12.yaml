@@ -1,19 +1,26 @@
 - en: Chapter 6 Writing Machine Learning Code
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第6章 编写机器学习代码
 - en: 原文：[https://ppml.dev/writing-code.html](https://ppml.dev/writing-code.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://ppml.dev/writing-code.html](https://ppml.dev/writing-code.html)
 - en: 'Programming is, in many ways, a conversation with a computer, but it is also
     conversation with other developers (Fowler [2018](#ref-refactoring)). As vague
     as it sounds, we should strive to write code that is simple to read and whose
     meaning is obvious (Ousterhout [2018](#ref-philo)). Code is read much more often
     than it is written: most of the cost of a piece of software is in its maintenance,
     which is typically performed by people other than those who first wrote the code.'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 编程在很多方面是和计算机的对话，但也是和其他开发者的对话（Fowler [2018](#ref-refactoring)）。尽管听起来很模糊，我们应努力编写易于阅读且含义明显的代码（Ousterhout
+    [2018](#ref-philo)）。代码的阅读次数远多于编写次数：软件的大部分成本在于维护，这通常由最初编写代码的人之外的人来完成。
 - en: Achieving clarity involves effort on several fronts. Different trade-offs between
     clarity, consistency, development speed and the existence of useful libraries
     may motivate the use of particular programming languages for different modules
@@ -22,8 +29,10 @@
     and laid out consistently (Section [6.3](writing-code.html#coding-standards)),
     functions and modules should be organised tidily in files and directories (Section
     [6.4](writing-code.html#filesystem-structure)).
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 实现清晰度需要在多个方面付出努力。在清晰度、一致性、开发速度以及有用库的存在之间进行不同的权衡，可能会促使人们为不同的模块选择特定的编程语言（见第[6.1节](writing-code.html#programming-language)）。事物应该被适当地命名（见第[6.2节](writing-code.html#naming)），代码应该格式化和布局一致（见第[6.3节](writing-code.html#coding-standards)），函数和模块应该在文件和目录中整洁地组织（见第[6.4节](writing-code.html#filesystem-structure)）。
 - en: Finally, having multiple people go through the code and *review* it (Section
     [6.6](writing-code.html#code-review)) helps in identifying how to improve it.
     We can then change it gradually by *refactoring* it (Section [6.7](writing-code.html#refactoring)),
@@ -34,17 +43,23 @@
     (Chapter [9](troubleshooting-code.html#troubleshooting-code)) our machine learning
     pipeline. As an example, we will refactor a sample of code used for teaching in
     academia (Section [6.8](writing-code.html#reworking)).
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，让多个人审查代码并对其进行*审查*（见第[6.6节](writing-code.html#code-review)）有助于确定如何改进它。然后我们可以通过*重构*它（见第[6.7节](writing-code.html#refactoring)）来逐渐改变它，这是确保我们不引入任何新错误的最安全方式。这两个活动都需要有效地使用源*版本控制*（见第[6.5节](writing-code.html#versioning)），这对于部署（见第[7章](deploying-code.html#deploying-code)）、文档化（见第[8章](documenting-code.html#documenting-code)）和测试（见第[9章](troubleshooting-code.html#troubleshooting-code)）我们的机器学习流程也将至关重要。作为一个例子，我们将重构用于学术教学中的一段代码样本（见第[6.8节](writing-code.html#reworking)）。
 - en: 6.1 Choosing Languages and Libraries
+  id: totrans-5
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.1 选择语言和库
 - en: The choice of what programming languages to use to write machine learning software
     is mainly determined by their performance, their observability, the availability
     of libraries whose functionality we can use and ease of programming.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 选择用于编写机器学习软件的编程语言主要取决于它们的性能、可观察性、可用库的功能以及编程的易用性。
 - en: 'The performance of a programming language depends mainly on whether it is *compiled*
     (like C, and Rust) or *interpreted* (like R and Python). Compilation takes a program
     and generates machine instructions that are stored in binary executable files
@@ -68,8 +83,11 @@
     compilation* to compile and optimise code just before each module or function
     is called at runtime. As a result, the time it takes to start executing Julia
     code is fairly slow but has little overhead once running.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 程序语言的性能主要取决于它是否是**编译**的（例如C和Rust）还是**解释**的（例如R和Python）。编译过程会将程序转换成存储在二进制可执行文件或库中的机器指令，这些指令可以反复运行。编译后的代码通常性能较高，因为它在运行时不需要进一步处理：在运行前就已经完成了寻找最有效机器指令序列的所有工作。这包括决定在程序运行的系统上，哪些指令适合利用CPU、GPU和TPU。相比之下，解释型语言通过在运行时将程序翻译成机器指令来执行程序。因此，解释型代码不一定表现出高性能，但通常是高级的（从硬件具体细节抽象出来，例如管理内存）且更容易编程，因为我们可以在REPLs中与之交互。[^(14)](#fn14)
+    实际上，用于机器学习的编程语言存在于这两种极端之间的光谱上。尽管R和Python是解释型语言，但它们都有包，这些包只是围绕用编译代码编写的BLAS、LAPACK、TensorFlow或Torch等高性能库的薄包装。根据我们在机器学习代码中使用的包，我们可能实现与编译代码相当的性能，而不会牺牲代码中非计算密集部分编程的易用性。另一方面，Julia使用**即时编译**来在运行时调用每个模块或函数之前编译和优化代码。因此，启动执行Julia代码所需的时间相当慢，但一旦运行，开销就很小。
 - en: Compiled and interpreted languages are very different in terms of observability
     as well. We can observe the behaviour of compiled code easily by profiling it
     (recording relevant metrics at regular intervals) or by tracing it (recording
@@ -85,8 +103,10 @@
     of instrumentation dramatically increase execution time and are unwieldy to use
     even for debugging. This is well known to be the case for R’s `Rprof()` and `Rprofmem()`,
     for instance.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 编译型和解释型语言在可观察性方面也有很大差异。我们可以通过分析（在固定时间间隔记录相关指标）或通过跟踪（在记录特定事件时记录程序和计算系统状态）来轻松观察编译代码的行为，因为每次执行时它都运行相同的指令序列。另一方面，解释型代码在软件运行时由解释器动态地映射到机器指令。除非解释器可以在运行程序的同时将其内部状态暴露给分析器，否则将性能映射到特定的代码块更困难。因此，解释型代码通常通过简单地添加打印语句和时间戳来研究。一种更严格的方法是对代码本身进行*仪器化*，即要求解释器在预定的时间间隔或事件记录其状态。然而，大多数类型的仪器化会显著增加执行时间，并且即使用于调试也难以使用。例如，R的`Rprof()`和`Rprofmem()`就是这种情况。
 - en: 'In terms of ease of programming, all compiled languages in common use are *low-level
     languages*: the code we write in them is not abstracted away from the compute
     system it will run on. Manual memory management, dependency management, heavy
@@ -106,8 +126,12 @@
     training and inference; the latter may include data cleaning, visualisation and
     performance monitoring. Orchestrating the different parts of the pipeline may
     or may not be performance-critical, depending on its scale and complexity.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在编程的易用性方面，所有常用的编译型语言都是*低级语言*：我们用它们编写的代码没有从将要运行的计算系统抽象出来。手动内存管理、依赖关系管理、对数据结构实现细节的重视（第[3](types-structures.html#types-structures)章）、为利用特定硬件能力而结构化代码（第[2](hardware.html#hardware)章）是使用C或.等语言时日常关注的焦点。相比之下，常用的解释型语言是*高级语言*。它们允许我们编写在许多方面类似于伪代码的代码，并且可以更多地关注我们正在实现的模型和算法。因此，它们使得跟踪整体设计和机器学习管道的结构变得更加容易。R、Python和Julia等高级语言还附带软件包存储库和依赖关系管理（CRAN
+    Team [2022](#ref-cran)；Python Software Foundation [2022](#ref-pip)[a](#ref-pip)；JuliaLang
+    [2022](#ref-juliapkg)）。再次强调，这表明最佳权衡是在机器学习管道中性能关键的部分使用低级、编译型语言，而在其他所有方面使用高级语言。前者将包括模型训练和推理；后者可能包括数据清理、可视化和性能监控。根据其规模和复杂性，管道的不同部分可能或可能不是性能关键。
 - en: Finally, the availability of libraries that we can build on is important as
     well. Ideally, we want to focus our efforts on implementing, optimising and running
     our machine learning systems and pipelines instead of reimplementing functionality
@@ -122,8 +146,10 @@
     such as mixed-effects models and the elastic net penalised regression. Behind
     the scenes, both languages (and Julia as well) use the same standard numerical
     libraries so they often have similar levels of performance.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们能够构建的库的可用性同样重要。理想情况下，我们希望将精力集中在实现、优化和运行我们的机器学习系统和管道上，而不是重新实现其他地方已经存在的功能。即使我们愿意重新发明轮子，我们也很难达到大多数流行软件库的设计质量和性能优化水平。在多种语言中可用的机器学习模型之间存在显著的重叠，但在某些特定情况下，某些实现可能比其他的好。Python可能是神经网络、概率编程以及计算机视觉和自然语言处理应用的最佳选择。R拥有从经典到现代统计学最广泛的选择，包括流行模型的参考实现，如混合效应模型和弹性网络惩罚回归。在幕后，这两种语言（以及Julia）使用相同的标准数值库，因此它们通常具有相似的性能水平。
 - en: Last but not least, consider again the discussion on the modular nature of machine
     learning software in Section [5.3](design-code.html#processing-pipeline). When
     modules in our software have well-defined interfaces that specify what their inputs
@@ -144,12 +170,16 @@
     all the others. However, some degree of homogeneity in programming languages and
     module structures is desirable to make it easier for different people to work
     on the code (Section [5.2.4](design-code.html#code-debt)).
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后但同样重要的是，再次考虑第[5.3](design-code.html#processing-pipeline)节中关于机器学习软件模块化性质的讨论。当我们的软件模块具有明确定义的接口，指定它们的输入和输出时，并且输入和输出都使用标准格式进行序列化，我们就可以用不同的语言实现它们。模型训练和推理模块（第[5.3.4](design-code.html#model-pipeline)节和[5.3.5](design-code.html#production-pipeline)节）计算量更大，因此应该用编译语言如C或实现。不需要太多资源如用户界面、仪表板（第[5.3.6](design-code.html#monitoring-pipeline)节）以及通常的数据摄取（第[5.3.3](design-code.html#data-pipeline)节）的模块可能可以用解释性语言如R或Python实现。编排、模型部署和服务（第[5.3.5](design-code.html#production-pipeline)节）、日志记录和监控（第[5.3.6](design-code.html#monitoring-pipeline)节）通常由第三方软件提供；任何补充它们的粘合代码可能位于完全无关的系统或脚本语言中。模块之间的隔离，以及模块与底层计算系统之间的隔离，使得每个模块内部使用的编程语言的选择对其他模块无关紧要。然而，编程语言和模块结构的某种程度的一致性是可取的，以便不同的人更容易共同工作（第[5.2.4](design-code.html#code-debt)节）。
 - en: 6.2 Naming Things
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.2 命名事物
 - en: Carefully naming variables, functions, models and modules is essential to convey
     their meaning to other people reading the code (Ousterhout [2018](#ref-philo);
     Thomas and Hunt [2019](#ref-pragpro)). But who are those people in the case of
@@ -159,8 +189,11 @@
     [8](documenting-code.html#documenting-code) that we should complement software
     with documentation written from different perspectives to make sure that all the
     people working on it can understand it well.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 仔细命名变量、函数、模型和模块对于将它们的含义传达给阅读代码的其他人至关重要（Ousterhout [2018](#ref-philo)；Thomas和Hunt
+    [2019](#ref-pragpro)）。但在机器学习软件的情况下，这些人是谁呢？他们将是*最终用户*、*开发者*、*机器学习专家*和*领域专家*的组合。每个群体都会对对他们有意义的名称有不同的看法。同样，我们将在第[8](documenting-code.html#documenting-code)章中论证，我们应该用来自不同视角编写的文档来补充软件，以确保所有参与其中的人都能很好地理解它。
 - en: 'Names that are most useful to users and domain experts describe what a function
     is supposed to do, what a variable contains or how it is supposed to be used,
     which model is implemented by a module, and so on. They can do that by leveraging
@@ -173,8 +206,10 @@
     cognitive load involved in working with any complex piece of software beyond what
     is reasonable. For the same reason, we suggested using names that come from the
     domain in pseudocode (Section [4.1](algorithms.html#pseudocode)).'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 对用户和领域专家最有用的名称描述了一个函数应该做什么，一个变量包含什么或应该如何使用，一个模块实现了哪种模型，等等。他们可以通过利用软件所使用的领域的命名约定来实现这一点。这些名称并不描述函数内部的工作方式，变量的类型或其他实现细节：大多数用户和领域专家可能不是开发者，因此这类信息对他们来说可能没有用。他们主要会对使用函数、模块等为自己目的而感兴趣，而不必理解他们调用的每一块代码的实现。这样做会增加与任何复杂软件一起工作的认知负荷，超出了合理的范围。出于同样的原因，我们建议在伪代码（第[4.1](algorithms.html#pseudocode)节）中使用来自领域的名称。
 - en: Names that describe the implementation details of what they refer to can be
     useful to other developers working on the same module. Similarly, short names
     that map directly to the mathematical notation used in the scientific literature
@@ -192,8 +227,10 @@
     can also be a source of misunderstandings because the same concepts are expressed
     with different notation and, vice versa, the same notation is used to represent
     very different concepts in different subfields of machine learning.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 描述它们所指向的实现细节的名称对正在同一模块上工作的其他开发者可能很有用。同样，直接映射到科学文献中使用的数学符号的简短名称对机器学习专家来说将最有用。这两种类型的名称都假设读者熟悉相关模型和算法的数学和实现细节，并假设阅读代码的人会参考文献来理解代码的功能以及为什么以这种方式实现。这类名称通常非常简短，使得代码更加简洁。用户和领域专家可能不熟悉这种符号，他们可能会发现没有大量的努力和大量注释的帮助，这样的代码难以理解（见第[8.1节](documenting-code.html#comments)）。另一方面，如果命名约定与文献中的一致，那么熟悉数学符号的人可以更快地理解代码。这在编写仅将在研究相似主题的协作者之间共享的研究代码时是有利的。然而，使用数学符号也可能导致误解，因为相同的概念用不同的符号表达，反之亦然，相同的符号在不同的机器学习子领域中用来表示非常不同的概念。
 - en: 'Therefore, in practice it is impossible to establish a single suitable naming
     convention across a machine learning pipeline: the code it contains is too varied,
     as will be the people interacting with it. (This is true more in general for any
@@ -217,12 +254,21 @@
     (Section [8.4](documenting-code.html#domaindocs)). *Be accurate:* avoid vague
     names and names that can be misunderstood to mean different things to people from
     different backgrounds.[^(15)](#fn15)'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，在实践中，在整个机器学习流程中建立单一合适的命名约定是不可能的：其中的代码种类繁多，与之交互的人员也各不相同。（这一点在下一节中我们将看到，对于任何类型的编码约定来说都是如此。）然而，Kernigham
+    和 Pike（Kernigham and Pike [1999](#ref-kernigham)）的一般性指南即使在命名约定方面也适用。*为全局变量使用描述性名称，为局部变量使用简短名称*：在实现机器学习模型和算法的模块中遵循数学符号可能是可以的，因为只有开发人员和机器学习专家可能会接触这样的代码。模块的作用域及其包含的注释将缩小上下文（第
+    [8.1](documenting-code.html#comments) 节）并使简短名称与较长名称一样易于理解（但阅读速度更快）。另一方面，可以从模块外部访问的变量和函数，最好根据它们的领域意义来命名，因为它们很可能会被最终用户和领域专家使用。公共接口文档（第
+    [8.2](documenting-code.html#apidocs) 节）有助于阐述它们与模型和数据之间的关系，并扩展它们的意义。*保持一致性*：机器学习流程中所有模块中的相同类型的代码应遵循相同的命名约定，实践在注释、接口和架构文档（第
+    [8.3](documenting-code.html#designdocs) 节）中使用的相同通用语言，或者在技术文档（第 [8.4](documenting-code.html#domaindocs)
+    节）中建立的相同数学符号。*保持准确性*：避免使用模糊的名称和可能被不同背景的人误解为不同含义的名称。[^(15)](#fn15)
 - en: 6.3 Coding Styles and Coding Standards
+  id: totrans-17
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.3 编码风格和编码规范
 - en: 'Code clarity is also a function of its readability. At a low level, we can
     improve readability by adopting *code styles* that standardise how code is formatted
     (indentation, use of braces, name casing, line length, etc.) and that give it
@@ -239,8 +285,12 @@
     to consider making small changes to these styles to make them more similar to
     each other and to reduce friction when working with more than one language at
     the same time.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码清晰度也是其可读性的一个函数。在低层次上，我们可以通过采用*代码风格*来提高可读性，这些风格标准化了代码的格式（缩进、括号的使用、命名大小写、行长度等），并在整个机器学习软件中赋予其统一的外观。其理念是，持续使用相同的风格使得代码更容易被编写者和他人阅读和理解。因此，遵守代码风格可以降低出错的风险，并使得开发团队内部以及跨团队之间的协作更加容易。在机器学习软件中普遍使用的所有编程语言，包括Python（van
+    Rossum、Warsaw和Coghlan [2001](#ref-pep8)；Google [2022](#ref-python-style)[d](#ref-python-style)）、R（Wickham
+    [2022](#ref-r-style)[b](#ref-r-style)）和Julia（Bezanson等人 [2022](#ref-julia-style)）都有行业标准的代码风格，这些风格在此背景下适用得很好。然而，机器学习管道将包含用不同编程语言编写的代码（第[6.1](writing-code.html#programming-language)节）：我们可能需要考虑对这些风格进行一些小的调整，使它们更加相似，并在同时使用多种语言时减少摩擦。
 - en: 'At a higher level, we may want to adopt *code standards* that limit what programming
     constructs are considered safe to use and that lay out best practices to structure
     code at a local level (say, blocks within a function, or functions within a module).
@@ -260,8 +310,11 @@
     (Section [9.4](troubleshooting-code.html#testing)). They can be adopted systematically
     by having automated tools to check for compliance and by enforcing them during
     code review (Section [6.6](writing-code.html#code-review)).'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 在更高层次上，我们可能希望采用*代码标准*，这些标准限制了哪些编程结构被认为是安全的，并规定了在局部级别（例如，函数内的块或模块内的函数）结构代码的最佳实践。这些标准是语言无关的，并且是补充而不是取代代码风格：例如，它们可能描述如何处理异常，如何在函数和模块级别组织输入和输出，如何跟踪软件依赖项，如何为日志记录和可观察性对代码进行配置，以及出于性能原因应避免哪些代码模式。Lopes（Lopes
+    [2020](#ref-programming-styles)）展示了这些选择在实践中可以产生多大的差异。在更高的层次上，代码标准也可能解决软件安全问题。与代码风格不同，没有普遍适用的代码标准：它们的广泛性使得它们必然是应用或领域特定的。结合模块化管道设计（第[5.3](design-code.html#processing-pipeline)节），我们可以对代码的行为做出假设，这反过来使得代码更容易阅读、部署、维护，并与其他代码集成，通过减少重构的需要（第[6.7](writing-code.html#refactoring)节）和使代码更容易测试（第[9.4](troubleshooting-code.html#testing)节）来实现。它们可以通过自动化工具系统地采用，这些工具用于检查合规性，并在代码审查（第[6.6](writing-code.html#code-review)节）期间强制执行。
 - en: 'The adoption of code styles and standards is, at the time of this writing,
     one of the low-hanging fruits to pick to improve machine learning software across
     the board. The prevalence of Jupyter notebooks (Project Jupyter [2022](#ref-jupyter))
@@ -288,8 +341,14 @@
     often unaware of the documented issues and pitfalls of the machine learning software
     they use (Zhang, Cruz, and van Deursen [2022](#ref-zhang)), in part because they
     are only reported in independent blog posts if they are library-specific.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在撰写本文时，采用代码风格和标准是全面提高机器学习软件质量的一个低垂的果实。Jupyter笔记本（Project Jupyter [2022](#ref-jupyter)）作为开发平台的使用普及，鼓励编写一次性的代码，这些代码不需要遵循任何特定的约定，因为它们不与其他软件交互，并且与用户的交互非常有限。因此，Jupyter笔记本中的代码没有很好地组织成函数（与普通软件相比，它们的耦合度高出1.5倍，尽管它们各自更简单），其依赖关系没有得到良好的管理（未声明的、间接的或未使用的导入数量是两倍），总的来说，代码的质量问题更多（1.3倍）(Grotov
+    等人 [2022](#ref-jupyter-style))。即使不考虑Jupyter笔记本，对所有开源机器学习代码的系统分析都发现了重大且普遍存在的问题。在控制年龄和流行度之后，机器学习软件的复杂性和开放工单与其他类型的软件相似。然而，单个项目似乎有更少的贡献者和更多的分支，这表明代码可能没有得到彻底的审查（Simmons
+    等人 [2020](#ref-simmons))。可重复性和可维护性存在问题，因为软件依赖项通常没有得到适当的跟踪（van Oort 等人 [2021](#ref-oort))：要么它们没有被列出，要么它们是供应商的（第
+    [5.2.4](design-code.html#code-debt) 节），它们的版本没有被固定，或者因为它们被自动检测出来而从未经过审查，所以无法解决。Pylint无法可靠地检查本地导入和具有C/后端（即所有基础包，包括TensorFlow、NumPy和PyTorch）的包中的导入，这使得Python项目的问题更加严重。此外，用户通常对自己的机器学习软件中记录的问题和陷阱一无所知（张、克鲁斯和van
+    Deursen [2022](#ref-zhang))，部分原因是因为如果它们是库特定的，这些问题和陷阱只会在独立的博客文章中报告。
 - en: 'These general issues are made worse by several smells that are specific to
     machine learning code and that arise from how such code is developed. Many of
     the sources we have referenced (Sculley et al. [2015](#ref-hidden-debt); Simmons
@@ -317,12 +376,22 @@
     machine learning code from scratch to use it in production as inevitable. A culture
     change is needed for the adoption of best practices such as code styles and code
     standards (as well as modular pipeline design) to become the norm.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些一般性问题由于几个特定于机器学习代码的“坏味道”而变得更加严重，这些“坏味道”源于此类代码的开发方式。我们引用的许多来源（Sculley 等人 [2015](#ref-hidden-debt)；Simmons
+    等人 [2020](#ref-simmons)；van Oort 等人 [2021](#ref-oort)；张、Cruz 和 van Deursen [2022](#ref-zhang)；Tang
+    等人 [2021](#ref-tang)）指出模块接口和函数具有过多参数的问题（因为它们与底层模型的数学符号映射过于紧密）；重复代码（由于剪切粘贴的实验和未剪枝的无效代码）；函数过长，变量和分支过多（因为它们执行多个任务，从未重构为更小的函数）；以及缺乏配置管理（例如，我们在第
+    [5](design-code.html#design-code) 章中提出的实验跟踪和基础设施即代码方法）。其中一些问题可能因为机器学习代码的固有特性而可以容忍：我们之前（第
+    [6.2](writing-code.html#naming) 节）认为，即使名称不具有描述性，将局部变量命名为数学符号也是可以的。然而，大多数问题不应该如此。为了公平起见，我们承认许多这些问题不能仅仅从技术层面解决，因为它们源于错误的激励。在学术界，代码被视为一次性丢弃的物品（Nature
+    [2016](#ref-repro1)；Tatman、VanderPlas 和 Dane [2018](#ref-repro2)），因为工作表现是通过发表的论文数量来衡量的（“发表或灭亡！”），而不是代码本身的质量。因此产生的软件通常既没有得到维护，也没有部署到生产系统中。在工业界，许多从事机器学习管道工作的专业人士在软件工程方面几乎没有或没有背景（Sculley
+    等人 [2015](#ref-hidden-debt)），并且公司已经接受从头开始重新实现机器学习代码以用于生产的做法是不可避免的。为了采用最佳实践，如代码风格和代码标准（以及模块化管道设计）成为常态，需要文化上的变革。
 - en: 6.4 Filesystem Structure
+  id: totrans-22
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.4 文件系统结构
 - en: 'Keeping code organised into files and directories contributes to clarity by
     making it easier to find any specific piece of code. This is true for machine
     learning pipelines as much as for other types of software: functions performing
@@ -336,8 +405,11 @@
     Unit tests for the module (Section [9.4.4](troubleshooting-code.html#local-vs-global))
     should be placed in a separate subdirectory but versioned alongside the code they
     test.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 将代码组织到文件和目录中，有助于提高清晰度，因为它使得查找任何特定的代码片段变得更加容易。这对于机器学习管道和其他类型的软件都适用：执行相关任务的函数应存储在一起，执行正交任务的函数应存储在文件系统的不同部分。（这是对文件层次结构的单一责任原则（Thomas和Hunt
+    [2019](#ref-pragpro)）的应用。）每个模块应存储在单独的目录中，将功能合理地分割到文件中。从模块导出的方法和变量应存储在与内部代码分开的文件集中，以便用户更容易检查它们，并将它们与接口文档（第[8.2](documenting-code.html#apidocs)节）链接起来。模块的单元测试（第[9.4.4](troubleshooting-code.html#local-vs-global)节）应放置在单独的子目录中，但与它们测试的代码版本一致。
 - en: 'What is the best filesystem structure to use for a module in a machine learning
     pipeline? There is no single, universal standard: both language-agnostic (Kriasoft
     [2016](#ref-kriasoft)) and language-specific proposals for Python (Greenfeld [2022](#ref-cookiecutter);
@@ -345,79 +417,110 @@
     and Go (Quest [2022](#ref-goproject)) are available and have been used in real-world
     software. They overlap substantially, broadly agreeing on the following set of
     subdirectories and files:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于机器学习管道中的模块，最佳文件系统结构是什么？没有单一、通用的标准：既有语言无关（Kriasoft [2016](#ref-kriasoft)）的提议，也有针对Python（Greenfeld
+    [2022](#ref-cookiecutter); Alam等 [2022](#ref-kedro)）、R（Blagotic等 [2021](#ref-projecttemplate)）和Go（Quest
+    [2022](#ref-goproject)）的语言特定提议，它们已在现实世界的软件中使用。它们在很大程度上重叠，广泛同意以下子目录和文件集：
 - en: An `src` directory for the source code of the module, possibly subdivided into
     further subdirectories.
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用于模块源代码的`src`目录，可能进一步细分为子目录。
 - en: A `build` or `dist` directory to store the artefacts created during the build
     process, like object files, machine learning models and the files used for testing,
     deployment and CI/CD.
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用于存储构建过程中创建的工件（如目标文件、机器学习模型和用于测试、部署和CI/CD的文件）的`build`或`dist`目录。
 - en: A directory for the specification files for any containers used in CI/CD, say,
     `docker` for Dockerfiles (Docker [2022](#ref-docker)[a](#ref-docker)). Further
     configuration files controlling how containers are deployed and managed, such
     as Kubernetes (The Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes))
     YAML configurations, may be placed in the same directory for convenience.
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用于CI/CD中使用的任何容器的规范文件目录，例如，用于Dockerfile的`docker`（Docker [2022](#ref-docker)[a](#ref-docker)）。控制容器部署和管理配置的进一步配置文件，如Kubernetes（The
+    Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes)）YAML配置，可以为了方便而放置在同一目录中。
 - en: A `config` directory containing the configuration files required to build and
     develop the module, including a complete list of versioned software dependencies
     (say, `requirements.txt` for Python modules) and IDE settings.
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 包含构建和开发模块所需的配置文件`config`目录，包括版本化的软件依赖项的完整列表（例如，Python模块的`requirements.txt`）和IDE设置。
 - en: A `test` directory for the unit tests and their reference outputs.
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用于单元测试及其参考输出的`test`目录。
 - en: A `docs` directory containing the module documentation, either in source or
     final form. Interface documentation can be stored alongside the code it refers
     to as discussed in Section [8.2](documenting-code.html#apidocs) as an alternative.
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 包含模块文档的`docs`目录，文档可以是源码形式或最终形式。接口文档可以与所引用的代码存储在一起，如第[8.2](documenting-code.html#apidocs)节所述，作为替代方案。
 - en: A `vendor` directory to store third-party code and software tools to build the
     module.
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用于存储第三方代码和构建模块所需的软件工具的`vendor`目录。
 - en: A `tools` directory for the executable files built from `src`.
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用于从`src`构建的可执行文件的`tools`目录。
 - en: An `examples` directory to store sample usage patterns and other documents describing
     algorithms and domain knowledge such as those discussed in Sections [8.4](documenting-code.html#domaindocs)
     and [8.5](documenting-code.html#usecases). Often in the form of Jupyter notebooks.
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个`examples`目录，用于存储示例使用模式和描述算法和领域知识的其他文档，例如在第[8.4](documenting-code.html#domaindocs)和[8.5](documenting-code.html#usecases)节中讨论的那些。通常以Jupyter笔记本的形式存在。
 - en: A `.secrets` directory for credentials, certificates, authentication tokens
     and other privileged information that should be stored in encrypted form (for
     instance, using `git-crypt` (Ayer [2022](#ref-git-crypt))).
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个`.secrets`目录，用于存储凭证、证书、身份验证令牌和其他应加密存储（例如，使用`git-crypt`（Ayer [2022](#ref-git-crypt)））的特权信息。
 - en: The configuration file of the build system that produces the artefacts (stored
     in the `build` directory) and that runs the tests (in `test`). For instance, a
     `.Makefile`.
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 生成工件（存储在`build`目录中）并运行测试（在`test`目录中）的构建系统的配置文件。例如，一个`.Makefile`文件。
 - en: A `README` file with short description of the module.
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个包含模块简短描述的`README`文件。
 - en: A `LICENSE` file containing the copyright statement and the licence text if
     the module can be distributed as a self-contained, standalone piece of software.
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个包含版权声明和许可文本的`LICENSE`文件，如果模块可以作为独立的软件组件分发。
 - en: It is also interesting to consider how these directories and files should be
     stored in a source version control system (Section [6.5](writing-code.html#versioning)).
     On the one hand, we can follow Google’s “monorepo” approach (Potvin and Levenberg
@@ -430,8 +533,11 @@
     become more straightforward to implement and to run as well. However, monorepos
     require more hardware resources and high-quality tooling to navigate code, to
     modify it and to keep it organised because of the size of the repository.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑这些目录和文件应该如何存储在源版本控制系统（第[6.5](writing-code.html#versioning)节）中也是很有趣的。一方面，我们可以遵循谷歌的“单仓库”（monorepo）方法（Potvin和Levenberg
+    [2016](#ref-monorepo)），将所有这些（整个管道的代码）存储在一个单一的仓库中。这种选择提供了统一的版本控制，具有单一的真实来源，简化了依赖管理，促进了代码重用和跨多个模块的大规模重构，并通过使不同开发团队之间的协作更容易，增加了代码的可见性。集成、系统测试和验收测试（第[9.4.4](troubleshooting-code.html#local-vs-global)节）的实现和运行也变得更加直接。然而，由于仓库的大小，单仓库需要更多的硬件资源和高品质的工具来导航代码、修改它并保持其组织。
 - en: 'On the other hand, we can store each module in a separate repository. Cross-module
     code and configurations are stored in separate “parent” repositories implementing
     the orchestration and the deployment of the “child” repositories for the modules
@@ -456,12 +562,17 @@
     just choices with different trade-offs: which one is best for a particular pipeline
     will depend on how large it is, on how many modules it contains, and on how models
     are trained and served.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，我们可以将每个模块存储在单独的仓库中。跨模块的代码和配置存储在单独的“父”仓库中，这些仓库通过使用如git-repo（谷歌[2022](#ref-git-repo)[e](#ref-git-repo)）或meta
+    git（沃尔特斯和李·斯科特[2021](#ref-meta-git)）等工具来实现编排和部署“子”仓库，这些“子”仓库用于模块。换句话说，这些“父”仓库会克隆、设置和管理“子”仓库（例如，使用`docker-compose`），以产生使用单仓库工作的错觉。单个“子”仓库将会更小，需要的硬件资源更少，并且对单个模块的工作不需要任何特定的工具。然而，跟踪模块之间的依赖关系以及在整个管道中保持第三方软件依赖的一致性，并不能像在单仓库中那样容易自动化：这是技术债务（第[5.2](design-code.html#technical-debt)节）的一个重要来源，我们应该在“父”仓库中手动解决。导航整个管道的代码库需要额外的工具来隐藏仓库之间的边界，并给出统一仓库的外观。任何跨越多个模块的任务不再是原子的：在模块之间移动代码、拆分或合并模块，或者更改模块的接口以及在其他模块中使用该接口的所有地方，不能再作为一个单一提交在单个仓库中执行。同样，我们现在需要创建和维护“父”仓库来设置运行集成和系统测试的环境。与许多其他设计选择一样，没有最佳解决方案，只有不同权衡的选择：哪个最适合特定的管道将取决于它的大小、包含的模块数量以及模型的训练和部署方式。
 - en: 6.5 Effective Versioning
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.5 有效的版本控制
 - en: Storing code in a version control system (“versioning” for short) has become
     a standard practice in software engineering (Duvall, Matyas, and Glover [2007](#ref-cicd);
     Fowler [2018](#ref-refactoring)), and it benefits machine learning pipelines as
@@ -479,8 +590,16 @@
     of MLOps (Section [5.3](design-code.html#processing-pipeline)), continuous deployment
     (Chapter [7](deploying-code.html#deploying-code)), software testing (Section [9.4](troubleshooting-code.html#testing))
     and refactoring (Section [6.7](writing-code.html#refactoring)).
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 将代码存储在版本控制系统（简称“版本控制”）已成为软件工程中的标准做法（Duvall, Matyas, 和 Glover [2007](#ref-cicd);
+    Fowler [2018](#ref-refactoring))，这对机器学习管道的好处与传统软件一样。我们可以跟踪代码随时间的变化，导航其历史并回滚到功能状态，如果它出现故障。我们还可以跟踪数据、模型和管道配置，正如第
+    [5.2.3](design-code.html#architecture-debt) 节中讨论的那样。多个开发者可以同时工作在代码上，合并他们的更改，借助专用工具解决可能出现的任何冲突，并发布带有语义版本控制方案的标签（Preston-Werner
+    [2022](#ref-sem-ver)）。版本控制还确保所有对代码的更改都被跟踪（以确保代码完整性和开发者责任）并通过将它们附加到只读的提交账本中来应用（以获得不可变版本和快照）。因此，版本控制为我们提供了代码的“单一真相来源”，这使MLOps（第
+    [5.3](design-code.html#processing-pipeline) 节）的自动化工作流程、持续部署（第 [7](deploying-code.html#deploying-code)
+    章）、软件测试（第 [9.4](troubleshooting-code.html#testing) 节）和重构（第 [6.7](writing-code.html#refactoring)
+    节）成为可能。
 - en: 'How can we use versioning to the best effect when working on a machine learning
     pipeline? Two practices from modern software engineering are especially relevant.
     Firstly, *keeping the gap between development and production code as small as
@@ -504,30 +623,41 @@
     production releases are cut. Incomplete changes should be hidden behind *feature
     flags* that prevent new code from running by default and that can be *toggled*
     easily using environment variables. In other words:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 在处理机器学习管道时，我们如何才能最大限度地利用版本控制？现代软件工程中的两种实践特别相关。首先，*尽可能缩小开发和生产代码之间的差距*（通常称为“dev-prod
+    parity”（Wiggins [2017](#ref-12factor)）），以最大限度地利用CI/CD开发工作流程（第[5.3](design-code.html#processing-pipeline)节）。通过引入*小而自包含的提交集*中的更改，使它们易于审查（第[6.6](writing-code.html#code-review)节），易于进行持续集成测试（因为只有一小部分测试是相关的），并且使得它们能够非常频繁地合并到主线分支（例如，每天）。结果，代码的更改可以立即对所有开发者可见，使他们能够有效地协作。将代码划分为存储在单独目录中的模块，并将实现不同功能的函数存储在单独的文件中（第[6.4](writing-code.html#filesystem-structure)节），可以大大降低冲突的可能性：任何两个在不同功能上工作的开发者不太可能修改相同的文件。然而，它不能完全防止由于管道各部分行为变化而可能出现的更高级别问题，如修正级联（第[5.2.2](design-code.html#model-debt)和[9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data)节）。减少冲突并及早发现此类问题的最佳方法是*仅使用短期分支*，这些分支立即合并到从中提取生产发布的主线分支。不完整的更改应隐藏在*功能标志*后面，这些标志阻止新代码默认运行，并且可以使用环境变量轻松切换。换句话说：
 - en: Place the existing code we would like to change behind a feature flag that controls
     whether it is run or not, switched on to keep the code running.
+  id: totrans-43
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将我们想要更改的现有代码放在控制其是否运行的功能标志后面，开启标志以保持代码运行。
 - en: Introduce the new code behind the same flag, configuring it to run when the
     flag is switched off.
+  id: totrans-44
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在相同的标志下引入新代码，配置它当标志关闭时运行。
 - en: Test the machine learning software with existing unit, integration and system
     tests with the flag switched off, checking whether there are any regressions and
     whether the new code is an improvement over the existing code.
+  id: totrans-45
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用标志关闭的情况下，用现有的单元、集成和系统测试来测试机器学习软件，检查是否存在回归以及新代码是否比现有代码有所改进。
 - en: If the new code is suitable, remove the existing code and the feature flag.
     There are tools that do that automatically (Uber [2022](#ref-piranha)) when flags
     become stale.
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果新代码适合，则移除现有代码和功能标志。当标志变得过时，有工具可以自动完成这项工作（Uber [2022](#ref-piranha)）。
 - en: This practice is known as “trunk-based development” (Hammant [2020](#ref-trunk-based))
     (“trunk” being a traditional name for the mainline branch, along with “master”).
     In the case of machine learning software, we should extend this approach to data
@@ -539,8 +669,13 @@
     Troubleshooting issues with the pipeline and reverting it to a known good release
     on botched updates (Section [7.6](deploying-code.html#rollback)) also becomes
     possible, for the same reasons.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种实践被称为“主干分支开发”（Hammant [2020](#ref-trunk-based))（“主干”是主线分支的传统名称，与“master”类似）。在机器学习软件的情况下，我们应该将这种方法扩展到数据和模型。将数据和模型与代码一起进行版本控制对于通过允许实验跟踪和可重复的模型训练来减少技术债务（第
+    [5.1](design-code.html#data-as-code) 节）至关重要。它还使我们能够在非平凡设置中构建基于属性的测试，通过允许我们匹配模型、它们的输入和输出（第
+    [9.4.2](troubleshooting-code.html#testing-what) 节）。同样，处理管道问题并将它回滚到已知的良好版本（第 [7.6](deploying-code.html#rollback)
+    节）在更新失败时也成为可能。
 - en: 'Secondly, it is important to *write commit messages that are informative and
     that follow established conventions*: the Linux Kernel (Linux Kernel Organization
     [2022](#ref-kernel-repo)) and Git (The Git Development Team [2022](#ref-git-git))
@@ -573,12 +708,23 @@
     in the commit. For reference, Tian et al. (Tian et al. [2022](#ref-tian)) discuss
     in detail the characteristics of “good” commit messages and of their contents
     for different types of commits.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 其次，编写信息丰富且遵循既定惯例的提交信息非常重要：Linux 内核（Linux 内核组织 [2022](#ref-kernel-repo)）和 Git（Git
+    开发团队 [2022](#ref-git-git)）是这方面做得很好的例子。提交信息应提供足够的信息，以便理解所描述的更改，包括*更改了什么*，*为什么进行这些更改*以及*为什么以这种方式（而不是如何）进行更改*（Tian
+    等人 [2022](#ref-tian)）。非平凡代码更改通常跨越多个文件，通常没有单一的地方可以放置解释其理由的注释。在所有修改的地方重复该注释会增加陈旧注释的可能性（第
+    [8.1](documenting-code.html#comments) 节）。因为我们必须记住每次重新访问我们更改的代码时，必须一次性更新所有这些注释的副本。这种信息的自然位置是在提交信息中，因为提交引用了所有更改的文件（Ousterhout
+    [2018](#ref-philo)）。在任何长期运行的代码库中，提交信息可能是未来开发者理解原始开发者离开后代码更改的唯一信息来源。如果我们实践基于主干的开发，我们可以将我们短期开发分支中的提交合并在一起，并且只有在将代码合并到主线分支时才编写有意义的提交信息。此外，我们应该写一个简短的标题来总结更改（例如，50-60
+    个字符），然后是更详细的描述。导航代码的历史将变得更加容易，因为我们现在可以浏览提交标题，并且只为与我们相关的提交阅读详细的提交信息。如果我们使用现代代码审查实践（第
+    [6.6](writing-code.html#code-review) 节），我们还可能能够阅读审查该提交的开发者的评论：当代码合并时，所有当前版本控制系统都会通过链接或包含在提交信息中。最后，我们可能还想包括结构化信息：执行代码审查的开发者的签名行，标识提交为系列一部分的标签，票据编号及其状态。所有这些信息都可以由
+    CI/CD 工具处理，以自动化提交中的代码合并和部署。作为参考，Tian 等人（Tian 等人 [2022](#ref-tian)）详细讨论了“良好”提交信息的特征及其对不同类型提交的内容。
 - en: 6.6 Code Review
+  id: totrans-49
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.6 代码审查
 - en: 'Code quality is crucial for the effectiveness of a machine learning pipeline:
     coding styles and standards (Section [6.3](writing-code.html#coding-standards)),
     versioning (Section [6.5](writing-code.html#versioning)), refactoring (Section
@@ -589,54 +735,77 @@
     because of the interplay of data, models and code and because of their mutable
     nature (Sections [9.1](troubleshooting-code.html#data-problems) and [9.2](troubleshooting-code.html#model-problems))
     makes code quality all the more important.'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码质量对于机器学习管道的有效性至关重要：编码风格和标准（第[6.3](writing-code.html#coding-standards)节）、版本控制（第[6.5](writing-code.html#versioning)节）、重构（第[6.7](writing-code.html#refactoring)节）、测试（第[9.4](troubleshooting-code.html#testing)节）、MLOps（第[5.3](design-code.html#processing-pipeline)节）和持续部署（第[7](deploying-code.html#deploying-code)章）都是为了最大限度地减少缺陷数量。由于数据、模型和代码之间的相互作用以及它们的可变性质（第[9.1](troubleshooting-code.html#data-problems)节和第[9.2](troubleshooting-code.html#model-problems)节），技术债务的风险增加（第[5.2](design-code.html#technical-debt)节），这使得代码质量变得更加重要。
 - en: 'However, the practices and the automated workflows described in this book are
     not enough in themselves: while they can significantly reduce the number of defects,
     there are classes of issues that can only be spotted and addressed by the developers
     themselves. This is the reason for *code review* (Rigby and Bird [2013](#ref-microsoft-code-review)).
     Developers other than those who wrote a particular piece of code should inspect
     it and work together to ensure that:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，本书中描述的实践和自动化工作流程本身并不足够：虽然它们可以显著减少缺陷的数量，但有些问题只能由开发者自己发现和解决。这就是*代码审查*（Rigby和Bird
+    [2013](#ref-microsoft-code-review)）的原因。除了编写特定代码的开发者之外的其他开发者应该检查它，并共同努力确保：
 - en: It implements the desired functionality.
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它实现了所需的功能。
 - en: It is efficient and accompanied by software tests.
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它既高效又伴随着软件测试。
 - en: It follows the spirit and the letter of coding styles, coding standards and
     naming conventions.
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它遵循编码风格、编码标准和命名约定的精神和文字。
 - en: It is well organised and documented.
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它组织良好，文档齐全。
 - en: 'The benefits are many:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 利益很多：
 - en: We ensure that each developer writes code that other developers can understand.
+  id: totrans-57
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们确保每个开发者编写的代码其他开发者都能理解。
 - en: Exchanging constructive criticism is a valuable way of teaching junior and future
     developers.
+  id: totrans-58
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 交换建设性的批评是教授初级和未来开发者的一种有价值的方式。
 - en: More people working on the machine learning pipeline will have a practical understanding
     of its design, making it more likely to find ways to improve it.
+  id: totrans-59
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在机器学习管道上工作的更多人将对其设计有实际的理解，这使得找到改进它的方法的可能性更大。
 - en: We encourage a feeling of collective ownership of the code.
+  id: totrans-60
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们鼓励对代码有一种集体所有权的感受。
 - en: Clearly, each module will have a primary “owner” who is ultimately responsible
     for it and controls what changes are merged into the mainline branch. That developer
     will be the ideal reviewer for changes to that module because he will be the person
@@ -644,11 +813,15 @@
     contributing to it, fixing it, and providing feedback on the quality and design
     of the code. At the same time nobody should be able to commit code without oversight,
     which code review provides.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，每个模块都将有一个主要的“所有者”，他最终负责它并控制哪些更改被合并到主线分支。这位开发者将是该模块更改的理想审查者，因为他将是了解其代码和设计最好的人。然而，其他人应该感到舒适地为其做出贡献、修复它以及提供关于代码质量和设计的反馈。同时，没有人应该在未经监督的情况下提交代码，这正是代码审查所提供的。
 - en: 'Reviewing code is usually performed in two complementary ways:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码审查通常以两种互补的方式进行：
 - en: 'Taking advantage of *code review tools* (Toro [2020](#ref-shopify-review);
     Sadowski et al. [2018](#ref-google-code-review)): the developer proposing a code
     change prepares a commit and submits it to some software tool that tests it and
@@ -657,9 +830,11 @@
     code via the tool until they are satisfied with the commit’s quality. The tool
     then merges the commit into the mainline branch, linking the comments in the commit
     message.'
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 利用*代码审查工具*（Toro [2020](#ref-shopify-review); Sadowski 等人 [2018](#ref-google-code-review)）：提出代码更改的开发者准备一个提交，并将其提交给某个软件工具进行测试，然后将其分配给一个或多个审查员。审查本身是异步的，性质上是非正式的，开发者和审查员通过该工具交换评论并完善代码，直到他们对提交的质量满意为止。然后，该工具将提交合并到主线分支，将提交信息中的评论链接起来。
 - en: 'Practising *pair* (*mob*) *programming* (Popescu [2019](#ref-shopify-pair);
     Swoboda [2021](#ref-shopify-mob)) while developing software: two (or more) developers
     write, debug, or explore code together. One of the developers (the “driver”) is
@@ -669,9 +844,11 @@
     act as reviewers “live” as the code is written. At fairly short intervals (say,
     30 minutes), the current “driver” commits the code it is working on and passes
     the role to another developer, who will pull the code and become the next “navigator”.'
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在开发软件时实践*结对*（*团队*）*编程*（Popescu [2019](#ref-shopify-pair); Swoboda [2021](#ref-shopify-mob)）：两位（或更多）开发者一起编写、调试或探索代码。其中一位开发者（“驾驶员”）负责实现，专注于编写高质量且无错误的代码。其他开发者（“导航员”）则关注问题的更广泛范围，并确保过程按计划进行。在实际操作中，导航员在代码编写过程中充当“现场”审查员。在相当短的时间间隔（例如，30分钟）后，当前的“驾驶员”提交其正在工作的代码，并将角色传递给另一位开发者，该开发者将拉取代码并成为下一个“导航员”。
 - en: 'Both approaches encourage writing small incremental changes and submitting
     them frequently, like in trunk-based development (Section [6.5](writing-code.html#versioning)):
     it is difficult to find experienced reviewers with a deep knowledge of larger
@@ -680,8 +857,10 @@
     should address a single issue and do that completely, involving just one or two
     reviewers. This makes it easier to identify where errors were introduced if something
     goes wrong and to roll back just the offending change.'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两种方法都鼓励编写小的增量更改并频繁提交，就像在基于仓库的开发（第[6.5](writing-code.html#versioning)节）中一样：很难找到对机器学习管道较大部分有深入了解的资深审查员，而且审查员找到时间审查大量代码更困难。理想情况下，要审查的代码应解决单个问题并完全解决，只涉及一到两位审查员。这样，如果出现问题，更容易确定错误引入的位置，并且只需回滚有问题的更改。
 - en: 'In a tool-based code review setting, the developer writing the code should
     first perform a personal code review in order not to waste the reviewers’ time.
     Having code automatically tested by linters, static code analysers and our suite
@@ -691,8 +870,10 @@
     (Section [8.1](documenting-code.html#comments)) and write a descriptive commit
     message (Section [6.5](writing-code.html#versioning)) covering the reason for
     the proposed change, its possible impact and any relevant design decisions.'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 在基于工具的代码审查环境中，编写代码的开发者应首先进行个人代码审查，以免浪费审查员的时间。在将代码发送进行审查之前，让代码自动通过linters、静态代码分析器和我们的软件测试套件进行测试，也将加快代码审查的迭代速度：审查员将看到他们的输出，以帮助检查提交。同样，出于同样的原因，开发者应在代码中添加注释（第[8.1](documenting-code.html#comments)节）并编写描述性的提交信息（第[6.5](writing-code.html#versioning)节），说明提出更改的原因、可能的影响以及任何相关的设计决策。
 - en: 'With pair and mob programming, repeatedly rotating the “driver” and “navigator”
     roles effectively ensures that the code is reviewed, and helps in engaging more
     developers with the code. Domain experts can be involved as well: even if they
@@ -705,8 +886,10 @@
     is the main point of this approach. Particularly hard coding tasks benefit the
     most from having more eyeballs looking at problems and collaborating on both the
     low- and high-level design of the code.'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在结对和集体编程中，反复轮换“驾驶员”和“领航员”的角色有效地确保了代码的审查，并有助于让更多开发者参与到代码中来。领域专家也可以参与其中：即使他们对编程只有边缘的了解，当他们作为“驾驶员”时，也可以由开发者进行指导；当他们作为“领航员”时，他们可以将其知识贡献给编写代码的开发者。然而，只有当开发环境可以快速设置，并且拉取和推送代码毫不费力时，这种方法才能顺利运行：频繁而顺畅的角色转换对于保持每个人的参与和相互讨论至关重要，这正是这种方法的主要目的。特别是对于特别困难的编码任务，有更多的眼睛查看问题并协作代码的底层和高层设计，将带来最大的好处。
 - en: Both approaches to code review require effort and an initial investment to establish
     as a standard practice but they will pay themselves back by making developers
     more productive. And, perhaps unlike other practices, the overwhelming majority
@@ -716,8 +899,11 @@
     programming require developers to coordinate and to spend time together working
     on the same piece of code. But that does not mean that the people involved will
     be less productive.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 两种代码审查方法都需要付出努力和初始投资来建立为标准实践，但它们将通过提高开发者的生产力来回报自己。而且，也许与其他实践不同，绝大多数程序员都喜欢它们（Sadowski等人
+    [2018](#ref-google-code-review)；Williams、Kessler和Cunningham [2000](#ref-pair-strength1)）！基于工具的审查流程需要适当的工具来维护和扩展。结对和集体编程要求开发者进行协调，并花费时间一起在相同的代码片段上工作。但这并不意味着参与其中的人会降低生产力。
 - en: 'In the case of tool-based code review, one or at most two developers are sufficient
     to review a commit, and if the commit touches only one or two files, the reviewers
     can easily provide feedback within a few hours or a day at most (Sadowski et al.
@@ -736,8 +922,13 @@
     40 minutes per commit (Sadowski et al. [2018](#ref-google-code-review)); at Microsoft,
     developers devote 20 minutes per day (1.6 hours per week) on average to code review
     (Jacek et al. [2018](#ref-microsoft-code-review2)).'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 在基于工具的代码审查情况下，一个或最多两个开发者就足够审查一个提交，如果提交只涉及一个或两个文件，审查者可以很容易地在几小时或最多一天内提供反馈（Sadowski等人
+    [2018](#ref-google-code-review)；Rigby和Bird [2013](#ref-microsoft-code-review)）。随着时间的推移，开发者将产生越来越好的代码，从而加快审查速度并减少每个提交的注释数量。错误和架构问题将很快被发现，因此它们将更容易和更快地修复（Tornhill和Borg
+    [2022](#ref-tornhill)）。因此，我们将减少对大规模重构和直接代码重写的需求，从而有更多时间编写更好的代码、测试和文档。（根据定义，这意味着随着时间的推移，生产力将提高，因为我们将更快地取得进展而不是原地打转。）此外，高级开发者将在审查不同模块的代码时拓宽对机器学习管道架构的理解。此外，审查补丁对于审查者来说不必耗时：在谷歌，开发者每周审查大约4个提交，平均花费2.6小时（中位数），每个提交大约花费40分钟（Sadowski等人
+    [2018](#ref-google-code-review)）；在微软，开发者平均每天花费20分钟（每周1.6小时）进行代码审查（Jacek等人 [2018](#ref-microsoft-code-review2)）。
 - en: 'We can make similar considerations for pair and mob programming: several studies
     over the last 30 years (Williams, Kessler, and Cunningham [2000](#ref-pair-strength1);
     de Lima Salge and Berente [2016](#ref-pair-strength2); Shiraishi et al. [2019](#ref-mob-strength)),
@@ -748,12 +939,19 @@
     margin for errors) and enough experience to address them effectively in the pair
     (either a senior and a junior developer, or two “intermediate” developers) or
     in the mob (Arisholm et al. [2007](#ref-arisholm); Popescu [2019](#ref-shopify-pair)).'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以对结对编程和集体编程做出类似的考虑：在过去30年中进行的几项研究（Williams、Kessler和Cunningham [2000](#ref-pair-strength1)；de
+    Lima Salge和Berente [2016](#ref-pair-strength2)；Shiraishi等人 [2019](#ref-mob-strength)），包括一些关于机器学习软件和数据科学应用的研究（Saltz和Shamshurin
+    [2017](#ref-saltz)），发现它们可以提高生产力和代码质量。为了使它们最有效，我们需要足够复杂以吸引多个人注意的任务（琐碎的任务几乎没有错误空间）以及足够的经验，以便在结对（无论是高级和初级开发者，还是两个“中级”开发者）或集体（Arisholm等人
+    [2007](#ref-arisholm)；Popescu [2019](#ref-shopify-pair)）中有效地处理它们。
 - en: 6.7 Refactoring
+  id: totrans-71
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.7 代码重构
 - en: Formally, *refactoring* is the process of changing a piece of code in a way
     that does not alter its external behaviour yet improves its internal structure
     and clarifies its intent and assumptions (Fowler [2018](#ref-refactoring)). Following
@@ -770,8 +968,14 @@
     Refactoring can make us confident that we start each commit from correct code,
     making it easy to track any bugs we might introduce, and that the code does not
     spend much time (if at all) in a broken state.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 正式来说，*重构*是指在不改变代码外部行为的前提下，改变代码的方式，从而改善其内部结构，澄清其意图和假设的过程（Fowler [2018](#ref-refactoring)）。遵循第
+    [6.5](writing-code.html#versioning) 节，我们通过一系列小增量更改来实现这一目标，每个更改都通过运行我们的测试套件（第 [9.4](troubleshooting-code.html#testing)
+    章节所述）和持续集成工具进行单独验证。在过程结束时，我们可以将所有提交合并在一起，并提交给审查（第 [6.6](writing-code.html#code-review)
+    章节所述），就像我们对其他代码更改所做的那样。我们在添加新功能、改变现有代码的设计以适应它时进行重构。我们在攻击错误时进行重构，既是为了修复它们，也是为了适应测试它们（并确保它们保持修复状态）。我们重构以提高对命名约定（第
+    [6.2](writing-code.html#naming) 节）、编码风格和编码标准的遵守程度。重构可以让我们有信心从正确的代码开始每个提交，这使得跟踪我们可能引入的任何错误变得容易，并且代码不会花费太多时间（如果有的话）处于损坏状态。
 - en: 'Fowler (Fowler [2018](#ref-refactoring)) provides an extensive catalogue of
     refactoring approaches. Depending on the programming language, some can be automated:
     for example, both PyCharm (JetBrains [2022](#ref-pycharm)[b](#ref-pycharm)) and
@@ -793,8 +997,14 @@
     and hiding the raw model parameters and hyperparameters and exposing custom types
     that have a domain meaning to achieve better separation between training and inference
     on one side and general metaheuristics and domain rules on the other.'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 佛勒（Fowler [2018](#ref-refactoring)）提供了一套详尽的重构方法目录。根据编程语言的不同，其中一些可以自动化：例如，PyCharm（JetBrains
+    [2022](#ref-pycharm)[b](#ref-pycharm)）和Visual Studio Code（Microsoft [2022](#ref-vscode)[i](#ref-vscode)）都为Python代码提供了一个“重构”按钮。（这是在选择编程语言时，除了我们在第[6.1](writing-code.html#programming-language)节中讨论的因素外，我们可能还需要考虑的另一个因素。）只有少数几种被广泛用于机器学习代码，而且还有一些专门针对机器学习代码的重构方法：唐等人（Tang
+    et al. [2021](#ref-tang)）通过对机器学习软件的大规模调查构建了这两种方法的分类。机器学习代码只是典型流程中的一小部分，因此掌握佛勒（Fowler
+    [2018](#ref-refactoring)）提出的方法对于解决我们在第[6.3](writing-code.html#coding-standards)节中讨论的代码异味仍然很有价值。另一方面，专门针对机器学习代码的重构方法可以控制我们在第[5.2.4](design-code.html#code-debt)节中涵盖的各种技术债务。唐等人（Tang
+    et al. [2021](#ref-tang)）特别指出三点：使用继承来减少重复的配置和模型代码；改变变量类型和数据结构以允许性能优化（见[3.3](types-structures.html#right-variables)和[3.4](types-structures.html#right-data-structures)节）；以及隐藏原始模型参数和超参数，并暴露具有领域意义的自定义类型，以实现训练和推理在一侧与通用元启发式和领域规则在另一侧之间的更好分离。
 - en: 'There is, however, an additional point that makes the code implementing machine
     learning models inherently different from other code as far as refactoring is
     concerned: we cannot slice and dice it in the process of refactoring it as easily
@@ -823,30 +1033,41 @@
     of the code and the probabilistic behaviour of the inputs and the outputs of the
     model. Property-based testing can help with the latter, as we will discuss in
     Section [9.4.2](troubleshooting-code.html#testing-what).'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，还有一个额外的观点使得实现机器学习模型的代码在重构方面本质上与其他代码不同：我们无法像处理其他代码那样轻松地在重构过程中对其进行切割和分解。一些模型执行单一任务（例如，平滑或预测）并且与其他代码很好地组合，但其他模型是黑盒，它们以使它们无法分割的方式集成多个任务（例如，特征提取和预测）。深度神经网络是这一点的典型例子。即使我们可以将模型及其相关代码重构为良好的子模型，也不能保证我们可以像我们希望的那样更改它们。每个子模型的概率属性是从我们开始的模型继承下来的：我们应该确保我们引入的任何新子模型的概率属性与其他模型兼容。未能做到这一点将产生具有难以诊断和无法纠正的偏差的输出，因为它们缺乏我们通常视为理所当然的数学属性。（对于在现有管道中交换整个模型也是如此。）一个可能明显的例子：我们应该将使用二次损失函数的模型（如大多数线性回归）与在方差和线性相关性上工作的特征选择和提取以及使用相同的二次损失函数在验证集上评估模型的模型选择策略相匹配。如果我们以不保留线性依赖性的方式提取特征，我们可能会丢失模型可以从数据中捕获的信息。如果我们使用与优化时不同的损失函数评估模型，我们最终可能会得到一个脆弱的模型，它在新的数据上容易出错。换句话说，*重构机器学习模型意味着同时重构实现它的代码及其数学公式*。我们希望保留代码的外部行为以及模型的输入和输出的概率行为。基于属性的测试可以帮助我们处理后者，正如我们将在第[9.4.2](troubleshooting-code.html#testing-what)节中讨论的那样。
 - en: '6.8 Reworking Academic Code: An Example'
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 6.8 重构学术代码：一个示例
 - en: Consider the following piece of code used in teaching machine learning to graduate
     students at a top-10 university in the QS rankings (QS Quacquarelli Symonds [2022](#ref-qs)).
     It is fairly representative of what we can find in many GitHub repositories and
     in many answers in Stack Overflow, which end up imported or cut-and-pasted in
     machine learning codebases.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑以下代码片段，它被用于在QS排名前10的顶尖大学（QS Quacquarelli Symonds [2022](#ref-qs)）教授研究生机器学习时使用。它相当典型，反映了我们在许多GitHub仓库和Stack
+    Overflow的许多答案中可以找到的内容，这些内容最终被导入或剪切粘贴到机器学习代码库中。
 - en: '[PRE0]'
+  id: totrans-77
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Guessing what this code is supposed to implement is harder than it should be,
     because functions and variables have nondescript names that mirror some mathematical
     notation. This does not help in itself since there is no comment in the code giving
     a literature reference we could use to look up what the notation is. The only
     hints we have are a comment mentioning mixtures of normals and a variable named
     `MHR`.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 猜测这段代码打算实现什么比应该要难，因为函数和变量有描述性不强的名字，这些名字反映了某些数学符号。这本身并没有帮助，因为代码中没有注释提供文献参考，我们可以用它来查找这些符号的含义。我们唯一有的线索是一个提到正态混合的注释和一个名为`MHR`的变量。
 - en: 'Attending the lecture this code was presented in would tell us that this code
     implements the Metropolis-Hasting algorithm for sampling from a mixture of normals.
     Knowing this, we can give more descriptive names to both functions and variables:
@@ -855,11 +1076,16 @@
     and clarity. We can now guess that `MHR` is the Metropolis-Hastings ratio used
     to accept or reject a new random sample from the mixture. At the same time, we
     can add spacing and indentation to make the code easier to read.'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 参加这个代码被展示的讲座会告诉我们，这个代码实现了从正态混合分布中采样的Metropolis-Hasting算法。了解这一点后，我们可以给函数和变量起更具有描述性的名字：将一些变量命名为它们的*实际标准*表示法（例如，来自Marin和Robert
+    [2014](#ref-robert)），在简洁性和清晰性之间是一种可接受的权衡。现在我们可以猜测`MHR`是用于接受或拒绝从混合分布中抽取的新随机样本的Metropolis-Hastings比率。同时，我们可以添加间距和缩进，使代码更容易阅读。
 - en: '[PRE1]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'We complete this first refactoring step by creating a temporary (local) commit
     and testing it. While better organised and easier to read, this code falls short
     of what it purports to do in two ways: the number of components in the mixture
@@ -874,8 +1100,10 @@
     two components. Furthermore, we do the same for the proposal function that generates
     the new random sample, adding two further arguments `proposal` and `proposal.args`
     to `metropolis.hastings()`.'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过创建一个临时（局部）提交并对其进行测试来完成这个重构步骤。虽然代码组织得更好，更容易阅读，但它有两个方面的不足：混合分布中的组件数量是硬编码为两个，而且密度本身是硬编码为正态分布。现在我们已经将代码组织成函数，我们可以继续到下一个重构步骤：向`metropolis.hastings()`添加两个参数，使用户能够控制混合的定义。我们可以称它们为`density`，即调用混合每个组件的密度函数，以及`density.args`，该函数的附加参数列表。为了保持代码的现有行为，我们将`dmix2norm()`更新为可以处理超过两个组件，同时确保当混合只有两个组件时，其返回值保持不变。此外，我们对生成新随机样本的提议函数也做了同样的处理，向`metropolis.hastings()`添加了两个额外的参数`proposal`和`proposal.args`。
 - en: These changes make the code more flexible and more readable. The functional
     programming approach we have adopted allows us to rewrite `metropolis.hastings()`
     in such a way that it almost looks like pseudocode (Section [4.1](algorithms.html#pseudocode)).
@@ -885,11 +1113,15 @@
     on *why* the code is structured the way it is may of course still be useful, since
     they will contain information that is specific to this particular implementation
     and that cannot be found anywhere else.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些更改使代码更加灵活和易读。我们采用的函数式编程方法允许我们将`metropolis.hastings()`重写，使其几乎看起来像伪代码（第[4.1](algorithms.html#pseudocode)节）。因此，除了引用一本我们可以找到Metropolis-Hastings伪代码和深入解释其如何以及为什么工作的教科书之外，对代码正在做什么的注释需求减少。当然，对代码结构为什么是这样的注释可能仍然有用，因为它们将包含特定于这个特定实现的信息，这些信息在其他地方找不到。
 - en: '[PRE2]'
+  id: totrans-83
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: We create one more temporary commit and test whether the code is still working.
     Finally, we want to make the code more reusable. In order to do that, we store
     the instance of the Metropolis-Hastings simulation we run in `metropolis.hastings()`
@@ -898,319 +1130,498 @@
     generate them, along with the respective argument sets `density.args` and `proposal.args`.
     For convenience, we assign the class name `"metropolis-hastings"` to this data
     structure to be able to write methods for it later.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们再创建一个临时的提交，以测试代码是否仍然正常工作。最后，我们希望使代码更具可重用性。为了实现这一点，我们将运行`metropolis.hastings()`时创建的Metropolis-Hastings模拟实例存储到一个包含我们生成的随机样本以及通过`density`和`proposal`参数传递的函数的数据结构中，同时还包括相应的参数集`density.args`和`proposal.args`。为了方便起见，我们给这个数据结构赋予类名`"metropolis-hastings"`，以便以后为其编写方法。
 - en: '[PRE3]'
+  id: totrans-85
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'If we are satisfied with how the code now looks (or we have other stuff to
     do), we can create one last temporary commit and squash it together with the previous
     two. A suitable commit message for the new commit could be:'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们对代码现在的样子（或者我们有其他事情要做）感到满意，我们可以创建最后一个临时的提交，并将其与之前的两个提交合并。新提交的合适提交信息可以是：
 - en: '[PRE4]'
+  id: totrans-87
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Before submitting this commit for code review, we should write some unit tests
     to exercise the new functional interface of `metropolis.hastings()`. We will discuss
     this topic at length in Chapter [9](troubleshooting-code.html#troubleshooting-code):
     for the moment, let’s say we want to ensure that `metropolis.hastings()` only
     accepts valid values for all its arguments. For this purpose, we add code to sanitise
     them and to produce informative error messages along the lines of'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 在提交此提交进行代码审查之前，我们应该编写一些单元测试来测试`metropolis.hastings()`的新功能接口。我们将在第[9](troubleshooting-code.html#troubleshooting-code)章详细讨论这个话题：目前，让我们说我们想要确保`metropolis.hastings()`只接受所有参数的有效值。为此，我们添加了清理它们的代码，并生成类似以下的信息性错误消息
 - en: '[PRE5]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: and then we add tests to check that valid values are accepted and invalid values
     are rejected.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们添加测试来检查有效值是否被接受，无效值是否被拒绝。
 - en: '[PRE6]'
+  id: totrans-91
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'We should do the same for the function passed via the `proposal` argument.
     Furthermore, we should call both functions with the respective lists of optional
     arguments `density.args` and `proposal.args` to make sure that they execute successfully:
     individual argument values may look fine in isolation, but make `metropolis.hastings()`
     fail when passed together. As an example, the code to sanitise `proposal.args`
     may look like'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该对通过`proposal`参数传递的函数做同样的事情。此外，我们应该使用相应的可选参数列表`density.args`和`proposal.args`调用这两个函数，以确保它们能够成功执行：单个参数值可能单独看起来很好，但将它们一起传递给`metropolis.hastings()`可能会导致失败。例如，清理`proposal.args`的代码可能看起来像这样
 - en: '[PRE7]'
+  id: totrans-93
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: where we set `proposal.args` to an empty list as a fallback, default choice
     if the user does not provide it. The code to sanitise both `proposal` and `proposal.args`
     can then check that the `proposal` function runs and that its output has the right
     type and dimension.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中我们将`proposal.args`设置为空列表作为后备，默认选择，如果用户没有提供它。然后，清理`proposal`和`proposal.args`的代码可以检查`proposal`函数是否运行，以及其输出是否具有正确的类型和维度。
 - en: '[PRE8]'
+  id: totrans-95
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: The tests that exercise this code should call `metropolis.hastings()` with and
     without valid proposal functions, and with proposal functions with valid and invalid
     sets of optional arguments.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 测试此代码的测试应该使用有效和无效的提案函数，以及带有有效和无效可选参数集的提案函数调用`metropolis.hastings()`。
 - en: As another example, we should check the number of iterations in the `iter` argument,
     picking again a sensible default value.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为另一个例子，我们应该检查`iter`参数中的迭代次数，再次选择一个合理的默认值。
 - en: '[PRE9]'
+  id: totrans-98
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: The corresponding software tests can then try boundary values (`0`), valid values
     (`10`), invalid values (`Inf`) and special values (`NaN`) to confirm that the
     sanitisation code is working as expected.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 相应的软件测试可以尝试边界值（`0`）、有效值（`10`）、无效值（`Inf`）和特殊值（`NaN`），以确认清理代码按预期工作。
 - en: '[PRE10]'
+  id: totrans-100
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'The sanitisation code should be included in one commit, and the tests in another:
     they will be in different files and have different purposes, so it would be inappropriate
     to commit them together. After doing that, our new implementation of Metropolis-Hastings
     is ready to be submitted for code review.'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 清理代码应该包含在一个提交中，而测试代码则放在另一个提交中：它们将位于不同的文件中，具有不同的目的，因此将它们一起提交是不合适的。完成这些后，我们新的Metropolis-Hastings实现就准备好提交进行代码审查了。
 - en: References
+  id: totrans-102
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: Alam, S., L. Bălan, N. L. Chan, G. Comym, Y. Dada, I. Danov, L. Hoang, et al.
     2022\. *Kedro*. [https://github.com/kedro-org/kedro](https://github.com/kedro-org/kedro).
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: Alam, S., L. Bălan, N. L. Chan, G. Comym, Y. Dada, I. Danov, L. Hoang, et al.
+    2022\. *Kedro*. [https://github.com/kedro-org/kedro](https://github.com/kedro-org/kedro).
 - en: 'Arisholm, E., H. Gallis, T. Dybå, and D. I. K. Sjøberg. 2007\. “Evaluating
     Pair Programming with Respect to System Complexity and Programmer Expertise.”
     *IEEE Transactions on Software Engineering* 33 (2): 5–86.'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Arisholm, E., H. Gallis, T. Dybå, and D. I. K. Sjøberg. 2007\. “Evaluating
+    Pair Programming with Respect to System Complexity and Programmer Expertise.”
+    *IEEE Transactions on Software Engineering* 33 (2): 5–86.'
 - en: 'Ayer, A. 2022\. *git-crypt: Transparent File Encryption in Git*. [https://github.com/AGWA/git-crypt](https://github.com/AGWA/git-crypt).'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Ayer, A. 2022\. *git-crypt: Transparent File Encryption in Git*. [https://github.com/AGWA/git-crypt](https://github.com/AGWA/git-crypt).'
 - en: 'Bezanson, J., S. Karpinski, V. B. Shah, and et al. 2022\. *Style Guide: The
     Julia Language*. [https://docs.julialang.org/en/v1/manual/style-guide/index.html](https://docs.julialang.org/en/v1/manual/style-guide/index.html).'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Bezanson, J., S. Karpinski, V. B. Shah, and et al. 2022\. *Style Guide: The
+    Julia Language*. [https://docs.julialang.org/en/v1/manual/style-guide/index.html](https://docs.julialang.org/en/v1/manual/style-guide/index.html).'
 - en: 'Blagotic, A., D. Valle-Jones, J. Breen, J. Lundborg, J. M. White, J. Bode,
     K. White, et al. 2021\. *ProjectTemplate: Automates the Creation of New Statistical
     Analysis Projects*. [https://cran.r-project.org/web/packages/ProjectTemplate/](https://cran.r-project.org/web/packages/ProjectTemplate/).'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Blagotic, A., D. Valle-Jones, J. Breen, J. Lundborg, J. M. White, J. Bode,
+    K. White, et al. 2021\. *ProjectTemplate: Automates the Creation of New Statistical
+    Analysis Projects*. [https://cran.r-project.org/web/packages/ProjectTemplate/](https://cran.r-project.org/web/packages/ProjectTemplate/).'
 - en: CRAN Team. 2022\. *The Comprehensive R Archive Network*. [https://cran.r-project.org/](https://cran.r-project.org/).
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: CRAN Team. 2022\. *The Comprehensive R Archive Network*. [https://cran.r-project.org/](https://cran.r-project.org/).
 - en: 'de Lima Salge, C. A., and N. Berente. 2016\. “Pair Programming vs. Solo Programming:
     What Do We Know After 15 Years of Research?” In *Proceedings of the Annual Hawaii
     International Conference on System Sciences*, 5398–5406.'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 'de Lima Salge, C. A., and N. Berente. 2016\. “Pair Programming vs. Solo Programming:
+    What Do We Know After 15 Years of Research?” In *Proceedings of the Annual Hawaii
+    International Conference on System Sciences*, 5398–5406.'
 - en: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
 - en: 'Duvall, P. M., S. Matyas, and A. Glover. 2007\. *Continuous Integration: Improving
     Software Quality and Reducing Risk*. Addison-Wesley.'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Duvall, P. M., S. Matyas, and A. Glover. 2007\. *Continuous Integration: Improving
+    Software Quality and Reducing Risk*. Addison-Wesley.'
 - en: 'Fowler, M. 2018\. *Refactoring: Improving the Design of Existing Code*. 2nd
     ed. Addison-Wesley.'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Fowler, M. 2018\. *Refactoring: Improving the Design of Existing Code*. 2nd
+    ed. Addison-Wesley.'
 - en: Google. 2022d. *Google Python Style Guide*. [https://google.github.io/styleguide/pyguide.html](https://google.github.io/styleguide/pyguide.html).
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: Google. 2022d. *Google Python Style Guide*. [https://google.github.io/styleguide/pyguide.html](https://google.github.io/styleguide/pyguide.html).
 - en: 'Google. 2022e. *repo: The Multiple Git Repository Tool*. [https://github.com/GerritCodeReview/git-repo](https://github.com/GerritCodeReview/git-repo).'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Google. 2022e. *repo: The Multiple Git Repository Tool*. [https://github.com/GerritCodeReview/git-repo](https://github.com/GerritCodeReview/git-repo).'
 - en: Greenfeld, A. R. 2022\. *Cookiecutter Data Science*. [https://drivendata.github.io/cookiecutter-data-science/](https://drivendata.github.io/cookiecutter-data-science/).
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: Greenfeld, A. R. 2022\. *Cookiecutter Data Science*. [https://drivendata.github.io/cookiecutter-data-science/](https://drivendata.github.io/cookiecutter-data-science/).
 - en: Grotov, K., S. Titov, V. Sotnikov, Y. Golubev, and T. Bryksin. 2022\. “A Large-Scale
     Comparison of Python Code in Jupyter Notebooks and Scripts.” In *Proceedings of
     the 19th Working Conference on Mining Software Repositories*, 1–12.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: Grotov, K., S. Titov, V. Sotnikov, Y. Golubev, and T. Bryksin. 2022\. “A Large-Scale
+    Comparison of Python Code in Jupyter Notebooks and Scripts.” In *Proceedings of
+    the 19th Working Conference on Mining Software Repositories*, 1–12.
 - en: Hammant, P. 2020\. *Trunk Based Development*. [https://trunkbaseddevelopment.com/](https://trunkbaseddevelopment.com/).
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: Hammant, P. 2020\. *Trunk Based Development*. [https://trunkbaseddevelopment.com/](https://trunkbaseddevelopment.com/).
 - en: 'Jacek, C., M. Greiler, C. Bird, L. Panjer, and T. Coatta. 2018\. “CodeFlow:
     Improving the Code Review Process at Microsoft.” *ACM Queue* 6 (5): 1–20.'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Jacek, C., M. Greiler, C. Bird, L. Panjer, and T. Coatta. 2018\. “CodeFlow:
+    Improving the Code Review Process at Microsoft.” *ACM Queue* 6 (5): 1–20.'
 - en: JetBrains. 2022b. *PyCharm*. [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/).
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: JetBrains. 2022b. *PyCharm*. [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/).
 - en: 'JuliaLang. 2022\. *Pkg: Package Manager for the Julia Programming Language*.
     [https://pkgdocs.julialang.org/v1/](https://pkgdocs.julialang.org/v1/).'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 'JuliaLang. 2022\. *Pkg: Package Manager for the Julia Programming Language*.
+    [https://pkgdocs.julialang.org/v1/](https://pkgdocs.julialang.org/v1/).'
 - en: Kernigham, B. W., and R. Pike. 1999\. *The Practice of Programming*. Addison-Wesley.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: Kernigham, B. W., and R. Pike. 1999\. *The Practice of Programming*. Addison-Wesley.
 - en: Kriasoft. 2016\. *Folder Structure Conventions*. [https://github.com/kriasoft/Folder-Structure-Conventions](https://github.com/kriasoft/Folder-Structure-Conventions).
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: Kriasoft。 2016\. *文件夹结构约定*。[https://github.com/kriasoft/Folder-Structure-Conventions](https://github.com/kriasoft/Folder-Structure-Conventions)。
 - en: Linux Kernel Organization. 2022\. *The Linux Kernel Archives*. [https://kernel.org/](https://kernel.org/).
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: Linux内核组织。 2022\. *Linux内核存档*。[https://kernel.org/](https://kernel.org/).
 - en: Lopes, C. V. 2020\. *Exercises in Programming Style*. CRC Press.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: Lopes, C. V. 2020\. *编程风格练习*。 CRC出版社。
 - en: Marin, J.-M., and C. P. Robert. 2014\. *Bayesian Essentials with R*. 2nd ed.
     Springer.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: Marin, J.-M.，和 C. P. Robert。 2014\. *使用R的贝叶斯基础*。 第2版。 Springer。
 - en: 'Microsoft. 2022i. *Visual Studio Code: Code Editing, Redefined*. [https://code.visualstudio.com/](https://code.visualstudio.com/).'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 微软。 2022i. *Visual Studio Code：代码编辑，重新定义*。[https://code.visualstudio.com/](https://code.visualstudio.com/).
 - en: Nature. 2016\. “Reality Check on Reproducibility.” *Nature* 533 (437).
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然。 2016\. “关于可重复性的现实检验。” *自然* 533 (437)。
 - en: Ousterhout, J. 2018\. *A Philosophy of Software Design*. Yaknyam Press.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: Ousterhout, J. 2018\. *软件设计哲学*。 Yaknyam出版社。
 - en: Popescu, M. 2019\. *Pair Programming Explained*. [https://shopify.engineering/pair-programming-explained](https://shopify.engineering/pair-programming-explained).
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: Popescu, M. 2019\. *结对编程解释*。[https://shopify.engineering/pair-programming-explained](https://shopify.engineering/pair-programming-explained)。
 - en: 'Potvin, R., and J. Levenberg. 2016\. “Why Google Stores Billions of Lines of
     Code in a Single Repository.” *Communications of the ACM* 59 (7): 78–87.'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Potvin, R., and J. Levenberg. 2016\. “为什么谷歌将数十亿行代码存储在单个仓库中。” *ACM通讯* 59 (7):
+    78–87。'
 - en: Preston-Werner, T. 2022\. *Semantic Versioning*. [https://semver.org/](https://semver.org/).
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: Preston-Werner, T. 2022\. *语义版本控制*。[https://semver.org/](https://semver.org/).
 - en: Project Jupyter. 2022\. *Jupyter*. [https://jupyter.org/](https://jupyter.org/).
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: Project Jupyter。 2022\. *Jupyter*。[https://jupyter.org/](https://jupyter.org/).
 - en: 'Python Software Foundation. 2022a. *PyPI: The Python Package Index*. [https://pypi.org/](https://pypi.org/).'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: Python软件基金会。 2022a. *PyPI：Python包索引*。[https://pypi.org/](https://pypi.org/).
 - en: QS Quacquarelli Symonds. 2022\. *QS World University Rankings*. [https://www.topuniversities.com/qs-world-university-rankings](https://www.topuniversities.com/qs-world-university-rankings).
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: QS Quacquarelli Symonds。 2022\. *QS世界大学排名*。[https://www.topuniversities.com/qs-world-university-rankings](https://www.topuniversities.com/qs-world-university-rankings)。
 - en: Quest, K. 2022\. *Standard Go Project Layout*. [https://github.com/golang-standards/project-layout](https://github.com/golang-standards/project-layout).
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: Quest, K. 2022\. *标准Go项目布局*。[https://github.com/golang-standards/project-layout](https://github.com/golang-standards/project-layout)。
 - en: Rigby, P., and C. Bird. 2013\. “Convergent Contemporary Software Peer Review
     Practices.” In *Proceedings of the 9th Joint Meeting of the European Software
     Engineering Conference and the ACM SIGSOFT Symposium on the Foundations of Software
     Engineering*, 202–12.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: Rigby, P., and C. Bird. 2013\. “趋同的当代软件同行评审实践。” 在 *第9届欧洲软件工程会议与ACM SIGSOFT软件工程基础研讨会联合会议论文集中*，202–12。
 - en: 'Sadowski, C., E. Söderberg, L. Church, M. Sipko, and A. Bacchelli. 2018\. “Modern
     Code Review: A Case Study at Google.” In *Proceedings of the 40th International
     Conference on Software Engineering: Software Engineering in Practice*, 181–90.'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: Sadowski, C., E. Söderberg, L. Church, M. Sipko, and A. Bacchelli. 2018\. “现代代码审查：谷歌的案例研究。”
+    在 *第40届国际软件工程会议：软件工程实践* 会议论文集中，181–90页。
 - en: Saltz, J. S., and I. Shamshurin. 2017\. “Does Pair Programming Work in a Data
     Science Context? An Initial Case Study.” In *Proceedings of the IEEE International
     Conference on Big Data*, 2348–54.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: Saltz, J. S., and I. Shamshurin. 2017\. “在数据科学背景下结对编程是否有效？初步案例研究。” 在 *IEEE国际大数据会议论文集中*，2348–54。
 - en: Sculley, D., G. Holt, D. Golovin, E. Davydov, T. Phillips, D. Ebner, V. Chaudhary,
     M. Young, J.-F. Crespo, and D. Dennison. 2015\. “Hidden Technical Debt in Machine
     Learning Systems.” In *Proceedings of the 28th International Conference on Neural
     Information Processing Systems (NIPS)*, 2:2503–11.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: Sculley, D., G. Holt, D. Golovin, E. Davydov, T. Phillips, D. Ebner, V. Chaudhary,
+    M. Young, J.-F. Crespo, and D. Dennison. 2015\. “机器学习系统中的隐藏技术债务。” 在 *第28届国际神经网络信息处理系统（NIPS）会议论文集中*，2:2503–11。
 - en: 'Shiraishi, M., H. Washizaki, Y. Fukazawa, and J. Yoder. 2019\. “Mob Programming:
     A Systematic Literature Review.” In *Proceedings of the IEEE 43rd Annual Computer
     Software and Applications Conference*, 616–21.'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: Shiraishi, M., H. Washizaki, Y. Fukazawa, and J. Yoder. 2019\. “团队编程：系统文献综述。”
+    在 *IEEE第43届年度计算机软件与应用会议论文集中*，616–21。
 - en: Simmons, A. J., S. Barnett, J. Rivera-Villicana, A. Bajaj, and R. Vasa. 2020\.
     “A Large-Scale Comparative Analysis of Coding Standard Conformance in Open-Source
     Data Science Projects.” In *Proceedings of the 14th ACM / IEEE International Symposium
     on Empirical Software Engineering and Measurement (ESEM)*, 1–11.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: Simmons, A. J., S. Barnett, J. Rivera-Villicana, A. Bajaj, and R. Vasa. 2020\.
+    “开源数据科学项目中编码标准符合性的大规模比较分析.” 在 *第14届ACM / IEEE经验软件工程和度量国际研讨会论文集*，1–11.
 - en: Swoboda, S. 2021\. *Connecting with Mob Programming*. [https://shopify.engineering/mob-programming](https://shopify.engineering/mob-programming).
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: Swoboda, S. 2021\. *与团队编程连接*. [https://shopify.engineering/mob-programming](https://shopify.engineering/mob-programming).
 - en: Tang, Y., R. Khatchadouriant, M. Bagherzadeh, R. Singh, A. Stewart, and A. Raja.
     2021\. “An Empirical Study of Refactorings and Technical Debt in Machine Learning
     Systems.” In *Proceedings of the 2021 IEEE/ACM 43rd International Conference on
     Software Engineering*, 238–50.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: Tang, Y., R. Khatchadouriant, M. Bagherzadeh, R. Singh, A. Stewart, and A. Raja.
+    2021\. “机器学习系统中重构和技术债务的实证研究.” 在 *2021年IEEE/ACM第43届国际软件工程会议论文集*，238–50.
 - en: Tatman, R., J. VanderPlas, and S. Dane. 2018\. “A Practical Taxonomy of Reproducibility
     for Machine Learning Research.” In *Proceedings of 2nd the Reproducibility in
     Machine Learning Workshop at ICML 2018*.
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: Tatman, R., J. VanderPlas, and S. Dane. 2018\. “机器学习研究可重复性的实用分类.” 在 *2018年ICML第二次机器学习可重复性研讨会论文集*.
 - en: The Git Development Team. 2022\. *Git Source Code Mirror*. [https://github.com/git/git](https://github.com/git/git).
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: Git开发团队. 2022\. *Git源代码镜像*. [https://github.com/git/git](https://github.com/git/git).
 - en: The Kubernetes Authors. 2022a. *Kubernetes*. [https://kubernetes.io/](https://kubernetes.io/).
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: Kubernetes作者. 2022a. *Kubernetes*. [https://kubernetes.io/](https://kubernetes.io/).
 - en: 'Thomas, D., and A. Hunt. 2019\. *The Pragmatic Programmer: Your Journey to
     Mastery*. Anniversary. Addison-Wesley.'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: Thomas, D., and A. Hunt. 2019\. *实用程序员：您的精通之旅*. 周年纪念版. Addison-Wesley.
 - en: Tian, Y., Y. Zhang, K.-J. Stol, L. Jiang, and H. Liu. 2022\. “What Makes a Good
     Commit Message?” In *Proceedings of the 44th International Conference on Software
     Engineering*, 1–13.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: Tian, Y., Y. Zhang, K.-J. Stol, L. Jiang, and H. Liu. 2022\. “什么使一个好的提交信息？”
+    在 *第44届国际软件工程会议论文集*，1–13.
 - en: 'Tornhill, A., and M. Borg. 2022\. “Code Red: The Business Impact of Code Quality:
     A Quantitative Study of 39 Proprietary Production Codebases.” In *Proceedings
     of International Conference on Technical Debt*, 1–10.'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: Tornhill, A., and M. Borg. 2022\. “代码红色：代码质量对业务的影响：对39个专有生产代码库的定量研究.” 在 *国际技术债务会议论文集*，1–10.
 - en: Toro, A. L. 2020\. *Great Code Reviews–the Superpower Your Team Needs*. [https://shopify.engineering/great-code-reviews](https://shopify.engineering/great-code-reviews).
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: Toro, A. L. 2020\. *优秀的代码审查–团队需要的超级力量*. [https://shopify.engineering/great-code-reviews](https://shopify.engineering/great-code-reviews).
 - en: 'Uber. 2022\. *Piranha: A Tool for Refactoring Code Related to Feature Flag
     APIs*. [https://github.com/uber/piranha](https://github.com/uber/piranha).'
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: Uber. 2022\. *Piranha：用于重构与功能标志API相关的代码的工具*. [https://github.com/uber/piranha](https://github.com/uber/piranha).
 - en: 'van Oort, B., L. Cruz, M. Aniche, and A. van Deursen. 2021\. “The Prevalence
     of Code Smells in Machine Learning Projects.” In *Proceedings of the 2021 IEEE/ACM
     1st Workshop on AI Engineering: Software Engineering for AI*, 35–42.'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: van Oort, B., L. Cruz, M. Aniche, and A. van Deursen. 2021\. “机器学习项目中代码恶臭的普遍性.”
+    在 *2021年IEEE/ACM第一次人工智能工程研讨会：人工智能的软件工程*，35–42.
 - en: 'van Rossum, G., B. Warsaw, and N. Coghlan. 2001\. *PEP 8: Style Guide for Python
     Code*. [https://peps.python.org/pep-0008/](https://peps.python.org/pep-0008/).'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 'van Rossum, G., B. Warsaw, and N. Coghlan. 2001\. *PEP 8: Python代码风格指南*. [https://peps.python.org/pep-0008/](https://peps.python.org/pep-0008/).'
 - en: 'Walters, M., and P. Lee Scott. 2021\. *meta-git: Manage Your Meta Repo and
     Child Git Repositories*. [https://www.npmjs.com/package/meta-git](https://www.npmjs.com/package/meta-git).'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Walters, M., and P. Lee Scott. 2021\. *meta-git: 管理您的元仓库和子Git仓库*. [https://www.npmjs.com/package/meta-git](https://www.npmjs.com/package/meta-git).'
 - en: Wickham, H. 2022b. *The tidyverse Style Guide*. [https://style.tidyverse.org/](https://style.tidyverse.org/).
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: Wickham, H. 2022b. *tidyverse风格指南*. [https://style.tidyverse.org/](https://style.tidyverse.org/).
 - en: Wiggins, A. 2017\. *The Twelve Factor App*. [https://12factor.net](https://12factor.net).
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: Wiggins, A. 2017\. *十二要素应用*. [https://12factor.net](https://12factor.net).
 - en: 'Williams, L., R. R. Kessler, and W. Cunningham. 2000\. “Strengthening the Case
     for Pair Programming.” *IEEE Software* 17 (4): 19–25.'
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Williams, L., R. R. Kessler, and W. Cunningham. 2000\. “加强结对编程的案例.” *IEEE软件*
+    17 (4): 19–25.'
 - en: 'Zhang, H., L. Cruz, and A. van Deursen. 2022\. “Code Smells for Machine Learning
     Applications.” In *Proceedings of the 1st International Conference on AI Engineering:
     Software Engineering for AI*, 1–12.'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 张，H.，克鲁兹，L.，范德尔斯，A. van Deursen. 2022. “面向机器学习应用的代码异味.” 见 *《第1届国际人工智能工程会议：人工智能的软件工程》论文集*，1–12页。
 - en: '* * *'
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: A REPL (“Read-Eval-Print Loop”) is an interactive programming environment where
     the user can write code statements that are instantly evaluated and whose outputs
     are returned to the user. They are invaluable to run software piecewise and understand
     the behaviour of its components.[↩︎](writing-code.html#fnref14)
+  id: totrans-160
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: REPL（“读取-评估-打印循环”）是一个交互式编程环境，用户可以编写代码语句，这些语句会被立即评估，并且输出结果会返回给用户。它们对于分步骤运行软件和理解其组件的行为非常有价值。[↩︎](writing-code.html#fnref14)
 - en: 'Many technical terms have completely different meanings in software engineering:
     consider “test” (statistical test vs unit test), “regression” (the statistical
     model vs adversely affecting existing software functionality) or “feature” (a
     variable in a data set vs a distinguishing characteristic of a piece of software).
     Similar conflicts may happen with the terminology from other domains as well.[↩︎](writing-code.html#fnref15)'
+  id: totrans-161
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在软件工程中，许多技术术语具有完全不同的含义：例如，“测试”（统计测试与单元测试）、“回归”（统计模型与对现有软件功能产生不利影响）或“特性”（数据集中的变量与软件的一个区分特征）。类似的问题也可能出现在其他领域的术语中。[↩︎](writing-code.html#fnref15)
