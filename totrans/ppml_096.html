@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Async-aware primitives</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Async-aware primitives</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/08_futures/06_async_aware_primitives.html">https://rust-exercises.com/100-exercises/08_futures/06_async_aware_primitives.html</a></blockquote>
+                        
+<p>If you browse <code>tokio</code>'s documentation, you'll notice that it provides a lot of types
+that "mirror" the ones in the standard library, but with an asynchronous twist:
+locks, channels, timers, and more.</p>
+<p>When working in an asynchronous context, you should prefer these asynchronous alternatives
+to their synchronous counterparts.</p>
+<p>To understand why, let's take a look at <code>Mutex</code>, the mutually exclusive lock we explored
+in the previous chapter.</p>
+<h2 id="case-study-mutex"><a class="header" href="#case-study-mutex">Case study: <code>Mutex</code></a></h2>
+<p>Let's look at a simple example:</p>
+<pre><code class="language-rust">use std::sync::{Arc, Mutex};
+
+async fn run(m: Arc&lt;Mutex&lt;Vec&lt;u64&gt;&gt;&gt;) {
+    let guard = m.lock().unwrap();
+    http_call(&amp;guard).await;
+    println!("Sent {:?} to the server", &amp;guard);
+    // `guard` is dropped here
+}
+
+/// Use `v` as the body of an HTTP call.
+async fn http_call(v: &amp;[u64]) {
+  // [...]
+}</code></pre>
+<h3 id="stdsyncmutexguard-and-yield-points"><a class="header" href="#stdsyncmutexguard-and-yield-points"><code>std::sync::MutexGuard</code> and yield points</a></h3>
+<p>This code will compile, but it's dangerous.</p>
+<p>We try to acquire a lock over a <code>Mutex</code> from <code>std</code> in an asynchronous context.
+We then hold on to the resulting <code>MutexGuard</code> across a yield point (the <code>.await</code> on
+<code>http_call</code>).</p>
+<p>Let's imagine that there are two tasks executing <code>run</code>, concurrently, on a single-threaded
+runtime. We observe the following sequence of scheduling events:</p>
+<pre><code class="language-text">     Task A          Task B
+        | 
+  Acquire lock
+Yields to runtime
+        | 
+        +--------------+
+                       |
+             Tries to acquire lock
+</code></pre>
+<p>We have a deadlock. Task B will never manage to acquire the lock, because the lock
+is currently held by task A, which has yielded to the runtime before releasing the
+lock and won't be scheduled again because the runtime cannot preempt task B.</p>
+<h3 id="tokiosyncmutex"><a class="header" href="#tokiosyncmutex"><code>tokio::sync::Mutex</code></a></h3>
+<p>You can solve the issue by switching to <code>tokio::sync::Mutex</code>:</p>
+<pre><code class="language-rust">use std::sync::Arc;
+use tokio::sync::Mutex;
+
+async fn run(m: Arc&lt;Mutex&lt;Vec&lt;u64&gt;&gt;&gt;) {
+    let guard = m.lock().await;
+    http_call(&amp;guard).await;
+    println!("Sent {:?} to the server", &amp;guard);
+    // `guard` is dropped here
+}</code></pre>
+<p>Acquiring the lock is now an asynchronous operation, which yields back to the runtime
+if it can't make progress.<br/>
+Going back to the previous scenario, the following would happen:</p>
+<pre><code class="language-text">       Task A          Task B
+          | 
+  Acquires the lock
+  Starts `http_call`
+  Yields to runtime
+          | 
+          +--------------+
+                         |
+             Tries to acquire the lock
+              Cannot acquire the lock
+                 Yields to runtime
+                         |
+          +--------------+
+          |
+`http_call` completes      
+  Releases the lock
+   Yield to runtime
+          |
+          +--------------+
+                         |
+                 Acquires the lock
+                       [...]
+</code></pre>
+<p>All good!</p>
+<h3 id="multithreaded-wont-save-you"><a class="header" href="#multithreaded-wont-save-you">Multithreaded won't save you</a></h3>
+<p>We've used a single-threaded runtime as the execution context in our
+previous example, but the same risk persists even when using a multithreaded
+runtime.<br/>
+The only difference is in the number of concurrent tasks required to create the deadlock:
+in a single-threaded runtime, 2 are enough; in a multithreaded runtime, we
+would need <code>N+1</code> tasks, where <code>N</code> is the number of runtime threads.</p>
+<h3 id="downsides"><a class="header" href="#downsides">Downsides</a></h3>
+<p>Having an async-aware <code>Mutex</code> comes with a performance penalty.<br/>
+If you're confident that the lock isn't under significant contention
+<em>and</em> you're careful to never hold it across a yield point, you can
+still use <code>std::sync::Mutex</code> in an asynchronous context.</p>
+<p>But weigh the performance benefit against the liveness risk you
+will incur.</p>
+<h2 id="other-primitives"><a class="header" href="#other-primitives">Other primitives</a></h2>
+<p>We used <code>Mutex</code> as an example, but the same applies to <code>RwLock</code>, semaphores, etc.<br/>
+Prefer async-aware versions when working in an asynchronous context to minimise
+the risk of issues.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/08_futures/06_async_aware_primitives"><code>08_futures/06_async_aware_primitives</code></a></p>
+
+                        
+</body>
+</html>

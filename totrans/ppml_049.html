@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Unwrapping</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Unwrapping</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/05_ticket_v2/07_unwrap.html">https://rust-exercises.com/100-exercises/05_ticket_v2/07_unwrap.html</a></blockquote>
+                        
+<p><code>Ticket::new</code> now returns a <code>Result</code> instead of panicking on invalid inputs.<br/>
+What does this mean for the caller?</p>
+<h2 id="failures-cant-be-implicitly-ignored"><a class="header" href="#failures-cant-be-implicitly-ignored">Failures can't be (implicitly) ignored</a></h2>
+<p>Unlike exceptions, Rust's <code>Result</code> forces you to <strong>handle errors at the call site</strong>.<br/>
+If you call a function that returns a <code>Result</code>, Rust won't allow you to implicitly ignore the error case.</p>
+<pre><code class="language-rust">fn parse_int(s: &amp;str) -&gt; Result&lt;i32, ParseIntError&gt; {
+    // ...
+}
+
+// This won't compile: we're not handling the error case.
+// We must either use `match` or one of the combinators provided by 
+// `Result` to "unwrap" the success value or handle the error.
+let number = parse_int("42") + 2;</code></pre>
+<h2 id="you-got-a-result-now-what"><a class="header" href="#you-got-a-result-now-what">You got a <code>Result</code>. Now what?</a></h2>
+<p>When you call a function that returns a <code>Result</code>, you have two key options:</p>
+<ul>
+<li>Panic if the operation failed.
+This is done using either the <code>unwrap</code> or <code>expect</code> methods.
+<pre><code class="language-rust">// Panics if `parse_int` returns an `Err`.
+let number = parse_int("42").unwrap();
+// `expect` lets you specify a custom panic message.
+let number = parse_int("42").expect("Failed to parse integer");</code></pre>
+</li>
+<li>Destructure the <code>Result</code> using a <code>match</code> expression to deal with the error case explicitly.
+<pre><code class="language-rust">match parse_int("42") {
+    Ok(number) =&gt; println!("Parsed number: {}", number),
+    Err(err) =&gt; eprintln!("Error: {}", err),
+}</code></pre>
+</li>
+</ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/05_ticket_v2/07_unwrap"><code>05_ticket_v2/07_unwrap</code></a></p>
+
+                        
+</body>
+</html>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Runtime architecture</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Runtime architecture</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/08_futures/03_runtime.html">https://rust-exercises.com/100-exercises/08_futures/03_runtime.html</a></blockquote>
+                        
+<p>So far we've been talking about async runtimes as an abstract concept.
+Let's dig a bit deeper into the way they are implemented—as you'll see soon enough,
+it has an impact on our code.</p>
+<h2 id="flavors"><a class="header" href="#flavors">Flavors</a></h2>
+<p><code>tokio</code> ships two different runtime <em>flavors</em>.</p>
+<p>You can configure your runtime via <code>tokio::runtime::Builder</code>:</p>
+<ul>
+<li><code>Builder::new_multi_thread</code> gives you a <strong>multithreaded <code>tokio</code> runtime</strong></li>
+<li><code>Builder::new_current_thread</code> will instead rely on the <strong>current thread</strong> for execution.</li>
+</ul>
+<p><code>#[tokio::main]</code> returns a multithreaded runtime by default, while
+<code>#[tokio::test]</code> uses a current thread runtime out of the box.</p>
+<h3 id="current-thread-runtime"><a class="header" href="#current-thread-runtime">Current thread runtime</a></h3>
+<p>The current-thread runtime, as the name implies, relies exclusively on the OS thread
+it was launched on to schedule and execute tasks.<br/>
+When using the current-thread runtime, you have <strong>concurrency</strong> but no <strong>parallelism</strong>:
+asynchronous tasks will be interleaved, but there will always be at most one task running
+at any given time.</p>
+<h3 id="multithreaded-runtime"><a class="header" href="#multithreaded-runtime">Multithreaded runtime</a></h3>
+<p>When using the multithreaded runtime, instead, there can be up to <code>N</code> tasks running
+<em>in parallel</em> at any given time, where <code>N</code> is the number of threads used by the
+runtime. By default, <code>N</code> matches the number of available CPU cores.</p>
+<p>There's more: <code>tokio</code> performs <strong>work-stealing</strong>.<br/>
+If a thread is idle, it won't wait around: it'll try to find a new task that's ready for
+execution, either from a global queue or by stealing it from the local queue of another
+thread.<br/>
+Work-stealing can have significant performance benefits, especially on tail latencies,
+whenever your application is dealing with workloads that are not perfectly balanced
+across threads.</p>
+<h2 id="implications"><a class="header" href="#implications">Implications</a></h2>
+<p><code>tokio::spawn</code> is flavor-agnostic: it'll work no matter if you're running on the multithreaded
+or current-thread runtime. The downside is that the signature assumes the worst case
+(i.e. multithreaded) and is constrained accordingly:</p>
+<pre><code class="language-rust">pub fn spawn&lt;F&gt;(future: F) -&gt; JoinHandle&lt;F::Output&gt;
+where
+    F: Future + Send + 'static,
+    F::Output: Send + 'static,
+{ /* */ }</code></pre>
+<p>Let's ignore the <code>Future</code> trait for now to focus on the rest.<br/>
+<code>spawn</code> is asking all its inputs to be <code>Send</code> and have a <code>'static</code> lifetime.</p>
+<p>The <code>'static</code> constraint follows the same rationale of the <code>'static</code> constraint
+on <code>std::thread::spawn</code>: the spawned task may outlive the context it was spawned
+from, therefore it shouldn't depend on any local data that may be de-allocated
+after the spawning context is destroyed.</p>
+<pre><code class="language-rust">fn spawner() {
+    let v = vec![1, 2, 3];
+    // This won't work, since `&amp;v` doesn't
+    // live long enough.
+    tokio::spawn(async { 
+        for x in &amp;v {
+            println!("{x}")
+        }
+    })
+}</code></pre>
+<p><code>Send</code>, on the other hand, is a direct consequence of <code>tokio</code>'s work-stealing strategy:
+a task that was spawned on thread <code>A</code> may end up being moved to thread <code>B</code> if that's idle,
+thus requiring a <code>Send</code> bound since we're crossing thread boundaries.</p>
+<pre><code class="language-rust">fn spawner(input: Rc&lt;u64&gt;) {
+    // This won't work either, because
+    // `Rc` isn't `Send`.
+    tokio::spawn(async move {
+        println!("{}", input);
+    })
+}</code></pre>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/08_futures/03_runtime"><code>08_futures/03_runtime</code></a></p>
+
+                        
+</body>
+</html>

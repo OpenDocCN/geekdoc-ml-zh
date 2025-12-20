@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Locks, Send and Arc</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Locks, Send and Arc</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/07_threads/11_locks.html">https://rust-exercises.com/100-exercises/07_threads/11_locks.html</a></blockquote>
+                        
+<p>The patching strategy you just implemented has a major drawback: it's racy.<br/>
+If two clients send patches for the same ticket roughly at same time, the server will apply them in an arbitrary order.
+Whoever enqueues their patch last will overwrite the changes made by the other client.</p>
+<h2 id="version-numbers"><a class="header" href="#version-numbers">Version numbers</a></h2>
+<p>We could try to fix this by using a <strong>version number</strong>.<br/>
+Each ticket gets assigned a version number upon creation, set to <code>0</code>.<br/>
+Whenever a client sends a patch, they must include the current version number of the ticket alongside the
+desired changes. The server will only apply the patch if the version number matches the one it has stored.</p>
+<p>In the scenario described above, the server would reject the second patch, because the version number would
+have been incremented by the first patch and thus wouldn't match the one sent by the second client.</p>
+<p>This approach is fairly common in distributed systems (e.g. when client and servers don't share memory),
+and it is known as <strong>optimistic concurrency control</strong>.<br/>
+The idea is that most of the time, conflicts won't happen, so we can optimize for the common case.
+You know enough about Rust by now to implement this strategy on your own as a bonus exercise, if you want to.</p>
+<h2 id="locking"><a class="header" href="#locking">Locking</a></h2>
+<p>We can also fix the race condition by introducing a <strong>lock</strong>.<br/>
+Whenever a client wants to update a ticket, they must first acquire a lock on it. While the lock is active,
+no other client can modify the ticket.</p>
+<p>Rust's standard library provides two different locking primitives: <code>Mutex&lt;T&gt;</code> and <code>RwLock&lt;T&gt;</code>.<br/>
+Let's start with <code>Mutex&lt;T&gt;</code>. It stands for <strong>mut</strong>ual <strong>ex</strong>clusion, and it's the simplest kind of lock:
+it allows only one thread to access the data, no matter if it's for reading or writing.</p>
+<p><code>Mutex&lt;T&gt;</code> wraps the data it protects, and it's therefore generic over the type of the data.<br/>
+You can't access the data directly: the type system forces you to acquire a lock first using either <code>Mutex::lock</code> or
+<code>Mutex::try_lock</code>. The former blocks until the lock is acquired, the latter returns immediately with an error if the lock
+can't be acquired.<br/>
+Both methods return a guard object that dereferences to the data, allowing you to modify it. The lock is released when
+the guard is dropped.</p>
+<pre><code class="language-rust">use std::sync::Mutex;
+
+// An integer protected by a mutex lock
+let lock = Mutex::new(0);
+
+// Acquire a lock on the mutex
+let mut guard = lock.lock().unwrap();
+
+// Modify the data through the guard,
+// leveraging its `Deref` implementation
+*guard += 1;
+
+// The lock is released when `data` goes out of scope
+// This can be done explicitly by dropping the guard
+// or happen implicitly when the guard goes out of scope
+drop(guard)</code></pre>
+<h2 id="locking-granularity"><a class="header" href="#locking-granularity">Locking granularity</a></h2>
+<p>What should our <code>Mutex</code> wrap?<br/>
+The simplest option would be to wrap the entire <code>TicketStore</code> in a single <code>Mutex</code>.<br/>
+This would work, but it would severely limit the system's performance: you wouldn't be able to read tickets in parallel,
+because every read would have to wait for the lock to be released.<br/>
+This is known as <strong>coarse-grained locking</strong>.</p>
+<p>It would be better to use <strong>fine-grained locking</strong>, where each ticket is protected by its own lock.
+This way, clients can keep working with tickets in parallel, as long as they aren't trying to access the same ticket.</p>
+<pre><code class="language-rust">// The new structure, with a lock for each ticket
+struct TicketStore {
+    tickets: BTreeMap&lt;TicketId, Mutex&lt;Ticket&gt;&gt;,
+}</code></pre>
+<p>This approach is more efficient, but it has a downside: <code>TicketStore</code> has to become <strong>aware</strong> of the multithreaded
+nature of the system; up until now, <code>TicketStore</code> has been blissfully ignoring the existence of threads.<br/>
+Let's go for it anyway.</p>
+<h2 id="who-holds-the-lock"><a class="header" href="#who-holds-the-lock">Who holds the lock?</a></h2>
+<p>For the whole scheme to work, the lock must be passed to the client that wants to modify the ticket.<br/>
+The client can then directly modify the ticket (as if they had a <code>&amp;mut Ticket</code>) and release the lock when they're done.</p>
+<p>This is a bit tricky.<br/>
+We can't send a <code>Mutex&lt;Ticket&gt;</code> over a channel, because <code>Mutex</code> is not <code>Clone</code> and
+we can't move it out of the <code>TicketStore</code>. Could we send the <code>MutexGuard</code> instead?</p>
+<p>Let's test the idea with a small example:</p>
+<pre><code class="language-rust">use std::thread::spawn;
+use std::sync::Mutex;
+use std::sync::mpsc::sync_channel;
+
+fn main() {
+    let lock = Mutex::new(0);
+    let (sender, receiver) = sync_channel(1);
+    let guard = lock.lock().unwrap();
+
+    spawn(move || {
+        receiver.recv().unwrap();
+    });
+
+    // Try to send the guard over the channel
+    // to another thread
+    sender.send(guard);
+}</code></pre>
+<p>The compiler is not happy with this code:</p>
+<pre><code class="language-text">error[E0277]: `MutexGuard&lt;'_, i32&gt;` cannot be sent between 
+              threads safely
+   --&gt; src/main.rs:10:7
+    |
+10  |   spawn(move || {
+    |  _-----_^
+    | | |
+    | | required by a bound introduced by this call
+11  | |     receiver.recv().unwrap();
+12  | | });
+    | |_^ `MutexGuard&lt;'_, i32&gt;` cannot be sent between threads safely
+    |
+    = help: the trait `Send` is not implemented for 
+            `MutexGuard&lt;'_, i32&gt;`, which is required by 
+            `{closure@src/main.rs:10:7: 10:14}: Send`
+    = note: required for `Receiver&lt;MutexGuard&lt;'_, i32&gt;&gt;` 
+            to implement `Send`
+note: required because it's used within this closure
+</code></pre>
+<p><code>MutexGuard&lt;'_, i32&gt;</code> is not <code>Send</code>: what does it mean?</p>
+<h2 id="send"><a class="header" href="#send"><code>Send</code></a></h2>
+<p><code>Send</code> is a marker trait that indicates that a type can be safely transferred from one thread to another.<br/>
+<code>Send</code> is also an auto-trait, just like <code>Sized</code>; it's automatically implemented (or not implemented) for your type
+by the compiler, based on its definition.<br/>
+You can also implement <code>Send</code> manually for your types, but it requires <code>unsafe</code> since you have to guarantee that the
+type is indeed safe to send between threads for reasons that the compiler can't automatically verify.</p>
+<h3 id="channel-requirements"><a class="header" href="#channel-requirements">Channel requirements</a></h3>
+<p><code>Sender&lt;T&gt;</code>, <code>SyncSender&lt;T&gt;</code> and <code>Receiver&lt;T&gt;</code> are <code>Send</code> if and only if <code>T</code> is <code>Send</code>.<br/>
+That's because they are used to send values between threads, and if the value itself is not <code>Send</code>, it would be
+unsafe to send it between threads.</p>
+<h3 id="mutexguard"><a class="header" href="#mutexguard"><code>MutexGuard</code></a></h3>
+<p><code>MutexGuard</code> is not <code>Send</code> because the underlying operating system primitives that <code>Mutex</code> uses to implement
+the lock require (on some platforms) that the lock must be released by the same thread that acquired it.<br/>
+If we were to send a <code>MutexGuard</code> to another thread, the lock would be released by a different thread, which would
+lead to undefined behavior.</p>
+<h2 id="our-challenges"><a class="header" href="#our-challenges">Our challenges</a></h2>
+<p>Summing it up:</p>
+<ul>
+<li>We can't send a <code>MutexGuard</code> over a channel. So we can't lock on the server-side and then modify the ticket on the
+client-side.</li>
+<li>We can send a <code>Mutex</code> over a channel because it's <code>Send</code> as long as the data it protects is <code>Send</code>, which is the
+case for <code>Ticket</code>.
+At the same time, we can't move the <code>Mutex</code> out of the <code>TicketStore</code> nor clone it.</li>
+</ul>
+<p>How can we solve this conundrum?<br/>
+We need to look at the problem from a different angle.
+To lock a <code>Mutex</code>, we don't need an owned value. A shared reference is enough, since <code>Mutex</code> uses internal mutability:</p>
+<pre><code class="language-rust">impl&lt;T&gt; Mutex&lt;T&gt; {
+    // `&amp;self`, not `self`!
+    pub fn lock(&amp;self) -&gt; LockResult&lt;MutexGuard&lt;'_, T&gt;&gt; {
+        // Implementation details
+    }
+}</code></pre>
+<p>It is therefore enough to send a shared reference to the client.<br/>
+We can't do that directly, though, because the reference would have to be <code>'static</code> and that's not the case.<br/>
+In a way, we need an "owned shared reference". It turns out that Rust has a type that fits the bill: <code>Arc</code>.</p>
+<h2 id="arc-to-the-rescue"><a class="header" href="#arc-to-the-rescue"><code>Arc</code> to the rescue</a></h2>
+<p><code>Arc</code> stands for <strong>atomic reference counting</strong>.<br/>
+<code>Arc</code> wraps around a value and keeps track of how many references to the value exist.
+When the last reference is dropped, the value is deallocated.<br/>
+The value wrapped in an <code>Arc</code> is immutable: you can only get shared references to it.</p>
+<pre><code class="language-rust">use std::sync::Arc;
+
+let data: Arc&lt;u32&gt; = Arc::new(0);
+let data_clone = Arc::clone(&amp;data);
+
+// `Arc&lt;T&gt;` implements `Deref&lt;T&gt;`, so can convert 
+// a `&amp;Arc&lt;T&gt;` to a `&amp;T` using deref coercion
+let data_ref: &amp;u32 = &amp;data;</code></pre>
+<p>If you're having a déjà vu moment, you're right: <code>Arc</code> sounds very similar to <code>Rc</code>, the reference-counted pointer we
+introduced when talking about interior mutability. The difference is thread-safety: <code>Rc</code> is not <code>Send</code>, while <code>Arc</code> is.
+It boils down to the way the reference count is implemented: <code>Rc</code> uses a "normal" integer, while <code>Arc</code> uses an
+<strong>atomic</strong> integer, which can be safely shared and modified across threads.</p>
+<h2 id="arcmutext"><a class="header" href="#arcmutext"><code>Arc&lt;Mutex&lt;T&gt;&gt;</code></a></h2>
+<p>If we pair <code>Arc</code> with <code>Mutex</code>, we finally get a type that:</p>
+<ul>
+<li>Can be sent between threads, because:
+<ul>
+<li><code>Arc</code> is <code>Send</code> if <code>T</code> is <code>Send</code>, and</li>
+<li><code>Mutex</code> is <code>Send</code> if <code>T</code> is <code>Send</code>.</li>
+<li><code>T</code> is <code>Ticket</code>, which is <code>Send</code>.</li>
+</ul>
+</li>
+<li>Can be cloned, because <code>Arc</code> is <code>Clone</code> no matter what <code>T</code> is.
+Cloning an <code>Arc</code> increments the reference count, the data is not copied.</li>
+<li>Can be used to modify the data it wraps, because <code>Arc</code> lets you get a shared
+reference to <code>Mutex&lt;T&gt;</code> which can in turn be used to acquire a lock.</li>
+</ul>
+<p>We have all the pieces we need to implement the locking strategy for our ticket store.</p>
+<h2 id="further-reading"><a class="header" href="#further-reading">Further reading</a></h2>
+<ul>
+<li>We won't be covering the details of atomic operations in this course, but you can find more information
+<a href="https://doc.rust-lang.org/std/sync/atomic/index.html">in the <code>std</code> documentation</a> as well as in the
+<a href="https://marabos.nl/atomics/">"Rust atomics and locks" book</a>.</li>
+</ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/07_threads/11_locks"><code>07_threads/11_locks</code></a></p>
+
+                        
+</body>
+</html>

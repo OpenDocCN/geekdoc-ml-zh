@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>References</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>References</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/03_ticket_v1/10_references_in_memory.html">https://rust-exercises.com/100-exercises/03_ticket_v1/10_references_in_memory.html</a></blockquote>
+                        
+<p>What about references, like <code>&amp;String</code> or <code>&amp;mut String</code>? How are they represented in memory?</p>
+<p>Most references<sup class="footnote-reference" id="fr-fat-1"><a href="#footnote-fat">1</a></sup> in Rust are represented, in memory, as a pointer to a memory location.<br/>
+It follows that their size is the same as the size of a pointer, a <code>usize</code>.</p>
+<p>You can verify this using <code>std::mem::size_of</code>:</p>
+<pre><code class="language-rust">assert_eq!(std::mem::size_of::&lt;&amp;String&gt;(), 8);
+assert_eq!(std::mem::size_of::&lt;&amp;mut String&gt;(), 8);</code></pre>
+<p>A <code>&amp;String</code>, in particular, is a pointer to the memory location where the <code>String</code>'s metadata is stored.<br/>
+If you run this snippet:</p>
+<pre><code class="language-rust">let s = String::from("Hey");
+let r = &amp;s;</code></pre>
+<p>you'll get something like this in memory:</p>
+<pre><code>           --------------------------------------
+           |                                    |
+      +----v----+--------+----------+      +----|----+
+Stack | pointer | length | capacity |      | pointer |
+      |  |      |   3    |    5     |      |         |
+      +--|  ----+--------+----------+      +---------+
+         |          s                           r
+         |
+         v
+       +---+---+---+---+---+
+Heap   | H | e | y | ? | ? |
+       +---+---+---+---+---+
+</code></pre>
+<p>It's a pointer to a pointer to the heap-allocated data, if you will.
+The same goes for <code>&amp;mut String</code>.</p>
+<h2 id="not-all-pointers-point-to-the-heap"><a class="header" href="#not-all-pointers-point-to-the-heap">Not all pointers point to the heap</a></h2>
+<p>The example above should clarify one thing: not all pointers point to the heap.<br/>
+They just point to a memory location, which <em>may</em> be on the heap, but doesn't have to be.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/03_ticket_v1/10_references_in_memory"><code>03_ticket_v1/10_references_in_memory</code></a></p>
+<hr/>
+<ol class="footnote-definition"><li id="footnote-fat">
+<p><a href="/100-exercises/04_traits/06_str_slice">Later in the course</a> we'll talk about <strong>fat pointers</strong>,
+i.e. pointers with additional metadata. As the name implies, they are larger than
+the pointers we discussed in this chapter, also known as <strong>thin pointers</strong>. <a href="#fr-fat-1">↩</a></p>
+</li>
+</ol>
+                        
+</body>
+</html>

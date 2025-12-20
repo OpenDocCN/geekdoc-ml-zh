@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Memory layout</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Memory layout</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/03_ticket_v1/08_stack.html">https://rust-exercises.com/100-exercises/03_ticket_v1/08_stack.html</a></blockquote>
+                        
+<p>We've looked at ownership and references from an operational point of view—what you can and can't do with them.
+Now it's a good time to take a look under the hood: let's talk about <strong>memory</strong>.</p>
+<h2 id="stack-and-heap"><a class="header" href="#stack-and-heap">Stack and heap</a></h2>
+<p>When discussing memory, you'll often hear people talk about the <strong>stack</strong> and the <strong>heap</strong>.<br/>
+These are two different memory regions used by programs to store data.</p>
+<p>Let's start with the stack.</p>
+<h2 id="stack"><a class="header" href="#stack">Stack</a></h2>
+<p>The <strong>stack</strong> is a <strong>LIFO</strong> (Last In, First Out) data structure.<br/>
+When you call a function, a new <strong>stack frame</strong> is added on top of the stack. That stack frame stores
+the function's arguments, local variables and a few "bookkeeping" values.<br/>
+When the function returns, the stack frame is popped off the stack<sup class="footnote-reference" id="fr-stack-overflow-1"><a href="#footnote-stack-overflow">1</a></sup>.</p>
+<pre><code class="language-text">+-----------------+
+| frame for func1 |
++-----------------+
+        |
+        | func2 is 
+        | called
+        v
++-----------------+
+| frame for func2 |
++-----------------+
+| frame for func1 |
++-----------------+
+        |
+        | func2  
+        | returns
+        v
++-----------------+
+| frame for func1 |
++-----------------+
+</code></pre>
+<p>From an operational point of view, stack allocation/de-allocation is <strong>very fast</strong>.<br/>
+We are always pushing and popping data from the top of the stack, so we don't need to search for free memory.
+We also don't have to worry about fragmentation: the stack is a single contiguous block of memory.</p>
+<h3 id="rust"><a class="header" href="#rust">Rust</a></h3>
+<p>Rust will often allocate data on the stack.<br/>
+You have a <code>u32</code> input argument in a function? Those 32 bits will be on the stack.<br/>
+You define a local variable of type <code>i64</code>? Those 64 bits will be on the stack.<br/>
+It all works quite nicely because the size of those integers is known at compile time, therefore
+the compiled program knows how much space it needs to reserve on the stack for them.</p>
+<h3 id="stdmemsize_of"><a class="header" href="#stdmemsize_of"><code>std::mem::size_of</code></a></h3>
+<p>You can verify how much space a type would take on the stack
+using the <a href="https://doc.rust-lang.org/std/mem/fn.size_of.html"><code>std::mem::size_of</code></a> function.</p>
+<p>For a <code>u8</code>, for example:</p>
+<pre><code class="language-rust">// We'll explain this funny-looking syntax (`::&lt;u8&gt;`) later on.
+// Ignore it for now.
+assert_eq!(std::mem::size_of::&lt;u8&gt;(), 1);</code></pre>
+<p>1 makes sense, because a <code>u8</code> is 8 bits long, or 1 byte.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/03_ticket_v1/08_stack"><code>03_ticket_v1/08_stack</code></a></p>
+<hr/>
+<ol class="footnote-definition"><li id="footnote-stack-overflow">
+<p>If you have nested function calls, each function pushes its data onto the stack when it's called but
+it doesn't pop it off until the innermost function returns.
+If you have too many nested function calls, you can run out of stack space—the stack is not infinite!
+That's called a <a href="https://en.wikipedia.org/wiki/Stack_overflow"><strong>stack overflow</strong></a>. <a href="#fr-stack-overflow-1">↩</a></p>
+</li>
+</ol>
+                        
+</body>
+</html>

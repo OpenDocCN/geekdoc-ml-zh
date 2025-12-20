@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Variants can hold data</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Variants can hold data</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/05_ticket_v2/03_variants_with_data.html">https://rust-exercises.com/100-exercises/05_ticket_v2/03_variants_with_data.html</a></blockquote>
+                        
+<pre><code class="language-rust">enum Status {
+    ToDo,
+    InProgress,
+    Done,
+}</code></pre>
+<p>Our <code>Status</code> enum is what's usually called a <strong>C-style enum</strong>.<br/>
+Each variant is a simple label, a bit like a named constant. You can find this kind of enum in many programming
+languages, like C, C++, Java, C#, Python, etc.</p>
+<p>Rust enums can go further though. We can <strong>attach data to each variant</strong>.</p>
+<h2 id="variants"><a class="header" href="#variants">Variants</a></h2>
+<p>Let's say that we want to store the name of the person who's currently working on a ticket.<br/>
+We would only have this information if the ticket is in progress. It wouldn't be there for a to-do ticket or
+a done ticket.
+We can model this by attaching a <code>String</code> field to the <code>InProgress</code> variant:</p>
+<pre><code class="language-rust">enum Status {
+    ToDo,
+    InProgress {
+        assigned_to: String,
+    },
+    Done,
+}</code></pre>
+<p><code>InProgress</code> is now a <strong>struct-like variant</strong>.<br/>
+The syntax mirrors, in fact, the one we used to define a struct—it's just "inlined" inside the enum, as a variant.</p>
+<h2 id="accessing-variant-data"><a class="header" href="#accessing-variant-data">Accessing variant data</a></h2>
+<p>If we try to access <code>assigned_to</code> on a <code>Status</code> instance,</p>
+<pre><code class="language-rust">let status: Status = /* */;
+
+// This won't compile
+println!("Assigned to: {}", status.assigned_to);</code></pre>
+<p>the compiler will stop us:</p>
+<pre><code class="language-text">error[E0609]: no field `assigned_to` on type `Status`
+ --&gt; src/main.rs:5:40
+  |
+5 |     println!("Assigned to: {}", status.assigned_to);
+  |                                        ^^^^^^^^^^^ unknown field
+</code></pre>
+<p><code>assigned_to</code> is <strong>variant-specific</strong>, it's not available on all <code>Status</code> instances.<br/>
+To access <code>assigned_to</code>, we need to use <strong>pattern matching</strong>:</p>
+<pre><code class="language-rust">match status {
+    Status::InProgress { assigned_to } =&gt; {
+        println!("Assigned to: {}", assigned_to);
+    },
+    Status::ToDo | Status::Done =&gt; {
+        println!("ToDo or Done");
+    }
+}</code></pre>
+<h2 id="bindings"><a class="header" href="#bindings">Bindings</a></h2>
+<p>In the match pattern <code>Status::InProgress { assigned_to }</code>, <code>assigned_to</code> is a <strong>binding</strong>.<br/>
+We're <strong>destructuring</strong> the <code>Status::InProgress</code> variant and binding the <code>assigned_to</code> field to
+a new variable, also named <code>assigned_to</code>.<br/>
+If we wanted, we could bind the field to a different variable name:</p>
+<pre><code class="language-rust">match status {
+    Status::InProgress { assigned_to: person } =&gt; {
+        println!("Assigned to: {}", person);
+    },
+    Status::ToDo | Status::Done =&gt; {
+        println!("ToDo or Done");
+    }
+}</code></pre>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/05_ticket_v2/03_variants_with_data"><code>05_ticket_v2/03_variants_with_data</code></a></p>
+
+                        
+</body>
+</html>

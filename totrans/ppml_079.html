@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Scoped threads</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Scoped threads</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/07_threads/04_scoped_threads.html">https://rust-exercises.com/100-exercises/07_threads/04_scoped_threads.html</a></blockquote>
+                        
+<p>All the lifetime issues we discussed so far have a common source:
+the spawned thread can outlive its parent.<br/>
+We can sidestep this issue by using <strong>scoped threads</strong>.</p>
+<pre><code class="language-rust">let v = vec![1, 2, 3];
+let midpoint = v.len() / 2;
+
+std::thread::scope(|scope| {
+    scope.spawn(|| {
+        let first = &amp;v[..midpoint];
+        println!("Here's the first half of v: {first:?}");
+    });
+    scope.spawn(|| {
+        let second = &amp;v[midpoint..];
+        println!("Here's the second half of v: {second:?}");
+    });
+});
+
+println!("Here's v: {v:?}");</code></pre>
+<p>Let's unpack what's happening.</p>
+<h2 id="scope"><a class="header" href="#scope"><code>scope</code></a></h2>
+<p>The <code>std::thread::scope</code> function creates a new <strong>scope</strong>.<br/>
+<code>std::thread::scope</code> takes a closure as input, with a single argument: a <code>Scope</code> instance.</p>
+<h2 id="scoped-spawns"><a class="header" href="#scoped-spawns">Scoped spawns</a></h2>
+<p><code>Scope</code> exposes a <code>spawn</code> method.<br/>
+Unlike <code>std::thread::spawn</code>, all threads spawned using a <code>Scope</code> will be
+<strong>automatically joined</strong> when the scope ends.</p>
+<p>If we were to "translate" the previous example to <code>std::thread::spawn</code>,
+it'd look like this:</p>
+<pre><code class="language-rust">let v = vec![1, 2, 3];
+let midpoint = v.len() / 2;
+
+let handle1 = std::thread::spawn(|| {
+    let first = &amp;v[..midpoint];
+    println!("Here's the first half of v: {first:?}");
+});
+let handle2 = std::thread::spawn(|| {
+    let second = &amp;v[midpoint..];
+    println!("Here's the second half of v: {second:?}");
+});
+
+handle1.join().unwrap();
+handle2.join().unwrap();
+
+println!("Here's v: {v:?}");</code></pre>
+<h2 id="borrowing-from-the-environment"><a class="header" href="#borrowing-from-the-environment">Borrowing from the environment</a></h2>
+<p>The translated example wouldn't compile, though: the compiler would complain
+that <code>&amp;v</code> can't be used from our spawned threads since its lifetime isn't
+<code>'static</code>.</p>
+<p>That's not an issue with <code>std::thread::scope</code>—you can <strong>safely borrow from the environment</strong>.</p>
+<p>In our example, <code>v</code> is created before the spawning points.
+It will only be dropped <em>after</em> <code>scope</code> returns. At the same time,
+all threads spawned inside <code>scope</code> are guaranteed to finish <em>before</em> <code>scope</code> returns,
+therefore there is no risk of having dangling references.</p>
+<p>The compiler won't complain!</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/07_threads/04_scoped_threads"><code>07_threads/04_scoped_threads</code></a></p>
+
+                        
+</body>
+</html>

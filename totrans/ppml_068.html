@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Slices</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Slices</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/06_ticket_management/10_slices.html">https://rust-exercises.com/100-exercises/06_ticket_management/10_slices.html</a></blockquote>
+                        
+<p>Let's go back to the memory layout of a <code>Vec</code>:</p>
+<pre><code class="language-rust">let mut numbers = Vec::with_capacity(3);
+numbers.push(1);
+numbers.push(2);</code></pre>
+<pre><code class="language-text">      +---------+--------+----------+
+Stack | pointer | length | capacity | 
+      |  |      |   2    |    3     |
+      +--|------+--------+----------+
+         |
+         |
+         v
+       +---+---+---+
+Heap:  | 1 | 2 | ? |
+       +---+---+---+
+</code></pre>
+<p>We already remarked how <code>String</code> is just a <code>Vec&lt;u8&gt;</code> in disguise.<br/>
+The similarity should prompt you to ask: "What's the equivalent of <code>&amp;str</code> for <code>Vec</code>?"</p>
+<h2 id="t"><a class="header" href="#t"><code>&amp;[T]</code></a></h2>
+<p><code>[T]</code> is a <strong>slice</strong> of a contiguous sequence of elements of type <code>T</code>.<br/>
+It's most commonly used in its borrowed form, <code>&amp;[T]</code>.</p>
+<p>There are various ways to create a slice reference from a <code>Vec</code>:</p>
+<pre><code class="language-rust">let numbers = vec![1, 2, 3];
+// Via index syntax
+let slice: &amp;[i32] = &amp;numbers[..];
+// Via a method
+let slice: &amp;[i32] = numbers.as_slice();
+// Or for a subset of the elements
+let slice: &amp;[i32] = &amp;numbers[1..];</code></pre>
+<p><code>Vec</code> implements the <code>Deref</code> trait using <code>[T]</code> as the target type, so you can use slice methods on a <code>Vec</code> directly
+thanks to deref coercion:</p>
+<pre><code class="language-rust">let numbers = vec![1, 2, 3];
+// Surprise, surprise: `iter` is not a method on `Vec`!
+// It's a method on `&amp;[T]`, but you can call it on a `Vec` 
+// thanks to deref coercion.
+let sum: i32 = numbers.iter().sum();</code></pre>
+<h3 id="memory-layout"><a class="header" href="#memory-layout">Memory layout</a></h3>
+<p>A <code>&amp;[T]</code> is a <strong>fat pointer</strong>, just like <code>&amp;str</code>.<br/>
+It consists of a pointer to the first element of the slice and the length of the slice.</p>
+<p>If you have a <code>Vec</code> with three elements:</p>
+<pre><code class="language-rust">let numbers = vec![1, 2, 3];</code></pre>
+<p>and then create a slice reference:</p>
+<pre><code class="language-rust">let slice: &amp;[i32] = &amp;numbers[1..];</code></pre>
+<p>you'll get this memory layout:</p>
+<pre><code class="language-text">                  numbers                          slice
+      +---------+--------+----------+      +---------+--------+
+Stack | pointer | length | capacity |      | pointer | length |
+      |    |    |   3    |    4     |      |    |    |   2    |
+      +----|----+--------+----------+      +----|----+--------+
+           |                                    |  
+           |                                    |
+           v                                    | 
+         +---+---+---+---+                      |
+Heap:    | 1 | 2 | 3 | ? |                      |
+         +---+---+---+---+                      |
+               ^                                |
+               |                                |
+               +--------------------------------+
+</code></pre>
+<h3 id="vect-vs-t"><a class="header" href="#vect-vs-t"><code>&amp;Vec&lt;T&gt;</code> vs <code>&amp;[T]</code></a></h3>
+<p>When you need to pass an immutable reference to a <code>Vec</code> to a function, prefer <code>&amp;[T]</code> over <code>&amp;Vec&lt;T&gt;</code>.<br/>
+This allows the function to accept any kind of slice, not necessarily one backed by a <code>Vec</code>.</p>
+<p>For example, you can then pass a subset of the elements in a <code>Vec</code>.
+But it goes further than that—you could also pass a <strong>slice of an array</strong>:</p>
+<pre><code class="language-rust">let array = [1, 2, 3];
+let slice: &amp;[i32] = &amp;array;</code></pre>
+<p>Array slices and <code>Vec</code> slices are the same type: they're fat pointers to a contiguous sequence of elements.
+In the case of arrays, the pointer points to the stack rather than the heap, but that doesn't matter
+when it comes to using the slice.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/06_ticket_management/10_slices"><code>06_ticket_management/10_slices</code></a></p>
+
+                        
+</body>
+</html>

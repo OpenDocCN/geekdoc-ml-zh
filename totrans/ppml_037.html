@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Generics and associated types</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Generics and associated types</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/04_traits/10_assoc_vs_generic.html">https://rust-exercises.com/100-exercises/04_traits/10_assoc_vs_generic.html</a></blockquote>
+                        
+<p>Let's re-examine the definition for two of the traits we studied so far, <code>From</code> and <code>Deref</code>:</p>
+<pre><code class="language-rust">pub trait From&lt;T&gt; {
+    fn from(value: T) -&gt; Self;
+}
+
+pub trait Deref {
+    type Target;
+    
+    fn deref(&amp;self) -&gt; &amp;Self::Target;
+}</code></pre>
+<p>They both feature type parameters.<br/>
+In the case of <code>From</code>, it's a generic parameter, <code>T</code>.<br/>
+In the case of <code>Deref</code>, it's an associated type, <code>Target</code>.</p>
+<p>What's the difference? Why use one over the other?</p>
+<h2 id="at-most-one-implementation"><a class="header" href="#at-most-one-implementation">At most one implementation</a></h2>
+<p>Due to how deref coercion works, there can only be one "target" type for a given type. E.g. <code>String</code> can
+only deref to <code>str</code>.
+It's about avoiding ambiguity: if you could implement <code>Deref</code> multiple times for a type,
+which <code>Target</code> type should the compiler choose when you call a <code>&amp;self</code> method?</p>
+<p>That's why <code>Deref</code> uses an associated type, <code>Target</code>.<br/>
+An associated type is uniquely determined <strong>by the trait implementation</strong>.
+Since you can't implement <code>Deref</code> more than once, you'll only be able to specify one <code>Target</code> for a given type
+and there won't be any ambiguity.</p>
+<h2 id="generic-traits"><a class="header" href="#generic-traits">Generic traits</a></h2>
+<p>On the other hand, you can implement <code>From</code> multiple times for a type, <strong>as long as the input type <code>T</code> is different</strong>.
+For example, you can implement <code>From</code> for <code>WrappingU32</code> using both <code>u32</code> and <code>u16</code> as input types:</p>
+<pre><code class="language-rust">impl From&lt;u32&gt; for WrappingU32 {
+    fn from(value: u32) -&gt; Self {
+        WrappingU32 { inner: value }
+    }
+}
+
+impl From&lt;u16&gt; for WrappingU32 {
+    fn from(value: u16) -&gt; Self {
+        WrappingU32 { inner: value.into() }
+    }
+}</code></pre>
+<p>This works because <code>From&lt;u16&gt;</code> and <code>From&lt;u32&gt;</code> are considered <strong>different traits</strong>.<br/>
+There is no ambiguity: the compiler can determine which implementation to use based on type of the value being converted.</p>
+<h2 id="case-study-add"><a class="header" href="#case-study-add">Case study: <code>Add</code></a></h2>
+<p>As a closing example, consider the <code>Add</code> trait from the standard library:</p>
+<pre><code class="language-rust">pub trait Add&lt;RHS = Self&gt; {
+    type Output;
+    
+    fn add(self, rhs: RHS) -&gt; Self::Output;
+}</code></pre>
+<p>It uses both mechanisms:</p>
+<ul>
+<li>it has a generic parameter, <code>RHS</code> (right-hand side), which defaults to <code>Self</code></li>
+<li>it has an associated type, <code>Output</code>, the type of the result of the addition</li>
+</ul>
+<h3 id="rhs"><a class="header" href="#rhs"><code>RHS</code></a></h3>
+<p><code>RHS</code> is a generic parameter to allow for different types to be added together.<br/>
+For example, you'll find these two implementations in the standard library:</p>
+<pre><code class="language-rust">impl Add&lt;u32&gt; for u32 {
+    type Output = u32;
+    
+    fn add(self, rhs: u32) -&gt; u32 {
+      //                      ^^^
+      // This could be written as `Self::Output` instead.
+      // The compiler doesn't care, as long as the type you
+      // specify here matches the type you assigned to `Output` 
+      // right above.
+      // [...]
+    }
+}
+
+impl Add&lt;&amp;u32&gt; for u32 {
+    type Output = u32;
+    
+    fn add(self, rhs: &amp;u32) -&gt; u32 {
+        // [...]
+    }
+}</code></pre>
+<p>This allows the following code to compile:</p>
+<pre><code class="language-rust">let x = 5u32 + &amp;5u32 + 6u32;</code></pre>
+<p>because <code>u32</code> implements <code>Add&lt;&amp;u32&gt;</code> <em>as well as</em> <code>Add&lt;u32&gt;</code>.</p>
+<h3 id="output"><a class="header" href="#output"><code>Output</code></a></h3>
+<p><code>Output</code> represents the type of the result of the addition.</p>
+<p>Why do we need <code>Output</code> in the first place? Can't we just use <code>Self</code> as output, the type implementing <code>Add</code>?
+We could, but it would limit the flexibility of the trait. In the standard library, for example, you'll find
+this implementation:</p>
+<pre><code class="language-rust">impl Add&lt;&amp;u32&gt; for &amp;u32 {
+    type Output = u32;
+
+    fn add(self, rhs: &amp;u32) -&gt; u32 {
+        // [...]
+    }
+}</code></pre>
+<p>The type they're implementing the trait for is <code>&amp;u32</code>, but the result of the addition is <code>u32</code>.<br/>
+It would be impossible<sup class="footnote-reference" id="fr-flexible-1"><a href="#footnote-flexible">1</a></sup> to provide this implementation if <code>add</code> had to return <code>Self</code>, i.e. <code>&amp;u32</code> in this case.
+<code>Output</code> lets <code>std</code> decouple the implementor from the return type, thus supporting this case.</p>
+<p>On the other hand, <code>Output</code> can't be a generic parameter. The output type of the operation <strong>must</strong> be uniquely determined
+once the types of the operands are known. That's why it's an associated type: for a given combination of implementor
+and generic parameters, there is only one <code>Output</code> type.</p>
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
+<p>To recap:</p>
+<ul>
+<li>Use an <strong>associated type</strong> when the type must be uniquely determined for a given trait implementation.</li>
+<li>Use a <strong>generic parameter</strong> when you want to allow multiple implementations of the trait for the same type,
+with different input types.</li>
+</ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/04_traits/10_assoc_vs_generic"><code>04_traits/10_assoc_vs_generic</code></a></p>
+<hr/>
+<ol class="footnote-definition"><li id="footnote-flexible">
+<p>Flexibility is rarely free: the trait definition is more complex due to <code>Output</code>, and implementors have to reason about
+what they want to return. The trade-off is only justified if that flexibility is actually needed. Keep that in mind
+when designing your own traits. <a href="#fr-flexible-1">↩</a></p>
+</li>
+</ol>
+                        
+</body>
+</html>

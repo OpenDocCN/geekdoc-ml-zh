@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Design review</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Design review</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/07_threads/13_without_channels.html">https://rust-exercises.com/100-exercises/07_threads/13_without_channels.html</a></blockquote>
+                        
+<p>Let's take a moment to review the journey we've been through.</p>
+<h2 id="lockless-with-channel-serialization"><a class="header" href="#lockless-with-channel-serialization">Lockless with channel serialization</a></h2>
+<p>Our first implementation of a multithreaded ticket store used:</p>
+<ul>
+<li>a single long-lived thread (server), to hold the shared state</li>
+<li>multiple clients sending requests to it via channels from their own threads.</li>
+</ul>
+<p>No locking of the state was necessary, since the server was the only one modifying the state. That's because
+the "inbox" channel naturally <strong>serialized</strong> incoming requests: the server would process them one by one.<br/>
+We've already discussed the limitations of this approach when it comes to patching behaviour, but we didn't
+discuss the performance implications of the original design: the server could only process one request at a time,
+including reads.</p>
+<h2 id="fine-grained-locking"><a class="header" href="#fine-grained-locking">Fine-grained locking</a></h2>
+<p>We then moved to a more sophisticated design, where each ticket was protected by its own lock and
+clients could independently decide if they wanted to read or atomically modify a ticket, acquiring the appropriate lock.</p>
+<p>This design allows for better parallelism (i.e. multiple clients can read tickets at the same time), but it is
+still fundamentally <strong>serial</strong>: the server processes commands one by one. In particular, it hands out locks to clients
+one by one.</p>
+<p>Could we remove the channels entirely and allow clients to directly access the <code>TicketStore</code>, relying exclusively on
+locks to synchronize access?</p>
+<h2 id="removing-channels"><a class="header" href="#removing-channels">Removing channels</a></h2>
+<p>We have two problems to solve:</p>
+<ul>
+<li>Sharing <code>TicketStore</code> across threads</li>
+<li>Synchronizing access to the store</li>
+</ul>
+<h3 id="sharing-ticketstore-across-threads"><a class="header" href="#sharing-ticketstore-across-threads">Sharing <code>TicketStore</code> across threads</a></h3>
+<p>We want all threads to refer to the same state, otherwise we don't really have a multithreaded system—we're just
+running multiple single-threaded systems in parallel.<br/>
+We've already encountered this problem when we tried to share a lock across threads: we can use an <code>Arc</code>.</p>
+<h3 id="synchronizing-access-to-the-store"><a class="header" href="#synchronizing-access-to-the-store">Synchronizing access to the store</a></h3>
+<p>There is one interaction that's still lockless thanks to the serialization provided by the channels: inserting
+(or removing) a ticket from the store.<br/>
+If we remove the channels, we need to introduce (another) lock to synchronize access to the <code>TicketStore</code> itself.</p>
+<p>If we use a <code>Mutex</code>, then it makes no sense to use an additional <code>RwLock</code> for each ticket: the <code>Mutex</code> will
+already serialize access to the entire store, so we wouldn't be able to read tickets in parallel anyway.<br/>
+If we use a <code>RwLock</code>, instead, we can read tickets in parallel. We just need to pause all reads while inserting
+or removing a ticket.</p>
+<p>Let's go down this path and see where it leads us.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/07_threads/13_without_channels"><code>07_threads/13_without_channels</code></a></p>
+
+                        
+</body>
+</html>

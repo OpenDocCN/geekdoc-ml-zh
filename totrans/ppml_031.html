@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Derive macros</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Derive macros</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/04_traits/04_derive.html">https://rust-exercises.com/100-exercises/04_traits/04_derive.html</a></blockquote>
+                        
+<p>Implementing <code>PartialEq</code> for <code>Ticket</code> was a bit tedious, wasn't it?
+You had to manually compare each field of the struct.</p>
+<h2 id="destructuring-syntax"><a class="header" href="#destructuring-syntax">Destructuring syntax</a></h2>
+<p>Furthermore, the implementation is brittle: if the struct definition changes
+(e.g. a new field is added), you have to remember to update the <code>PartialEq</code> implementation.</p>
+<p>You can mitigate the risk by <strong>destructuring</strong> the struct into its fields:</p>
+<pre><code class="language-rust">impl PartialEq for Ticket {
+    fn eq(&amp;self, other: &amp;Self) -&gt; bool {
+        let Ticket {
+            title,
+            description,
+            status,
+        } = self;
+        // [...]
+    }
+}</code></pre>
+<p>If the definition of <code>Ticket</code> changes, the compiler will error out, complaining that your
+destructuring is no longer exhaustive.<br/>
+You can also rename struct fields, to avoid variable shadowing:</p>
+<pre><code class="language-rust">impl PartialEq for Ticket {
+    fn eq(&amp;self, other: &amp;Self) -&gt; bool {
+        let Ticket {
+            title,
+            description,
+            status,
+        } = self;
+        let Ticket {
+            title: other_title,
+            description: other_description,
+            status: other_status,
+        } = other;
+        // [...]
+    }
+}</code></pre>
+<p>Destructuring is a useful pattern to have in your toolkit, but
+there's an even more convenient way to do this: <strong>derive macros</strong>.</p>
+<h2 id="macros"><a class="header" href="#macros">Macros</a></h2>
+<p>You've already encountered a few macros in past exercises:</p>
+<ul>
+<li><code>assert_eq!</code> and <code>assert!</code>, in the test cases</li>
+<li><code>println!</code>, to print to the console</li>
+</ul>
+<p>Rust macros are <strong>code generators</strong>.<br/>
+They generate new Rust code based on the input you provide, and that generated code is then compiled alongside
+the rest of your program. Some macros are built into Rust's standard library, but you can also
+write your own. We won't be creating our own macro in this course, but you can find some useful
+pointers in the <a href="#further-reading">"Further reading" section</a>.</p>
+<h3 id="inspection"><a class="header" href="#inspection">Inspection</a></h3>
+<p>Some IDEs let you expand a macro to inspect the generated code. If that's not possible, you can use
+<a href="https://github.com/dtolnay/cargo-expand"><code>cargo-expand</code></a>.</p>
+<h3 id="derive-macros-1"><a class="header" href="#derive-macros-1">Derive macros</a></h3>
+<p>A <strong>derive macro</strong> is a particular flavour of Rust macro. It is specified as an <strong>attribute</strong> on top of a struct.</p>
+<pre><code class="language-rust">#[derive(PartialEq)]
+struct Ticket {
+    title: String,
+    description: String,
+    status: String
+}</code></pre>
+<p>Derive macros are used to automate the implementation of common (and "obvious") traits for custom types.
+In the example above, the <code>PartialEq</code> trait is automatically implemented for <code>Ticket</code>.
+If you expand the macro, you'll see that the generated code is functionally equivalent to the one you wrote manually,
+although a bit more cumbersome to read:</p>
+<pre><code class="language-rust">#[automatically_derived]
+impl ::core::cmp::PartialEq for Ticket {
+    #[inline]
+    fn eq(&amp;self, other: &amp;Ticket) -&gt; bool {
+        self.title == other.title 
+            &amp;&amp; self.description == other.description
+            &amp;&amp; self.status == other.status
+    }
+}</code></pre>
+<p>The compiler will nudge you to derive traits when possible.</p>
+<h2 id="further-reading"><a class="header" href="#further-reading">Further reading</a></h2>
+<ul>
+<li><a href="https://veykril.github.io/tlborm/">The little book of Rust macros</a></li>
+<li><a href="https://github.com/dtolnay/proc-macro-workshop">Proc macro workshop</a></li>
+</ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/04_traits/04_derive"><code>04_traits/04_derive</code></a></p>
+
+                        
+</body>
+</html>

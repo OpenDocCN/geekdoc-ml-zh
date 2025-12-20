@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Sync</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Sync</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/07_threads/14_sync.html">https://rust-exercises.com/100-exercises/07_threads/14_sync.html</a></blockquote>
+                        
+<p>Before we wrap up this chapter, let's talk about another key trait in Rust's standard library: <code>Sync</code>.</p>
+<p><code>Sync</code> is an auto trait, just like <code>Send</code>.<br/>
+It is automatically implemented by all types that can be safely <strong>shared</strong> between threads.</p>
+<p>In other words: <code>T</code> is Sync if <code>&amp;T</code> is <code>Send</code>.</p>
+<h2 id="t-sync-doesnt-imply-t-send"><a class="header" href="#t-sync-doesnt-imply-t-send"><code>T: Sync</code> doesn't imply <code>T: Send</code></a></h2>
+<p>It's important to note that <code>T</code> can be <code>Sync</code> without being <code>Send</code>.<br/>
+For example: <code>MutexGuard</code> is not <code>Send</code>, but it is <code>Sync</code>.</p>
+<p>It isn't <code>Send</code> because the lock must be released on the same thread that acquired it, therefore we don't
+want <code>MutexGuard</code> to be dropped on a different thread.<br/>
+But it is <code>Sync</code>, because giving a <code>&amp;MutexGuard</code> to another thread has no impact on where the lock is released.</p>
+<h2 id="t-send-doesnt-imply-t-sync"><a class="header" href="#t-send-doesnt-imply-t-sync"><code>T: Send</code> doesn't imply <code>T: Sync</code></a></h2>
+<p>The opposite is also true: <code>T</code> can be <code>Send</code> without being <code>Sync</code>.<br/>
+For example: <code>RefCell&lt;T&gt;</code> is <code>Send</code> (if <code>T</code> is <code>Send</code>), but it is not <code>Sync</code>.</p>
+<p><code>RefCell&lt;T&gt;</code> performs runtime borrow checking, but the counters it uses to track borrows are not thread-safe.
+Therefore, having multiple threads holding a <code>&amp;RefCell</code> would lead to a data race, with potentially
+multiple threads obtaining mutable references to the same data. Hence <code>RefCell</code> is not <code>Sync</code>.<br/>
+<code>Send</code> is fine, instead, because when we send a <code>RefCell</code> to another thread we're not
+leaving behind any references to the data it contains, hence no risk of concurrent mutable access.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/07_threads/14_sync"><code>07_threads/14_sync</code></a></p>
+
+                        
+</body>
+</html>

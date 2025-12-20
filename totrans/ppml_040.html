@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>The Drop trait</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>The Drop trait</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/04_traits/13_drop.html">https://rust-exercises.com/100-exercises/04_traits/13_drop.html</a></blockquote>
+                        
+<p>When we introduced <a href="/100-exercises/03_ticket_v1/11_destructor">destructors</a>,
+we mentioned that the <code>drop</code> function:</p>
+<ol>
+<li>reclaims the memory occupied by the type (i.e. <code>std::mem::size_of</code> bytes)</li>
+<li>cleans up any additional resources that the value might be managing (e.g. the heap buffer of a <code>String</code>)</li>
+</ol>
+<p>Step 2. is where the <code>Drop</code> trait comes in.</p>
+<pre><code class="language-rust">pub trait Drop {
+    fn drop(&amp;mut self);
+}</code></pre>
+<p>The <code>Drop</code> trait is a mechanism for you to define <em>additional</em> cleanup logic for your types,
+beyond what the compiler does for you automatically.<br/>
+Whatever you put in the <code>drop</code> method will be executed when the value goes out of scope.</p>
+<h2 id="drop-and-copy"><a class="header" href="#drop-and-copy"><code>Drop</code> and <code>Copy</code></a></h2>
+<p>When talking about the <code>Copy</code> trait, we said that a type can't implement <code>Copy</code> if it
+manages additional resources beyond the <code>std::mem::size_of</code> bytes that it occupies in memory.</p>
+<p>You might wonder: how does the compiler know if a type manages additional resources?
+That's right: <code>Drop</code> trait implementations!<br/>
+If your type has an explicit <code>Drop</code> implementation, the compiler will assume
+that your type has additional resources attached to it and won't allow you to implement <code>Copy</code>.</p>
+<pre><code class="language-rust">// This is a unit struct, i.e. a struct with no fields.
+#[derive(Clone, Copy)]
+struct MyType;
+
+impl Drop for MyType {
+    fn drop(&amp;mut self) {
+       // We don't need to do anything here,
+       // it's enough to have an "empty" Drop implementation
+    }
+}</code></pre>
+<p>The compiler will complain with this error message:</p>
+<pre><code class="language-text">error[E0184]: the trait `Copy` cannot be implemented for this type; 
+              the type has a destructor
+ --&gt; src/lib.rs:2:17
+  |
+2 | #[derive(Clone, Copy)]
+  |                 ^^^^ `Copy` not allowed on types with destructors
+</code></pre>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/04_traits/13_drop"><code>04_traits/13_drop</code></a></p>
+
+                        
+</body>
+</html>

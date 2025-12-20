@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Encapsulation</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Encapsulation</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/03_ticket_v1/05_encapsulation.html">https://rust-exercises.com/100-exercises/03_ticket_v1/05_encapsulation.html</a></blockquote>
+                        
+<p>Now that we have a basic understanding of modules and visibility, let's circle back to <strong>encapsulation</strong>.<br/>
+Encapsulation is the practice of hiding the internal representation of an object. It is most commonly
+used to enforce some <strong>invariants</strong> on the object's state.</p>
+<p>Going back to our <code>Ticket</code> struct:</p>
+<pre><code class="language-rust">struct Ticket {
+    title: String,
+    description: String,
+    status: String,
+}</code></pre>
+<p>If all fields are made public, there is no encapsulation.<br/>
+You must assume that the fields can be modified at any time, set to any value that's allowed by
+their type. You can't rule out that a ticket might have an empty title or a status
+that doesn't make sense.</p>
+<p>To enforce stricter rules, we must keep the fields private<sup class="footnote-reference" id="fr-newtype-1"><a href="#footnote-newtype">1</a></sup>.
+We can then provide public methods to interact with a <code>Ticket</code> instance.
+Those public methods will have the responsibility of upholding our invariants (e.g. a title must not be empty).</p>
+<p>If at least one field is private it is no longer possible to create a <code>Ticket</code> instance directly using the struct
+instantiation syntax:</p>
+<pre><code class="language-rust">// This won't work!
+let ticket = Ticket {
+    title: "Build a ticket system".into(),
+    description: "A Kanban board".into(),
+    status: "Open".into()
+};</code></pre>
+<p>You've seen this in action in the previous exercise on visibility.<br/>
+We now need to provide one or more public <strong>constructors</strong>—i.e. static methods or functions that can be used
+from outside the module to create a new instance of the struct.<br/>
+Luckily enough we already have one: <code>Ticket::new</code>, as implemented in <a href="/100-exercises/03_ticket_v1/02_validation">a previous exercise</a>.</p>
+<h2 id="accessor-methods"><a class="header" href="#accessor-methods">Accessor methods</a></h2>
+<p>In summary:</p>
+<ul>
+<li>All <code>Ticket</code> fields are private</li>
+<li>We provide a public constructor, <code>Ticket::new</code>, that enforces our validation rules on creation</li>
+</ul>
+<p>That's a good start, but it's not enough: apart from creating a <code>Ticket</code>, we also need to interact with it.
+But how can we access the fields if they're private?</p>
+<p>We need to provide <strong>accessor methods</strong>.<br/>
+Accessor methods are public methods that allow you to read the value of a private field (or fields) of a struct.</p>
+<p>Rust doesn't have a built-in way to generate accessor methods for you, like some other languages do.
+You have to write them yourself—they're just regular methods.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/03_ticket_v1/05_encapsulation"><code>03_ticket_v1/05_encapsulation</code></a></p>
+<hr/>
+<ol class="footnote-definition"><li id="footnote-newtype">
+<p>Or refine their type, a technique we'll explore <a href="/100-exercises/05_ticket_v2/15_outro">later on</a>. <a href="#fr-newtype-1">↩</a></p>
+</li>
+</ol>
+                        
+</body>
+</html>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Combinators</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Combinators</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/06_ticket_management/07_combinators.html">https://rust-exercises.com/100-exercises/06_ticket_management/07_combinators.html</a></blockquote>
+                        
+<p>Iterators can do so much more than <code>for</code> loops!<br/>
+If you look at the documentation for the <code>Iterator</code> trait, you'll find a <strong>vast</strong> collection of
+methods that you can leverage to transform, filter, and combine iterators in various ways.</p>
+<p>Let's mention the most common ones:</p>
+<ul>
+<li><code>map</code> applies a function to each element of the iterator.</li>
+<li><code>filter</code> keeps only the elements that satisfy a predicate.</li>
+<li><code>filter_map</code> combines <code>filter</code> and <code>map</code> in one step.</li>
+<li><code>cloned</code> converts an iterator of references into an iterator of values, cloning each element.</li>
+<li><code>enumerate</code> returns a new iterator that yields <code>(index, value)</code> pairs.</li>
+<li><code>skip</code> skips the first <code>n</code> elements of the iterator.</li>
+<li><code>take</code> stops the iterator after <code>n</code> elements.</li>
+<li><code>chain</code> combines two iterators into one.</li>
+</ul>
+<p>These methods are called <strong>combinators</strong>.<br/>
+They are usually <strong>chained</strong> together to create complex transformations in a concise and readable way:</p>
+<pre><code class="language-rust">let numbers = vec![1, 2, 3, 4, 5];
+// The sum of the squares of the even numbers
+let outcome: u32 = numbers.iter()
+    .filter(|&amp;n| n % 2 == 0)
+    .map(|&amp;n| n * n)
+    .sum();</code></pre>
+<h2 id="closures"><a class="header" href="#closures">Closures</a></h2>
+<p>What's going on with the <code>filter</code> and <code>map</code> methods above?<br/>
+They take <strong>closures</strong> as arguments.</p>
+<p>Closures are <strong>anonymous functions</strong>, i.e. functions that are not defined using the <code>fn</code> syntax we are used to.<br/>
+They are defined using the <code>|args| body</code> syntax, where <code>args</code> are the arguments and <code>body</code> is the function body.
+<code>body</code> can be a block of code or a single expression.
+For example:</p>
+<pre><code class="language-rust">// An anonymous function that adds 1 to its argument
+let add_one = |x| x + 1;
+// Could be written with a block too:
+let add_one = |x| { x + 1 };</code></pre>
+<p>Closures can take more than one argument:</p>
+<pre><code class="language-rust">let add = |x, y| x + y;
+let sum = add(1, 2);</code></pre>
+<p>They can also capture variables from their environment:</p>
+<pre><code class="language-rust">let x = 42;
+let add_x = |y| x + y;
+let sum = add_x(1);</code></pre>
+<p>If necessary, you can specify the types of the arguments and/or the return type:</p>
+<pre><code class="language-rust">// Just the input type
+let add_one = |x: i32| x + 1;
+// Or both input and output types, using the `fn` syntax
+let add_one: fn(i32) -&gt; i32 = |x| x + 1;</code></pre>
+<h2 id="collect"><a class="header" href="#collect"><code>collect</code></a></h2>
+<p>What happens when you're done transforming an iterator using combinators?<br/>
+You either iterate over the transformed values using a <code>for</code> loop, or you collect them into a collection.</p>
+<p>The latter is done using the <code>collect</code> method.<br/>
+<code>collect</code> consumes the iterator and collects its elements into a collection of your choice.</p>
+<p>For example, you can collect the squares of the even numbers into a <code>Vec</code>:</p>
+<pre><code class="language-rust">let numbers = vec![1, 2, 3, 4, 5];
+let squares_of_evens: Vec&lt;u32&gt; = numbers.iter()
+    .filter(|&amp;n| n % 2 == 0)
+    .map(|&amp;n| n * n)
+    .collect();</code></pre>
+<p><code>collect</code> is generic over its <strong>return type</strong>.<br/>
+Therefore you usually need to provide a type hint to help the compiler infer the correct type.
+In the example above, we annotated the type of <code>squares_of_evens</code> to be <code>Vec&lt;u32&gt;</code>.
+Alternatively, you can use the <strong>turbofish syntax</strong> to specify the type:</p>
+<pre><code class="language-rust">let squares_of_evens = numbers.iter()
+    .filter(|&amp;n| n % 2 == 0)
+    .map(|&amp;n| n * n)
+    // Turbofish syntax: `&lt;method_name&gt;::&lt;type&gt;()`
+    // It's called turbofish because `::&lt;&gt;` looks like a fish
+    .collect::&lt;Vec&lt;u32&gt;&gt;();</code></pre>
+<h2 id="further-reading"><a class="header" href="#further-reading">Further reading</a></h2>
+<ul>
+<li><a href="https://doc.rust-lang.org/std/iter/trait.Iterator.html"><code>Iterator</code>'s documentation</a> gives you an
+overview of the methods available for iterators in <code>std</code>.</li>
+<li><a href="https://docs.rs/itertools/">The <code>itertools</code> crate</a> defines even <strong>more</strong> combinators for iterators.</li>
+</ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/06_ticket_management/07_combinators"><code>06_ticket_management/07_combinators</code></a></p>
+
+                        
+</body>
+</html>

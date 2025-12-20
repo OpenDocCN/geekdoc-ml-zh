@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Deref trait</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Deref trait</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/04_traits/07_deref.html">https://rust-exercises.com/100-exercises/04_traits/07_deref.html</a></blockquote>
+                        
+<p>In the previous exercise you didn't have to do much, did you?</p>
+<p>Changing</p>
+<pre><code class="language-rust">impl Ticket {
+    pub fn title(&amp;self) -&gt; &amp;String {
+        &amp;self.title
+    }
+}</code></pre>
+<p>to</p>
+<pre><code class="language-rust">impl Ticket {
+    pub fn title(&amp;self) -&gt; &amp;str {
+        &amp;self.title
+    }
+}</code></pre>
+<p>was all you needed to do to get the code to compile and the tests to pass.
+Some alarm bells should be ringing in your head though.</p>
+<h2 id="it-shouldnt-work-but-it-does"><a class="header" href="#it-shouldnt-work-but-it-does">It shouldn't work, but it does</a></h2>
+<p>Let's review the facts:</p>
+<ul>
+<li><code>self.title</code> is a <code>String</code></li>
+<li><code>&amp;self.title</code> is, therefore, a <code>&amp;String</code></li>
+<li>The output of the (modified) <code>title</code> method is <code>&amp;str</code></li>
+</ul>
+<p>You would expect a compiler error, wouldn't you? <code>Expected &amp;String, found &amp;str</code> or something similar.
+Instead, it just works. <strong>Why</strong>?</p>
+<h2 id="deref-to-the-rescue"><a class="header" href="#deref-to-the-rescue"><code>Deref</code> to the rescue</a></h2>
+<p>The <code>Deref</code> trait is the mechanism behind the language feature known as <a href="https://doc.rust-lang.org/std/ops/trait.Deref.html#deref-coercion"><strong>deref coercion</strong></a>.<br/>
+The trait is defined in the standard library, in the <code>std::ops</code> module:</p>
+<pre><code class="language-rust">// I've slightly simplified the definition for now.
+// We'll see the full definition later on.
+pub trait Deref {
+    type Target;
+    
+    fn deref(&amp;self) -&gt; &amp;Self::Target;
+}</code></pre>
+<p><code>type Target</code> is an <strong>associated type</strong>.<br/>
+It's a placeholder for a concrete type that must be specified when the trait is implemented.</p>
+<h2 id="deref-coercion"><a class="header" href="#deref-coercion">Deref coercion</a></h2>
+<p>By implementing <code>Deref&lt;Target = U&gt;</code> for a type <code>T</code> you're telling the compiler that <code>&amp;T</code> and <code>&amp;U</code> are
+somewhat interchangeable.<br/>
+In particular, you get the following behavior:</p>
+<ul>
+<li>References to <code>T</code> are implicitly converted into references to <code>U</code> (i.e. <code>&amp;T</code> becomes <code>&amp;U</code>)</li>
+<li>You can call on <code>&amp;T</code> all the methods defined on <code>U</code> that take <code>&amp;self</code> as input.</li>
+</ul>
+<p>There is one more thing around the dereference operator, <code>*</code>, but we don't need it yet (see <code>std</code>'s docs
+if you're curious).</p>
+<h2 id="string-implements-deref"><a class="header" href="#string-implements-deref"><code>String</code> implements <code>Deref</code></a></h2>
+<p><code>String</code> implements <code>Deref</code> with <code>Target = str</code>:</p>
+<pre><code class="language-rust">impl Deref for String {
+    type Target = str;
+    
+    fn deref(&amp;self) -&gt; &amp;str {
+        // [...]
+    }
+}</code></pre>
+<p>Thanks to this implementation and deref coercion, a <code>&amp;String</code> is automatically converted into a <code>&amp;str</code> when needed.</p>
+<h2 id="dont-abuse-deref-coercion"><a class="header" href="#dont-abuse-deref-coercion">Don't abuse deref coercion</a></h2>
+<p>Deref coercion is a powerful feature, but it can lead to confusion.<br/>
+Automatically converting types can make the code harder to read and understand. If a method with the same name
+is defined on both <code>T</code> and <code>U</code>, which one will be called?</p>
+<p>We'll examine later in the course the "safest" use cases for deref coercion: smart pointers.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/04_traits/07_deref"><code>04_traits/07_deref</code></a></p>
+
+                        
+</body>
+</html>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Concise branching</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Concise branching</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/05_ticket_v2/04_if_let.html">https://rust-exercises.com/100-exercises/05_ticket_v2/04_if_let.html</a></blockquote>
+                        
+<p>Your solution to the previous exercise probably looks like this:</p>
+<pre><code class="language-rust">impl Ticket {
+    pub fn assigned_to(&amp;self) -&gt; &amp;str {
+        match &amp;self.status {
+            Status::InProgress { assigned_to } =&gt; assigned_to,
+            Status::Done | Status::ToDo =&gt; {
+                panic!(
+                    "Only `In-Progress` tickets can be \
+                    assigned to someone"
+                )
+            }
+        }
+    }
+}</code></pre>
+<p>You only care about the <code>Status::InProgress</code> variant.
+Do you really need to match on all the other variants?</p>
+<p>New constructs to the rescue!</p>
+<h2 id="if-let"><a class="header" href="#if-let"><code>if let</code></a></h2>
+<p>The <code>if let</code> construct allows you to match on a single variant of an enum,
+without having to handle all the other variants.</p>
+<p>Here's how you can use <code>if let</code> to simplify the <code>assigned_to</code> method:</p>
+<pre><code class="language-rust">impl Ticket {
+    pub fn assigned_to(&amp;self) -&gt; &amp;str {
+        if let Status::InProgress { assigned_to } = &amp;self.status {
+            assigned_to
+        } else {
+            panic!(
+                "Only `In-Progress` tickets can be assigned to someone"
+            );
+        }
+    }
+}</code></pre>
+<h2 id="letelse"><a class="header" href="#letelse"><code>let/else</code></a></h2>
+<p>If the <code>else</code> branch is meant to return early (a panic counts as returning early!),
+you can use the <code>let/else</code> construct:</p>
+<pre><code class="language-rust">impl Ticket {
+    pub fn assigned_to(&amp;self) -&gt; &amp;str {
+        let Status::InProgress { assigned_to } = &amp;self.status else {
+            panic!(
+                "Only `In-Progress` tickets can be assigned to someone"
+            );
+        };
+        assigned_to
+    }
+}</code></pre>
+<p>It allows you to assign the destructured variable without incurring
+any "right drift", i.e. the variable is assigned at the same indentation level
+as the code that precedes it.</p>
+<h2 id="style"><a class="header" href="#style">Style</a></h2>
+<p>Both <code>if let</code> and <code>let/else</code> are idiomatic Rust constructs.<br/>
+Use them as you see fit to improve the readability of your code,
+but don't overdo it: <code>match</code> is always there when you need it.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/05_ticket_v2/04_if_let"><code>05_ticket_v2/04_if_let</code></a></p>
+
+                        
+</body>
+</html>

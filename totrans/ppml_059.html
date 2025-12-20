@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Arrays</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Arrays</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/06_ticket_management/01_arrays.html">https://rust-exercises.com/100-exercises/06_ticket_management/01_arrays.html</a></blockquote>
+                        
+<p>As soon as we start talking about "ticket management" we need to think about a way to store <em>multiple</em> tickets.
+In turn, this means we need to think about collections. In particular, homogeneous collections:
+we want to store multiple instances of the same type.</p>
+<p>What does Rust have to offer in this regard?</p>
+<h2 id="arrays-1"><a class="header" href="#arrays-1">Arrays</a></h2>
+<p>A first attempt could be to use an <strong>array</strong>.<br/>
+Arrays in Rust are fixed-size collections of elements of the same type.</p>
+<p>Here's how you can define an array:</p>
+<pre><code class="language-rust">// Array type syntax: [ &lt;type&gt; ; &lt;number of elements&gt; ]
+let numbers: [u32; 3] = [1, 2, 3];</code></pre>
+<p>This creates an array of 3 integers, initialized with the values <code>1</code>, <code>2</code>, and <code>3</code>.<br/>
+The type of the array is <code>[u32; 3]</code>, which reads as "an array of <code>u32</code>s with a length of 3".</p>
+<p>If all array elements are the same, you can use a shorter syntax to initialize it:</p>
+<pre><code class="language-rust">// [ &lt;value&gt; ; &lt;number of elements&gt; ]
+let numbers: [u32; 3] = [1; 3];</code></pre>
+<p><code>[1; 3]</code> creates an array of three elements, all equal to <code>1</code>.</p>
+<h3 id="accessing-elements"><a class="header" href="#accessing-elements">Accessing elements</a></h3>
+<p>You can access elements of an array using square brackets:</p>
+<pre><code class="language-rust">let first = numbers[0];
+let second = numbers[1];
+let third = numbers[2];</code></pre>
+<p>The index must be of type <code>usize</code>.<br/>
+Arrays are <strong>zero-indexed</strong>, like everything in Rust. You've seen this before with string slices and field indexing in
+tuples/tuple-like variants.</p>
+<h3 id="out-of-bounds-access"><a class="header" href="#out-of-bounds-access">Out-of-bounds access</a></h3>
+<p>If you try to access an element that's out of bounds, Rust will panic:</p>
+<pre><code class="language-rust">let numbers: [u32; 3] = [1, 2, 3];
+let fourth = numbers[3]; // This will panic</code></pre>
+<p>This is enforced at runtime using <strong>bounds checking</strong>. It comes with a small performance overhead, but it's how
+Rust prevents buffer overflows.<br/>
+In some scenarios the Rust compiler can optimize away bounds checks, especially if iterators are involved—we'll speak
+more about this later on.</p>
+<p>If you don't want to panic, you can use the <code>get</code> method, which returns an <code>Option&lt;&amp;T&gt;</code>:</p>
+<pre><code class="language-rust">let numbers: [u32; 3] = [1, 2, 3];
+assert_eq!(numbers.get(0), Some(&amp;1));
+// You get a `None` if you try to access an out-of-bounds index
+// rather than a panic.
+assert_eq!(numbers.get(3), None);</code></pre>
+<h3 id="performance"><a class="header" href="#performance">Performance</a></h3>
+<p>Since the size of an array is known at compile-time, the compiler can allocate the array on the stack.
+If you run the following code:</p>
+<pre><code class="language-rust">let numbers: [u32; 3] = [1, 2, 3];</code></pre>
+<p>You'll get the following memory layout:</p>
+<pre><code class="language-text">        +---+---+---+
+Stack:  | 1 | 2 | 3 |
+        +---+---+---+
+</code></pre>
+<p>In other words, the size of an array is <code>std::mem::size_of::&lt;T&gt;() * N</code>, where <code>T</code> is the type of the elements and <code>N</code> is
+the number of elements.<br/>
+You can access and replace each element in <code>O(1)</code> time.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/06_ticket_management/01_arrays"><code>06_ticket_management/01_arrays</code></a></p>
+
+                        
+</body>
+</html>

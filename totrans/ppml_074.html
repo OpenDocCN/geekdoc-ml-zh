@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Ordering</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Ordering</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/06_ticket_management/16_btreemap.html">https://rust-exercises.com/100-exercises/06_ticket_management/16_btreemap.html</a></blockquote>
+                        
+<p>By moving from a <code>Vec</code> to a <code>HashMap</code> we have improved the performance of our ticket management system,
+and simplified our code in the process.<br/>
+It's not all roses, though. When iterating over a <code>Vec</code>-backed store, we could be sure that the tickets
+would be returned in the order they were added.<br/>
+That's not the case with a <code>HashMap</code>: you can iterate over the tickets, but the order is random.</p>
+<p>We can recover a consistent ordering by switching from a <code>HashMap</code> to a <code>BTreeMap</code>.</p>
+<h2 id="btreemap"><a class="header" href="#btreemap"><code>BTreeMap</code></a></h2>
+<p>A <code>BTreeMap</code> guarantees that entries are sorted by their keys.<br/>
+This is useful when you need to iterate over the entries in a specific order, or if you need to
+perform range queries (e.g. "give me all tickets with an id between 10 and 20").</p>
+<p>Just like <code>HashMap</code>, you won't find trait bounds on the definition of <code>BTreeMap</code>.
+But you'll find trait bounds on its methods. Let's look at <code>insert</code>:</p>
+<pre><code class="language-rust">// `K` and `V` stand for the key and value types, respectively,
+// just like in `HashMap`.
+impl&lt;K, V&gt; BTreeMap&lt;K, V&gt; {
+    pub fn insert(&amp;mut self, key: K, value: V) -&gt; Option&lt;V&gt;
+    where
+        K: Ord,
+    {
+        // implementation
+    }
+}</code></pre>
+<p><code>Hash</code> is no longer required. Instead, the key type must implement the <code>Ord</code> trait.</p>
+<h2 id="ord"><a class="header" href="#ord"><code>Ord</code></a></h2>
+<p>The <code>Ord</code> trait is used to compare values.<br/>
+While <code>PartialEq</code> is used to compare for equality, <code>Ord</code> is used to compare for ordering.</p>
+<p>It's defined in <code>std::cmp</code>:</p>
+<pre><code class="language-rust">pub trait Ord: Eq + PartialOrd {
+    fn cmp(&amp;self, other: &amp;Self) -&gt; Ordering;
+}</code></pre>
+<p>The <code>cmp</code> method returns an <code>Ordering</code> enum, which can be one
+of <code>Less</code>, <code>Equal</code>, or <code>Greater</code>.<br/>
+<code>Ord</code> requires that two other traits are implemented: <code>Eq</code> and <code>PartialOrd</code>.</p>
+<h2 id="partialord"><a class="header" href="#partialord"><code>PartialOrd</code></a></h2>
+<p><code>PartialOrd</code> is a weaker version of <code>Ord</code>, just like <code>PartialEq</code> is a weaker version of <code>Eq</code>.
+You can see why by looking at its definition:</p>
+<pre><code class="language-rust">pub trait PartialOrd: PartialEq {
+    fn partial_cmp(&amp;self, other: &amp;Self) -&gt; Option&lt;Ordering&gt;;
+}</code></pre>
+<p><code>PartialOrd::partial_cmp</code> returns an <code>Option</code>—it is not guaranteed that two values can
+be compared.<br/>
+For example, <code>f32</code> doesn't implement <code>Ord</code> because <code>NaN</code> values are not comparable,
+the same reason why <code>f32</code> doesn't implement <code>Eq</code>.</p>
+<h2 id="implementing-ord-and-partialord"><a class="header" href="#implementing-ord-and-partialord">Implementing <code>Ord</code> and <code>PartialOrd</code></a></h2>
+<p>Both <code>Ord</code> and <code>PartialOrd</code> can be derived for your types:</p>
+<pre><code class="language-rust">// You need to add `Eq` and `PartialEq` too,
+// since `Ord` requires them.
+#[derive(Eq, PartialEq, Ord, PartialOrd)]
+struct TicketId(u64);</code></pre>
+<p>If you choose (or need) to implement them manually, be careful:</p>
+<ul>
+<li><code>Ord</code> and <code>PartialOrd</code> must be consistent with <code>Eq</code> and <code>PartialEq</code>.</li>
+<li><code>Ord</code> and <code>PartialOrd</code> must be consistent with each other.</li>
+</ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/06_ticket_management/16_btreemap"><code>06_ticket_management/16_btreemap</code></a></p>
+
+                        
+</body>
+</html>

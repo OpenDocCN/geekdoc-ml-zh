@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Overflow</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Overflow</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/02_basic_calculator/08_overflow.html">https://rust-exercises.com/100-exercises/02_basic_calculator/08_overflow.html</a></blockquote>
+                        
+<p>The factorial of a number grows quite fast.<br/>
+For example, the factorial of 20 is 2,432,902,008,176,640,000. That's already bigger than the maximum value for a
+32-bit integer, 2,147,483,647.</p>
+<p>When the result of an arithmetic operation is bigger than the maximum value for a given integer type,
+we are talking about <strong>an integer overflow</strong>.</p>
+<p>Integer overflows are an issue because they violate the contract for arithmetic operations.<br/>
+The result of an arithmetic operation between two integers of a given type should be another integer of the same type.
+But the <em>mathematically correct result</em> doesn't fit into that integer type!</p>
+<blockquote>
+<p>If the result is smaller than the minimum value for a given integer type, we refer to the event as <strong>an integer
+underflow</strong>.<br/>
+For brevity, we'll only talk about integer overflows for the rest of this section, but keep in mind that
+everything we say applies to integer underflows as well.</p>
+<p>The <code>speed</code> function you wrote in the <a href="/100-exercises/02_basic_calculator/02_variables">"Variables" section</a> underflowed for some input
+combinations.
+E.g. if <code>end</code> is smaller than <code>start</code>, <code>end - start</code> will underflow the <code>u32</code> type since the result is supposed
+to be negative but <code>u32</code> can't represent negative numbers.</p>
+</blockquote>
+<h2 id="no-automatic-promotion"><a class="header" href="#no-automatic-promotion">No automatic promotion</a></h2>
+<p>One possible approach would be automatically promote the result to a bigger integer type.
+E.g. if you're summing two <code>u8</code> integers and the result is 256 (<code>u8::MAX + 1</code>), Rust could choose to interpret the
+result as <code>u16</code>, the next integer type that's big enough to hold 256.</p>
+<p>But, as we've discussed before, Rust is quite picky about type conversions. Automatic integer promotion
+is not Rust's solution to the integer overflow problem.</p>
+<h2 id="alternatives"><a class="header" href="#alternatives">Alternatives</a></h2>
+<p>Since we ruled out automatic promotion, what can we do when an integer overflow occurs?<br/>
+It boils down to two different approaches:</p>
+<ul>
+<li>Reject the operation</li>
+<li>Come up with a "sensible" result that fits into the expected integer type</li>
+</ul>
+<h3 id="reject-the-operation"><a class="header" href="#reject-the-operation">Reject the operation</a></h3>
+<p>This is the most conservative approach: we stop the program when an integer overflow occurs.<br/>
+That's done via a panic, the mechanism we've already seen in the <a href="/100-exercises/02_basic_calculator/04_panics">"Panics" section</a>.</p>
+<h3 id="come-up-with-a-sensible-result"><a class="header" href="#come-up-with-a-sensible-result">Come up with a "sensible" result</a></h3>
+<p>When the result of an arithmetic operation is bigger than the maximum value for a given integer type, you can
+choose to <strong>wrap around</strong>.<br/>
+If you think of all the possible values for a given integer type as a circle, wrapping around means that when you
+reach the maximum value, you start again from the minimum value.</p>
+<p>For example, if you do a <strong>wrapping addition</strong> between 1 and 255 (=<code>u8::MAX</code>), the result is 0 (=<code>u8::MIN</code>).
+If you're working with signed integers, the same principle applies. E.g. adding 1 to 127 (=<code>i8::MAX</code>) with wrapping
+will give you -128 (=<code>i8::MIN</code>).</p>
+<h2 id="overflow-checks"><a class="header" href="#overflow-checks"><code>overflow-checks</code></a></h2>
+<p>Rust lets you, the developer, choose which approach to use when an integer overflow occurs.
+The behaviour is controlled by the <code>overflow-checks</code> profile setting.</p>
+<p>If <code>overflow-checks</code> is set to <code>true</code>, Rust will <strong>panic at runtime</strong> when an integer operation overflows.
+If <code>overflow-checks</code> is set to <code>false</code>, Rust will <strong>wrap around</strong> when an integer operation overflows.</p>
+<p>You may be wondering—what is a profile setting? Let's get into that!</p>
+<h2 id="profiles"><a class="header" href="#profiles">Profiles</a></h2>
+<p>A <a href="https://doc.rust-lang.org/cargo/reference/profiles.html"><strong>profile</strong></a> is a set of configuration options that can be
+used to customize the way Rust code is compiled.</p>
+<p>Cargo provides 4 built-in profiles: <code>dev</code>, <code>release</code>, <code>test</code>, and <code>bench</code>.<br/>
+The <code>dev</code> profile is used every time you run <code>cargo build</code>, <code>cargo run</code> or <code>cargo test</code>. It's aimed at local
+development,
+therefore it sacrifices runtime performance in favor of faster compilation times and a better debugging experience.<br/>
+The <code>release</code> profile, instead, is optimized for runtime performance but incurs longer compilation times. You need
+to explicitly request via the <code>--release</code> flag—e.g. <code>cargo build --release</code> or <code>cargo run --release</code>.
+The <code>test</code> profile is the default profile used by <code>cargo test</code>. The <code>test</code> profile inherits the settings from the <code>dev</code> profile.
+The <code>bench</code> profile is the default profile used by <code>cargo bench</code>. The <code>bench</code> profile inherits from the <code>release</code> profile.
+Use <code>dev</code> for iterative development and debugging, <code>release</code> for optimized production builds,<br/>
+<code>test</code> for correctness testing, and <code>bench</code> for performance benchmarking.</p>
+<blockquote>
+<p>"Have you built your project in release mode?" is almost a meme in the Rust community.<br/>
+It refers to developers who are not familiar with Rust and complain about its performance on
+social media (e.g. Reddit, Twitter) before realizing they haven't built their project in
+release mode.</p>
+</blockquote>
+<p>You can also define custom profiles or customize the built-in ones.</p>
+<h3 id="overflow-check"><a class="header" href="#overflow-check"><code>overflow-check</code></a></h3>
+<p>By default, <code>overflow-checks</code> is set to:</p>
+<ul>
+<li><code>true</code> for the <code>dev</code> profile</li>
+<li><code>false</code> for the <code>release</code> profile</li>
+</ul>
+<p>This is in line with the goals of the two profiles.<br/>
+<code>dev</code> is aimed at local development, so it panics in order to highlight potential issues as early as possible.<br/>
+<code>release</code>, instead, is tuned for runtime performance: checking for overflows would slow down the program, so it
+prefers to wrap around.</p>
+<p>At the same time, having different behaviours for the two profiles can lead to subtle bugs.<br/>
+Our recommendation is to enable <code>overflow-checks</code> for both profiles: it's better to crash than to silently produce
+incorrect results. The runtime performance hit is negligible in most cases; if you're working on a performance-critical
+application, you can run benchmarks to decide if it's something you can afford.</p>
+<h2 id="further-reading"><a class="header" href="#further-reading">Further reading</a></h2>
+<ul>
+<li>Check out <a href="https://huonw.github.io/blog/2016/04/myths-and-legends-about-integer-overflow-in-rust/">"Myths and legends about integer overflow in Rust"</a>
+for an in-depth discussion about integer overflow in Rust.</li>
+</ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/02_basic_calculator/08_overflow"><code>02_basic_calculator/08_overflow</code></a></p>
+
+                        
+</body>
+</html>

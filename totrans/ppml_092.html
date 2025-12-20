@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Spawning tasks</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Spawning tasks</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/08_futures/02_spawn.html">https://rust-exercises.com/100-exercises/08_futures/02_spawn.html</a></blockquote>
+                        
+<p>Your solution to the previous exercise should look something like this:</p>
+<pre><code class="language-rust">pub async fn echo(listener: TcpListener) -&gt; Result&lt;(), anyhow::Error&gt; {
+    loop {
+        let (mut socket, _) = listener.accept().await?;
+        let (mut reader, mut writer) = socket.split();
+        tokio::io::copy(&amp;mut reader, &amp;mut writer).await?;
+    }
+}</code></pre>
+<p>This is not bad!<br/>
+If a long time passes between two incoming connections, the <code>echo</code> function will be idle
+(since <code>TcpListener::accept</code> is an asynchronous function), thus allowing the executor
+to run other tasks in the meantime.</p>
+<p>But how can we actually have multiple tasks running concurrently?<br/>
+If we always run our asynchronous functions until completion (by using <code>.await</code>), we'll never
+have more than one task running at a time.</p>
+<p>This is where the <code>tokio::spawn</code> function comes in.</p>
+<h2 id="tokiospawn"><a class="header" href="#tokiospawn"><code>tokio::spawn</code></a></h2>
+<p><code>tokio::spawn</code> allows you to hand off a task to the executor, <strong>without waiting for it to complete</strong>.<br/>
+Whenever you invoke <code>tokio::spawn</code>, you're telling <code>tokio</code> to continue running
+the spawned task, in the background, <strong>concurrently</strong> with the task that spawned it.</p>
+<p>Here's how you can use it to process multiple connections concurrently:</p>
+<pre><code class="language-rust">use tokio::net::TcpListener;
+
+pub async fn echo(listener: TcpListener) -&gt; Result&lt;(), anyhow::Error&gt; {
+    loop {
+        let (mut socket, _) = listener.accept().await?;
+        // Spawn a background task to handle the connection
+        // thus allowing the main task to immediately start 
+        // accepting new connections
+        tokio::spawn(async move {
+            let (mut reader, mut writer) = socket.split();
+            tokio::io::copy(&amp;mut reader, &amp;mut writer).await?;
+        });
+    }
+}</code></pre>
+<h3 id="asynchronous-blocks"><a class="header" href="#asynchronous-blocks">Asynchronous blocks</a></h3>
+<p>In this example, we've passed an <strong>asynchronous block</strong> to <code>tokio::spawn</code>: <code>async move { /* */ }</code>
+Asynchronous blocks are a quick way to mark a region of code as asynchronous without having
+to define a separate async function.</p>
+<h3 id="joinhandle"><a class="header" href="#joinhandle"><code>JoinHandle</code></a></h3>
+<p><code>tokio::spawn</code> returns a <code>JoinHandle</code>.<br/>
+You can use <code>JoinHandle</code> to <code>.await</code> the background task, in the same way
+we used <code>join</code> for spawned threads.</p>
+<pre><code class="language-rust">pub async fn run() {
+    // Spawn a background task to ship telemetry data
+    // to a remote server
+    let handle = tokio::spawn(emit_telemetry());
+    // In the meantime, do some other useful work
+    do_work().await;
+    // But don't return to the caller until 
+    // the telemetry data has been successfully delivered
+    handle.await;
+}
+
+pub async fn emit_telemetry() {
+    // [...]
+}
+
+pub async fn do_work() {
+    // [...]
+}</code></pre>
+<h3 id="panic-boundary"><a class="header" href="#panic-boundary">Panic boundary</a></h3>
+<p>If a task spawned with <code>tokio::spawn</code> panics, the panic will be caught by the executor.<br/>
+If you don't <code>.await</code> the corresponding <code>JoinHandle</code>, the panic won't be propagated to the spawner.
+Even if you do <code>.await</code> the <code>JoinHandle</code>, the panic won't be propagated automatically.
+Awaiting a <code>JoinHandle</code> returns a <code>Result</code>, with <a href="https://docs.rs/tokio/latest/tokio/task/struct.JoinError.html"><code>JoinError</code></a>
+as its error type. You can then check if the task panicked by calling <code>JoinError::is_panic</code> and
+choose what to do with the panic—either log it, ignore it, or propagate it.</p>
+<pre><code class="language-rust">use tokio::task::JoinError;
+
+pub async fn run() {
+    let handle = tokio::spawn(work());
+    if let Err(e) = handle.await {
+        if let Ok(reason) = e.try_into_panic() {
+            // The task has panicked
+            // We resume unwinding the panic,
+            // thus propagating it to the current task
+            panic::resume_unwind(reason);
+        }
+    }
+}
+
+pub async fn work() {
+    // [...]
+}</code></pre>
+<h3 id="stdthreadspawn-vs-tokiospawn"><a class="header" href="#stdthreadspawn-vs-tokiospawn"><code>std::thread::spawn</code> vs <code>tokio::spawn</code></a></h3>
+<p>You can think of <code>tokio::spawn</code> as the asynchronous sibling of <code>std::thread::spawn</code>.</p>
+<p>Notice a key difference: with <code>std::thread::spawn</code>, you're delegating control to the OS scheduler.
+You're not in control of how threads are scheduled.</p>
+<p>With <code>tokio::spawn</code>, you're delegating to an async executor that runs entirely in
+user space. The underlying OS scheduler is not involved in the decision of which task
+to run next. We're in charge of that decision now, via the executor we chose to use.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/08_futures/02_spawn"><code>08_futures/02_spawn</code></a></p>
+
+                        
+</body>
+</html>

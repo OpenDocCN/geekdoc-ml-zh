@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>impl Trait</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>impl Trait</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/06_ticket_management/08_impl_trait.html">https://rust-exercises.com/100-exercises/06_ticket_management/08_impl_trait.html</a></blockquote>
+                        
+<p><code>TicketStore::to_dos</code> returns a <code>Vec&lt;&amp;Ticket&gt;</code>.<br/>
+That signature introduces a new heap allocation every time <code>to_dos</code> is called, which may be unnecessary depending
+on what the caller needs to do with the result.
+It'd be better if <code>to_dos</code> returned an iterator instead of a <code>Vec</code>, thus empowering the caller to decide whether to
+collect the results into a <code>Vec</code> or just iterate over them.</p>
+<p>That's tricky though!
+What's the return type of <code>to_dos</code>, as implemented below?</p>
+<pre><code class="language-rust">impl TicketStore {
+    pub fn to_dos(&amp;self) -&gt; ??? {
+        self.tickets.iter().filter(|t| t.status == Status::ToDo)
+    }
+}</code></pre>
+<h2 id="unnameable-types"><a class="header" href="#unnameable-types">Unnameable types</a></h2>
+<p>The <code>filter</code> method returns an instance of <code>std::iter::Filter</code>, which has the following definition:</p>
+<pre><code class="language-rust">pub struct Filter&lt;I, P&gt; { /* fields omitted */ }</code></pre>
+<p>where <code>I</code> is the type of the iterator being filtered on and <code>P</code> is the predicate used to filter the elements.<br/>
+We know that <code>I</code> is <code>std::slice::Iter&lt;'_, Ticket&gt;</code> in this case, but what about <code>P</code>?<br/>
+<code>P</code> is a closure, an <strong>anonymous function</strong>. As the name suggests, closures don't have a name,
+so we can't write them down in our code.</p>
+<p>Rust has a solution for this: <strong>impl Trait</strong>.</p>
+<h2 id="impl-trait-1"><a class="header" href="#impl-trait-1"><code>impl Trait</code></a></h2>
+<p><code>impl Trait</code> is a feature that allows you to return a type without specifying its name.
+You just declare what trait(s) the type implements, and Rust figures out the rest.</p>
+<p>In this case, we want to return an iterator of references to <code>Ticket</code>s:</p>
+<pre><code class="language-rust">impl TicketStore {
+    pub fn to_dos(&amp;self) -&gt; impl Iterator&lt;Item = &amp;Ticket&gt; {
+        self.tickets.iter().filter(|t| t.status == Status::ToDo)
+    }
+}</code></pre>
+<p>That's it!</p>
+<h2 id="generic"><a class="header" href="#generic">Generic?</a></h2>
+<p><code>impl Trait</code> in return position is <strong>not</strong> a generic parameter.</p>
+<p>Generics are placeholders for types that are filled in by the caller of the function.
+A function with a generic parameter is <strong>polymorphic</strong>: it can be called with different types, and the compiler will generate
+a different implementation for each type.</p>
+<p>That's not the case with <code>impl Trait</code>.
+The return type of a function with <code>impl Trait</code> is <strong>fixed</strong> at compile time, and the compiler will generate
+a single implementation for it.
+This is why <code>impl Trait</code> is also called <strong>opaque return type</strong>: the caller doesn't know the exact type of the return value,
+only that it implements the specified trait(s). But the compiler knows the exact type, there is no polymorphism involved.</p>
+<h2 id="rpit"><a class="header" href="#rpit">RPIT</a></h2>
+<p>If you read RFCs or deep-dives about Rust, you might come across the acronym <strong>RPIT</strong>.<br/>
+It stands for <strong>"Return Position Impl Trait"</strong> and refers to the use of <code>impl Trait</code> in return position.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/06_ticket_management/08_impl_trait"><code>06_ticket_management/08_impl_trait</code></a></p>
+
+                        
+</body>
+</html>

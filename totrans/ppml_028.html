@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Traits</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Traits</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/04_traits/01_trait.html">https://rust-exercises.com/100-exercises/04_traits/01_trait.html</a></blockquote>
+                        
+<p>Let's look again at our <code>Ticket</code> type:</p>
+<pre><code class="language-rust">pub struct Ticket {
+    title: String,
+    description: String,
+    status: String,
+}</code></pre>
+<p>All our tests, so far, have been making assertions using <code>Ticket</code>'s fields.</p>
+<pre><code class="language-rust">assert_eq!(ticket.title(), "A new title");</code></pre>
+<p>What if we wanted to compare two <code>Ticket</code> instances directly?</p>
+<pre><code class="language-rust">let ticket1 = Ticket::new(/* ... */);
+let ticket2 = Ticket::new(/* ... */);
+ticket1 == ticket2</code></pre>
+<p>The compiler will stop us:</p>
+<pre><code class="language-text">error[E0369]: binary operation `==` cannot be applied to type `Ticket`
+  --&gt; src/main.rs:18:13
+   |
+18 |     ticket1 == ticket2
+   |     ------- ^^ ------- Ticket
+   |     |
+   |     Ticket
+   |
+note: an implementation of `PartialEq` might be missing for `Ticket`
+</code></pre>
+<p><code>Ticket</code> is a new type. Out of the box, there is <strong>no behavior attached to it</strong>.<br/>
+Rust doesn't magically infer how to compare two <code>Ticket</code> instances just because they contain <code>String</code>s.</p>
+<p>The Rust compiler is nudging us in the right direction though: it's suggesting that we might be missing an implementation
+of <code>PartialEq</code>. <code>PartialEq</code> is a <strong>trait</strong>!</p>
+<h2 id="what-are-traits"><a class="header" href="#what-are-traits">What are traits?</a></h2>
+<p>Traits are Rust's way of defining <strong>interfaces</strong>.<br/>
+A trait defines a set of methods that a type must implement to satisfy the trait's contract.</p>
+<h3 id="defining-a-trait"><a class="header" href="#defining-a-trait">Defining a trait</a></h3>
+<p>The syntax for a trait definition goes like this:</p>
+<pre><code class="language-rust">trait &lt;TraitName&gt; {
+    fn &lt;method_name&gt;(&lt;parameters&gt;) -&gt; &lt;return_type&gt;;
+}</code></pre>
+<p>We might, for example, define a trait named <code>MaybeZero</code> that requires its implementors to define an <code>is_zero</code> method:</p>
+<pre><code class="language-rust">trait MaybeZero {
+    fn is_zero(self) -&gt; bool;
+}</code></pre>
+<h3 id="implementing-a-trait"><a class="header" href="#implementing-a-trait">Implementing a trait</a></h3>
+<p>To implement a trait for a type we use the <code>impl</code> keyword, just like we do for regular<sup class="footnote-reference" id="fr-inherent-1"><a href="#footnote-inherent">1</a></sup> methods,
+but the syntax is a bit different:</p>
+<pre><code class="language-rust">impl &lt;TraitName&gt; for &lt;TypeName&gt; {
+    fn &lt;method_name&gt;(&lt;parameters&gt;) -&gt; &lt;return_type&gt; {
+        // Method body
+    }
+}</code></pre>
+<p>For example, to implement the <code>MaybeZero</code> trait for a custom number type, <code>WrappingU32</code>:</p>
+<pre><code class="language-rust">pub struct WrappingU32 {
+    inner: u32,
+}
+
+impl MaybeZero for WrappingU32 {
+    fn is_zero(self) -&gt; bool {
+        self.inner == 0
+    }
+}</code></pre>
+<h3 id="invoking-a-trait-method"><a class="header" href="#invoking-a-trait-method">Invoking a trait method</a></h3>
+<p>To invoke a trait method, we use the <code>.</code> operator, just like we do with regular methods:</p>
+<pre><code class="language-rust">let x = WrappingU32 { inner: 5 };
+assert!(!x.is_zero());</code></pre>
+<p>To invoke a trait method, two things must be true:</p>
+<ul>
+<li>The type must implement the trait.</li>
+<li>The trait must be in scope.</li>
+</ul>
+<p>To satisfy the latter, you may have to add a <code>use</code> statement for the trait:</p>
+<pre><code class="language-rust">use crate::MaybeZero;</code></pre>
+<p>This is not necessary if:</p>
+<ul>
+<li>The trait is defined in the same module where the invocation occurs.</li>
+<li>The trait is defined in the standard library's <strong>prelude</strong>.
+The prelude is a set of traits and types that are automatically imported into every Rust program.
+It's as if <code>use std::prelude::*;</code> was added at the beginning of every Rust module.</li>
+</ul>
+<p>You can find the list of traits and types in the prelude in the
+<a href="https://doc.rust-lang.org/std/prelude/index.html">Rust documentation</a>.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/04_traits/01_trait"><code>04_traits/01_trait</code></a></p>
+<hr/>
+<ol class="footnote-definition"><li id="footnote-inherent">
+<p>A method defined directly on a type, without using a trait, is also known as an <strong>inherent method</strong>. <a href="#fr-inherent-1">↩</a></p>
+</li>
+</ol>
+                        
+</body>
+</html>

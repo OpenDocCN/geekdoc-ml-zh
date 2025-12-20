@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Conversions, pt. 1</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Conversions, pt. 1</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/02_basic_calculator/10_as_casting.html">https://rust-exercises.com/100-exercises/02_basic_calculator/10_as_casting.html</a></blockquote>
+                        
+<p>We've repeated over and over again that Rust won't perform
+implicit type conversions for integers.<br/>
+How do you perform <em>explicit</em> conversions then?</p>
+<h2 id="as"><a class="header" href="#as"><code>as</code></a></h2>
+<p>You can use the <code>as</code> operator to convert between integer types.<br/>
+<code>as</code> conversions are <strong>infallible</strong>.</p>
+<p>For example:</p>
+<pre><code class="language-rust">let a: u32 = 10;
+
+// Cast `a` into the `u64` type
+let b = a as u64;
+
+// You can use `_` as the target type
+// if it can be correctly inferred 
+// by the compiler. For example:
+let c: u64 = a as _;</code></pre>
+<p>The semantics of this conversion are what you expect: all <code>u32</code> values are valid <code>u64</code>
+values.</p>
+<h3 id="truncation"><a class="header" href="#truncation">Truncation</a></h3>
+<p>Things get more interesting if we go in the opposite direction:</p>
+<pre><code class="language-rust">// A number that's too big 
+// to fit into a `u8`
+let a: u16 = 255 + 1;
+let b = a as u8;</code></pre>
+<p>This program will run without issues, because <code>as</code> conversions are infallible.
+But what is the value of <code>b</code>?
+When going from a larger integer type to a smaller, the Rust compiler will perform
+a <strong>truncation</strong>.</p>
+<p>To understand what happens, let's start by looking at how <code>256u16</code> is
+represented in memory, as a sequence of bits:</p>
+<pre><code class="language-text"> 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+|               |               |
++---------------+---------------+
+  First 8 bits    Last 8 bits
+</code></pre>
+<p>When converting to a <code>u8</code>, the Rust compiler will keep the last 8 bits of a <code>u16</code>
+memory representation:</p>
+<pre><code class="language-text"> 0 0 0 0 0 0 0 0 
+|               |
++---------------+
+  Last 8 bits
+</code></pre>
+<p>Hence <code>256 as u8</code> is equal to <code>0</code>. That's... not ideal, in most scenarios.<br/>
+In fact, the Rust compiler will actively try to stop you if it sees you trying
+to cast a literal value which will result in a truncation:</p>
+<pre><code class="language-text">error: literal out of range for `i8`
+  |
+4 |     let a = 255 as i8;
+  |             ^^^
+  |
+  = note: the literal `255` does not fit into the type `i8` 
+          whose range is `-128..=127`
+  = help: consider using the type `u8` instead
+  = note: `#[deny(overflowing_literals)]` on by default
+</code></pre>
+<h3 id="recommendation"><a class="header" href="#recommendation">Recommendation</a></h3>
+<p>As a rule of thumb, be quite careful with <code>as</code> casting.<br/>
+Use it <em>exclusively</em> for going from a smaller type to a larger type.
+To convert from a larger to smaller integer type, rely on the
+<a href="/100-exercises/05_ticket_v2/13_try_from"><em>fallible</em> conversion machinery</a> that we'll
+explore later in the course.</p>
+<h3 id="limitations"><a class="header" href="#limitations">Limitations</a></h3>
+<p>Surprising behaviour is not the only downside of <code>as</code> casting.
+It is also fairly limited: you can only rely on <code>as</code> casting
+for primitive types and a few other special cases.<br/>
+When working with composite types, you'll have to rely on
+different conversion mechanisms (<a href="/100-exercises/05_ticket_v2/13_try_from">fallible</a>
+and <a href="/100-exercises/04_traits/09_from">infallible</a>), which we'll explore later on.</p>
+<h2 id="further-reading"><a class="header" href="#further-reading">Further reading</a></h2>
+<ul>
+<li>Check out <a href="https://doc.rust-lang.org/reference/expressions/operator-expr.html#numeric-cast">Rust's official reference</a>
+to learn the precise behaviour of <code>as</code> casting for each source/target combination,
+as well as the exhaustive list of allowed conversions.</li>
+</ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/02_basic_calculator/10_as_casting"><code>02_basic_calculator/10_as_casting</code></a></p>
+
+                        
+</body>
+</html>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>HashMap</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>HashMap</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/06_ticket_management/15_hashmap.html">https://rust-exercises.com/100-exercises/06_ticket_management/15_hashmap.html</a></blockquote>
+                        
+<p>Our implementation of <code>Index</code>/<code>IndexMut</code> is not ideal: we need to iterate over the entire
+<code>Vec</code> to retrieve a ticket by id; the algorithmic complexity is <code>O(n)</code>, where
+<code>n</code> is the number of tickets in the store.</p>
+<p>We can do better by using a different data structure for storing tickets: a <code>HashMap&lt;K, V&gt;</code>.</p>
+<pre><code class="language-rust">use std::collections::HashMap;
+
+// Type inference lets us omit an explicit type signature (which
+// would be `HashMap&lt;String, String&gt;` in this example).
+let mut book_reviews = HashMap::new();
+
+book_reviews.insert(
+    "Adventures of Huckleberry Finn".to_string(),
+    "My favorite book.".to_string(),
+);</code></pre>
+<p><code>HashMap</code> works with key-value pairs. It's generic over both: <code>K</code> is the generic
+parameter for the key type, while <code>V</code> is the one for the value type.</p>
+<p>The expected cost of insertions, retrievals and removals is <strong>constant</strong>, <code>O(1)</code>.
+That sounds perfect for our usecase, doesn't it?</p>
+<h2 id="key-requirements"><a class="header" href="#key-requirements">Key requirements</a></h2>
+<p>There are no trait bounds on <code>HashMap</code>'s struct definition, but you'll find some
+on its methods. Let's look at <code>insert</code>, for example:</p>
+<pre><code class="language-rust">// Slightly simplified
+impl&lt;K, V&gt; HashMap&lt;K, V&gt;
+where
+    K: Eq + Hash,
+{
+    pub fn insert(&amp;mut self, k: K, v: V) -&gt; Option&lt;V&gt; {
+        // [...]
+    }
+}</code></pre>
+<p>The key type must implement the <code>Eq</code> and <code>Hash</code> traits.<br/>
+Let's dig into those two.</p>
+<h2 id="hash"><a class="header" href="#hash"><code>Hash</code></a></h2>
+<p>A hashing function (or hasher) maps a potentially infinite set of a values (e.g.
+all possible strings) to a bounded range (e.g. a <code>u64</code> value).<br/>
+There are many different hashing functions around, each with different properties
+(speed, collision risk, reversibility, etc.).</p>
+<p>A <code>HashMap</code>, as the name suggests, uses a hashing function behind the scene.
+It hashes your key and then uses that hash to store/retrieve the associated value.
+This strategy requires the key type must be hashable, hence the <code>Hash</code> trait bound on <code>K</code>.</p>
+<p>You can find the <code>Hash</code> trait in the <code>std::hash</code> module:</p>
+<pre><code class="language-rust">pub trait Hash {
+    // Required method
+    fn hash&lt;H&gt;(&amp;self, state: &amp;mut H)
+       where H: Hasher;
+}</code></pre>
+<p>You will rarely implement <code>Hash</code> manually. Most of the times you'll derive it:</p>
+<pre><code class="language-rust">#[derive(Hash)]
+struct Person {
+    id: u32,
+    name: String,
+}</code></pre>
+<h2 id="eq"><a class="header" href="#eq"><code>Eq</code></a></h2>
+<p><code>HashMap</code> must be able to compare keys for equality. This is particularly important
+when dealing with hash collisions—i.e. when two different keys hash to the same value.</p>
+<p>You may wonder: isn't that what the <code>PartialEq</code> trait is for? Almost!<br/>
+<code>PartialEq</code> is not enough for <code>HashMap</code> because it doesn't guarantee reflexivity, i.e. <code>a == a</code> is always <code>true</code>.<br/>
+For example, floating point numbers (<code>f32</code> and <code>f64</code>) implement <code>PartialEq</code>,
+but they don't satisfy the reflexivity property: <code>f32::NAN == f32::NAN</code> is <code>false</code>.<br/>
+Reflexivity is crucial for <code>HashMap</code> to work correctly: without it, you wouldn't be able to retrieve a value
+from the map using the same key you used to insert it.</p>
+<p>The <code>Eq</code> trait extends <code>PartialEq</code> with the reflexivity property:</p>
+<pre><code class="language-rust">pub trait Eq: PartialEq {
+    // No additional methods
+}</code></pre>
+<p>It's a marker trait: it doesn't add any new methods, it's just a way for you to say to the compiler
+that the equality logic implemented in <code>PartialEq</code> is reflexive.</p>
+<p>You can derive <code>Eq</code> automatically when you derive <code>PartialEq</code>:</p>
+<pre><code class="language-rust">#[derive(PartialEq, Eq)]
+struct Person {
+    id: u32,
+    name: String,
+}</code></pre>
+<h2 id="eq-and-hash-are-linked"><a class="header" href="#eq-and-hash-are-linked"><code>Eq</code> and <code>Hash</code> are linked</a></h2>
+<p>There is an implicit contract between <code>Eq</code> and <code>Hash</code>: if two keys are equal, their hashes must be equal too.
+This is crucial for <code>HashMap</code> to work correctly. If you break this contract, you'll get nonsensical results
+when using <code>HashMap</code>.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/06_ticket_management/15_hashmap"><code>06_ticket_management/15_hashmap</code></a></p>
+
+                        
+</body>
+</html>

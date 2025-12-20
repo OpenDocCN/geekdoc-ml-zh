@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Error enums</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Error enums</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/05_ticket_v2/08_error_enums.html">https://rust-exercises.com/100-exercises/05_ticket_v2/08_error_enums.html</a></blockquote>
+                        
+<p>Your solution to the previous exercise may have felt awkward: matching on strings is not ideal!<br/>
+A colleague might rework the error messages returned by <code>Ticket::new</code> (e.g. to improve readability) and,
+all of a sudden, your calling code would break.</p>
+<p>You already know the machinery required to fix this: enums!</p>
+<h2 id="reacting-to-errors"><a class="header" href="#reacting-to-errors">Reacting to errors</a></h2>
+<p>When you want to allow the caller to behave differently based on the specific error that occurred, you can
+use an enum to represent the different error cases:</p>
+<pre><code class="language-rust">// An error enum to represent the different error cases
+// that may occur when parsing a `u32` from a string.
+enum U32ParseError {
+    NotANumber,
+    TooLarge,
+    Negative,
+}</code></pre>
+<p>Using an error enum, you're encoding the different error cases in the type system—they become part of the
+signature of the fallible function.<br/>
+This simplifies error handling for the caller, as they can use a <code>match</code> expression to react to the different
+error cases:</p>
+<pre><code class="language-rust">match s.parse_u32() {
+    Ok(n) =&gt; n,
+    Err(U32ParseError::Negative) =&gt; 0,
+    Err(U32ParseError::TooLarge) =&gt; u32::MAX,
+    Err(U32ParseError::NotANumber) =&gt; {
+        panic!("Not a number: {}", s);
+    }
+}</code></pre>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/05_ticket_v2/08_error_enums"><code>05_ticket_v2/08_error_enums</code></a></p>
+
+                        
+</body>
+</html>

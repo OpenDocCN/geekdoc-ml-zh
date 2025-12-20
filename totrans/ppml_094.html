@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>The Future trait</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>The Future trait</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/08_futures/04_future.html">https://rust-exercises.com/100-exercises/08_futures/04_future.html</a></blockquote>
+                        
+<h2 id="the-local-rc-problem"><a class="header" href="#the-local-rc-problem">The local <code>Rc</code> problem</a></h2>
+<p>Let's go back to <code>tokio::spawn</code>'s signature:</p>
+<pre><code class="language-rust">pub fn spawn&lt;F&gt;(future: F) -&gt; JoinHandle&lt;F::Output&gt;
+    where
+        F: Future + Send + 'static,
+        F::Output: Send + 'static,
+{ /* */ }</code></pre>
+<p>What does it <em>actually</em> mean for <code>F</code> to be <code>Send</code>?<br/>
+It implies, as we saw in the previous section, that whatever value it captures from the
+spawning environment has to be <code>Send</code>. But it goes further than that.</p>
+<p>Any value that's <em>held across a .await point</em> has to be <code>Send</code>.<br/>
+Let's look at an example:</p>
+<pre><code class="language-rust">use std::rc::Rc;
+use tokio::task::yield_now;
+
+fn spawner() {
+    tokio::spawn(example());
+}
+
+async fn example() {
+    // A value that's not `Send`,
+    // created _inside_ the async function
+    let non_send = Rc::new(1);
+    
+    // A `.await` point that does nothing
+    yield_now().await;
+
+    // The local non-`Send` value is still needed
+    // after the `.await`
+    println!("{}", non_send);
+}</code></pre>
+<p>The compiler will reject this code:</p>
+<pre><code class="language-text">error: future cannot be sent between threads safely
+    |
+5   |     tokio::spawn(example());
+    |                  ^^^^^^^^^ 
+    | future returned by `example` is not `Send`
+    |
+note: future is not `Send` as this value is used across an await
+    |
+11  |     let non_send = Rc::new(1);
+    |         -------- has type `Rc&lt;i32&gt;` which is not `Send`
+12  |     // A `.await` point
+13  |     yield_now().await;
+    |                 ^^^^^ 
+    |   await occurs here, with `non_send` maybe used later
+note: required by a bound in `tokio::spawn`
+    |
+164 |     pub fn spawn&lt;F&gt;(future: F) -&gt; JoinHandle&lt;F::Output&gt;
+    |            ----- required by a bound in this function
+165 |     where
+166 |         F: Future + Send + 'static,
+    |                     ^^^^ required by this bound in `spawn`
+</code></pre>
+<p>To understand why that's the case, we need to refine our understanding of
+Rust's asynchronous model.</p>
+<h2 id="the-future-trait-1"><a class="header" href="#the-future-trait-1">The <code>Future</code> trait</a></h2>
+<p>We stated early on that <code>async</code> functions return <strong>futures</strong>, types that implement
+the <code>Future</code> trait. You can think of a future as a <strong>state machine</strong>.
+It's in one of two states:</p>
+<ul>
+<li><strong>pending</strong>: the computation has not finished yet.</li>
+<li><strong>ready</strong>: the computation has finished, here's the output.</li>
+</ul>
+<p>This is encoded in the trait definition:</p>
+<pre><code class="language-rust">trait Future {
+    type Output;
+    
+    // Ignore `Pin` and `Context` for now
+    fn poll(
+      self: Pin&lt;&amp;mut Self&gt;, 
+      cx: &amp;mut Context&lt;'_&gt;
+    ) -&gt; Poll&lt;Self::Output&gt;;
+}</code></pre>
+<h3 id="poll"><a class="header" href="#poll"><code>poll</code></a></h3>
+<p>The <code>poll</code> method is the heart of the <code>Future</code> trait.<br/>
+A future on its own doesn't do anything. It needs to be <strong>polled</strong> to make progress.<br/>
+When you call <code>poll</code>, you're asking the future to do some work.
+<code>poll</code> tries to make progress, and then returns one of the following:</p>
+<ul>
+<li><code>Poll::Pending</code>: the future is not ready yet. You need to call <code>poll</code> again later.</li>
+<li><code>Poll::Ready(value)</code>: the future has finished. <code>value</code> is the result of the computation,
+of type <code>Self::Output</code>.</li>
+</ul>
+<p>Once <code>Future::poll</code> returns <code>Poll::Ready</code>, it should not be polled again: the future has
+completed, there's nothing left to do.</p>
+<h3 id="the-role-of-the-runtime"><a class="header" href="#the-role-of-the-runtime">The role of the runtime</a></h3>
+<p>You'll rarely, if ever, be calling poll directly.<br/>
+That's the job of your async runtime: it has all the required information (the <code>Context</code>
+in <code>poll</code>'s signature) to ensure that your futures are making progress whenever they can.</p>
+<h2 id="async-fn-and-futures"><a class="header" href="#async-fn-and-futures"><code>async fn</code> and futures</a></h2>
+<p>We've worked with the high-level interface, asynchronous functions.<br/>
+We've now looked at the low-level primitive, the <code>Future trait</code>.</p>
+<p>How are they related?</p>
+<p>Every time you mark a function as asynchronous, that function will return a future.
+The compiler will transform the body of your asynchronous function into a <strong>state machine</strong>:
+one state for each <code>.await</code> point.</p>
+<p>Going back to our <code>Rc</code> example:</p>
+<pre><code class="language-rust">use std::rc::Rc;
+use tokio::task::yield_now;
+
+async fn example() {
+    let non_send = Rc::new(1);
+    yield_now().await;
+    println!("{}", non_send);
+}</code></pre>
+<p>The compiler would transform it into an enum that looks somewhat like this:</p>
+<pre><code class="language-rust">pub enum ExampleFuture {
+    NotStarted,
+    YieldNow(Rc&lt;i32&gt;),
+    Terminated,
+}</code></pre>
+<p>When <code>example</code> is called, it returns <code>ExampleFuture::NotStarted</code>. The future has never
+been polled yet, so nothing has happened.<br/>
+When the runtime polls it the first time, <code>ExampleFuture</code> will advance until the next
+<code>.await</code> point: it'll stop at the <code>ExampleFuture::YieldNow(Rc&lt;i32&gt;)</code> stage of the state
+machine, returning <code>Poll::Pending</code>.<br/>
+When it's polled again, it'll execute the remaining code (<code>println!</code>) and
+return <code>Poll::Ready(())</code>.</p>
+<p>When you look at its state machine representation, <code>ExampleFuture</code>,
+it is now clear why <code>example</code> is not <code>Send</code>: it holds an <code>Rc</code>, therefore
+it cannot be <code>Send</code>.</p>
+<h2 id="yield-points"><a class="header" href="#yield-points">Yield points</a></h2>
+<p>As you've just seen with <code>example</code>, every <code>.await</code> point creates a new intermediate
+state in the lifecycle of a future.<br/>
+That's why <code>.await</code> points are also known as <strong>yield points</strong>: your future <em>yields control</em>
+back to the runtime that was polling it, allowing the runtime to pause it and (if necessary)
+schedule another task for execution, thus making progress on multiple fronts concurrently.</p>
+<p>We'll come back to the importance of yielding in a later section.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/08_futures/04_future"><code>08_futures/04_future</code></a></p>
+
+                        
+</body>
+</html>

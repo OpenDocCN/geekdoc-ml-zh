@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Channels</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Channels</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/07_threads/05_channels.html">https://rust-exercises.com/100-exercises/07_threads/05_channels.html</a></blockquote>
+                        
+<p>All our spawned threads have been fairly short-lived so far.<br/>
+Get some input, run a computation, return the result, shut down.</p>
+<p>For our ticket management system, we want to do something different:
+a client-server architecture.</p>
+<p>We will have <strong>one long-running server thread</strong>, responsible for managing
+our state, the stored tickets.</p>
+<p>We will then have <strong>multiple client threads</strong>.<br/>
+Each client will be able to send <strong>commands</strong> and <strong>queries</strong> to
+the stateful thread, in order to change its state (e.g. add a new ticket)
+or retrieve information (e.g. get the status of a ticket).<br/>
+Client threads will run concurrently.</p>
+<h2 id="communication"><a class="header" href="#communication">Communication</a></h2>
+<p>So far we've only had very limited parent-child communication:</p>
+<ul>
+<li>The spawned thread borrowed/consumed data from the parent context</li>
+<li>The spawned thread returned data to the parent when joined</li>
+</ul>
+<p>This isn't enough for a client-server design.<br/>
+Clients need to be able to send and receive data from the server thread
+<em>after</em> it has been launched.</p>
+<p>We can solve the issue using <strong>channels</strong>.</p>
+<h2 id="channels-1"><a class="header" href="#channels-1">Channels</a></h2>
+<p>Rust's standard library provides <strong>multi-producer, single-consumer</strong> (mpsc) channels
+in its <code>std::sync::mpsc</code> module.<br/>
+There are two channel flavours: bounded and unbounded. We'll stick to the unbounded
+version for now, but we'll discuss the pros and cons later on.</p>
+<p>Channel creation looks like this:</p>
+<pre><code class="language-rust">use std::sync::mpsc::channel;
+
+let (sender, receiver) = channel();</code></pre>
+<p>You get a sender and a receiver.<br/>
+You call <code>send</code> on the sender to push data into the channel.<br/>
+You call <code>recv</code> on the receiver to pull data from the channel.</p>
+<h3 id="multiple-senders"><a class="header" href="#multiple-senders">Multiple senders</a></h3>
+<p><code>Sender</code> is clonable: we can create multiple senders (e.g. one for
+each client thread) and they will all push data into the same channel.</p>
+<p><code>Receiver</code>, instead, is not clonable: there can only be a single receiver
+for a given channel.</p>
+<p>That's what <strong>mpsc</strong> (multi-producer single-consumer) stands for!</p>
+<h3 id="message-type"><a class="header" href="#message-type">Message type</a></h3>
+<p>Both <code>Sender</code> and <code>Receiver</code> are generic over a type parameter <code>T</code>.<br/>
+That's the type of the <em>messages</em> that can travel on our channel.</p>
+<p>It could be a <code>u64</code>, a struct, an enum, etc.</p>
+<h3 id="errors"><a class="header" href="#errors">Errors</a></h3>
+<p>Both <code>send</code> and <code>recv</code> can fail.<br/>
+<code>send</code> returns an error if the receiver has been dropped.<br/>
+<code>recv</code> returns an error if all senders have been dropped and the channel is empty.</p>
+<p>In other words, <code>send</code> and <code>recv</code> error when the channel is effectively closed.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/07_threads/05_channels"><code>07_threads/05_channels</code></a></p>
+
+                        
+</body>
+</html>

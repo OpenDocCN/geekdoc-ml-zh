@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Mutable references</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Mutable references</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/03_ticket_v1/07_setters.html">https://rust-exercises.com/100-exercises/03_ticket_v1/07_setters.html</a></blockquote>
+                        
+<p>Your accessor methods should look like this now:</p>
+<pre><code class="language-rust">impl Ticket {
+    pub fn title(&amp;self) -&gt; &amp;String {
+        &amp;self.title
+    }
+
+    pub fn description(&amp;self) -&gt; &amp;String {
+        &amp;self.description
+    }
+
+    pub fn status(&amp;self) -&gt; &amp;String {
+        &amp;self.status
+    }
+}</code></pre>
+<p>A sprinkle of <code>&amp;</code> here and there did the trick!<br/>
+We now have a way to access the fields of a <code>Ticket</code> instance without consuming it in the process.
+Let's see how we can enhance our <code>Ticket</code> struct with <strong>setter methods</strong> next.</p>
+<h2 id="setters"><a class="header" href="#setters">Setters</a></h2>
+<p>Setter methods allow users to change the values of <code>Ticket</code>'s private fields while making sure that its invariants
+are respected (i.e. you can't set a <code>Ticket</code>'s title to an empty string).</p>
+<p>There are two common ways to implement setters in Rust:</p>
+<ul>
+<li>Taking <code>self</code> as input.</li>
+<li>Taking <code>&amp;mut self</code> as input.</li>
+</ul>
+<h3 id="taking-self-as-input"><a class="header" href="#taking-self-as-input">Taking <code>self</code> as input</a></h3>
+<p>The first approach looks like this:</p>
+<pre><code class="language-rust">impl Ticket {
+    pub fn set_title(mut self, new_title: String) -&gt; Self {
+        // Validate the new title [...]
+        self.title = new_title;
+        self
+    }
+}</code></pre>
+<p>It takes ownership of <code>self</code>, changes the title, and returns the modified <code>Ticket</code> instance.<br/>
+This is how you'd use it:</p>
+<pre><code class="language-rust">let ticket = Ticket::new(
+    "Title".into(), 
+    "Description".into(), 
+    "To-Do".into()
+);
+let ticket = ticket.set_title("New title".into());</code></pre>
+<p>Since <code>set_title</code> takes ownership of <code>self</code> (i.e. it <strong>consumes it</strong>), we need to reassign the result to a variable.
+In the example above we take advantage of <strong>variable shadowing</strong> to reuse the same variable name: when
+you declare a new variable with the same name as an existing one, the new variable <strong>shadows</strong> the old one. This
+is a common pattern in Rust code.</p>
+<p><code>self</code>-setters work quite nicely when you need to change multiple fields at once: you can chain multiple calls together!</p>
+<pre><code class="language-rust">let ticket = ticket
+    .set_title("New title".into())
+    .set_description("New description".into())
+    .set_status("In Progress".into());</code></pre>
+<h3 id="taking-mut-self-as-input"><a class="header" href="#taking-mut-self-as-input">Taking <code>&amp;mut self</code> as input</a></h3>
+<p>The second approach to setters, using <code>&amp;mut self</code>, looks like this instead:</p>
+<pre><code class="language-rust">impl Ticket {
+    pub fn set_title(&amp;mut self, new_title: String) {
+        // Validate the new title [...]
+        
+        self.title = new_title;
+    }
+}</code></pre>
+<p>This time the method takes a mutable reference to <code>self</code> as input, changes the title, and that's it.
+Nothing is returned.</p>
+<p>You'd use it like this:</p>
+<pre><code class="language-rust">let mut ticket = Ticket::new(
+    "Title".into(),
+    "Description".into(),
+    "To-Do".into()
+);
+ticket.set_title("New title".into());
+
+// Use the modified ticket</code></pre>
+<p>Ownership stays with the caller, so the original <code>ticket</code> variable is still valid. We don't need to reassign the result.
+We need to mark <code>ticket</code> as mutable though, because we're taking a mutable reference to it.</p>
+<p><code>&amp;mut</code>-setters have a downside: you can't chain multiple calls together.
+Since they don't return the modified <code>Ticket</code> instance, you can't call another setter on the result of the first one.
+You have to call each setter separately:</p>
+<pre><code class="language-rust">ticket.set_title("New title".into());
+ticket.set_description("New description".into());
+ticket.set_status("In Progress".into());</code></pre>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/03_ticket_v1/07_setters"><code>03_ticket_v1/07_setters</code></a></p>
+
+                        
+</body>
+</html>

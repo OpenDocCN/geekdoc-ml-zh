@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Asynchronous functions</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Asynchronous functions</h1>
+<blockquote>原文：<a href="https://rust-exercises.com/100-exercises/08_futures/01_async_fn.html">https://rust-exercises.com/100-exercises/08_futures/01_async_fn.html</a></blockquote>
+                        
+<p>All the functions and methods you've written so far were eager.<br/>
+Nothing happened until you invoked them. But once you did, they ran to
+completion: they did <strong>all</strong> their work, and then returned their output.</p>
+<p>Sometimes that's undesirable.<br/>
+For example, if you're writing an HTTP server, there might be a lot of
+<strong>waiting</strong>: waiting for the request body to arrive, waiting for the
+database to respond, waiting for a downstream service to reply, etc.</p>
+<p>What if you could do something else while you're waiting?<br/>
+What if you could choose to give up midway through a computation?<br/>
+What if you could choose to prioritise another task over the current one?</p>
+<p>That's where <strong>asynchronous functions</strong> come in.</p>
+<h2 id="async-fn"><a class="header" href="#async-fn"><code>async fn</code></a></h2>
+<p>You use the <code>async</code> keyword to define an asynchronous function:</p>
+<pre><code class="language-rust">use tokio::net::TcpListener;
+
+// This function is asynchronous
+async fn bind_random() -&gt; TcpListener {
+    // [...]
+}</code></pre>
+<p>What happens if you call <code>bind_random</code> as you would a regular function?</p>
+<pre><code class="language-rust">fn run() {
+    // Invoke `bind_random`
+    let listener = bind_random();
+    // Now what?
+}</code></pre>
+<p>Nothing happens!<br/>
+Rust doesn't start executing <code>bind_random</code> when you call it,
+not even as a background task (as you might expect based on your experience
+with other languages).
+Asynchronous functions in Rust are <strong>lazy</strong>: they don't do any work until you
+explicitly ask them to.
+Using Rust's terminology, we say that <code>bind_random</code> returns a <strong>future</strong>, a type
+that represents a computation that may complete later. They're called futures
+because they implement the <code>Future</code> trait, an interface that we'll examine in
+detail later on in this chapter.</p>
+<h2 id="await"><a class="header" href="#await"><code>.await</code></a></h2>
+<p>The most common way to ask an asynchronous function to do some work is to use
+the <code>.await</code> keyword:</p>
+<pre><code class="language-rust">use tokio::net::TcpListener;
+
+async fn bind_random() -&gt; TcpListener {
+    // [...]
+}
+
+async fn run() {
+    // Invoke `bind_random` and wait for it to complete
+    let listener = bind_random().await;
+    // Now `listener` is ready
+}</code></pre>
+<p><code>.await</code> doesn't return control to the caller until the asynchronous function
+has run to completion—e.g. until the <code>TcpListener</code> has been created in the example above.</p>
+<h2 id="runtimes"><a class="header" href="#runtimes">Runtimes</a></h2>
+<p>If you're puzzled, you're right to be!<br/>
+We've just said that the perk of asynchronous functions
+is that they don't do <strong>all</strong> their work at once. We then introduced <code>.await</code>, which
+doesn't return until the asynchronous function has run to completion. Haven't we
+just re-introduced the problem we were trying to solve? What's the point?</p>
+<p>Not quite! A lot happens behind the scenes when you call <code>.await</code>!<br/>
+You're yielding control to an <strong>async runtime</strong>, also known as an <strong>async executor</strong>.
+Executors are where the magic happens: they are in charge of managing all your
+ongoing asynchronous <strong>tasks</strong>. In particular, they balance two different goals:</p>
+<ul>
+<li><strong>Progress</strong>: they make sure that tasks make progress whenever they can.</li>
+<li><strong>Efficiency</strong>: if a task is waiting for something, they try to make sure that
+another task can run in the meantime, fully utilising the available resources.</li>
+</ul>
+<h3 id="no-default-runtime"><a class="header" href="#no-default-runtime">No default runtime</a></h3>
+<p>Rust is fairly unique in its approach to asynchronous programing: there is
+no default runtime. The standard library doesn't ship with one. You need to
+bring your own!</p>
+<p>In most cases, you'll choose one of the options available in the ecosystem.
+Some runtimes are designed to be broadly applicable, a solid option for most applications.
+<code>tokio</code> and <code>async-std</code> belong to this category. Other runtimes are optimised for
+specific use cases—e.g. <code>embassy</code> for embedded systems.</p>
+<p>Throughout this course we'll rely on <code>tokio</code>, the most popular runtime for general-purpose
+asynchronous programming in Rust.</p>
+<h3 id="tokiomain"><a class="header" href="#tokiomain"><code>#[tokio::main]</code></a></h3>
+<p>The entrypoint of your executable, the <code>main</code> function, must be a synchronous function.
+That's where you're supposed to set up and launch your chosen async runtime.</p>
+<p>Most runtimes provide a macro to make this easier. For <code>tokio</code>, it's <code>tokio::main</code>:</p>
+<pre><code class="language-rust">#[tokio::main]
+async fn main() {
+    // Your async code goes here
+}</code></pre>
+<p>which expands to:</p>
+<pre><code class="language-rust">fn main() {
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    rt.block_on(
+        // Your async function goes here
+        // [...]
+    );
+}</code></pre>
+<h3 id="tokiotest"><a class="header" href="#tokiotest"><code>#[tokio::test]</code></a></h3>
+<p>The same goes for tests: they must be synchronous functions.<br/>
+Each test function is run in its own thread, and you're responsible for
+setting up and launching an async runtime if you need to run async code
+in your tests.<br/>
+<code>tokio</code> provides a <code>#[tokio::test]</code> macro to make this easier:</p>
+<pre><code class="language-rust">#[tokio::test]
+async fn my_test() {
+    // Your async test code goes here
+}</code></pre>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/08_futures/01_async_fn"><code>08_futures/01_async_fn</code></a></p>
+
+                        
+</body>
+</html>
