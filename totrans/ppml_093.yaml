@@ -1,0 +1,114 @@
+- en: Runtime architecture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/08_futures/03_runtime.html](https://rust-exercises.com/100-exercises/08_futures/03_runtime.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: So far we've been talking about async runtimes as an abstract concept. Let's
+    dig a bit deeper into the way they are implemented—as you'll see soon enough,
+    it has an impact on our code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Flavors](#flavors)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`tokio` ships two different runtime *flavors*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can configure your runtime via `tokio::runtime::Builder`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Builder::new_multi_thread` gives you a **multithreaded `tokio` runtime**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Builder::new_current_thread` will instead rely on the **current thread** for
+    execution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`#[tokio::main]` returns a multithreaded runtime by default, while `#[tokio::test]`
+    uses a current thread runtime out of the box.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Current thread runtime](#current-thread-runtime)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The current-thread runtime, as the name implies, relies exclusively on the OS
+    thread it was launched on to schedule and execute tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When using the current-thread runtime, you have **concurrency** but no **parallelism**:
+    asynchronous tasks will be interleaved, but there will always be at most one task
+    running at any given time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Multithreaded runtime](#multithreaded-runtime)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: When using the multithreaded runtime, instead, there can be up to `N` tasks
+    running *in parallel* at any given time, where `N` is the number of threads used
+    by the runtime. By default, `N` matches the number of available CPU cores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There''s more: `tokio` performs **work-stealing**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If a thread is idle, it won''t wait around: it''ll try to find a new task that''s
+    ready for execution, either from a global queue or by stealing it from the local
+    queue of another thread.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Work-stealing can have significant performance benefits, especially on tail
+    latencies, whenever your application is dealing with workloads that are not perfectly
+    balanced across threads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Implications](#implications)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`tokio::spawn` is flavor-agnostic: it''ll work no matter if you''re running
+    on the multithreaded or current-thread runtime. The downside is that the signature
+    assumes the worst case (i.e. multithreaded) and is constrained accordingly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's ignore the `Future` trait for now to focus on the rest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`spawn` is asking all its inputs to be `Send` and have a `''static` lifetime.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `''static` constraint follows the same rationale of the `''static` constraint
+    on `std::thread::spawn`: the spawned task may outlive the context it was spawned
+    from, therefore it shouldn''t depend on any local data that may be de-allocated
+    after the spawning context is destroyed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Send`, on the other hand, is a direct consequence of `tokio`''s work-stealing
+    strategy: a task that was spawned on thread `A` may end up being moved to thread
+    `B` if that''s idle, thus requiring a `Send` bound since we''re crossing thread
+    boundaries.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`08_futures/03_runtime`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/08_futures/03_runtime)
+  prefs: []
+  type: TYPE_NORMAL

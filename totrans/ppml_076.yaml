@@ -1,0 +1,126 @@
+- en: Threads
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/07_threads/01_threads.html](https://rust-exercises.com/100-exercises/07_threads/01_threads.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Before we start writing multithreaded code, let's take a step back and talk
+    about what threads are and why we might want to use them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[What is a thread?](#what-is-a-thread)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A **thread** is an execution context managed by the underlying operating system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each thread has its own stack and instruction pointer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A single **process** can manage multiple threads. These threads share the same
+    memory space, which means they can access the same data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Threads are a **logical** construct. In the end, you can only run one set of
+    instructions at a time on a CPU core, the **physical** execution unit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since there can be many more threads than there are CPU cores, the operating
+    system's **scheduler** is in charge of deciding which thread to run at any given
+    time, partitioning CPU time among them to maximize throughput and responsiveness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`main`](#main)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When a Rust program starts, it runs on a single thread, the **main thread**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This thread is created by the operating system and is responsible for running
+    the `main` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[`std::thread`](#stdthread)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Rust's standard library provides a module, `std::thread`, that allows you to
+    create and manage threads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`spawn`](#spawn)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: You can use `std::thread::spawn` to create new threads and execute code on them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you execute this program on the [Rust playground](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=afedf7062298ca8f5a248bc551062eaa)
+    you'll see that the main thread and the spawned thread run concurrently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each thread makes progress independently of the other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Process termination](#process-termination)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: When the main thread finishes, the overall process will exit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A spawned thread will continue running until it finishes or the main thread
+    finishes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the example above, you can expect to see the message "Hello from a thread!"
+    printed roughly five times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then the main thread will finish (when the `sleep` call returns), and the spawned
+    thread will be terminated since the overall process exits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`join`](#join)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: You can also wait for a spawned thread to finish by calling the `join` method
+    on the `JoinHandle` that `spawn` returns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this example, the main thread will wait for the spawned thread to finish
+    before exiting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This introduces a form of **synchronization** between the two threads: you''re
+    guaranteed to see the message "Hello from a thread!" printed before the program
+    exits, because the main thread won''t exit until the spawned thread has finished.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`07_threads/01_threads`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/07_threads/01_threads)
+  prefs: []
+  type: TYPE_NORMAL

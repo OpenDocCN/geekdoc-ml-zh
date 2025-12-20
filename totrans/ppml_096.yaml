@@ -1,0 +1,126 @@
+- en: Async-aware primitives
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/08_futures/06_async_aware_primitives.html](https://rust-exercises.com/100-exercises/08_futures/06_async_aware_primitives.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'If you browse `tokio`''s documentation, you''ll notice that it provides a lot
+    of types that "mirror" the ones in the standard library, but with an asynchronous
+    twist: locks, channels, timers, and more.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When working in an asynchronous context, you should prefer these asynchronous
+    alternatives to their synchronous counterparts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To understand why, let's take a look at `Mutex`, the mutually exclusive lock
+    we explored in the previous chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Case study: `Mutex`](#case-study-mutex)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s look at a simple example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[`std::sync::MutexGuard` and yield points](#stdsyncmutexguard-and-yield-points)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: This code will compile, but it's dangerous.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We try to acquire a lock over a `Mutex` from `std` in an asynchronous context.
+    We then hold on to the resulting `MutexGuard` across a yield point (the `.await`
+    on `http_call`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s imagine that there are two tasks executing `run`, concurrently, on a
+    single-threaded runtime. We observe the following sequence of scheduling events:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have a deadlock. Task B will never manage to acquire the lock, because the
+    lock is currently held by task A, which has yielded to the runtime before releasing
+    the lock and won't be scheduled again because the runtime cannot preempt task
+    B.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`tokio::sync::Mutex`](#tokiosyncmutex)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'You can solve the issue by switching to `tokio::sync::Mutex`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Acquiring the lock is now an asynchronous operation, which yields back to the
+    runtime if it can't make progress.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Going back to the previous scenario, the following would happen:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: All good!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Multithreaded won''t save you](#multithreaded-wont-save-you)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We've used a single-threaded runtime as the execution context in our previous
+    example, but the same risk persists even when using a multithreaded runtime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The only difference is in the number of concurrent tasks required to create
+    the deadlock: in a single-threaded runtime, 2 are enough; in a multithreaded runtime,
+    we would need `N+1` tasks, where `N` is the number of runtime threads.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Downsides](#downsides)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Having an async-aware `Mutex` comes with a performance penalty.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you're confident that the lock isn't under significant contention *and* you're
+    careful to never hold it across a yield point, you can still use `std::sync::Mutex`
+    in an asynchronous context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But weigh the performance benefit against the liveness risk you will incur.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Other primitives](#other-primitives)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We used `Mutex` as an example, but the same applies to `RwLock`, semaphores,
+    etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prefer async-aware versions when working in an asynchronous context to minimise
+    the risk of issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`08_futures/06_async_aware_primitives`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/08_futures/06_async_aware_primitives)
+  prefs: []
+  type: TYPE_NORMAL

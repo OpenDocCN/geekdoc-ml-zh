@@ -1,0 +1,174 @@
+- en: Asynchronous functions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/08_futures/01_async_fn.html](https://rust-exercises.com/100-exercises/08_futures/01_async_fn.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: All the functions and methods you've written so far were eager.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Nothing happened until you invoked them. But once you did, they ran to completion:
+    they did **all** their work, and then returned their output.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes that's undesirable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, if you''re writing an HTTP server, there might be a lot of **waiting**:
+    waiting for the request body to arrive, waiting for the database to respond, waiting
+    for a downstream service to reply, etc.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if you could do something else while you're waiting?
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if you could choose to give up midway through a computation?
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if you could choose to prioritise another task over the current one?
+  prefs: []
+  type: TYPE_NORMAL
+- en: That's where **asynchronous functions** come in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`async fn`](#async-fn)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'You use the `async` keyword to define an asynchronous function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: What happens if you call `bind_random` as you would a regular function?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Nothing happens!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rust doesn''t start executing `bind_random` when you call it, not even as a
+    background task (as you might expect based on your experience with other languages).
+    Asynchronous functions in Rust are **lazy**: they don''t do any work until you
+    explicitly ask them to. Using Rust''s terminology, we say that `bind_random` returns
+    a **future**, a type that represents a computation that may complete later. They''re
+    called futures because they implement the `Future` trait, an interface that we''ll
+    examine in detail later on in this chapter.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`.await`](#await)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The most common way to ask an asynchronous function to do some work is to use
+    the `.await` keyword:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`.await` doesn''t return control to the caller until the asynchronous function
+    has run to completion—e.g. until the `TcpListener` has been created in the example
+    above.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Runtimes](#runtimes)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you're puzzled, you're right to be!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We've just said that the perk of asynchronous functions is that they don't do
+    **all** their work at once. We then introduced `.await`, which doesn't return
+    until the asynchronous function has run to completion. Haven't we just re-introduced
+    the problem we were trying to solve? What's the point?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not quite! A lot happens behind the scenes when you call `.await`!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You''re yielding control to an **async runtime**, also known as an **async
+    executor**. Executors are where the magic happens: they are in charge of managing
+    all your ongoing asynchronous **tasks**. In particular, they balance two different
+    goals:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Progress**: they make sure that tasks make progress whenever they can.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Efficiency**: if a task is waiting for something, they try to make sure that
+    another task can run in the meantime, fully utilising the available resources.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[No default runtime](#no-default-runtime)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Rust is fairly unique in its approach to asynchronous programing: there is
+    no default runtime. The standard library doesn''t ship with one. You need to bring
+    your own!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In most cases, you'll choose one of the options available in the ecosystem.
+    Some runtimes are designed to be broadly applicable, a solid option for most applications.
+    `tokio` and `async-std` belong to this category. Other runtimes are optimised
+    for specific use cases—e.g. `embassy` for embedded systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Throughout this course we'll rely on `tokio`, the most popular runtime for general-purpose
+    asynchronous programming in Rust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`#[tokio::main]`](#tokiomain)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The entrypoint of your executable, the `main` function, must be a synchronous
+    function. That's where you're supposed to set up and launch your chosen async
+    runtime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Most runtimes provide a macro to make this easier. For `tokio`, it''s `tokio::main`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'which expands to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[`#[tokio::test]`](#tokiotest)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The same goes for tests: they must be synchronous functions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each test function is run in its own thread, and you're responsible for setting
+    up and launching an async runtime if you need to run async code in your tests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`tokio` provides a `#[tokio::test]` macro to make this easier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`08_futures/01_async_fn`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/08_futures/01_async_fn)
+  prefs: []
+  type: TYPE_NORMAL

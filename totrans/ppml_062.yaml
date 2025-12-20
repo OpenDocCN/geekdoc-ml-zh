@@ -1,0 +1,127 @@
+- en: Iteration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/06_ticket_management/04_iterators.html](https://rust-exercises.com/100-exercises/06_ticket_management/04_iterators.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: During the very first exercises, you learned that Rust lets you iterate over
+    collections using `for` loops. We were looking at ranges at that point (e.g. `0..5`),
+    but the same holds true for collections like arrays and vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: It's time to understand how this works under the hood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`for` desugaring](#for-desugaring)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Every time you write a `for` loop in Rust, the compiler *desugars* it into
+    the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`loop` is another looping construct, on top of `for` and `while`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A `loop` block will run forever, unless you explicitly `break` out of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`Iterator` trait](#iterator-trait)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The `next` method in the previous code snippet comes from the `Iterator` trait.
+    The `Iterator` trait is defined in Rust''s standard library and provides a shared
+    interface for types that can produce a sequence of values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `Item` associated type specifies the type of the values produced by the
+    iterator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`next` returns the next value in the sequence.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It returns `Some(value)` if there's a value to return, and `None` when there
+    isn't.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Be careful: there is no guarantee that an iterator is exhausted when it returns
+    `None`. That''s only guaranteed if the iterator implements the (more restrictive)
+    [`FusedIterator`](https://doc.rust-lang.org/std/iter/trait.FusedIterator.html)
+    trait.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`IntoIterator` trait](#intoiterator-trait)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Not all types implement `Iterator`, but many can be converted into a type that
+    does.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That''s where the `IntoIterator` trait comes in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `into_iter` method consumes the original value and returns an iterator over
+    its elements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A type can only have one implementation of `IntoIterator`: there can be no
+    ambiguity as to what `for` should desugar to.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One detail: every type that implements `Iterator` automatically implements
+    `IntoIterator` as well. They just return themselves from `into_iter`!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Bounds checks](#bounds-checks)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Iterating over iterators has a nice side effect: you can''t go out of bounds,
+    by design.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This allows Rust to remove bounds checks from the generated machine code, making
+    iteration faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: is usually faster than
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There are exceptions to this rule: the compiler can sometimes prove that you''re
+    not going out of bounds even with manual indexing, thus removing the bounds checks
+    anyway. But in general, prefer iteration to indexing where possible.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`06_ticket_management/04_iterators`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/06_ticket_management/04_iterators)
+  prefs: []
+  type: TYPE_NORMAL

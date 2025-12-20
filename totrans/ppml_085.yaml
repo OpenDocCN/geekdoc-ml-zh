@@ -1,0 +1,77 @@
+- en: Update operations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/07_threads/10_patch.html](https://rust-exercises.com/100-exercises/07_threads/10_patch.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: So far we've implemented only insertion and retrieval operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's see how we can expand the system to provide an update operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Legacy updates](#legacy-updates)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the non-threaded version of the system, updates were fairly straightforward:
+    `TicketStore` exposed a `get_mut` method that allowed the caller to obtain a mutable
+    reference to a ticket, and then modify it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Multithreaded updates](#multithreaded-updates)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The same strategy won''t work in the current multithreaded version. The borrow
+    checker would stop us: `SyncSender<&mut Ticket>` isn''t `''static` because `&mut
+    Ticket` doesn''t satisfy the `''static` lifetime, therefore they can''t be captured
+    by the closure that gets passed to `std::thread::spawn`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a few ways to work around this limitation. We'll explore a few of
+    them in the following exercises.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Patching](#patching)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We can't send a `&mut Ticket` over a channel, therefore we can't mutate on the
+    client-side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can we mutate on the server-side?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can, if we tell the server what needs to be changed. In other words, if
+    we send a **patch** to the server:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `id` field is mandatory, since it's required to identify the ticket that
+    needs to be updated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All other fields are optional:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If a field is `None`, it means that the field should not be changed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If a field is `Some(value)`, it means that the field should be changed to `value`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`07_threads/10_patch`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/07_threads/10_patch)
+  prefs: []
+  type: TYPE_NORMAL

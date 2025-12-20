@@ -1,0 +1,137 @@
+- en: Channels
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/07_threads/05_channels.html](https://rust-exercises.com/100-exercises/07_threads/05_channels.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: All our spawned threads have been fairly short-lived so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get some input, run a computation, return the result, shut down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For our ticket management system, we want to do something different: a client-server
+    architecture.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will have **one long-running server thread**, responsible for managing our
+    state, the stored tickets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will then have **multiple client threads**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each client will be able to send **commands** and **queries** to the stateful
+    thread, in order to change its state (e.g. add a new ticket) or retrieve information
+    (e.g. get the status of a ticket).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Client threads will run concurrently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Communication](#communication)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'So far we''ve only had very limited parent-child communication:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The spawned thread borrowed/consumed data from the parent context
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The spawned thread returned data to the parent when joined
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This isn't enough for a client-server design.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clients need to be able to send and receive data from the server thread *after*
+    it has been launched.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can solve the issue using **channels**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Channels](#channels-1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Rust's standard library provides **multi-producer, single-consumer** (mpsc)
+    channels in its `std::sync::mpsc` module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two channel flavours: bounded and unbounded. We''ll stick to the
+    unbounded version for now, but we''ll discuss the pros and cons later on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Channel creation looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: You get a sender and a receiver.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You call `send` on the sender to push data into the channel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You call `recv` on the receiver to pull data from the channel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Multiple senders](#multiple-senders)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '`Sender` is clonable: we can create multiple senders (e.g. one for each client
+    thread) and they will all push data into the same channel.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Receiver`, instead, is not clonable: there can only be a single receiver for
+    a given channel.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: That's what **mpsc** (multi-producer single-consumer) stands for!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Message type](#message-type)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Both `Sender` and `Receiver` are generic over a type parameter `T`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That's the type of the *messages* that can travel on our channel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It could be a `u64`, a struct, an enum, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Errors](#errors)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Both `send` and `recv` can fail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`send` returns an error if the receiver has been dropped.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`recv` returns an error if all senders have been dropped and the channel is
+    empty.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, `send` and `recv` error when the channel is effectively closed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`07_threads/05_channels`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/07_threads/05_channels)
+  prefs: []
+  type: TYPE_NORMAL

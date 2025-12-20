@@ -1,0 +1,78 @@
+- en: Scoped threads
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/07_threads/04_scoped_threads.html](https://rust-exercises.com/100-exercises/07_threads/04_scoped_threads.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'All the lifetime issues we discussed so far have a common source: the spawned
+    thread can outlive its parent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can sidestep this issue by using **scoped threads**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let's unpack what's happening.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`scope`](#scope)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `std::thread::scope` function creates a new **scope**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`std::thread::scope` takes a closure as input, with a single argument: a `Scope`
+    instance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Scoped spawns](#scoped-spawns)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`Scope` exposes a `spawn` method.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike `std::thread::spawn`, all threads spawned using a `Scope` will be **automatically
+    joined** when the scope ends.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we were to "translate" the previous example to `std::thread::spawn`, it''d
+    look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[Borrowing from the environment](#borrowing-from-the-environment)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The translated example wouldn''t compile, though: the compiler would complain
+    that `&v` can''t be used from our spawned threads since its lifetime isn''t `''static`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: That's not an issue with `std::thread::scope`—you can **safely borrow from the
+    environment**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our example, `v` is created before the spawning points. It will only be dropped
+    *after* `scope` returns. At the same time, all threads spawned inside `scope`
+    are guaranteed to finish *before* `scope` returns, therefore there is no risk
+    of having dangling references.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The compiler won't complain!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`07_threads/04_scoped_threads`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/07_threads/04_scoped_threads)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,114 @@
+- en: Design review
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/07_threads/13_without_channels.html](https://rust-exercises.com/100-exercises/07_threads/13_without_channels.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let's take a moment to review the journey we've been through.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Lockless with channel serialization](#lockless-with-channel-serialization)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our first implementation of a multithreaded ticket store used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a single long-lived thread (server), to hold the shared state
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: multiple clients sending requests to it via channels from their own threads.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'No locking of the state was necessary, since the server was the only one modifying
+    the state. That''s because the "inbox" channel naturally **serialized** incoming
+    requests: the server would process them one by one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ve already discussed the limitations of this approach when it comes to
+    patching behaviour, but we didn''t discuss the performance implications of the
+    original design: the server could only process one request at a time, including
+    reads.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Fine-grained locking](#fine-grained-locking)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We then moved to a more sophisticated design, where each ticket was protected
+    by its own lock and clients could independently decide if they wanted to read
+    or atomically modify a ticket, acquiring the appropriate lock.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This design allows for better parallelism (i.e. multiple clients can read tickets
+    at the same time), but it is still fundamentally **serial**: the server processes
+    commands one by one. In particular, it hands out locks to clients one by one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Could we remove the channels entirely and allow clients to directly access the
+    `TicketStore`, relying exclusively on locks to synchronize access?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Removing channels](#removing-channels)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We have two problems to solve:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sharing `TicketStore` across threads
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Synchronizing access to the store
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Sharing `TicketStore` across threads](#sharing-ticketstore-across-threads)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We want all threads to refer to the same state, otherwise we don't really have
+    a multithreaded system—we're just running multiple single-threaded systems in
+    parallel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''ve already encountered this problem when we tried to share a lock across
+    threads: we can use an `Arc`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Synchronizing access to the store](#synchronizing-access-to-the-store)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'There is one interaction that''s still lockless thanks to the serialization
+    provided by the channels: inserting (or removing) a ticket from the store.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we remove the channels, we need to introduce (another) lock to synchronize
+    access to the `TicketStore` itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we use a `Mutex`, then it makes no sense to use an additional `RwLock` for
+    each ticket: the `Mutex` will already serialize access to the entire store, so
+    we wouldn''t be able to read tickets in parallel anyway.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we use a `RwLock`, instead, we can read tickets in parallel. We just need
+    to pause all reads while inserting or removing a ticket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's go down this path and see where it leads us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`07_threads/13_without_channels`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/07_threads/13_without_channels)
+  prefs: []
+  type: TYPE_NORMAL

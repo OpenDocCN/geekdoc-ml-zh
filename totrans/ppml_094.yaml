@@ -1,0 +1,178 @@
+- en: The Future trait
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/08_futures/04_future.html](https://rust-exercises.com/100-exercises/08_futures/04_future.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[The local `Rc` problem](#the-local-rc-problem)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let''s go back to `tokio::spawn`''s signature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: What does it *actually* mean for `F` to be `Send`?
+  prefs: []
+  type: TYPE_NORMAL
+- en: It implies, as we saw in the previous section, that whatever value it captures
+    from the spawning environment has to be `Send`. But it goes further than that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Any value that's *held across a .await point* has to be `Send`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s look at an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The compiler will reject this code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: To understand why that's the case, we need to refine our understanding of Rust's
+    asynchronous model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[The `Future` trait](#the-future-trait-1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We stated early on that `async` functions return **futures**, types that implement
+    the `Future` trait. You can think of a future as a **state machine**. It''s in
+    one of two states:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**pending**: the computation has not finished yet.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**ready**: the computation has finished, here''s the output.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This is encoded in the trait definition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[`poll`](#poll)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The `poll` method is the heart of the `Future` trait.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A future on its own doesn't do anything. It needs to be **polled** to make progress.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When you call `poll`, you''re asking the future to do some work. `poll` tries
+    to make progress, and then returns one of the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Poll::Pending`: the future is not ready yet. You need to call `poll` again
+    later.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Poll::Ready(value)`: the future has finished. `value` is the result of the
+    computation, of type `Self::Output`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Once `Future::poll` returns `Poll::Ready`, it should not be polled again: the
+    future has completed, there''s nothing left to do.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[The role of the runtime](#the-role-of-the-runtime)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: You'll rarely, if ever, be calling poll directly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That''s the job of your async runtime: it has all the required information
+    (the `Context` in `poll`''s signature) to ensure that your futures are making
+    progress whenever they can.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`async fn` and futures](#async-fn-and-futures)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We've worked with the high-level interface, asynchronous functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We've now looked at the low-level primitive, the `Future trait`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How are they related?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Every time you mark a function as asynchronous, that function will return a
+    future. The compiler will transform the body of your asynchronous function into
+    a **state machine**: one state for each `.await` point.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Going back to our `Rc` example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The compiler would transform it into an enum that looks somewhat like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: When `example` is called, it returns `ExampleFuture::NotStarted`. The future
+    has never been polled yet, so nothing has happened.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When the runtime polls it the first time, `ExampleFuture` will advance until
+    the next `.await` point: it''ll stop at the `ExampleFuture::YieldNow(Rc<i32>)`
+    stage of the state machine, returning `Poll::Pending`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When it's polled again, it'll execute the remaining code (`println!`) and return
+    `Poll::Ready(())`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When you look at its state machine representation, `ExampleFuture`, it is now
+    clear why `example` is not `Send`: it holds an `Rc`, therefore it cannot be `Send`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Yield points](#yield-points)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As you've just seen with `example`, every `.await` point creates a new intermediate
+    state in the lifecycle of a future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That''s why `.await` points are also known as **yield points**: your future
+    *yields control* back to the runtime that was polling it, allowing the runtime
+    to pause it and (if necessary) schedule another task for execution, thus making
+    progress on multiple fronts concurrently.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We'll come back to the importance of yielding in a later section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`08_futures/04_future`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/08_futures/04_future)
+  prefs: []
+  type: TYPE_NORMAL

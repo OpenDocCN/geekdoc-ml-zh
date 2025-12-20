@@ -1,0 +1,181 @@
+- en: Trait bounds
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/04_traits/05_trait_bounds.html](https://rust-exercises.com/100-exercises/04_traits/05_trait_bounds.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We''ve seen two use cases for traits so far:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlocking "built-in" behaviour (e.g. operator overloading)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Adding new behaviour to existing types (i.e. extension traits)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There''s a third use case: **generic programming**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[The problem](#the-problem)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All our functions and methods, so far, have been working with **concrete types**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code that operates on concrete types is usually straightforward to write and
+    understand. But it's also limited in its reusability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s imagine, for example, that we want to write a function that returns
+    `true` if an integer is even. Working with concrete types, we''d have to write
+    a separate function for each integer type we want to support:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Alternatively, we could write a single extension trait and then different implementations
+    for each integer type:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The duplication remains.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Generic programming](#generic-programming)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can do better using **generics**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Generics allow us to write code that works with a **type parameter** instead
+    of a concrete type:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`print_if_even` is a **generic function**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It isn''t tied to a specific input type. Instead, it works with any type `T`
+    that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implements the `IsEven` trait.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implements the `Debug` trait.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This contract is expressed with a **trait bound**: `T: IsEven + Debug`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `+` symbol is used to require that `T` implements multiple traits. `T:
+    IsEven + Debug` is equivalent to "where `T` implements `IsEven` **and** `Debug`".'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Trait bounds](#trait-bounds-1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What purpose do trait bounds serve in `print_if_even`?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To find out, let''s try to remove them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code won''t compile:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Without trait bounds, the compiler doesn't know what `T` **can do**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It doesn't know that `T` has an `is_even` method, and it doesn't know how to
+    format `T` for printing. From the compiler point of view, a bare `T` has no behaviour
+    at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trait bounds restrict the set of types that can be used by ensuring that the
+    behaviour required by the function body is present.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Syntax: inlining trait bounds](#syntax-inlining-trait-bounds)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'All the examples above used a **`where` clause** to specify trait bounds:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If the trait bounds are simple, you can **inline** them directly next to the
+    type parameter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[Syntax: meaningful names](#syntax-meaningful-names)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the examples above, we used `T` as the type parameter name. This is a common
+    convention when a function has only one type parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Nothing stops you from using a more meaningful name, though:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It is actually **desirable** to use meaningful names when there are multiple
+    type parameters at play or when the name `T` doesn''t convey enough information
+    about the type''s role in the function. Maximize clarity and readability when
+    naming type parameters, just as you would with variables or function parameters.
+    Follow Rust''s conventions, though: use [upper camel case for type parameter names](https://rust-lang.github.io/api-guidelines/naming.html#casing-conforms-to-rfc-430-c-case).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[The function signature is king](#the-function-signature-is-king)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You may wonder why we need trait bounds at all. Can't the compiler infer the
+    required traits from the function's body?
+  prefs: []
+  type: TYPE_NORMAL
+- en: It could, but it won't.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The rationale is the same as for [explicit type annotations on function parameters](/100-exercises/02_basic_calculator/02_variables#function-arguments-are-variables):
+    each function signature is a contract between the caller and the callee, and the
+    terms must be explicitly stated. This allows for better error messages, better
+    documentation, less unintentional breakages across versions, and faster compilation
+    times.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`04_traits/05_trait_bounds`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/04_traits/05_trait_bounds)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,117 @@
+- en: Conversions, pt. 1
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/02_basic_calculator/10_as_casting.html](https://rust-exercises.com/100-exercises/02_basic_calculator/10_as_casting.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We've repeated over and over again that Rust won't perform implicit type conversions
+    for integers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do you perform *explicit* conversions then?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`as`](#as)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You can use the `as` operator to convert between integer types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`as` conversions are **infallible**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The semantics of this conversion are what you expect: all `u32` values are
+    valid `u64` values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Truncation](#truncation)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Things get more interesting if we go in the opposite direction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This program will run without issues, because `as` conversions are infallible.
+    But what is the value of `b`? When going from a larger integer type to a smaller,
+    the Rust compiler will perform a **truncation**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To understand what happens, let''s start by looking at how `256u16` is represented
+    in memory, as a sequence of bits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When converting to a `u8`, the Rust compiler will keep the last 8 bits of a
+    `u16` memory representation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Hence `256 as u8` is equal to `0`. That's... not ideal, in most scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In fact, the Rust compiler will actively try to stop you if it sees you trying
+    to cast a literal value which will result in a truncation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[Recommendation](#recommendation)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: As a rule of thumb, be quite careful with `as` casting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use it *exclusively* for going from a smaller type to a larger type. To convert
+    from a larger to smaller integer type, rely on the [*fallible* conversion machinery](/100-exercises/05_ticket_v2/13_try_from)
+    that we'll explore later in the course.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Limitations](#limitations)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Surprising behaviour is not the only downside of `as` casting. It is also fairly
+    limited: you can only rely on `as` casting for primitive types and a few other
+    special cases.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When working with composite types, you'll have to rely on different conversion
+    mechanisms ([fallible](/100-exercises/05_ticket_v2/13_try_from) and [infallible](/100-exercises/04_traits/09_from)),
+    which we'll explore later on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Further reading](#further-reading)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Check out [Rust's official reference](https://doc.rust-lang.org/reference/expressions/operator-expr.html#numeric-cast)
+    to learn the precise behaviour of `as` casting for each source/target combination,
+    as well as the exhaustive list of allowed conversions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`02_basic_calculator/10_as_casting`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/02_basic_calculator/10_as_casting)
+  prefs: []
+  type: TYPE_NORMAL

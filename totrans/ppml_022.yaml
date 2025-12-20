@@ -1,0 +1,108 @@
+- en: Memory layout
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/03_ticket_v1/08_stack.html](https://rust-exercises.com/100-exercises/03_ticket_v1/08_stack.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We''ve looked at ownership and references from an operational point of view—what
+    you can and can''t do with them. Now it''s a good time to take a look under the
+    hood: let''s talk about **memory**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Stack and heap](#stack-and-heap)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When discussing memory, you'll often hear people talk about the **stack** and
+    the **heap**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These are two different memory regions used by programs to store data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let's start with the stack.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Stack](#stack)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The **stack** is a **LIFO** (Last In, First Out) data structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you call a function, a new **stack frame** is added on top of the stack.
+    That stack frame stores the function's arguments, local variables and a few "bookkeeping"
+    values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the function returns, the stack frame is popped off the stack^([1](#footnote-stack-overflow)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: From an operational point of view, stack allocation/de-allocation is **very
+    fast**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We are always pushing and popping data from the top of the stack, so we don''t
+    need to search for free memory. We also don''t have to worry about fragmentation:
+    the stack is a single contiguous block of memory.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Rust](#rust)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Rust will often allocate data on the stack.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You have a `u32` input argument in a function? Those 32 bits will be on the
+    stack.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You define a local variable of type `i64`? Those 64 bits will be on the stack.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It all works quite nicely because the size of those integers is known at compile
+    time, therefore the compiled program knows how much space it needs to reserve
+    on the stack for them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`std::mem::size_of`](#stdmemsize_of)'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: You can verify how much space a type would take on the stack using the [`std::mem::size_of`](https://doc.rust-lang.org/std/mem/fn.size_of.html)
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a `u8`, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 1 makes sense, because a `u8` is 8 bits long, or 1 byte.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`03_ticket_v1/08_stack`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/03_ticket_v1/08_stack)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have nested function calls, each function pushes its data onto the stack
+    when it's called but it doesn't pop it off until the innermost function returns.
+    If you have too many nested function calls, you can run out of stack space—the
+    stack is not infinite! That's called a [**stack overflow**](https://en.wikipedia.org/wiki/Stack_overflow).
+    [↩](#fr-stack-overflow-1)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

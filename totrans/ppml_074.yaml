@@ -1,0 +1,117 @@
+- en: Ordering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://rust-exercises.com/100-exercises/06_ticket_management/16_btreemap.html](https://rust-exercises.com/100-exercises/06_ticket_management/16_btreemap.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: By moving from a `Vec` to a `HashMap` we have improved the performance of our
+    ticket management system, and simplified our code in the process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It's not all roses, though. When iterating over a `Vec`-backed store, we could
+    be sure that the tickets would be returned in the order they were added.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That''s not the case with a `HashMap`: you can iterate over the tickets, but
+    the order is random.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can recover a consistent ordering by switching from a `HashMap` to a `BTreeMap`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`BTreeMap`](#btreemap)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A `BTreeMap` guarantees that entries are sorted by their keys.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is useful when you need to iterate over the entries in a specific order,
+    or if you need to perform range queries (e.g. "give me all tickets with an id
+    between 10 and 20").
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Just like `HashMap`, you won''t find trait bounds on the definition of `BTreeMap`.
+    But you''ll find trait bounds on its methods. Let''s look at `insert`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Hash` is no longer required. Instead, the key type must implement the `Ord`
+    trait.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`Ord`](#ord)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The `Ord` trait is used to compare values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While `PartialEq` is used to compare for equality, `Ord` is used to compare
+    for ordering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It''s defined in `std::cmp`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `cmp` method returns an `Ordering` enum, which can be one of `Less`, `Equal`,
+    or `Greater`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Ord` requires that two other traits are implemented: `Eq` and `PartialOrd`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[`PartialOrd`](#partialord)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`PartialOrd` is a weaker version of `Ord`, just like `PartialEq` is a weaker
+    version of `Eq`. You can see why by looking at its definition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`PartialOrd::partial_cmp` returns an `Option`—it is not guaranteed that two
+    values can be compared.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, `f32` doesn't implement `Ord` because `NaN` values are not comparable,
+    the same reason why `f32` doesn't implement `Eq`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Implementing `Ord` and `PartialOrd`](#implementing-ord-and-partialord)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Both `Ord` and `PartialOrd` can be derived for your types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you choose (or need) to implement them manually, be careful:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Ord` and `PartialOrd` must be consistent with `Eq` and `PartialEq`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Ord` and `PartialOrd` must be consistent with each other.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Exercise](#exercise)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The exercise for this section is located in [`06_ticket_management/16_btreemap`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/06_ticket_management/16_btreemap)
+  prefs: []
+  type: TYPE_NORMAL
