@@ -1,0 +1,980 @@
+- en: Chapter 10 Tools for Developing Pipelines
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://ppml.dev/development-tools.html](https://ppml.dev/development-tools.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In Part [**2**](design-code.html#) we discussed how we may adapt software engineering
+    practices to the development of machine learning pipelines. Practices are predicated
+    on the tools we adopt to implement them, which will be the focus of Part [**3**](development-tools.html#).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter, we present an up-to-date selection of tools for data exploration,
+    experiment tracking (Section [10.1](development-tools.html#exploration-experiment-tracking)),
+    for developing code (Section [10.2](development-tools.html#code-development))
+    and for building, testing and documenting it (Section [10.3](development-tools.html#build-test-doc-tools)).
+    Together, these tools provide a development environment suitable for creating
+    machine learning pipelines. We will then move to those used to manage pipelines
+    in production and maintain them (Chapter [11](production-tools.html#production-tools)).
+    We fully expect that the tools available at the time of this writing will consolidate
+    over time, as has happened to other types of productivity tools in software engineering
+    and systems administration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 10.1 Data Exploration and Experiment Tracking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Many issues in machine learning pipelines can be traced to data that are not
+    sufficiently clean or well-structured and therefore are not suitable for training
+    or inference. Early exploratory analyses, together with domain experts, will improve
+    our understanding of the data and can help us improve their quality to the point
+    where we can address the issues we discussed in Section [5.2.1](design-code.html#data-debt)
+    and [9.1](troubleshooting-code.html#data-problems). The code we write in these
+    explorations is the initial prototype that, after much polishing and refactoring,
+    will become the data ingestion and preparation modules of the pipeline (Section
+    [5.3.3](design-code.html#data-pipeline)). Using a programmatic approach to data
+    exploration, cleaning and transformation is always preferable because it provides
+    reproducible results and enables code versioning (Section [6.5](writing-code.html#versioning)).
+    The code we produce should be tested using property-based testing (Section [9.4.2](troubleshooting-code.html#testing-what))
+    with sample data to check whether it works correctly; the same tests can be reused
+    as quality gates for new data during the pipeline lifetime. We will suggest different
+    tools to write such code in Section [10.2](development-tools.html#code-development):
+    notebooks like Jupyter (Project Jupyter [2022](#ref-jupyter)); IDEs like RStudio
+    (RStudio [2022](#ref-r-studio)[a](#ref-r-studio)); Python libraries like NumPy
+    (Harris et al. [2020](#ref-numpy)) and Pandas (McKinney [2017](#ref-pandas));
+    R packages like dplyr (Wickham, François, et al. [2022](#ref-dplyr)), tidyr (Wickham,
+    Girlich, and RStudio [2022](#ref-tidyr)) and janitor (Firke et al. [2022](#ref-janitor))
+    are just a few examples. In addition, most integrated MLOps tools incorporate
+    experiment tracking, so we can save these explorations in a centralised and versioned
+    repository and then compare different approaches and their parameters on the basis
+    of the metrics that we chose (Section [5.3.1](design-code.html#scoping-pipeline))
+    for model evaluation and validation (Section [5.3.4](design-code.html#model-pipeline)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In addition, high-level visual tools to explore and clean the data may be useful
+    to involve domain experts who may not be comfortable with programming. Some examples
+    are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Openrefine (Openrefine [2022](#ref-openrefine)): an open-source client-server
+    solution that provides a collaborative web interface for working on data, as well
+    as client libraries to automate tasks using the API exposed by the server.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Trifacta (Trifacta [2022](#ref-trifacta)): a commercial solution that provides
+    an easy-to-use interface to work on data quality, data transformation and data
+    processing pipelines in general. It is designed for non-technical users and supports
+    deployment on all major cloud providers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Tableau Prep Builder (Tableau Software [2022](#ref-tableau)): offers a straightforward
+    interface to interactively clean, format and visualise data from different sources.
+    It is available both as a local, graphical application and as a web application.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Web solutions like Airtable (Formagrid [2022](#ref-airtable)), which provides
+    the functionality of a database combined with the features of a spreadsheet, may
+    also be suitable for working on small datasets in a collaborative manner.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Data exploration is an iterative process: interactively visualising its outputs
+    as they change is essential. We can do that directly from the Python and R code
+    we use to explore the data if we are using either Jupyter or RMarkdown (Xie, Allaire,
+    and Grolemund [2022](#ref-rmarkdown)). As an alternative, we can produce a dedicated
+    interactive dashboard from Python, R, Julia or Bokeh (Bokeh [2022](#ref-bokeh))
+    code and from Jupyter notebooks with a visual tool like Tableau (Tableau Software
+    [2022](#ref-tableau)) or with a programmatic tool like Dash (Plotly [2022](#ref-dash)[a](#ref-dash))
+    that can generate one. We will discuss more tools in Section [11.3](production-tools.html#production-dashboard).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the data are too large for the tools above to handle, we can store them using
+    “big data” frameworks based on Hadoop (The Apache Software Foundation [2022](#ref-hadoop)[c](#ref-hadoop))
+    like Cloudera (Cloudera [2022](#ref-cloudera)). We can then use tools like Apache
+    Pig (The Apache Software Foundation [2022](#ref-pig)[e](#ref-pig)), Apache Hive
+    (The Apache Software Foundation [2022](#ref-hive)[d](#ref-hive)), Apache Impala
+    (Apache Software Foundation [2022](#ref-apache-impala)[b](#ref-apache-impala))
+    and Apache Spark (The Apache Software Foundation [2022](#ref-spark)[f](#ref-spark))
+    to manipulate them and implement our own data ingestion and cleaning; or we can
+    use integrated cloud-based solutions like Snowflake (Snowflake [2022](#ref-snowflake))
+    and Databricks Lakehouse (Databricks [2022](#ref-databricks)). The advantage of
+    these integrated solutions is that they handle all the aspects of data management
+    as well as machine learning applications development and delivery, supporting
+    integration with data engineering, data science and machine learning open-source
+    projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Databricks, for instance, includes many open-source components. One is Delta
+    Lake (The Delta Lake Project Authors [2022](#ref-delta-lake)[a](#ref-delta-lake)):
+    an abstraction layer for existing data lakes and object storage like S3 which
+    is fully compatible with Apache Spark and which supports features such as ACID
+    transactions, schema enforcing and data versioning. Databricks also offers a managed
+    version of MLflow (Zaharia and The Linux Foundation [2022](#ref-mlflow)) an open-source
+    library-agnostic platform to manage machine learning pipelines which we will describe
+    in more detail in Section [11.2](production-tools.html#production-software).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: DVC (Data Version Control) (Iterative [2022](#ref-dvc)[b](#ref-dvc)) is an open-source
+    tool that applies GitOps principles to data.[^(25)](#fn25) DVC manages data and
+    machine learning models through metadata stored in text files, and it uses Git
+    (The Git Development Team [2022](#ref-git-git)) to version them and to track their
+    provenance. DVC is both a command-line tool and a library, and is language- and
+    framework-agnostic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'DVC and MLflow (Zaharia and The Linux Foundation [2022](#ref-mlflow)) implement
+    experiment tracking in two different ways. DVC organises experiments within Git
+    projects using commits, branches and tags. It automatically tracks data dependencies,
+    machine learning code, parameters and model artefacts: we can compare different
+    experiments through the associated metrics using either its command line or its
+    web interface. MLflow instead provides a tracking server and client libraries
+    that can be integrated into Python, R and Java code as discussed in Section [5.3.6](design-code.html#monitoring-pipeline).
+    The tracking server stores the metadata, parameters, metrics and tags collected
+    by the clients for each experiment run into a file or a database. Larger outputs
+    like data files, images and model artefacts are saved separately, for instance,
+    in an object storage.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In addition, there are also proprietary SaaS offerings with experiment tracking
+    and model registry functionalities, to name a few: Neptune (Neptune Labs [2022](#ref-neptune)),
+    Comet (Comet [2022](#ref-comet)) and Weights & Biases (Weights & Biases [2022](#ref-wab));
+    more details on this type of software are in Section [11.2](production-tools.html#production-software).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 10.2 Code Development
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Modern software development is a collaborative effort based on knowledge sharing,
+    constant iteration and continuous feedback. Distributed version control systems
+    and Git (The Git Development Team [2022](#ref-git-git)) in particular make all
+    this possible by setting the standard for code versioning and collaborative development
+    and by powering popular platforms such as GitHub and GitLab. Our ability to deliver
+    and deploy software using DevOps relies heavily on Git together with semantic
+    versioning (Preston-Werner [2022](#ref-sem-ver)) and commit tags. Therefore, Git
+    is a tool that every software engineer should be familiar with. Machine learning
+    and data science professionals should be familiar with it as well because it is
+    used in and influences the design of software like DVC that is used to work with
+    pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Choosing the right set of tools for writing code is a matter of prior experience
+    with specific tools and personal taste. It may be a decision made either by individual
+    developers or at the level of the team, research group or company the developers
+    belong to in order to standardise on a predetermined set of software. In either
+    case, to work efficiently on a machine learning pipeline we will need support
+    for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the programming languages that we will use (Section [6.1](writing-code.html#programming-language));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: enforcing coding standards (Section [6.3](writing-code.html#coding-standards));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: automated refactoring (Section [6.7](writing-code.html#refactoring));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: integrations with source code versioning (Section [6.5](writing-code.html#versioning));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: running software tests and summarising their results (Section [9.4](troubleshooting-code.html#testing));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: interactive debugging (Section [9.4](troubleshooting-code.html#testing));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: managing the containers (Section [7.1.4](deploying-code.html#container-packaging))
+    that encapsulate the developing environment, and the ability to remotely work
+    within them.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Ensuring that all developers use similar tooling is useful for compliance,
+    to simplify the training of new developers and to improve reproducibility. (For
+    the same reasons, we should avoid polyglot programming as discussed in Section
+    [5.2.4](design-code.html#code-debt)). There is a wide variety of tools to choose
+    from, falling into the following categories:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: modern and relatively lightweight *code editors* such as Atom (Atom [2022](#ref-atom))
+    and Visual Studio Code (Microsoft [2022](#ref-vs-code)[d](#ref-vs-code), also
+    known as VS Code) that can be extended to provide the features above with the
+    use of third-party extensions;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*integrated development environments* (IDEs) such as Eclipse (Eclipse Foundation
+    [2022](#ref-eclipse-ide)[a](#ref-eclipse-ide)) and JetBrains IntelliJ IDEA (JetBrains
+    [2022](#ref-jetbrains-idea)[a](#ref-jetbrains-idea));'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*shared interactive computing platforms* such as Jupyter notebooks (Project
+    Jupyter [2022](#ref-jupyter)).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 10.2.1 Code Editors and IDEs
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The main difference between an IDE and a code editor is the amount of functionality
+    that is built-in and configured with sane defaults. On the one hand, IDEs integrate
+    most functionality out of the box on a single programming language. For instance,
+    PyCharm (JetBrains [2022](#ref-pycharm)[b](#ref-pycharm)) offers features such
+    as code inspection, code completion, syntax highlighting, version control, debugging,
+    refactoring, test execution and container integration like other major IDEs, but
+    also supports the Python REPL and provides introspection into the objects created
+    by scientific computing libraries such as NumPy and Pandas. The reference IDE
+    for the R language is RStudio (RStudio [2022](#ref-r-studio)[a](#ref-r-studio)),
+    which integrates a console, an editor that supports syntax highlighting and direct
+    code execution, tools for plotting and inspecting R objects as well as history,
+    debugging and workspace management.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, code editors are more limited out of the box, but they can
+    reach feature parity with IDEs by installing and configuring third-party extensions.
+    For example, VS Code can provide similar functionality to PyCharm by using a language
+    server like the *Python Language Server* (Palantir [2022](#ref-python-language-server))
+    that is compliant with the language server protocol specification (Microsoft [2022](#ref-lsp)[f](#ref-lsp)).
+    Other alternatives are Mypy (The mypy Project [2014](#ref-mypy)), Pylance (Microsoft
+    [2022](#ref-pylance)[a](#ref-pylance)) (based on the Pyright (Pyright [2022](#ref-pyright))
+    static type checker from Microsoft), Pytype (Batchelder and et al. [2022](#ref-pytype))
+    (from Google) and Pyre (Meta Platforms [2022](#ref-pyre)[a](#ref-pyre)) (from
+    Facebook). The same level of integration can be accomplished with the languageserver
+    package (Lai and Ren [2022](#ref-r-languageserver)) and the VS Code R extension
+    (REditorSupport [2022](#ref-vs-code-r)) for R and with LanguageServer.jl (Julia
+    VS Code [2022](#ref-julia-languageserver)[a](#ref-julia-languageserver)) and the
+    VS Code Julia extension (Julia VS Code [2022](#ref-vs-code-julia)[b](#ref-vs-code-julia))
+    for Julia.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Both code editors and IDEs can also run as web applications: a web browser
+    session connects to a cloud instance replicating a common, unified development
+    environment. This approach has two advantages: it reduces technical debt arising
+    from polyglot programming (Section [5.2.4](design-code.html#code-debt)) and makes
+    it possible to develop in environments that are too complex or too resource-intensive
+    to run locally (Section [5.3.2](design-code.html#baseline-pipeline)). Code editors
+    like VS Code provide web interfaces (Microsoft [2022](#ref-vscode-dev)[j](#ref-vscode-dev))
+    to navigate files and repositories and to commit small code changes, while IDEs
+    like GitHub Codespaces (GitHub [2022](#ref-github-codespaces)[a](#ref-github-codespaces))
+    and AWS Cloud9 (Amazon [2022](#ref-aws-cloud9)[c](#ref-aws-cloud9)) provide complete
+    cloud development environments backed by virtual machines (Section [7.1.3](deploying-code.html#vm-packaging)).
+    We also have the option to self-host them using Docker (Docker [2022](#ref-docker)[a](#ref-docker))
+    and Kubernetes (The Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes)):
+    base container images are readily available for Eclipse Che (Eclipse Che [2022](#ref-eclipse-che)),
+    Eclipse Theia (Eclipse Foundation [2022](#ref-eclipse-theia)[b](#ref-eclipse-theia))
+    and GitPod (Gitpod [2022](#ref-gitpod)). As for R, RStudio Server (RStudio [2022](#ref-r-studio-server)[b](#ref-r-studio-server))
+    makes available the same features as the RStudio IDE through a browser-based interface
+    that is connected to R sessions running on a remote server. We would also like
+    to point out DagsHub (DagsHub [2022](#ref-dagshub)) as a collaboration platform:
+    it provides a shared work environment for data science and machine learning projects
+    that follows the development patterns and the practices presented in this book.
+    It integrates with GitHub, DVC, MLflow, Jenkins (Jenkins [2022](#ref-jenkins)[b](#ref-jenkins))
+    and many other open-source tools.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we would like to mention one last set of code editors: Vim, Neovim
+    (Neovim [2022](#ref-neovim)) and Emacs (GNU Project [2022](#ref-gnu-emacs)). They
+    are valued by developers who prefer to create a modular development environment
+    that fits their specific needs. Both editors provide full support for R, Julia
+    and Python through plug-ins that communicate with the respective language servers.
+    Although their learning curve is steep at first, they allow for unparalleled speed
+    of action on code bases of any size in the long run.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 10.2.2 Notebooks
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In recent years, notebooks have seen widespread adoption in machine learning
+    projects and, more in general, in scientific research. They are typically implemented
+    as Jupyter notebooks (Project Jupyter [2022](#ref-jupyter), from the programming
+    languages *Ju*lia, *Pyt*hon and *R* they support), an interactive development
+    tool that is ideal for building proofs of concept. Jupyter notebooks are designed
+    to quickly test ideas, to evaluate the trade-offs of different alternatives and
+    to share code, results and figures intermixed with documentation in Markdown format.
+    They can be executed interactively directly from GitHub and GitLab, from a dedicated
+    collaboration platform such as Google Colaboratory (Google [2022](#ref-colab)[g](#ref-colab),
+    also known as Colab) or from MLOps platforms such as Amazon SageMaker (Amazon
+    [2022](#ref-sagemaker)[d](#ref-sagemaker)) or Azure Machine Learning (Microsoft
+    [2022](#ref-azureml)[c](#ref-azureml)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Despite considerable programming language support and a significant adoption
+    by the scientific community, the use of Jupyter notebooks has several shortcomings
+    in the context of modern development practices (Chapter [6](writing-code.html#writing-code),
+    in particular Section [6.3](writing-code.html#coding-standards)). The Jupyter
+    notebook file format stores code, outputs, images and Markdown text in a single
+    huge JSON object to produce a self-contained, portable artefact. This architectural
+    choice has four major shortcomings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is challenging to version a notebook correctly because stochastic outputs
+    change every time it runs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Representing code in “cells” that can be executed in any order is at odds with
+    the imperative nature of the programming languages used in machine learning software.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Dividing code into cells to interleave their outputs and the surrounding text
+    impacts code modularity and code reuse and reduces our ability to produce good
+    abstractions. We can accept some level of coupling between cells (because they
+    run code in a shared, hidden global environment) and add glue code to make things
+    work, but that leads to an increase in technical debt (Sections [5.2.3](design-code.html#architecture-debt)
+    and [5.2.4](design-code.html#code-debt)).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Notebooks do not have any built-in support for automated testing (Section [9.4](troubleshooting-code.html#testing))
+    or deployment (Chapter [7](deploying-code.html#deploying-code)). While this can
+    be acceptable for exploring data and prototyping models (Section [5.3.2](design-code.html#baseline-pipeline)),
+    it makes them unsuitable for developing production-level software.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'In particular, executing cells in a non-linear order can lead to inconsistent
+    results because cells affect each other’s environment, effectively creating a
+    “hidden state” that is very difficult to track. The only way to achieve reproducibility
+    is to always execute all the code in the notebook from the top in a clean environment.
+    For these reasons, we cannot use notebooks directly to serve machine learning
+    models in a production environment. However, this may change in the future: there
+    are ongoing efforts to develop tools for diffing and merging (nbtime (Alnæs and
+    Project Jupyter [2022](#ref-nbdime)) and nbstripout (Rathgeber [2022](#ref-nbstripout))),
+    automatic testing (testbook (Nteract Team [2022](#ref-testbook)[b](#ref-testbook))
+    and nbval (Cortes-Ortuno et al. [2022](#ref-nbval))), automation (Papermill (Nteract
+    Team [2022](#ref-papermill)[a](#ref-papermill))) and quality assurance (nbQA (nbQA
+    Team [2022](#ref-nbqa))).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RMarkdown and Julia notebooks are fully reproducible because they execute all
+    the code in the notebook from the top in a clean environment by default, so there
+    is no state inconsistency after we change the code in a cell and re-run it. Furthermore,
+    both are easier to version and to diff than Jupyter notebooks because they store
+    text, outputs and figures in a separate Markdown, PDF or HTML file when compiled.
+    RMarkdown notebooks are well supported by RStudio, which provides code auto-complete,
+    linting and suggestions, but they can be edited with any text editor and compiled
+    through the command line as well. We can also enhance them with the workflowr
+    R package (Blischak, Carbonetto, and Stephens [2022](#ref-workflowr)), which combines
+    literate programming (with knitr (Xie [2015](#ref-knitr))) and version control
+    (with git2r (Widgren and et al. [2022](#ref-git2r))) to generate shareable HTML
+    pages containing time-stamped, versioned code blocks and outputs. For reproducibility,
+    each analysis is run in a new R session.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given how Jupyter notebooks are geared towards prototyping, we suggest that
+    they should be integrated in a modern development workflow as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experiment and build a prototype of the code using notebooks.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: When the prototype is complete, move the code to a new Git repository and start
+    refactoring it using an IDE or a code editor to make it modular and scalable.
+    At the same time, add software tests.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Add docstrings (Goodger and Rossum [2022](#ref-py-docstrings)) to the code using
+    the text in Jupyter Markdown as a base.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Package your artefact using pip (Python Software Foundation [2022](#ref-pip)[a](#ref-pip))
+    and setuptool (Python Packaging Authority [2022](#ref-setuptools)) (Section [7.1.2](deploying-code.html#distribution-packaging))
+    for later use as a module within the machine learning pipeline or as a library
+    that will be imported by other Jupyter notebooks.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 10.2.3 Accessing Data and Documentation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Quickly accessing documentation during development is invaluable when working
+    on complex code bases. We can use offline documentation browsers such as Velocity
+    (Silverlake Software [2022](#ref-velocity)) or Dash, or the open-source Zeal (The
+    Delta Lake Project Authors [2022](#ref-zeal)[b](#ref-zeal)). All three can automatically
+    download the *docsets* (HTML documentation archives for offline usage) for major
+    programming languages and machine learning frameworks, and also integrate with
+    the leading IDEs and code editors. Overall, they are interchangeable in terms
+    of features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As for accessing data, object storage like AWS Amazon S3 is becoming the de
+    facto standard for data interchange in data science and machine learning. Therefore,
+    it is very useful to integrate code editors and IDEs with libraries capable of
+    abstracting the listing, downloading and uploading of data into object storage
+    buckets across multiple cloud vendors. A popular example is MinIO (MinIO [2022](#ref-minio)),
+    which is fully compatible with the S3 APIs and provides an open-source SDK for
+    multiple languages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 10.3 Build, Test and Documentation Tools
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using appropriate tools for building, testing and performing software quality
+    assurance is important to improve ergonomics and reduce the likelihood of errors.
+    In addition, we may want to use the same set of tools in all environments (developer
+    workstations, staging and production environments) and in all stages of development,
+    both to avoid inconsistencies and to maintain a common environment shared by all
+    the people who work on the pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Currently, containers (Section [7.1.4](deploying-code.html#container-packaging))
+    are the most common way of packaging the modules of a machine learning pipeline:
+    either individually with Docker, in groups with Docker compose (Docker [2022](#ref-docker-compose)[c](#ref-docker-compose))
+    or Podman (The Containers Organization [2022](#ref-podman)), or as a single-node
+    Kubernetes with Minikube (The Kubernetes Authors [2022](#ref-minikube)[c](#ref-minikube))
+    or MicroK8s (Canonical [2022](#ref-microk8s)[b](#ref-microk8s)). All these solutions
+    build on Docker, with different trade-offs in terms of architecture and functionality,
+    and therefore support the deployment practices described in Chapter [7](deploying-code.html#deploying-code).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the points of using containers is to isolate different modules and applications
+    from each other. We can further decouple our code from the software installed
+    within each container by using `pipenv` or `pip` (Python Software Foundation [2022](#ref-pip)[a](#ref-pip))
+    plus `virtualenv` (Python Packaging Authority (PyPA) [2022](#ref-virtualenv))
+    to create isolated Python environments and to manage dependencies on packages
+    and on specific versions of the Python interpreter (without collisions with the
+    globally installed ones). We can install and switch between multiple versions
+    of Python using pyenv (Yamashita, Stephenson, and et al. [2022](#ref-pyenv)) or
+    Poetry (Kalnytskyi [2022](#ref-poetry)[a](#ref-poetry)), or a more general-purpose
+    tool like asdf (Manohar [2022](#ref-asdf)) that supports multiple runtime versions
+    for the most used interpreters, compilers and development tools. If our needs
+    are too complex for this approach, we might consider tools such as Pipenv (Reitz
+    and Python Packaging Authority (PyPA) [2022](#ref-pipenv)) and Conda (Anaconda
+    [2022](#ref-conda)[b](#ref-conda)). Conda in particular has a broad support for
+    machine learning and data science applications (Anaconda [2022](#ref-conda-data-science)[a](#ref-conda-data-science))
+    but is rather cumbersome to use. The R counterpart of Pipenv is the packrat package
+    (Ushey et al. [2022](#ref-packrat)), which also uses a locally installed R interpreter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Automated tests are another key feature of modern practices for developing
+    (Section [6.5](writing-code.html#versioning)), refactoring (Section [6.7](writing-code.html#refactoring))
+    and maintaining software (Section [9.4](troubleshooting-code.html#testing)). Each
+    test should be run in a clean environment such as a container that is re-created
+    at each run: we want to avoid the execution of one test influencing the results
+    of another. (The automated and reproducible deployment practices we discussed
+    in Chapter [7](deploying-code.html#deploying-code) are a key enabler of automated
+    testing!) Test results should be included as pass/fail by the CI/CD pipeline to
+    facilitate code review (Section [6.6](writing-code.html#code-review)) and to ensure
+    that the pipeline is always in a functioning state. There are many frameworks
+    and libraries that we can use to implement the types of tests described in Section
+    [9.4](troubleshooting-code.html#testing). For individual modules, we can use the
+    unittest (Python Software Foundation [2022](#ref-unittest)[c](#ref-unittest))
+    and doctest (Python Software Foundation [2022](#ref-doctest)[b](#ref-doctest))
+    packages in the Python standard library, the testthat R (Wickham, RStudio, and
+    R Core Team [2022](#ref-testthat)) package and the Julia test module.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We should also test that the machine learning pipeline as a whole works as
+    expected. Tools like Airflow (The Apache Software Foundation [2022](#ref-airflow)[a](#ref-airflow)),
+    DVC and Pachyderm (Pachyderm [2022](#ref-pachyderm)) use the DAG that maps the
+    dependencies between the modules to allow for local, iterative testing. In DVC
+    and Pachyderm, dependencies are specified in a declarative configuration file
+    (say, `dvc.yaml` for DVC) which can be either written manually or built programmatically
+    using helper commands. DVC does not have any built-in support for testing, so
+    we should instrument modules ourselves (for unit tests) and embed the whole pipeline
+    in a testing framework (for integration, system and acceptance tests). In Airflow,
+    the pipeline is implemented in Python code and dependencies are encoded in a dedicated
+    `DAG` object: this makes it easy to test individual modules with unittest and
+    to validate data with frameworks such as Great Expectations (Superconductive [2022](#ref-ge)).
+    As for pipelines running on GitHub, GitLab or Jenkins, we can use actions and
+    runners (Gitlab [2022](#ref-gitlab-runner)[a](#ref-gitlab-runner); Nektos [2022](#ref-act);
+    Jenkins [2022](#ref-jenkinsfile-runner)[a](#ref-jenkinsfile-runner)) that, albeit
+    with some limitations, can run the complete pipeline or some of its parts using
+    containers. Another alternative is to validate the pipeline directly by iteratively
+    committing changes to a test branch and pushing them to the mainline branch to
+    force the CI to run any tests that may be relevant. Jenkins also provides a testing
+    framework for implementing unit tests on the configuration and on the conditional
+    logic of the pipeline code and a command-line tool for linting the pipeline. GitLab
+    provides APIs to trigger validation and linting for the same purpose.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Enforcing code styles and standards, which we discussed in Section [6.3](writing-code.html#coding-standards),
+    is a crucial complement to testing to ensure that we produce maintainable, working
+    software. Pylint (Logilab and PyCQA and contributors [2022](#ref-pylint)) is the
+    reference static code analyser and linter for Python: it is based on PEP-8 (Python
+    Enhancement Proposal 8), the official document that contains the guidelines and
+    best practices on how to write Python code. An alternative is Flake8 (Stapleton
+    Cordasco [2022](#ref-flake8)), which builds on other tools such as pycodestyle
+    (a style guide checker), pyflakes (a source files checker for errors) and mccabe
+    (a tool to check the complexity of the code). A comprehensive linting step for
+    Python code should apply a sequence of tools such as the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: isort (Crosley [2022](#ref-isort)) to sort imports alphabetically and separate
+    into sections by type;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: black (Langa and et al. [2022](#ref-black)) to format the code;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: flake8 to check the code style;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: pylint as the final step to run static code analysis.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The styler package (Müller and Walthert [2022](#ref-r-styler)[a](#ref-r-styler)),
+    which enforces compliance with the tidyverse style guide (Wickham [2022](#ref-r-style)[b](#ref-r-style)),
+    and the lintr package (Hester et al. [2022](#ref-r-lintr)), which performs static
+    code analysis and which identifies syntax errors and possible semantic issues,
+    fill the roles of the Python packages above for R code. Both lintr (see `vignette("continuous-integration"`))
+    and styler support CI/CD integration (Müller and Walthert [2022](#ref-r-styler-cicd)[b](#ref-r-styler-cicd)),
+    accept user-provided code style policies and integrate with RStudio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Writing documentation and keeping it up-to-date is also key to maintaining machine
+    learning pipelines over time. Documentation should be versioned like code and
+    kept as close as possible to the code it refers to. Documentation on module, function
+    and class interfaces or on method definitions can placed in both Python (Goodger
+    and Rossum [2022](#ref-py-docstrings)) and Julia (Krämer [2022](#ref-jl-docstrings))
+    code using structured comments in the docstring or native Sphinx format; Sphinx
+    (Brandl and the Sphinx Team [2022](#ref-sphinx)) can then compile those comments
+    into documents in various file formats via the Sphinx `autodoc` extension (see
+    Section [8.2](documenting-code.html#apidocs) for an example). Sphinx can also
+    be used to (re)compile documentation automatically using CI (with “Read the Docs”
+    (Read the Docs [2022](#ref-readthedocs))) and to render OpenAPI specification
+    files as static HTML pages (Kalnytskyi [2022](#ref-sphinxcontrib-redoc)[c](#ref-sphinxcontrib-redoc)).
+    The OpenAPI specification files can in turn be automatically generated from docstrings
+    using Sphinx (Kalnytskyi [2022](#ref-sphinxcontrib-openapi)[b](#ref-sphinxcontrib-openapi)),
+    Apispec (Loria and et al. [2022](#ref-apispec)) or a framework such as FastApi
+    (Ramírez [2022](#ref-fastapi)) and Flask (Pallets Team [2022](#ref-flask)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In R, we can use comments in the Doxygen (van Heesch [2022](#ref-doxygen))
+    format for the same purpose: they can be parsed by the Roxygen2 package (Wickham,
+    Danenberg, et al. [2022](#ref-roxygen2)) to generate R documentation in various
+    formats as discussed in Section [8.2](documenting-code.html#apidocs).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Alnæs, M. S., and Project Jupyter. 2022\. *nbdime – Diffing and Merging of Jupyter
+    Notebooks*. [https://nbdime.readthedocs.io](https://nbdime.readthedocs.io).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Amazon. 2022c. *AWS Cloud9 Documentation*. [https://docs.aws.amazon.com/cloud9](https://docs.aws.amazon.com/cloud9).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Amazon. 2022d. *Machine Learning: Amazon Sagemaker*. [https://aws.amazon.com/sagemaker/](https://aws.amazon.com/sagemaker/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anaconda. 2022a. *Conda for Data Scientists*. [https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/data-science.html](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/data-science.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anaconda. 2022b. *Package, Dependency and Environment Management for Any Language*.
+    [https://docs.conda.io](https://docs.conda.io).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apache Software Foundation. 2022b. *Impala Documentation*. [https://impala.apache.org/impala-docs.html](https://impala.apache.org/impala-docs.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Atom. 2022\. *A hackable text editor for the 21st Century*. [https://atom.io/](https://atom.io/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Batchelder, N., and et al. 2022\. *A Static Type Analyzer for Python Code*.
+    [https://google.github.io/pytype](https://google.github.io/pytype).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Blischak, J. D., P. Carbonetto, and M. Stephens. 2022\. *workflowr: A Framework
+    for Reproducible and Collaborative Data Science*. [https://cran.r-project.org/web/packages/workflowr](https://cran.r-project.org/web/packages/workflowr).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bokeh. 2022\. *Bokeh Documentation*. [https://docs.bokeh.org/en/latest/](https://docs.bokeh.org/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Brandl, G., and the Sphinx Team. 2022\. *Sphinx: Python Documentation Generator*.
+    [https://www.sphinx-doc.org/en/master/](https://www.sphinx-doc.org/en/master/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Canonical. 2022b. *MicroK8s Documentation*. [https://microk8s.io/docs](https://microk8s.io/docs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cloudera. 2022\. *Cloudera: The Hybrid Data Company*. [https://www.cloudera.com/](https://www.cloudera.com/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comet. 2022\. *Comet Documentation*. [https://www.comet.com/docs/v2](https://www.comet.com/docs/v2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cortes-Ortuno, D., O. Laslett, T. Kluyver, V. Fauske, M. Albert, MinRK, O.
+    Hovorka, and H. Fangohr. 2022\. *IPython Notebook Validation for py.test: Documentation*.
+    [https://nbval.readthedocs.io](https://nbval.readthedocs.io).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Crosley, T. 2022\. *A Python Utility and Library to Sort Imports*. [https://pycqa.github.io/isort/](https://pycqa.github.io/isort/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: DagsHub. 2022\. *Welcome to the DagsHub Docs*. [https://dagshub.com/docs/](https://dagshub.com/docs/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Databricks. 2022\. *Databricks Documentation*. [https://docs.databricks.com/applications/machine-learning/index.html](https://docs.databricks.com/applications/machine-learning/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Docker. 2022c. *Overview of Docker Compose*. [https://docs.docker.com/compose](https://docs.docker.com/compose).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eclipse Che. 2022\. *Run your favorite IDE on Kubernetes*. [https://www.eclipse.org/che/technology/](https://www.eclipse.org/che/technology/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eclipse Foundation. 2022a. *Desktop IDEs*. [https://www.eclipse.org/ide/](https://www.eclipse.org/ide/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Eclipse Foundation. 2022b. *Theia: Cloud & Desktop IDE*. [https://theia-ide.org/docs/](https://theia-ide.org/docs/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Firke, S., B. Denney, C. Haid, R. Knight, M. Grosser, and J. Zadra. 2022\.
+    *janitor: Simple Tools for Examining and Cleaning Dirty Data*. [https://cran.r-project.org/web/packages/janitor](https://cran.r-project.org/web/packages/janitor).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formagrid. 2022\. *Airtable Is a Modern Spreadsheet Platform with Database Functionalities*.
+    [https://airtable.com](https://airtable.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: GitHub. 2022a. *GitHub Codespaces*. [https://github.com/features/codespaces](https://github.com/features/codespaces).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gitlab. 2022a. *GitLab Runner Documentation*. [https://docs.gitlab.com/runner/](https://docs.gitlab.com/runner/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gitlab. 2022b. *What Is GitOps?* [https://about.gitlab.com/topics/gitops](https://about.gitlab.com/topics/gitops).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Gitpod. 2022\. *Gitpod: Always Ready to Code*. [https://www.gitpod.io](https://www.gitpod.io).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GNU Project. 2022\. *GNU EMacs*. [https://www.gnu.org/software/emacs/](https://www.gnu.org/software/emacs/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Goodger, D., and G. van Rossum. 2022\. *PEP 257: Docstring Conventions*. [https://peps.python.org/pep-0257/\#what-is-a-docstring]](https://peps.python.org/pep-0257/\#what-is-a-docstring%5D).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Google. 2022g. *Welcome to Colab!* [https://colab.research.google.com](https://colab.research.google.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Harris, C. R., K. J. Millman, Stéfan J. van der Walt, R. Gommers, P. Virtanen,
+    D. Cournapeau, E. Wieser, et al. 2020\. “Array Programming with NumPy.” *Nature*
+    585 (7285): 357–62.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hester, J., F. Angly, R. Hyde, M. Chirico, K. Ren, and A. Rosenstock. 2022\.
+    *A Linter for R Code*. [https://cran.r-project.org/web/packages/lintr](https://cran.r-project.org/web/packages/lintr).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Iterative. 2022b. *DVC: Data Version Control. Git for Data & Models*. [https://github.com/iterative/dvc](https://github.com/iterative/dvc).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jenkins. 2022a. *A Command Line Tool to Run Jenkinsfile as a Function*. [https://github.com/jenkinsci/jenkinsfile-runner](https://github.com/jenkinsci/jenkinsfile-runner).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jenkins. 2022b. *Jenkins User Documentation*. [https://www.jenkins.io/doc/](https://www.jenkins.io/doc/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: JetBrains. 2022a. *IntelliJ IDEA*. [https://www.jetbrains.com/idea/](https://www.jetbrains.com/idea/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: JetBrains. 2022b. *PyCharm*. [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Julia VS Code. 2022a. *An Implementation of the Microsoft Language Server Protocol
+    for the Julia Language*. [https://juliapackages.com/p/languageserver](https://juliapackages.com/p/languageserver).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Julia VS Code. 2022b. *Julia for Visual Studio Code*. [https://www.julia-vscode.org](https://www.julia-vscode.org).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kalnytskyi, I. 2022a. *Poetry Documentation*. [https://python-poetry.org/docs](https://python-poetry.org/docs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kalnytskyi, I. 2022b. *sphinxcontrib-openapi Is a Sphinx Extension to Generate
+    APIs Docs from OpenAPI*. [https://sphinxcontrib-openapi.readthedocs.io](https://sphinxcontrib-openapi.readthedocs.io).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kalnytskyi, I. 2022c. *The Sphinx Extension that Renders OpenAPI Specs Using
+    ReDoc*. [https://sphinxcontrib-redoc.readthedocs.io/en/stable](https://sphinxcontrib-redoc.readthedocs.io/en/stable).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Krämer, S. 2022\. *Julia Autodoc*. [https://bastikr.github.io/sphinx-julia/juliaautodoc.html\#julia-autodoc]](https://bastikr.github.io/sphinx-julia/juliaautodoc.html\#julia-autodoc%5D).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lai, R., and K. Ren. 2022\. *An Implementation of the Language Server Protocol
+    for R*. [https://cran.r-project.org/web/packages/languageserver](https://cran.r-project.org/web/packages/languageserver).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Langa, and et al. 2022\. *Black: The Uncompromising Code Formatter*. [https://black.readthedocs.io/en/stable/](https://black.readthedocs.io/en/stable/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logilab and PyCQA and contributors. 2022\. *Pylint is a Static Code Analyser
+    for Python 2 or 3*. [https://pylint.pycqa.org/en/latest/](https://pylint.pycqa.org/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loria, S., and et al. 2022\. *A Pluggable API Specification Generator*. [https://apispec.readthedocs.io/en/latest](https://apispec.readthedocs.io/en/latest).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Manohar, A. 2022\. *asdf Documentation*. [https://asdf-vm.com/guide/getting-started.html](https://asdf-vm.com/guide/getting-started.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: McKinney, W. 2017\. *Python for Data Analysis*. 2nd ed. O’Reilly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Meta Platforms. 2022a. *A Performant Type-Checker for Python 3*. [https://pyre-check.org](https://pyre-check.org).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Microsoft. 2022a. *A performant, Feature-Rich Language Server for Python in
+    VS Code*. [https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Microsoft. 2022c. *Azure Machine Learning*. [https://azure.microsoft.com/en-us/services/machine-learning/](https://azure.microsoft.com/en-us/services/machine-learning/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Microsoft. 2022d. *Code editing. Redefined.* [https://code.visualstudio.com/](https://code.visualstudio.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Microsoft. 2022f. *Language Server Protocol*. [https://microsoft.github.io/language-server-protocol](https://microsoft.github.io/language-server-protocol).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Microsoft. 2022j. *VS Code in the Web*. [https://vscode.dev](https://vscode.dev).
+  prefs: []
+  type: TYPE_NORMAL
+- en: MinIO. 2022\. *MinIO Documentation*. [https://docs.min.io/docs](https://docs.min.io/docs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Müller, K., and L. Walthert. 2022a. *Non-Invasive Pretty Printing of R Code*.
+    [https://cran.r-project.org/web/packages/styler](https://cran.r-project.org/web/packages/styler).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Müller, K., and L. Walthert. 2022a. *Non-Invasive Pretty Printing of R Code*.
+    [https://cran.r-project.org/web/packages/styler](https://cran.r-project.org/web/packages/styler).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2022b. *Third-Party Integrations*. [https://styler.r-lib.org/articles/third-party-integrations.html](https://styler.r-lib.org/articles/third-party-integrations.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: nbQA Team. 2022\. *Run isort, pyupgrade, mypy, pylint, flake8, and More on Jupyter
+    Notebooks*. [https://github.com/nbQA-dev/nbQA](https://github.com/nbQA-dev/nbQA).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nektos. 2022\. *Run Your GitHub Actions Locally*. [https://github.com/nektos/act](https://github.com/nektos/act).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neovim. 2022\. *Hyperextensible Vim-Based Text Editor*. [https://neovim.io/](https://neovim.io/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neptune Labs. 2022\. *Neptune Documentation*. [https://docs.neptune.ai/](https://docs.neptune.ai/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nteract Team. 2022a. *Papermill Is a Tool for Parameterizing and Executing Jupyter
+    Notebooks*. [https://papermill.readthedocs.io](https://papermill.readthedocs.io).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nteract Team. 2022b. *Testbook*. [https://testbook.readthedocs.io/en/latest/](https://testbook.readthedocs.io/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Openrefine. 2022\. *A Free, Open Source, Powerful Tool for Working with Messy
+    Data*. [https://openrefine.org](https://openrefine.org).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pachyderm. 2022\. *Data-Centric Pipelines and Data Versioning*. [https://docs.pachyderm.com/latest](https://docs.pachyderm.com/latest).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Palantir. 2022\. *Python Language Server*. [https://github.com/palantir/python-language-server](https://github.com/palantir/python-language-server).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pallets Team. 2022\. *Flask Documentation*. [https://flask.palletsprojects.com/en/latest](https://flask.palletsprojects.com/en/latest).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plotly. 2022a. *Analytical Web Apps for Python, R, Julia, and Jupyter. No JavaScript
+    Required.* [https://github.com/plotly/dash](https://github.com/plotly/dash).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preston-Werner, T. 2022\. *Semantic Versioning*. [https://semver.org/](https://semver.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Project Jupyter. 2022\. *Jupyter*. [https://jupyter.org/](https://jupyter.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pyright. 2022\. *Static Type Checker for Python*. [https://github.com/microsoft/pyright](https://github.com/microsoft/pyright).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Packaging Authority. 2022\. *Building and Distributing Packages with
+    Setuptools*. [https://setuptools.pypa.io/en/latest/userguide/index.html](https://setuptools.pypa.io/en/latest/userguide/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Packaging Authority (PyPA). 2022\. *Virtualenv Documentation*. [https://virtualenv.pypa.io/en/latest/](https://virtualenv.pypa.io/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Python Software Foundation. 2022a. *PyPI: The Python Package Index*. [https://pypi.org/](https://pypi.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Software Foundation. 2022b. *Test Interactive Python Examples*. [https://docs.python.org/3/library/doctest.html](https://docs.python.org/3/library/doctest.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Python Software Foundation. 2022c. *unittest: Unit Testing Framework*. [https://docs.python.org/3/library/unittest.html](https://docs.python.org/3/library/unittest.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ramírez, S. 2022\. *FastAPI Framework, High Performance, Easy to Learn, Fast
+    to Code, Ready for Production*. [https://fastapi.tiangolo.com](https://fastapi.tiangolo.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rathgeber, F. 2022\. *Strip Output from Jupyter and IPython Notebooks*. [https://github.com/kynan/nbstripout](https://github.com/kynan/nbstripout).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Read the Docs. 2022\. *Read the Docs: Documentation Simplified*. [https://docs.readthedocs.io](https://docs.readthedocs.io).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: REditorSupport. 2022\. *R in Visual Studio Code*. [https://marketplace.visualstudio.com/items?itemName=REditorSupport.r](https://marketplace.visualstudio.com/items?itemName=REditorSupport.r).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Reitz, K., and Python Packaging Authority (PyPA). 2022\. *Pipenv: Python Dev
+    Workflow for Humans*. [https://pipenv.pypa.io](https://pipenv.pypa.io).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RStudio. 2022a. *Open Source and Enterprise-Ready Professional Software for
+    Data Science*. [https://www.rstudio.com](https://www.rstudio.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: RStudio. 2022b. *RStudio Server*. [https://www.rstudio.com/products/rstudio/\#rstudio-server](https://www.rstudio.com/products/rstudio/\#rstudio-server).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Silverlake Software. 2022\. *Velocity: The Documentation and Docset Viewer
+    for Windows*. [https://velocity.silverlakesoftware.com/](https://velocity.silverlakesoftware.com/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Snowflake. 2022\. *Snowflake Documentation*. [https://docs.snowflake.com](https://docs.snowflake.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Stapleton Cordasco, I. 2022\. *Flake8: Your Tool for Style Guide Enforcement*.
+    [https://flake8.pycqa.org/en/latest/](https://flake8.pycqa.org/en/latest/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Superconductive. 2022\. *Great Expectations*. [https://docs.greatexpectations.io/docs](https://docs.greatexpectations.io/docs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tableau Software. 2022\. *Tableau*. [https://www.tableau.com/](https://www.tableau.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Apache Software Foundation. 2022a. *Airflow Documentation*. [https://airflow.apache.org/docs/](https://airflow.apache.org/docs/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Apache Software Foundation. 2022c. *Apache Hadoop*. [https://hadoop.apache.org/](https://hadoop.apache.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Apache Software Foundation. 2022d. *Apache Hive Documentation*. [https://cwiki.apache.org/confluence/display/Hive](https://cwiki.apache.org/confluence/display/Hive).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Apache Software Foundation. 2022e. *Apache Pig Documentation*. [https://pig.apache.org/docs/latest](https://pig.apache.org/docs/latest).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Apache Software Foundation. 2022f. *Apache Spark Documentation*. [https://spark.apache.org/docs/latest](https://spark.apache.org/docs/latest).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Containers Organization. 2022\. *podman*. [https://podman.io](https://podman.io).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Delta Lake Project Authors. 2022a. *Delta Lake Documentation*. [https://docs.delta.io](https://docs.delta.io).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Delta Lake Project Authors. 2022b. *Zeal Is an Offline Documentation Browser
+    for Software Developers*. [https://zealdocs.org](https://zealdocs.org).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Git Development Team. 2022\. *Git Source Code Mirror*. [https://github.com/git/git](https://github.com/git/git).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Kubernetes Authors. 2022a. *Kubernetes*. [https://kubernetes.io/](https://kubernetes.io/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Kubernetes Authors. 2022c. *minikube*. [https://minikube.sigs.k8s.io/docs](https://minikube.sigs.k8s.io/docs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The mypy Project. 2014\. *mypy: Optional Static Typing for Python*. [http://mypy-lang.org/](http://mypy-lang.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trifacta. 2022\. *Profile, Prepare, and Pipeline Data for Analytics and Machine
+    Learning*. [https://www.trifacta.com](https://www.trifacta.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ushey, K., J. McPherson, J. Cheng, A. Atkins, JJ. Allaire, and T. Allen. 2022\.
+    *Packrat: Reproducible Package Management for R*. [https://rstudio.github.io/packrat/](https://rstudio.github.io/packrat/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: van Heesch, D. 2022\. *Doxygen*. [https://www.doxygen.nl/index.html](https://www.doxygen.nl/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Weights & Biases. 2022\. *Weights & Biases Documentation*. [https://docs.wandb.ai/](https://docs.wandb.ai/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wickham, H. 2022b. *The tidyverse Style Guide*. [https://style.tidyverse.org/](https://style.tidyverse.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Wickham, H., P. Danenberg, G. Csárdi, M. Eugster, and RStudio. 2022\. *roxygen2:
+    In-Line Documentation for R*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wickham, H., R. François, L.Henry, and K. Müller. 2022\. *A Fast, Consistent
+    Tool for Working with Data Frame Like Objects, Both in Memory and Out of Memory*.
+    [https://cloud.r-project.org/web/packages/dplyr](https://cloud.r-project.org/web/packages/dplyr).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Wickham, H., M. Girlich, and RStudio. 2022\. *tidyr: Tidy Messy Data*. [https://cloud.r-project.org/web/packages/tidyr](https://cloud.r-project.org/web/packages/tidyr).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wickham, H., RStudio, and R Core Team. 2022\. *Unit Testing for R*. [https://cloud.r-project.org/web/packages/testthat](https://cloud.r-project.org/web/packages/testthat).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Widgren, S., and et al. 2022\. *git2r: Provides Access to Git Repositories*.
+    [https://cran.r-project.org/web/packages/git2r/index.html](https://cran.r-project.org/web/packages/git2r/index.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Xie, Y. 2015\. *Dynamic Documents with R and knitr*. 2nd ed. CRC Press.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Xie, Y., J. J. Allaire, and G. Grolemund. 2022\. *R Markdown: The Definitive
+    Guide*. [https://bookdown.org/yihui/rmarkdown/](https://bookdown.org/yihui/rmarkdown/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Yamashita, Y., S. Stephenson, and et al. 2022\. *pyenv: Simple Python Version
+    Management*. [https://github.com/pyenv/pyenv](https://github.com/pyenv/pyenv).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Zaharia, M., and The Linux Foundation. 2022\. *MLflow Documentation*. [https://www.mlflow.org/docs/latest/index.html](https://www.mlflow.org/docs/latest/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GitOps is an application of DevOps practices such as version control, collaboration,
+    compliance, and CI/CD, and applies them to automate infrastructure management
+    (Gitlab [2022](#ref-git-ops)[b](#ref-git-ops)).[↩︎](development-tools.html#fnref25)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

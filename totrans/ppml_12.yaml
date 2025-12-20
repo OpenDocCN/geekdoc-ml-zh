@@ -1,0 +1,1216 @@
+- en: Chapter 6 Writing Machine Learning Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://ppml.dev/writing-code.html](https://ppml.dev/writing-code.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Programming is, in many ways, a conversation with a computer, but it is also
+    conversation with other developers (Fowler [2018](#ref-refactoring)). As vague
+    as it sounds, we should strive to write code that is simple to read and whose
+    meaning is obvious (Ousterhout [2018](#ref-philo)). Code is read much more often
+    than it is written: most of the cost of a piece of software is in its maintenance,
+    which is typically performed by people other than those who first wrote the code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Achieving clarity involves effort on several fronts. Different trade-offs between
+    clarity, consistency, development speed and the existence of useful libraries
+    may motivate the use of particular programming languages for different modules
+    (Section [6.1](writing-code.html#programming-language)). Things should be named
+    appropriately (Section [6.2](writing-code.html#naming)), code should be formatted
+    and laid out consistently (Section [6.3](writing-code.html#coding-standards)),
+    functions and modules should be organised tidily in files and directories (Section
+    [6.4](writing-code.html#filesystem-structure)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, having multiple people go through the code and *review* it (Section
+    [6.6](writing-code.html#code-review)) helps in identifying how to improve it.
+    We can then change it gradually by *refactoring* it (Section [6.7](writing-code.html#refactoring)),
+    which is the safest way to make sure we do not introduce any new bugs. Both activities
+    require an efficient use of source *version control* (Section [6.5](writing-code.html#versioning)),
+    which will also be key for deploying (Chapter [7](deploying-code.html#deploying-code)),
+    documenting (Chapter [8](documenting-code.html#documenting-code)) and testing
+    (Chapter [9](troubleshooting-code.html#troubleshooting-code)) our machine learning
+    pipeline. As an example, we will refactor a sample of code used for teaching in
+    academia (Section [6.8](writing-code.html#reworking)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6.1 Choosing Languages and Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The choice of what programming languages to use to write machine learning software
+    is mainly determined by their performance, their observability, the availability
+    of libraries whose functionality we can use and ease of programming.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The performance of a programming language depends mainly on whether it is *compiled*
+    (like C, and Rust) or *interpreted* (like R and Python). Compilation takes a program
+    and generates machine instructions that are stored in binary executable files
+    or libraries, which can then be run repeatedly. Compiled code is generally high-performance
+    because it does not require further processing when run: all the work of finding
+    the most efficient sequence of machine instructions is done ahead of runtime.
+    This includes deciding what instructions are appropriate to use for taking advantage
+    of the CPUs, GPUs and TPUs on the system the program will run on. In contrast,
+    interpreted languages execute a program by translating it into machine instruction
+    during runtime. Interpreted code, therefore, does not necessarily exhibit high
+    performance but is typically higher level (in the sense that it is more abstracted
+    from hardware specifics, such as managing memory) and is easier to program because
+    we can work with it interactively in REPLs.[^(14)](#fn14) In practice, programming
+    languages used for machine learning exist on a spectrum between these two extremes.
+    Both R and Python, despite being interpreted languages, have packages that are
+    just thin wrappers around high-performance libraries like BLAS, LAPACK, TensorFlow
+    or Torch that are written in compiled code. Depending on what packages we use
+    in our machine learning code, we may achieve performance comparable to that of
+    compiled code without sacrificing ease of programming for those parts of our code
+    that are not computationally intensive. Julia, on the other hand, uses *just-in-time
+    compilation* to compile and optimise code just before each module or function
+    is called at runtime. As a result, the time it takes to start executing Julia
+    code is fairly slow but has little overhead once running.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compiled and interpreted languages are very different in terms of observability
+    as well. We can observe the behaviour of compiled code easily by profiling it
+    (recording relevant metrics at regular intervals) or by tracing it (recording
+    the program and the compute system status when particular events are recorded)
+    at the system level because it runs exactly the same sequence of instructions
+    every time it is executed. On the other hand, interpreted code is mapped to machine
+    instructions dynamically by the interpreter as the software is run. Mapping performance
+    to specific blocks of code is more difficult unless the interpreter can expose
+    its internal state to a profiler while running the program. As a result, interpreted
+    code is often studied by simply adding print statements and timestamps. A more
+    rigorous alternative is to *instrument* the code itself, that is, to ask the interpreter
+    to record its state at predetermined intervals or events. However, most types
+    of instrumentation dramatically increase execution time and are unwieldy to use
+    even for debugging. This is well known to be the case for R’s `Rprof()` and `Rprofmem()`,
+    for instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In terms of ease of programming, all compiled languages in common use are *low-level
+    languages*: the code we write in them is not abstracted away from the compute
+    system it will run on. Manual memory management, dependency management, heavy
+    focus on the implementation details of data structures (Chapter [3](types-structures.html#types-structures)),
+    structuring code to take advantage of specific hardware capabilities (Chapter
+    [2](hardware.html#hardware)) are everyday concerns when working with languages
+    like C or . In contrast, interpreted languages in common use are *high-level languages*.
+    They allow us to write code that is in many respects like pseudocode and to concentrate
+    to a greater extent on the models and the algorithms we are implementing. As a
+    result, they make it easier to keep track of the overall design and of the structure
+    of the machine learning pipeline. High-level languages such as R, Python and Julia
+    also come with package repositories and dependency management (CRAN Team [2022](#ref-cran);
+    Python Software Foundation [2022](#ref-pip)[a](#ref-pip); JuliaLang [2022](#ref-juliapkg)).
+    Once more, this suggests that the best trade-off is to use low-level, compiled
+    languages for the few parts of the machine learning pipeline that are performance-critical
+    and to use high-level languages for everything else. The former will include model
+    training and inference; the latter may include data cleaning, visualisation and
+    performance monitoring. Orchestrating the different parts of the pipeline may
+    or may not be performance-critical, depending on its scale and complexity.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the availability of libraries that we can build on is important as
+    well. Ideally, we want to focus our efforts on implementing, optimising and running
+    our machine learning systems and pipelines instead of reimplementing functionality
+    that is already available elsewhere. And even if we were fine with reinventing
+    the wheel, we are unlikely to match the design quality and performance optimisations
+    of most popular software libraries. There is a significant overlap in the machine
+    learning models available in various languages, but some have better implementations
+    than others in particular cases. Python is probably the best choice for neural
+    networks, for probabilistic programming and for applications in computer vision
+    and natural language processing. R has the widest selection of models from classical
+    and modern statistics, including the reference implementation of popular ones
+    such as mixed-effects models and the elastic net penalised regression. Behind
+    the scenes, both languages (and Julia as well) use the same standard numerical
+    libraries so they often have similar levels of performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Last but not least, consider again the discussion on the modular nature of machine
+    learning software in Section [5.3](design-code.html#processing-pipeline). When
+    modules in our software have well-defined interfaces that specify what their inputs
+    and outputs are, and both inputs and outputs are serialised using standard formats,
+    we can implement them in different languages. Model training and inference modules
+    (Sections [5.3.4](design-code.html#model-pipeline) and [5.3.5](design-code.html#production-pipeline))
+    are more computationally intensive and, therefore, should be implemented in compiled
+    languages like C or . Modules that do not require as many resources like user
+    interfaces, dashboards (Section [5.3.6](design-code.html#monitoring-pipeline))
+    and often data ingestion (Section [5.3.3](design-code.html#data-pipeline)) may
+    be implemented in interpreted languages like R or Python. Orchestration, model
+    deployment and serving (Section [5.3.5](design-code.html#production-pipeline)),
+    logging and monitoring (Section [5.3.6](design-code.html#monitoring-pipeline))
+    are usually provided by third-party software; any glue code that complements them
+    may be in a completely unrelated systems or scripting language. The isolation
+    between the modules, and between the modules and the underlying compute systems,
+    makes the choice of the language used internally in each module irrelevant for
+    all the others. However, some degree of homogeneity in programming languages and
+    module structures is desirable to make it easier for different people to work
+    on the code (Section [5.2.4](design-code.html#code-debt)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6.2 Naming Things
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Carefully naming variables, functions, models and modules is essential to convey
+    their meaning to other people reading the code (Ousterhout [2018](#ref-philo);
+    Thomas and Hunt [2019](#ref-pragpro)). But who are those people in the case of
+    machine learning software? They will be a combination of *final users*, *developers*,
+    *machine learning experts* and *domain experts*. Each group will have a different
+    view of what names are meaningful to them. Similarly, we will argue in Chapter
+    [8](documenting-code.html#documenting-code) that we should complement software
+    with documentation written from different perspectives to make sure that all the
+    people working on it can understand it well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Names that are most useful to users and domain experts describe what a function
+    is supposed to do, what a variable contains or how it is supposed to be used,
+    which model is implemented by a module, and so on. They can do that by leveraging
+    the naming conventions of the domain the software is used in. Such names do not
+    describe how a function works internally, what is the type of a variable or other
+    implementation details: most users and domain experts will not be developers themselves,
+    so this type of information will not be useful to them. They will mainly be interested
+    in using functions, modules, etc. for their own purposes without having to understand
+    the implementation of every piece of code they call. Doing so would increase the
+    cognitive load involved in working with any complex piece of software beyond what
+    is reasonable. For the same reason, we suggested using names that come from the
+    domain in pseudocode (Section [4.1](algorithms.html#pseudocode)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Names that describe the implementation details of what they refer to can be
+    useful to other developers working on the same module. Similarly, short names
+    that map directly to the mathematical notation used in the scientific literature
+    will be most useful to machine learning experts. Both types of names assume familiarity
+    with the mathematical and implementation details of the relevant models and algorithms,
+    and assume that whoever is reading the code will refer to the literature to understand
+    what the code does and why it does it that way. Such names are usually quite short,
+    making for terse code. Users and domain experts are unlikely to be familiar with
+    the notation and they will find such code impossible to understand without a significant
+    amount of effort and the help of extensive comments (Section [8.1](documenting-code.html#comments)).
+    On the other hand, people who are familiar with the mathematical notation can
+    grasp the code much faster if the naming convention is the same as in the literature.
+    This is advantageous when writing research code that will only be shared among
+    collaborators working on similar topics. However, using mathematical notation
+    can also be a source of misunderstandings because the same concepts are expressed
+    with different notation and, vice versa, the same notation is used to represent
+    very different concepts in different subfields of machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, in practice it is impossible to establish a single suitable naming
+    convention across a machine learning pipeline: the code it contains is too varied,
+    as will be the people interacting with it. (This is true more in general for any
+    kind of coding convention, as we will see in the next section.) However, the general
+    guidelines from Kernigham and Pike (Kernigham and Pike [1999](#ref-kernigham))
+    apply even across naming conventions. *Use descriptive names for globals, short
+    names for locals*: it may be fine to adhere to mathematical notation inside modules
+    implementing machine learning models and algorithms because only developers and
+    machine learning experts are likely to touch such code. Both the module scope
+    and the comments it contains will narrow down the context (Section [8.1](documenting-code.html#comments))
+    and make short names as understandable as longer names would be (but faster to
+    read). Variables and functions that can be accessed from outside the module, on
+    the other hand, are better named following their domain meaning because they are
+    likely to be used by final users and domain experts. Public interface documentation
+    (Section [8.2](documenting-code.html#apidocs)) can help in fleshing out their
+    relationships with models and data as well as expand on their meaning. *Be consistent:*
+    code of the same type should follow the same naming convention across all modules
+    in the machine learning pipeline, practising either the same ubiquitous language
+    used in the comments, interface and architecture documentation (Section [8.3](documenting-code.html#designdocs))
+    or the same mathematical notation established in the technical documentations
+    (Section [8.4](documenting-code.html#domaindocs)). *Be accurate:* avoid vague
+    names and names that can be misunderstood to mean different things to people from
+    different backgrounds.[^(15)](#fn15)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6.3 Coding Styles and Coding Standards
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Code clarity is also a function of its readability. At a low level, we can
+    improve readability by adopting *code styles* that standardise how code is formatted
+    (indentation, use of braces, name casing, line length, etc.) and that give it
+    a uniform look across the whole machine learning software. The idea is that consistently
+    using the same style makes code easier to read and to understand both by the person
+    who wrote it and by others. Therefore, adhering to a coding style reduces the
+    risk of mistakes and makes it easier to collaborate within and across teams of
+    developers. All programming languages in common use in machine learning software
+    including Python (van Rossum, Warsaw, and Coghlan [2001](#ref-pep8); Google [2022](#ref-python-style)[d](#ref-python-style)),
+    R (Wickham [2022](#ref-r-style)[b](#ref-r-style)) and Julia (Bezanson et al. [2022](#ref-julia-style))
+    have industry-standard code styles which apply well in this context. However,
+    a machine learning pipeline will comprise code written in different programming
+    languages (Section [6.1](writing-code.html#programming-language)): we may want
+    to consider making small changes to these styles to make them more similar to
+    each other and to reduce friction when working with more than one language at
+    the same time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At a higher level, we may want to adopt *code standards* that limit what programming
+    constructs are considered safe to use and that lay out best practices to structure
+    code at a local level (say, blocks within a function, or functions within a module).
+    Such standards are language-agnostic and complement rather than replace code styles:
+    for instance, they may describe how to handle exceptions, how inputs and outputs
+    should be structured at the function and module level, how to track software dependencies,
+    how code should be instrumented for logging and observability, and what code patterns
+    to avoid for performance reasons. Lopes (Lopes [2020](#ref-programming-styles))
+    shows how much of a difference these choices can make in practice. At an even
+    higher level, code standards may also address software security concerns. Unlike
+    code styles, there are no universal code standards: their breadth makes them necessarily
+    application- or domain-specific. Combining both with a modular pipeline design
+    (Section [5.3](design-code.html#processing-pipeline)) allows us to make assumptions
+    about the code’s behaviour, which in turn makes it easier to read, to deploy,
+    to maintain and to integrate with other code by reducing the need for refactoring
+    (Section [6.7](writing-code.html#refactoring)) and by making code easier to test
+    (Section [9.4](troubleshooting-code.html#testing)). They can be adopted systematically
+    by having automated tools to check for compliance and by enforcing them during
+    code review (Section [6.6](writing-code.html#code-review)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The adoption of code styles and standards is, at the time of this writing,
+    one of the low-hanging fruits to pick to improve machine learning software across
+    the board. The prevalence of Jupyter notebooks (Project Jupyter [2022](#ref-jupyter))
+    as a development platform encourages one-off code that does not need to follow
+    any particular convention because it does not interact with other software and
+    interacts with users in very limited ways. As a result, code in Jupyter notebooks
+    is not well organised into functions (which are 1.5 times more coupled compared
+    to normal software, even though they are individually simpler), its dependencies
+    are not well managed (twice as many undeclared, indirect, or unused imports),
+    and, in general, code has more quality issues (1.3 times more) (Grotov et al.
+    [2022](#ref-jupyter-style)). Even disregarding Jupyter notebooks, all systematic
+    analyses of open-source machine learning code have found significant and widespread
+    issues. After controlling for age and popularity, machine learning software has
+    similar complexity and open tickets to other types of software. However, individual
+    projects seem to have fewer contributors and more forks, suggesting code may not
+    be reviewed as thoroughly (Simmons et al. [2020](#ref-simmons)). Reproducibility
+    and maintainability are problematic because software dependencies are often not
+    properly tracked (van Oort et al. [2021](#ref-oort)): either they are not listed,
+    they are vendored (Section [5.2.4](design-code.html#code-debt)), their versions
+    are not pinned, or they are unresolvable because they are detected automatically
+    and never vetted. Pylint’s inability to reliably check local imports and imports
+    in packages with C/backends (that is, all foundational packages including TensorFlow,
+    NumPy and PyTorch) makes this worse for Python projects. Furthermore, users are
+    often unaware of the documented issues and pitfalls of the machine learning software
+    they use (Zhang, Cruz, and van Deursen [2022](#ref-zhang)), in part because they
+    are only reported in independent blog posts if they are library-specific.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These general issues are made worse by several smells that are specific to
+    machine learning code and that arise from how such code is developed. Many of
+    the sources we have referenced (Sculley et al. [2015](#ref-hidden-debt); Simmons
+    et al. [2020](#ref-simmons); van Oort et al. [2021](#ref-oort); Zhang, Cruz, and
+    van Deursen [2022](#ref-zhang); Tang et al. [2021](#ref-tang)) point out issues
+    with module interfaces and functions having too many arguments (because they map
+    to the mathematical notation of the underlying models too closely); duplicate
+    code (because of experimentation by cut-and-paste and no pruning of dead code);
+    functions being too long, with too many variables and too many branches (because
+    they perform multiple tasks and were never refactored into smaller functions);
+    and lack of configuration management (such as the experiment tracking and infrastructure-as-code
+    approaches we argued for in Chapter [5](design-code.html#design-code)). Some of
+    these issues could be tolerated as inherent to machine learning code: we argued
+    earlier (Section [6.2](writing-code.html#naming)) that naming local variables
+    after mathematical notation is fine even if names are not descriptive. However,
+    most should not. To be fair, we acknowledge that many of these issues cannot be
+    addressed on a purely technical level because they arise from wrong incentives.
+    In academia, code is treated as a one-off throwaway (Nature [2016](#ref-repro1);
+    Tatman, VanderPlas, and Dane [2018](#ref-repro2)) because job performance is measured
+    by the number of publications (“publish or perish!”), not by the quality of the
+    code itself. The resulting software is typically neither maintained nor deployed
+    to a production system. In the industry, many professionals working on machine
+    learning pipelines have little or no background in software engineering (Sculley
+    et al. [2015](#ref-hidden-debt)) and companies have come to accept re-implementing
+    machine learning code from scratch to use it in production as inevitable. A culture
+    change is needed for the adoption of best practices such as code styles and code
+    standards (as well as modular pipeline design) to become the norm.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6.4 Filesystem Structure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Keeping code organised into files and directories contributes to clarity by
+    making it easier to find any specific piece of code. This is true for machine
+    learning pipelines as much as for other types of software: functions performing
+    related tasks should be stored together, and functions performing orthogonal tasks
+    should be stored in separate parts of the filesystem. (The Single Responsibility
+    Principle (Thomas and Hunt [2019](#ref-pragpro)) applied to file hierarchies.)
+    Each module should be stored in a separate directory, with functionality split
+    coherently into files. Methods and variables exported from a module should be
+    stored in a separate set of files than internal code, to make it easier for users
+    to inspect them and to link them with interface documentation (Section [8.2](documenting-code.html#apidocs)).
+    Unit tests for the module (Section [9.4.4](troubleshooting-code.html#local-vs-global))
+    should be placed in a separate subdirectory but versioned alongside the code they
+    test.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What is the best filesystem structure to use for a module in a machine learning
+    pipeline? There is no single, universal standard: both language-agnostic (Kriasoft
+    [2016](#ref-kriasoft)) and language-specific proposals for Python (Greenfeld [2022](#ref-cookiecutter);
+    Alam et al. [2022](#ref-kedro)), R (Blagotic et al. [2021](#ref-projecttemplate))
+    and Go (Quest [2022](#ref-goproject)) are available and have been used in real-world
+    software. They overlap substantially, broadly agreeing on the following set of
+    subdirectories and files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An `src` directory for the source code of the module, possibly subdivided into
+    further subdirectories.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `build` or `dist` directory to store the artefacts created during the build
+    process, like object files, machine learning models and the files used for testing,
+    deployment and CI/CD.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A directory for the specification files for any containers used in CI/CD, say,
+    `docker` for Dockerfiles (Docker [2022](#ref-docker)[a](#ref-docker)). Further
+    configuration files controlling how containers are deployed and managed, such
+    as Kubernetes (The Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes))
+    YAML configurations, may be placed in the same directory for convenience.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `config` directory containing the configuration files required to build and
+    develop the module, including a complete list of versioned software dependencies
+    (say, `requirements.txt` for Python modules) and IDE settings.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `test` directory for the unit tests and their reference outputs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `docs` directory containing the module documentation, either in source or
+    final form. Interface documentation can be stored alongside the code it refers
+    to as discussed in Section [8.2](documenting-code.html#apidocs) as an alternative.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `vendor` directory to store third-party code and software tools to build the
+    module.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `tools` directory for the executable files built from `src`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An `examples` directory to store sample usage patterns and other documents describing
+    algorithms and domain knowledge such as those discussed in Sections [8.4](documenting-code.html#domaindocs)
+    and [8.5](documenting-code.html#usecases). Often in the form of Jupyter notebooks.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `.secrets` directory for credentials, certificates, authentication tokens
+    and other privileged information that should be stored in encrypted form (for
+    instance, using `git-crypt` (Ayer [2022](#ref-git-crypt))).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The configuration file of the build system that produces the artefacts (stored
+    in the `build` directory) and that runs the tests (in `test`). For instance, a
+    `.Makefile`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `README` file with short description of the module.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `LICENSE` file containing the copyright statement and the licence text if
+    the module can be distributed as a self-contained, standalone piece of software.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is also interesting to consider how these directories and files should be
+    stored in a source version control system (Section [6.5](writing-code.html#versioning)).
+    On the one hand, we can follow Google’s “monorepo” approach (Potvin and Levenberg
+    [2016](#ref-monorepo)) and store all of them (the code for the whole pipeline)
+    in a single repository. This choice provides unified versioning with a single
+    source of truth, simplifies dependency management, facilitates code reuse and
+    large-scale refactoring spanning multiple modules, and increases code visibility
+    by making it easier to collaborate between different teams of developers. Integration,
+    system and acceptance tests (Section [9.4.4](troubleshooting-code.html#local-vs-global))
+    become more straightforward to implement and to run as well. However, monorepos
+    require more hardware resources and high-quality tooling to navigate code, to
+    modify it and to keep it organised because of the size of the repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the other hand, we can store each module in a separate repository. Cross-module
+    code and configurations are stored in separate “parent” repositories implementing
+    the orchestration and the deployment of the “child” repositories for the modules
+    using tools such as git-repo (Google [2022](#ref-git-repo)[e](#ref-git-repo))
+    or meta git (Walters and Lee Scott [2021](#ref-meta-git)). In other words, these
+    “parent” repositories clone, set up and manage the “child” repositories (say,
+    using `docker-compose`) to give the illusion of working with a monorepo. Individual
+    “child” repositories will be smaller, requiring less hardware resources, and working
+    on individual modules will not require any particular tooling. However, tracking
+    the dependencies between the modules and keeping the dependencies on third-party
+    software consistent across the whole pipeline cannot be automated as easily as
+    in a monorepo: this is an important source of technical debt (Section [5.2](design-code.html#technical-debt))
+    that we should address manually in the “parent” repositories. Navigating the codebase
+    of the whole pipeline requires additional tooling to hide the boundaries between
+    the repositories and to give the appearance of a unified repository. Any task
+    spanning multiple modules is no longer atomic: moving code between modules, splitting
+    or merging modules, or changing the interface of a module along with all the places
+    where that interface is used in other modules can no longer be performed as a
+    single commit in a single repository. Similarly, we are now required to create
+    and maintain “parent” repositories to set up the environment to run integration
+    and system tests. As with many other design choices, there is no optimal solution,
+    just choices with different trade-offs: which one is best for a particular pipeline
+    will depend on how large it is, on how many modules it contains, and on how models
+    are trained and served.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6.5 Effective Versioning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Storing code in a version control system (“versioning” for short) has become
+    a standard practice in software engineering (Duvall, Matyas, and Glover [2007](#ref-cicd);
+    Fowler [2018](#ref-refactoring)), and it benefits machine learning pipelines as
+    much as traditional software. We can track the evolution of code over time, navigating
+    its history and reverting it back to a functioning state if it breaks. We can
+    also track the data, the models and the pipeline configurations together with
+    the code as discussed in Section [5.2.3](design-code.html#architecture-debt).
+    Multiple developers can work on the code at the same time, merge their changes,
+    resolve any conflicts that may arise with the help of dedicated tools and produce
+    releases tagged with a semantic versioning scheme (Preston-Werner [2022](#ref-sem-ver)).
+    Versioning also ensures that all changes to the code are tracked (for code integrity
+    and developer accountability) and applied by appending them to a read-only ledger
+    of commits (to obtain immutable releases and snapshots). Therefore, versioning
+    provides the “single source of truth” of our code that enables the automated workflows
+    of MLOps (Section [5.3](design-code.html#processing-pipeline)), continuous deployment
+    (Chapter [7](deploying-code.html#deploying-code)), software testing (Section [9.4](troubleshooting-code.html#testing))
+    and refactoring (Section [6.7](writing-code.html#refactoring)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How can we use versioning to the best effect when working on a machine learning
+    pipeline? Two practices from modern software engineering are especially relevant.
+    Firstly, *keeping the gap between development and production code as small as
+    possible* (often called “dev-prod parity” (Wiggins [2017](#ref-12factor))) to
+    use CI/CD development workflows to best advantage (Section [5.3](design-code.html#processing-pipeline)).
+    Introducing changes in *small, self-contained sets of commits* makes them easy
+    to review (Section [6.6](writing-code.html#code-review)), easy to test for continuous
+    integration (because only a fraction of all tests will be relevant) and makes
+    it possible to merge them into the mainline branch very frequently (say, daily).
+    As a result, changes to the code are immediately visible to all developers allowing
+    them to collaborate effectively. Dividing code into modules stored in separate
+    directories and storing functions implementing different functionality in separate
+    files (Section [6.4](writing-code.html#filesystem-structure)) can drastically
+    reduce the likelihood of conflicts: any two developers working on different features
+    are unlikely to modify the same files. However, it cannot completely prevent higher-level
+    problems such as correction cascades (Sections [5.2.2](design-code.html#model-debt)
+    and [9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data)) that
+    may arise as the behaviour of various parts of the pipeline change. The best way
+    to both reduce conflicts and detect such problems early is to *only use short-lived
+    branches* that are immediately merged into the mainline branch from which the
+    production releases are cut. Incomplete changes should be hidden behind *feature
+    flags* that prevent new code from running by default and that can be *toggled*
+    easily using environment variables. In other words:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Place the existing code we would like to change behind a feature flag that controls
+    whether it is run or not, switched on to keep the code running.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Introduce the new code behind the same flag, configuring it to run when the
+    flag is switched off.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Test the machine learning software with existing unit, integration and system
+    tests with the flag switched off, checking whether there are any regressions and
+    whether the new code is an improvement over the existing code.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If the new code is suitable, remove the existing code and the feature flag.
+    There are tools that do that automatically (Uber [2022](#ref-piranha)) when flags
+    become stale.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This practice is known as “trunk-based development” (Hammant [2020](#ref-trunk-based))
+    (“trunk” being a traditional name for the mainline branch, along with “master”).
+    In the case of machine learning software, we should extend this approach to data
+    and models as well. Versioning both data and models together with the code is
+    crucial to reduce technical debt (Section [5.1](design-code.html#data-as-code))
+    by allowing experiment tracking and reproducible model training. It also makes
+    it possible to construct property-based tests in non-trivial settings by allowing
+    us to match models, their inputs and their outputs (Section [9.4.2](troubleshooting-code.html#testing-what)).
+    Troubleshooting issues with the pipeline and reverting it to a known good release
+    on botched updates (Section [7.6](deploying-code.html#rollback)) also becomes
+    possible, for the same reasons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Secondly, it is important to *write commit messages that are informative and
+    that follow established conventions*: the Linux Kernel (Linux Kernel Organization
+    [2022](#ref-kernel-repo)) and Git (The Git Development Team [2022](#ref-git-git))
+    are great examples of how to do this well. A commit message should provide enough
+    context to the changes it describes to understand *what* changes were made, *why*
+    they were made and *why* (not how) they were made in that particular way (Tian
+    et al. [2022](#ref-tian)). Nontrivial code changes usually span multiple files,
+    and often there is no single place where it makes sense to place a comment explaining
+    their rationale. Duplicating that comment in all the places we modified increases
+    the likelihood of stale comments (Section [8.1](documenting-code.html#comments))
+    because we must remember to update all the copies of that comment at once every
+    time we revisit the code we changed. The natural place to put such information
+    is in the commit message since the commit references all changed files (Ousterhout
+    [2018](#ref-philo)). In any long-running codebase, commit messages might be the
+    only source of information left for future developers to understand changes to
+    the code after the developers who originally made them have left. If practising
+    trunk-based development, we can squash together the commits in our short-lived
+    development branches and only write meaningful commit messages as we merge code
+    into the mainline branch. Furthermore, we should write a short title summarising
+    the change (say, 50–60 characters) followed by a more thorough description. Navigating
+    the history of the code will be much easier because we can now skim through the
+    commit titles and read the detailed commit messages only for those commits that
+    are relevant to us. If we use modern code review practices (Section [6.6](writing-code.html#code-review)),
+    we may also be able to read the comments of the developers who reviewed the commit:
+    they are linked or included in the commit message by all current version control
+    systems when the code is merged. Finally, we may want to include structured information:
+    sign-off lines from the developers who performed code review, labels that identify
+    the commit as part of a series, ticket numbers and their status. All this information
+    can then be processed by CI/CD tools to automate merging and deploying the code
+    in the commit. For reference, Tian et al. (Tian et al. [2022](#ref-tian)) discuss
+    in detail the characteristics of “good” commit messages and of their contents
+    for different types of commits.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6.6 Code Review
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Code quality is crucial for the effectiveness of a machine learning pipeline:
+    coding styles and standards (Section [6.3](writing-code.html#coding-standards)),
+    versioning (Section [6.5](writing-code.html#versioning)), refactoring (Section
+    [6.7](writing-code.html#refactoring)), testing (Section [9.4](troubleshooting-code.html#testing)),
+    MLOps (Section [5.3](design-code.html#processing-pipeline)) and continuous deployment
+    (Chapter [7](deploying-code.html#deploying-code)) all aim to minimise the number
+    of defects. The increased risk of technical debt (Section [5.2](design-code.html#technical-debt))
+    because of the interplay of data, models and code and because of their mutable
+    nature (Sections [9.1](troubleshooting-code.html#data-problems) and [9.2](troubleshooting-code.html#model-problems))
+    makes code quality all the more important.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, the practices and the automated workflows described in this book are
+    not enough in themselves: while they can significantly reduce the number of defects,
+    there are classes of issues that can only be spotted and addressed by the developers
+    themselves. This is the reason for *code review* (Rigby and Bird [2013](#ref-microsoft-code-review)).
+    Developers other than those who wrote a particular piece of code should inspect
+    it and work together to ensure that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It implements the desired functionality.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is efficient and accompanied by software tests.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It follows the spirit and the letter of coding styles, coding standards and
+    naming conventions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is well organised and documented.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The benefits are many:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We ensure that each developer writes code that other developers can understand.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Exchanging constructive criticism is a valuable way of teaching junior and future
+    developers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: More people working on the machine learning pipeline will have a practical understanding
+    of its design, making it more likely to find ways to improve it.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We encourage a feeling of collective ownership of the code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Clearly, each module will have a primary “owner” who is ultimately responsible
+    for it and controls what changes are merged into the mainline branch. That developer
+    will be the ideal reviewer for changes to that module because he will be the person
+    who knows its code and design best. However, other people should feel comfortable
+    contributing to it, fixing it, and providing feedback on the quality and design
+    of the code. At the same time nobody should be able to commit code without oversight,
+    which code review provides.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Reviewing code is usually performed in two complementary ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Taking advantage of *code review tools* (Toro [2020](#ref-shopify-review);
+    Sadowski et al. [2018](#ref-google-code-review)): the developer proposing a code
+    change prepares a commit and submits it to some software tool that tests it and
+    then assigns it to one or more reviewers. The review itself is asynchronous and
+    informal in nature, with developer and reviewers exchanging comments and refining
+    code via the tool until they are satisfied with the commit’s quality. The tool
+    then merges the commit into the mainline branch, linking the comments in the commit
+    message.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Practising *pair* (*mob*) *programming* (Popescu [2019](#ref-shopify-pair);
+    Swoboda [2021](#ref-shopify-mob)) while developing software: two (or more) developers
+    write, debug, or explore code together. One of the developers (the “driver”) is
+    responsible for the implementation, focusing on writing high-quality and error-free
+    code. The other developer(s) (the “navigators”) focus on the broader scope of
+    the problem and on keeping the process on track. The navigator(s) in practice
+    act as reviewers “live” as the code is written. At fairly short intervals (say,
+    30 minutes), the current “driver” commits the code it is working on and passes
+    the role to another developer, who will pull the code and become the next “navigator”.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Both approaches encourage writing small incremental changes and submitting
+    them frequently, like in trunk-based development (Section [6.5](writing-code.html#versioning)):
+    it is difficult to find experienced reviewers with a deep knowledge of larger
+    portions of a machine learning pipeline, and it is more difficult for reviewers
+    to find the time to review a large piece of code. Ideally, the code to be reviewed
+    should address a single issue and do that completely, involving just one or two
+    reviewers. This makes it easier to identify where errors were introduced if something
+    goes wrong and to roll back just the offending change.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a tool-based code review setting, the developer writing the code should
+    first perform a personal code review in order not to waste the reviewers’ time.
+    Having code automatically tested by linters, static code analysers and our suite
+    of software tests before sending it out for review will also speed code review
+    iterations up: the reviewer will be presented with their outputs to help examine
+    the commit. For the same reason, the developer should add comments to the code
+    (Section [8.1](documenting-code.html#comments)) and write a descriptive commit
+    message (Section [6.5](writing-code.html#versioning)) covering the reason for
+    the proposed change, its possible impact and any relevant design decisions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With pair and mob programming, repeatedly rotating the “driver” and “navigator”
+    roles effectively ensures that the code is reviewed, and helps in engaging more
+    developers with the code. Domain experts can be involved as well: even if they
+    have only marginal familiarity with programming, they can be guided by developers
+    when they are acting as the “driver”; and they can contribute their knowledge
+    to the developer writing code when they are acting as the “navigator”. However,
+    this approach works smoothly only if development environments can be set up quickly
+    and if pulling and pushing code is effortless: frequent and smooth role transitions
+    are crucial in keeping everybody engaged and discussing with each other, which
+    is the main point of this approach. Particularly hard coding tasks benefit the
+    most from having more eyeballs looking at problems and collaborating on both the
+    low- and high-level design of the code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both approaches to code review require effort and an initial investment to establish
+    as a standard practice but they will pay themselves back by making developers
+    more productive. And, perhaps unlike other practices, the overwhelming majority
+    of programmers enjoy them (Sadowski et al. [2018](#ref-google-code-review); Williams,
+    Kessler, and Cunningham [2000](#ref-pair-strength1))! Tool-based review processes
+    require the appropriate tooling to be well-maintained and scalable. Pair and mob
+    programming require developers to coordinate and to spend time together working
+    on the same piece of code. But that does not mean that the people involved will
+    be less productive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the case of tool-based code review, one or at most two developers are sufficient
+    to review a commit, and if the commit touches only one or two files, the reviewers
+    can easily provide feedback within a few hours or a day at most (Sadowski et al.
+    [2018](#ref-google-code-review); Rigby and Bird [2013](#ref-microsoft-code-review)).
+    Developers will produce increasingly better code over time, resulting in faster
+    reviews and fewer comments on each commit. Bugs and architectural issues will
+    be identified quickly, so they will be easier and faster to fix (Tornhill and
+    Borg [2022](#ref-tornhill)). As a result, we will reduce the need for large-scale
+    refactorings and outright code rewrites, leaving more time to write better code,
+    tests and documentation. (By definition, this means productivity will increase
+    over time since we will make progress faster instead of running in circles.) In
+    addition, senior developers will widen their understanding of the architecture
+    of the machine learning pipeline as they review code for different modules. Furthermore,
+    reviewing patches does not have to be time-consuming for the reviewer: at Google,
+    developers review about 4 commits in 2.6 hours (median) per week, taking about
+    40 minutes per commit (Sadowski et al. [2018](#ref-google-code-review)); at Microsoft,
+    developers devote 20 minutes per day (1.6 hours per week) on average to code review
+    (Jacek et al. [2018](#ref-microsoft-code-review2)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can make similar considerations for pair and mob programming: several studies
+    over the last 30 years (Williams, Kessler, and Cunningham [2000](#ref-pair-strength1);
+    de Lima Salge and Berente [2016](#ref-pair-strength2); Shiraishi et al. [2019](#ref-mob-strength)),
+    including some on machine learning software and data science applications (Saltz
+    and Shamshurin [2017](#ref-saltz)), have found that they improve productivity
+    and code quality. For them to be most effective, we need tasks that are complex
+    enough to warrant the attention of more than one person (trivial tasks have little
+    margin for errors) and enough experience to address them effectively in the pair
+    (either a senior and a junior developer, or two “intermediate” developers) or
+    in the mob (Arisholm et al. [2007](#ref-arisholm); Popescu [2019](#ref-shopify-pair)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6.7 Refactoring
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Formally, *refactoring* is the process of changing a piece of code in a way
+    that does not alter its external behaviour yet improves its internal structure
+    and clarifies its intent and assumptions (Fowler [2018](#ref-refactoring)). Following
+    Section [6.5](writing-code.html#versioning), we do that with a sequence of small
+    incremental changes which are individually validated by running our suite of tests
+    (Chapter [9.4](troubleshooting-code.html#testing)) with continuous integration
+    tools. At the end of the process, we can squash all the commits together and submit
+    them for review (Chapter [6.6](writing-code.html#code-review)) as we do for other
+    code changes. We refactor when adding a new feature, to alter the design of the
+    existing code and accommodate it. We refactor when attacking bugs, both to fix
+    them and to accommodate the tests that exercise them (and ensure that they stay
+    fixed). We refactor to improve compliance with naming conventions (Section [6.2](writing-code.html#naming)),
+    coding styles and coding standards (Section [6.3](writing-code.html#coding-standards)).
+    Refactoring can make us confident that we start each commit from correct code,
+    making it easy to track any bugs we might introduce, and that the code does not
+    spend much time (if at all) in a broken state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fowler (Fowler [2018](#ref-refactoring)) provides an extensive catalogue of
+    refactoring approaches. Depending on the programming language, some can be automated:
+    for example, both PyCharm (JetBrains [2022](#ref-pycharm)[b](#ref-pycharm)) and
+    Visual Studio Code (Microsoft [2022](#ref-vscode)[i](#ref-vscode)) have a “refactor”
+    button for Python code. (This is another factor we may want to consider when choosing
+    a programming language in addition to those we discussed in Section [6.1](writing-code.html#programming-language).)
+    Only a few of them are commonly used for machine learning code, and there are
+    refactoring approaches that are specific to it: Tang et al. (Tang et al. [2021](#ref-tang))
+    constructed a taxonomy of both from a large survey of machine learning software.
+    Machine learning code is only a small part of a typical pipeline, so mastering
+    the refactoring approaches from Fowler (Fowler [2018](#ref-refactoring)) is still
+    valuable to address the code smells we discussed in Section [6.3](writing-code.html#coding-standards).
+    Refactoring approaches that are specific to machine learning code, on the other
+    hand, keep in check the various types of technical debt we covered in Section
+    [5.2.4](design-code.html#code-debt). Tang et al. (Tang et al. [2021](#ref-tang))
+    point out three in particular: using inheritance to reduce duplicate configuration
+    and model code; changing variable types and data structures to allow for performance
+    optimisations (Sections [3.3](types-structures.html#right-variables) and [3.4](types-structures.html#right-data-structures));
+    and hiding the raw model parameters and hyperparameters and exposing custom types
+    that have a domain meaning to achieve better separation between training and inference
+    on one side and general metaheuristics and domain rules on the other.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is, however, an additional point that makes the code implementing machine
+    learning models inherently different from other code as far as refactoring is
+    concerned: we cannot slice and dice it in the process of refactoring it as easily
+    as we would other code. Some models perform a single task (say, smoothing or prediction)
+    and compose well with other code, but others are black-boxes that integrate multiple
+    tasks (say, feature extraction and prediction) in ways that make it impossible
+    to split them. Deep neural networks are a prime example of this. And even if we
+    can refactor a model and the associated code into well-separated sub-models, it
+    is not a given that we can change them as we would like. The probabilistic properties
+    of each sub-model are inherited from the model we started from: we should make
+    sure that the probabilistic properties of any new sub-model we introduce are compatible
+    with those of the others. Failing to do so will produce outputs that are biased
+    in ways that are difficult to diagnose and impossible to correct because they
+    lack the mathematical properties we usually take for granted. (The same is true
+    for swapping whole models in an existing pipeline.) A possibly obvious example:
+    we should match a model that uses a quadratic loss function, such as most linear
+    regressions, with feature selection and extraction that work on variances and
+    linear correlations and with model selection strategies that evaluate models using
+    the same quadratic loss function on a validation set. If we extract features in
+    ways that do not necessarily preserve linear dependencies, we may lose information
+    that the model could capture from the data. If we evaluate the model with a different
+    loss function than that it was optimised for, we may end up with a fragile model
+    that will misbehave easily on new data. In other words, *refactoring a machine
+    learning model means refactoring both the code implementing it and its mathematical
+    formulation at the same time*. We want to preserve both the external behaviour
+    of the code and the probabilistic behaviour of the inputs and the outputs of the
+    model. Property-based testing can help with the latter, as we will discuss in
+    Section [9.4.2](troubleshooting-code.html#testing-what).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '6.8 Reworking Academic Code: An Example'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Consider the following piece of code used in teaching machine learning to graduate
+    students at a top-10 university in the QS rankings (QS Quacquarelli Symonds [2022](#ref-qs)).
+    It is fairly representative of what we can find in many GitHub repositories and
+    in many answers in Stack Overflow, which end up imported or cut-and-pasted in
+    machine learning codebases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Guessing what this code is supposed to implement is harder than it should be,
+    because functions and variables have nondescript names that mirror some mathematical
+    notation. This does not help in itself since there is no comment in the code giving
+    a literature reference we could use to look up what the notation is. The only
+    hints we have are a comment mentioning mixtures of normals and a variable named
+    `MHR`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Attending the lecture this code was presented in would tell us that this code
+    implements the Metropolis-Hasting algorithm for sampling from a mixture of normals.
+    Knowing this, we can give more descriptive names to both functions and variables:
+    naming some of the variables after their *de facto* standard notation (say, from
+    Marin and Robert [2014](#ref-robert)) is an acceptable trade-off between conciseness
+    and clarity. We can now guess that `MHR` is the Metropolis-Hastings ratio used
+    to accept or reject a new random sample from the mixture. At the same time, we
+    can add spacing and indentation to make the code easier to read.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We complete this first refactoring step by creating a temporary (local) commit
+    and testing it. While better organised and easier to read, this code falls short
+    of what it purports to do in two ways: the number of components in the mixture
+    is hard-coded to two, and the densities themselves are hard-coded to be normals.
+    Now that we have organised the code into functions, we can move on to the next
+    refactoring step: adding two arguments to `metropolis.hastings()` to allow the
+    user to control the definition of the mixture. We can call them `density`, for
+    the density function to be called for each component of the mixture, and `density.args`,
+    a list of additional arguments to that function. To keep the existing behaviour
+    of the code, we update `dmix2norm()` to work with more than two components while
+    making sure that its return value remains unchanged when the mixture has only
+    two components. Furthermore, we do the same for the proposal function that generates
+    the new random sample, adding two further arguments `proposal` and `proposal.args`
+    to `metropolis.hastings()`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These changes make the code more flexible and more readable. The functional
+    programming approach we have adopted allows us to rewrite `metropolis.hastings()`
+    in such a way that it almost looks like pseudocode (Section [4.1](algorithms.html#pseudocode)).
+    As a result, there is less of a need for comments on *what* the code is doing,
+    apart from a reference to some textbook in which we can find the pseudocode for
+    Metropolis-Hastings and an in-depth explanation of how and why it works. Comments
+    on *why* the code is structured the way it is may of course still be useful, since
+    they will contain information that is specific to this particular implementation
+    and that cannot be found anywhere else.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We create one more temporary commit and test whether the code is still working.
+    Finally, we want to make the code more reusable. In order to do that, we store
+    the instance of the Metropolis-Hastings simulation we run in `metropolis.hastings()`
+    into a data structure that contains both the random samples that we generated
+    and the functions that we passed via the `density` and `proposal` arguments to
+    generate them, along with the respective argument sets `density.args` and `proposal.args`.
+    For convenience, we assign the class name `"metropolis-hastings"` to this data
+    structure to be able to write methods for it later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we are satisfied with how the code now looks (or we have other stuff to
+    do), we can create one last temporary commit and squash it together with the previous
+    two. A suitable commit message for the new commit could be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Before submitting this commit for code review, we should write some unit tests
+    to exercise the new functional interface of `metropolis.hastings()`. We will discuss
+    this topic at length in Chapter [9](troubleshooting-code.html#troubleshooting-code):
+    for the moment, let’s say we want to ensure that `metropolis.hastings()` only
+    accepts valid values for all its arguments. For this purpose, we add code to sanitise
+    them and to produce informative error messages along the lines of'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: and then we add tests to check that valid values are accepted and invalid values
+    are rejected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We should do the same for the function passed via the `proposal` argument.
+    Furthermore, we should call both functions with the respective lists of optional
+    arguments `density.args` and `proposal.args` to make sure that they execute successfully:
+    individual argument values may look fine in isolation, but make `metropolis.hastings()`
+    fail when passed together. As an example, the code to sanitise `proposal.args`
+    may look like'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: where we set `proposal.args` to an empty list as a fallback, default choice
+    if the user does not provide it. The code to sanitise both `proposal` and `proposal.args`
+    can then check that the `proposal` function runs and that its output has the right
+    type and dimension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The tests that exercise this code should call `metropolis.hastings()` with and
+    without valid proposal functions, and with proposal functions with valid and invalid
+    sets of optional arguments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As another example, we should check the number of iterations in the `iter` argument,
+    picking again a sensible default value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The corresponding software tests can then try boundary values (`0`), valid values
+    (`10`), invalid values (`Inf`) and special values (`NaN`) to confirm that the
+    sanitisation code is working as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The sanitisation code should be included in one commit, and the tests in another:
+    they will be in different files and have different purposes, so it would be inappropriate
+    to commit them together. After doing that, our new implementation of Metropolis-Hastings
+    is ready to be submitted for code review.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Alam, S., L. Bălan, N. L. Chan, G. Comym, Y. Dada, I. Danov, L. Hoang, et al.
+    2022\. *Kedro*. [https://github.com/kedro-org/kedro](https://github.com/kedro-org/kedro).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Arisholm, E., H. Gallis, T. Dybå, and D. I. K. Sjøberg. 2007\. “Evaluating
+    Pair Programming with Respect to System Complexity and Programmer Expertise.”
+    *IEEE Transactions on Software Engineering* 33 (2): 5–86.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ayer, A. 2022\. *git-crypt: Transparent File Encryption in Git*. [https://github.com/AGWA/git-crypt](https://github.com/AGWA/git-crypt).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bezanson, J., S. Karpinski, V. B. Shah, and et al. 2022\. *Style Guide: The
+    Julia Language*. [https://docs.julialang.org/en/v1/manual/style-guide/index.html](https://docs.julialang.org/en/v1/manual/style-guide/index.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Blagotic, A., D. Valle-Jones, J. Breen, J. Lundborg, J. M. White, J. Bode,
+    K. White, et al. 2021\. *ProjectTemplate: Automates the Creation of New Statistical
+    Analysis Projects*. [https://cran.r-project.org/web/packages/ProjectTemplate/](https://cran.r-project.org/web/packages/ProjectTemplate/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CRAN Team. 2022\. *The Comprehensive R Archive Network*. [https://cran.r-project.org/](https://cran.r-project.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'de Lima Salge, C. A., and N. Berente. 2016\. “Pair Programming vs. Solo Programming:
+    What Do We Know After 15 Years of Research?” In *Proceedings of the Annual Hawaii
+    International Conference on System Sciences*, 5398–5406.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Duvall, P. M., S. Matyas, and A. Glover. 2007\. *Continuous Integration: Improving
+    Software Quality and Reducing Risk*. Addison-Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fowler, M. 2018\. *Refactoring: Improving the Design of Existing Code*. 2nd
+    ed. Addison-Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Google. 2022d. *Google Python Style Guide*. [https://google.github.io/styleguide/pyguide.html](https://google.github.io/styleguide/pyguide.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Google. 2022e. *repo: The Multiple Git Repository Tool*. [https://github.com/GerritCodeReview/git-repo](https://github.com/GerritCodeReview/git-repo).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Greenfeld, A. R. 2022\. *Cookiecutter Data Science*. [https://drivendata.github.io/cookiecutter-data-science/](https://drivendata.github.io/cookiecutter-data-science/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Grotov, K., S. Titov, V. Sotnikov, Y. Golubev, and T. Bryksin. 2022\. “A Large-Scale
+    Comparison of Python Code in Jupyter Notebooks and Scripts.” In *Proceedings of
+    the 19th Working Conference on Mining Software Repositories*, 1–12.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hammant, P. 2020\. *Trunk Based Development*. [https://trunkbaseddevelopment.com/](https://trunkbaseddevelopment.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Jacek, C., M. Greiler, C. Bird, L. Panjer, and T. Coatta. 2018\. “CodeFlow:
+    Improving the Code Review Process at Microsoft.” *ACM Queue* 6 (5): 1–20.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: JetBrains. 2022b. *PyCharm*. [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'JuliaLang. 2022\. *Pkg: Package Manager for the Julia Programming Language*.
+    [https://pkgdocs.julialang.org/v1/](https://pkgdocs.julialang.org/v1/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kernigham, B. W., and R. Pike. 1999\. *The Practice of Programming*. Addison-Wesley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kriasoft. 2016\. *Folder Structure Conventions*. [https://github.com/kriasoft/Folder-Structure-Conventions](https://github.com/kriasoft/Folder-Structure-Conventions).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linux Kernel Organization. 2022\. *The Linux Kernel Archives*. [https://kernel.org/](https://kernel.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lopes, C. V. 2020\. *Exercises in Programming Style*. CRC Press.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Marin, J.-M., and C. P. Robert. 2014\. *Bayesian Essentials with R*. 2nd ed.
+    Springer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Microsoft. 2022i. *Visual Studio Code: Code Editing, Redefined*. [https://code.visualstudio.com/](https://code.visualstudio.com/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nature. 2016\. “Reality Check on Reproducibility.” *Nature* 533 (437).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ousterhout, J. 2018\. *A Philosophy of Software Design*. Yaknyam Press.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Popescu, M. 2019\. *Pair Programming Explained*. [https://shopify.engineering/pair-programming-explained](https://shopify.engineering/pair-programming-explained).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Potvin, R., and J. Levenberg. 2016\. “Why Google Stores Billions of Lines of
+    Code in a Single Repository.” *Communications of the ACM* 59 (7): 78–87.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preston-Werner, T. 2022\. *Semantic Versioning*. [https://semver.org/](https://semver.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Project Jupyter. 2022\. *Jupyter*. [https://jupyter.org/](https://jupyter.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Python Software Foundation. 2022a. *PyPI: The Python Package Index*. [https://pypi.org/](https://pypi.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: QS Quacquarelli Symonds. 2022\. *QS World University Rankings*. [https://www.topuniversities.com/qs-world-university-rankings](https://www.topuniversities.com/qs-world-university-rankings).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quest, K. 2022\. *Standard Go Project Layout*. [https://github.com/golang-standards/project-layout](https://github.com/golang-standards/project-layout).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rigby, P., and C. Bird. 2013\. “Convergent Contemporary Software Peer Review
+    Practices.” In *Proceedings of the 9th Joint Meeting of the European Software
+    Engineering Conference and the ACM SIGSOFT Symposium on the Foundations of Software
+    Engineering*, 202–12.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sadowski, C., E. Söderberg, L. Church, M. Sipko, and A. Bacchelli. 2018\. “Modern
+    Code Review: A Case Study at Google.” In *Proceedings of the 40th International
+    Conference on Software Engineering: Software Engineering in Practice*, 181–90.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Saltz, J. S., and I. Shamshurin. 2017\. “Does Pair Programming Work in a Data
+    Science Context? An Initial Case Study.” In *Proceedings of the IEEE International
+    Conference on Big Data*, 2348–54.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sculley, D., G. Holt, D. Golovin, E. Davydov, T. Phillips, D. Ebner, V. Chaudhary,
+    M. Young, J.-F. Crespo, and D. Dennison. 2015\. “Hidden Technical Debt in Machine
+    Learning Systems.” In *Proceedings of the 28th International Conference on Neural
+    Information Processing Systems (NIPS)*, 2:2503–11.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Shiraishi, M., H. Washizaki, Y. Fukazawa, and J. Yoder. 2019\. “Mob Programming:
+    A Systematic Literature Review.” In *Proceedings of the IEEE 43rd Annual Computer
+    Software and Applications Conference*, 616–21.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simmons, A. J., S. Barnett, J. Rivera-Villicana, A. Bajaj, and R. Vasa. 2020\.
+    “A Large-Scale Comparative Analysis of Coding Standard Conformance in Open-Source
+    Data Science Projects.” In *Proceedings of the 14th ACM / IEEE International Symposium
+    on Empirical Software Engineering and Measurement (ESEM)*, 1–11.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Swoboda, S. 2021\. *Connecting with Mob Programming*. [https://shopify.engineering/mob-programming](https://shopify.engineering/mob-programming).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tang, Y., R. Khatchadouriant, M. Bagherzadeh, R. Singh, A. Stewart, and A. Raja.
+    2021\. “An Empirical Study of Refactorings and Technical Debt in Machine Learning
+    Systems.” In *Proceedings of the 2021 IEEE/ACM 43rd International Conference on
+    Software Engineering*, 238–50.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tatman, R., J. VanderPlas, and S. Dane. 2018\. “A Practical Taxonomy of Reproducibility
+    for Machine Learning Research.” In *Proceedings of 2nd the Reproducibility in
+    Machine Learning Workshop at ICML 2018*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Git Development Team. 2022\. *Git Source Code Mirror*. [https://github.com/git/git](https://github.com/git/git).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Kubernetes Authors. 2022a. *Kubernetes*. [https://kubernetes.io/](https://kubernetes.io/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thomas, D., and A. Hunt. 2019\. *The Pragmatic Programmer: Your Journey to
+    Mastery*. Anniversary. Addison-Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tian, Y., Y. Zhang, K.-J. Stol, L. Jiang, and H. Liu. 2022\. “What Makes a Good
+    Commit Message?” In *Proceedings of the 44th International Conference on Software
+    Engineering*, 1–13.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tornhill, A., and M. Borg. 2022\. “Code Red: The Business Impact of Code Quality:
+    A Quantitative Study of 39 Proprietary Production Codebases.” In *Proceedings
+    of International Conference on Technical Debt*, 1–10.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toro, A. L. 2020\. *Great Code Reviews–the Superpower Your Team Needs*. [https://shopify.engineering/great-code-reviews](https://shopify.engineering/great-code-reviews).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Uber. 2022\. *Piranha: A Tool for Refactoring Code Related to Feature Flag
+    APIs*. [https://github.com/uber/piranha](https://github.com/uber/piranha).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'van Oort, B., L. Cruz, M. Aniche, and A. van Deursen. 2021\. “The Prevalence
+    of Code Smells in Machine Learning Projects.” In *Proceedings of the 2021 IEEE/ACM
+    1st Workshop on AI Engineering: Software Engineering for AI*, 35–42.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'van Rossum, G., B. Warsaw, and N. Coghlan. 2001\. *PEP 8: Style Guide for Python
+    Code*. [https://peps.python.org/pep-0008/](https://peps.python.org/pep-0008/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Walters, M., and P. Lee Scott. 2021\. *meta-git: Manage Your Meta Repo and
+    Child Git Repositories*. [https://www.npmjs.com/package/meta-git](https://www.npmjs.com/package/meta-git).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wickham, H. 2022b. *The tidyverse Style Guide*. [https://style.tidyverse.org/](https://style.tidyverse.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wiggins, A. 2017\. *The Twelve Factor App*. [https://12factor.net](https://12factor.net).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Williams, L., R. R. Kessler, and W. Cunningham. 2000\. “Strengthening the Case
+    for Pair Programming.” *IEEE Software* 17 (4): 19–25.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Zhang, H., L. Cruz, and A. van Deursen. 2022\. “Code Smells for Machine Learning
+    Applications.” In *Proceedings of the 1st International Conference on AI Engineering:
+    Software Engineering for AI*, 1–12.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A REPL (“Read-Eval-Print Loop”) is an interactive programming environment where
+    the user can write code statements that are instantly evaluated and whose outputs
+    are returned to the user. They are invaluable to run software piecewise and understand
+    the behaviour of its components.[↩︎](writing-code.html#fnref14)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Many technical terms have completely different meanings in software engineering:
+    consider “test” (statistical test vs unit test), “regression” (the statistical
+    model vs adversely affecting existing software functionality) or “feature” (a
+    variable in a data set vs a distinguishing characteristic of a piece of software).
+    Similar conflicts may happen with the terminology from other domains as well.[↩︎](writing-code.html#fnref15)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

@@ -1,0 +1,1391 @@
+- en: Chapter 5 Designing and Structuring Pipelines
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://ppml.dev/design-code.html](https://ppml.dev/design-code.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: When we start writing a new piece of software, one of our first challenges is
+    to identify its logical components and how they interact with each other. We can
+    then *structure* our software into a series of modules, be they classes, libraries
+    or completely separate programs, that implement those logical components in such
+    a way as to make reasoning about the software as easy as possible. In other words,
+    we *design* software to divide and conquer complexity into manageable chunks so
+    that we only need to face a small fraction of it at any given time (Ousterhout
+    [2018](#ref-philo)). Failure to do so quickly leads to software that is impossible
+    to understand and to work on (Chapter [6](writing-code.html#writing-code)), which
+    in turn makes it difficult to deploy (Chapter [7](deploying-code.html#deploying-code)),
+    document (Chapter [8](documenting-code.html#documenting-code)), test or troubleshoot
+    (Chapter [9](troubleshooting-code.html#troubleshooting-code)), and in general
+    to keep running.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this chapter we discuss the unique challenges that define machine learning
+    software design: the role of data (Section [5.1](design-code.html#data-as-code)),
+    the nature of technical debt (Section [5.2](design-code.html#technical-debt))
+    and the anatomy of a machine learning pipeline (Section [5.3](design-code.html#processing-pipeline)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.1 Data as Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![The inversion of roles in machine learning software (right) compared to other
+    software (left).](../Images/6221efc35fbad3a0e8b2a6aca4f3ff9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5.1: The inversion of roles in machine learning software (right) compared
+    to other software (left).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Machine learning software is fundamentally different from most other software
+    in one important respect: *it is tightly linked with data* (Arpteg et al. [2018](#ref-sweng-challenges)).
+    The structure and the behaviour of a piece of traditional software[^(11)](#fn11)
+    arise from some combination of processes gleaned from experts in the field, a
+    specification of the desired output, and the set of technologies we can use to
+    support its operations (Figure [5.1](design-code.html#fig:role-of-data), left).
+    We are in charge of designing a software architecture that produces the desired
+    behaviour. For instance, we structure web services to direct user navigation patterns
+    through established procedures for different tasks, taking information retrieved
+    from some database or from various vendor APIs and producing outputs to be consumed
+    through some dashboard (by humans) or API (from other computer systems). Desktop
+    applications do the same through windows and dialogs. Obviously, our freedom in
+    designing software architectures is limited for good reasons (performance requirements,
+    good practices and maintainability among them) as well as bad reasons (like less-than-ideal
+    requirements, limitations in the chosen technological stack and unclear requirements)
+    but this still leaves us a substantial amount of control.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the other hand, the behaviour of machine learning software is dictated as
+    much by the data we train our models on as it is by our design choices. We may
+    decide how to measure model performance but the best performer will then be determined
+    by the data: the distribution of the variables in the data and their probabilistic
+    structure will be better captured by some models than others. So we may choose
+    to try, say, random forests, deep neural networks and some hierarchical Bayesian
+    model but, in the end, we will end up using the model that the data say is best
+    regardless of our personal preferences. *The information in the data is compiled
+    into the software* through the models, which program the software automatically:
+    developers do not completely encode its behaviour in the code (Figure [5.1](design-code.html#fig:role-of-data),
+    right).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This realisation leads to a paradigm shift: *we should treat data as code*
+    because data functionally replaces parts of our source code and because changes
+    in the data may change the behaviour of the software. Hence we should *test the
+    data* to ensure that their characteristics do not change over time (Section [5.2.1](design-code.html#data-debt)).
+    After all, if the data change, our models may no longer be fit for purpose and
+    we may have to retrain them to retain suitable levels of performance. In the case
+    of offline data, this means that *data should be versioned along with the code*
+    and that changes in either of them should trigger testing by continuous integration
+    tools. In the case of online data, we should also implement a *real-time monitoring
+    and logging* of the characteristics of new data and of the performance of the
+    deployed models (Section [5.3.6](design-code.html#monitoring-pipeline)). Once
+    we are confident that the data are as we expect them to be, we can use them to
+    test that our software (the implementation) is behaving correctly and ensure that
+    the models themselves are correctly specified (in their mathematical and probabilistic
+    formulation). We will discuss the troubleshooting and testing of both data and
+    machine learning models in more detail in the next section and in Chapter [9](troubleshooting-code.html#troubleshooting-code).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideally, we should have a configuration management platform (often called an
+    “experiment tracking” or “experiment management” platform in this context) using
+    version control (Section [6.5](writing-code.html#versioning)) to track the hardware,
+    the source code, the environment configurations, the parameters, the hyperparameters,
+    the model characteristics, the input data and the outputs of all instances of
+    model training and inference. (Including those we use to explore the data.) We
+    can then tag the exact version of all the components used in each development
+    and production environment, as we would do in a traditional software engineering
+    setting. In turn, this means that we can (re)create any of those environments
+    as needed, which makes automated deployments possible (Chapter [7](deploying-code.html#deploying-code))
+    and greatly facilitates troubleshooting. Given the limited interpretability and
+    explainability of most machine learning models, which are essentially black boxes,
+    only a solution approaching a reproducible build setup (Humble and Farley [2011](#ref-devops))
+    can hope to make in-depth debugging and root cause analyses possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.2 Technical Debt
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Treating data as code means we should *consider data a potential source of
+    technical debt*. Models can also be sources of technical debt because of their
+    dependence on data and in their own right. In practice, the data and the models
+    are dependencies of our machine learning code: like all dependencies, they are
+    a potential liability and should be handled as such.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The term “technical debt” has commonly had a negative connotation since it
+    was first introduced (Cunningham [1992](#ref-debt92), [2011](#ref-debt11)): it
+    highlights how hasty design choices can lead to unexpected costs, not only in
+    purely economic terms, but by introducing latent complexity that makes the software
+    more difficult to evolve over time. Technical debt allows us to produce results
+    faster by trading quality for speed but, as with borrowed money, we must eventually
+    pay it off with (compound) interest. It is unavoidable when tight deadlines reduce
+    the time spent on analysis and design (Evans [2003](#ref-domain-driven)), leading
+    to solutions that are suboptimal in terms of functionality, code quality or technical
+    implementation. Establishing and following the practices we advocate in Part [**2**](design-code.html#)
+    of this book is a good way of keeping it in check and of paying it off quickly
+    enough to reduce it over time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Machine learning models and the underlying training, testing and serving software
+    infrastructure, which we will introduce in Section [5.3](design-code.html#processing-pipeline)
+    as a *machine learning pipeline*, combine all the complexities of traditional
+    software development with the issues arising from the experimental nature of data
+    analysis. (More about this in Chapter [6](writing-code.html#writing-code).) Therefore,
+    we find it useful to rethink the nature of technical debt in machine learning
+    software in a unified, comprehensive way. We classify it into four broad areas:
+    *data*, *model*, *architecture* (*design*) and *code* debt. These areas span issues
+    both in various parts of the machine learning practice, such as data collection,
+    data validation, feature extraction, data visualisation and observability; and
+    in the software that we use to interact with machine learning models, such as
+    monitoring, configurations, training and serving infrastructure. The libraries
+    that power the models themselves, like PyTorch (Paszke et al. [2019](#ref-pytorch))
+    or Scikit-learn (Scikit-learn Developers [2022](#ref-sklearn)), are typically
+    very stable and we rarely find them to be a source of technical debt.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.2.1 At the Data Level
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Section [5.1](design-code.html#data-as-code) suggests that data can be a liability
+    for three reasons. Firstly, they may originate from *untrusted sources*, either
+    from in-house or from third-party systems. Data sources that are outside of our
+    control or that do not have strict quality standards should be treated as an unknown
+    quantity: data may unexpectedly change over time in shape (raw data structure
+    or type change), in general quality (data duplication, missing data, null data
+    or incorrectly normalised data) or in relevance and statistical properties (*data*
+    or *concept drift*). This is particularly the case for online data that come in
+    the form of event streams or that are generated by aggregating data from multiple
+    sources. (More on that in Sections [9.1](troubleshooting-code.html#data-problems)
+    and [9.4.3](troubleshooting-code.html#offline-vs-online).) In order to prevent
+    such anomalies from affecting both the training of models and their subsequent
+    use, we should only allow data that have been versioned and validated by our suite
+    of software tests (Section [9.4](troubleshooting-code.html#testing)) to enter
+    the machine learning pipeline. Systematic testing acts as a *quality gate* that
+    the data must pass before entering later processing stages. Data drift will make
+    models become *stale*: their accuracy will decrease as the data they will perform
+    inference on become increasingly different from those that were used to train
+    them (Gama et al. [2014](#ref-gama) is an extensive review of this topic). The
+    same may happen if the general quality of the data degrades over time. Unless
+    such changes are sudden enough and sharp enough, their effects will be difficult
+    to detect without a test suite. This is what appears to have happened to Zillow
+    (Sherman [2022](#ref-zillow)), the online real-estate company: the machine learning
+    model they used to price properties to buy was trained on self-reported data,
+    which were untrusted and difficult to validate, and it was left to overestimate
+    prices for too long as the market cooled down. By the time the model was retired
+    in 2021, Zillow had to sell between 60% and 85% of the properties it bought at
+    a loss and fire 25% of its staff just to remain afloat.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Secondly, data may originate from *untracked sources*: we should always take
+    into account that third-party sources can be volatile and can also suddenly become
+    unavailable. If that happens to a data source we are not aware we depend on, troubleshooting
+    the resulting issues may be challenging. Furthermore, untracked sources are often
+    untrusted as well, but unlike tracked sources they are not systematically versioned
+    and validated: any issue they may have can potentially go unnoticed for long periods
+    of time. In this context, where a piece of data comes from and how it was produced
+    is called *data provenance* or *data lineage* (Cheney, Chiticariu, and Tan [209AD](#ref-provenance)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we may introduce in the data when we prepare them for use in the pipeline.
+    In many applications, we can only collect *unlabelled data* that we have to annotate
+    manually: this is an expensive, time-consuming and error-prone process that requires
+    a team of domain experts. Automated labelling using machine learning models is
+    a poor substitute as it is known to have 0.15–0.20 lower accuracy for both natural
+    language processing and computer vision tasks (Wu et al. [2022](#ref-xiao)). The
+    lack of ground truth labels makes it very difficult to spot these errors, which
+    in turn impacts both other data quality controls and model training. Furthermore,
+    manual labelling is too slow to allow us to monitor the outputs of the pipeline
+    in real time, limiting our ability to detect data drift and model staleness. Hence
+    this issue can produce technical debt at different levels in ways that are difficult
+    to detect.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.2.2 At the Model Level
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Issues with model performance, caused by data or otherwise, are unlikely to
+    be limited to a single model. Consider data drift again: if any output of machine
+    learning model `A` is used as an input to another machine learning model `B`,
+    any degradation in accuracy in model `A` will propagate to model `B` and possibly
+    be amplified in the process. As was the case with the data, we can detect such
+    issues by using integration tests as quality gates to ensure that the inputs and
+    the outputs of each model behave as expected. This is only possible if we track
+    the dependencies between the models, for instance, by recording them as-code in
+    the orchestrator configuration (Section [7.1.4](deploying-code.html#container-packaging))
+    or by putting in place authentication and authorisation mechanisms to access models
+    (say, with OAuth2 (ETF OAuth Working Group [2022](#ref-oauth2))).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, we can say that technical debt at the model level arises mainly
+    from *feature and model entanglement*: any issue that impacts one model’s inference
+    capabilities will propagate to all the downstream models that depend on it, directly
+    or indirectly, in what is called a *correction cascade* (Section [9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data)).
+    Entanglement between features, between models, and between features and models
+    is unavoidable in practical applications: “changing anything changes everything”
+    (Sculley et al. [2014](#ref-high-interest)). Features are rarely completely independent
+    of each other, and black-box models (Section [9.2.2](troubleshooting-code.html#troubleshooting-black-boxes))
+    like deep neural networks deliberately “entangle them” in ways that are difficult
+    to understand. Models are also entangled with each other because they consume
+    each other’s outputs (Section [9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data)).
+    This complex interplay unfortunately means that it can be difficult to find the
+    root causes of the issues we are troubleshooting even when we observe tell-tale
+    signs that something is wrong (Section [9.3](troubleshooting-code.html#signs-of-trouble)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On top of that, models are entangled with the real world: for instance, if
+    the suggestions made by the model that drives a recommender system change, the
+    behaviour of the system’s users will change in response. This creates a *feedback
+    loop* because the users consume the model’s outputs and at the same time provide
+    the data the model is trained on. Whether this is desirable or not depends on
+    the specific application and on whether this feedback loop has a positive or negative
+    effect: uncontrolled *direct feedback loops* can lead to an amplification of bias
+    while artificially improving the model’s accuracy. Microsoft’s Tay chatbot (Hunt
+    [2016](#ref-tay)) is a good case in point. Launched on Twitter in 2016 to “engage
+    and entertain people through casual and playful conversation” while self-training
+    from those conversations, it was shut down a few days later because every tweet
+    it posted contained conspiracy theories or racist, inflammatory statements. (Maybe
+    it maximised some abstract engagement metric in doing so?) *Hidden feedback loops*
+    where machine learning models directly affect each other through exogenous events
+    are also possible and harder to spot. Techniques such as reject inference (Crook
+    and Banasik [2004](#ref-reject)) and contextual bandits (Dimakopoulou et al. [2018](#ref-bandits1),
+    [2019](#ref-bandits2)), collecting feedback from users and domain experts (Sections
+    [5.3.4](design-code.html#model-pipeline) and [5.3.5](design-code.html#production-pipeline))
+    and including additional features can help to break such loops by exploring new
+    models and by suggesting whether the current ones should be retrained.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, models may be entangled with each other when we take a pre-trained
+    model and we fine-tune it for different tasks. This practice reduces computational
+    requirements and speeds up model development: we buy a pre-trained model `A` for
+    a general task (say, object detection) and then use tightly-focused data sets
+    to specialise it into models `B`, `C`, etc. for specific tasks (say, detecting
+    impurities in the semi-finished products of an industrial process). However, models
+    `B`, `C`, etc. are likely to inherit similar failure modes from `A`, thus introducing
+    coupling between models with no tracked dependencies and producing unexpected
+    correction cascades in the machine learning pipeline. Furthermore, models `B`,
+    `C`, etc. become more difficult to evolve independently because any bug we fix
+    in model `B` should also be fixed in models `A`, `C`, etc. (or confirmed not to
+    affect them) and the software tests for all models should be updated at the same
+    time. Similarly, any enhancement that is meaningful for model `B` is likely to
+    be meaningful for models `A`, `C`, etc. as well. We can manage these issues by
+    using a configuration management platform, as we pointed out in Section [5.1](design-code.html#data-as-code),
+    to track dependencies between models and between models and data, to version them
+    and to enable systematic testing (Section [9.4.2](troubleshooting-code.html#testing-what)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.2.3 At the Architecture (Design) Level
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The architecture of a machine learning pipeline directs how data and models
+    interact to achieve its goals: it is implemented as an *orchestration system*
+    that schedules and coordinates various tasks such as data ingestion, data validation,
+    feature engineering, model training and validation, model deployment on production
+    systems, and serving. We will discuss them in detail in Section [5.3](design-code.html#processing-pipeline).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Machine learning pipelines are inherently complex systems with many moving
+    parts, and they can easily hide *architecture* (*design*) *debt*. The key to keeping
+    this type of technical debt in check is to *give visibility into all aspects of
+    their configuration as code* using files in a human-readable data serialisation
+    language like XML, YAML or JSON.[^(12)](#fn12) These files should be under version
+    control in a configuration management solution along with the data (Section [5.1](design-code.html#data-as-code))
+    and the models (Section [5.2.2](design-code.html#model-debt)), and for similar
+    reasons. Each change in design can then be expressed in those configuration files
+    or using environment variables. Configuration files should be used for parameters,
+    options and settings for which we need complete versioning across iterations,
+    such as data set locations, training hyperparameters and model parameters. These
+    files can also be linked to and supplement architecture documentation, which describes
+    the pipeline using the more accessible ubiquitous language (Section [8.3](documenting-code.html#designdocs)).
+    Environment variables should be used to store runtime configurations such as log-levels
+    (Section [5.3.6](design-code.html#monitoring-pipeline)), feature flags (Section
+    [6.5](writing-code.html#versioning)) and the labels of target testing or production
+    environments. Environment variables are also commonly used for secrets management,
+    that is, to store credentials, certificates and other sensitive information. All
+    modern software solutions to build machine learning pipelines provide mechanisms
+    for configuring, overriding and exposing environment variables, including secrets.
+    Only with a comprehensive formal description of the pipeline and of all its components
+    we may be able to evolve and extend both over time without accidentally accruing
+    architecture debt. Tracking and versioning the architecture along with the data
+    and the models reduces the time spent on troubleshooting and debugging, and makes
+    it possible to implement efficient deployment strategies (Section [7.2](deploying-code.html#deployment-strategies))
+    and to roll back problematic models (Section [7.6](deploying-code.html#rollback)).
+    The alternative is to perform these operations manually, which is time-consuming
+    and error prone: Knight Capital (.Seven [2014](#ref-knights-capital)) proved that
+    clearly to the world by burning $460 million in 45 minutes due to a botched manual
+    deployment of their algorithmic trading software.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, we cannot control and version models from third-party libraries
+    or remote systems as easily as those we train ourselves. Hence we are left to
+    integrate them by wrapping their APIs with *glue code* to interface them with
+    the rest of the machine learning pipeline. Glue code is a piece of ad hoc code,
+    often in the form of a one-off script, that has no function other than to adapt
+    software that would otherwise be incompatible. It is a common source of technical
+    debt both at the model level (if shipped in the model) and at the architecture
+    level (if used to bind together different modules in non-standard ways) where
+    it creates what is known as the “pipeline jungle” anti-pattern (Bogner, Verdecchia,
+    and Gerostathopoulos [2021](#ref-technical-debt-mapping)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Glue code is also commonly used to wrap libraries and remote APIs because it
+    allows us to quickly expose them with new domain-specific names, interfaces and
+    data structures (Section [8.2](documenting-code.html#apidocs)). While this practice
+    may seem expedient, it can couple glue code tightly with what it is wrapping,
+    causing it to break when the library or the remote API changes its public interface.
+    We should only use glue code wrappers when we strictly need them, for example:
+    to instrument a function for debugging purposes; to expose different versions
+    or different features of the same library to different modules in the pipeline;
+    or to integrate a legacy library or API that we would be otherwise unable to use.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.2.4 At the Code Level
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'As for *code debt*, we should avoid mixing different versions of interpreters,
+    programming languages and frameworks in the same machine learning pipeline. Unfortunately,
+    this is a common issue for two reasons. Firstly, machine learning experts and
+    data scientists often work in isolation, without a shared development environment.
+    Secondly, microservices and similar architectures favour the use of multiple programming
+    languages inside the same application in what they call *polyglot programming*.
+    While it is often the case that different programming languages are better suited
+    to different parts of a pipeline (Section [6.1](writing-code.html#programming-language)),
+    having too much variety can lead to *organisational anti-patterns* like an unbalanced
+    distribution of skills and skill levels (say, there is only one developer with
+    expertise in a key framework) and inadequate knowledge transfer (because there
+    are too many technologies to keep track of). From a practical standpoint, a good
+    compromise is to build any new machine learning pipeline from a small, up-to-date
+    set of technologies and to involve all developers when incorporating new ones.
+    The latter should be done sparingly: resume-driven development rarely ends well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A related problem is that of *vendoring software libraries*, that is, including
+    the source code of a specific version of a third-party software in our codebase
+    instead of managing it as an external library through a package manager. Vendored
+    libraries become untracked dependencies (Section [6.3](writing-code.html#coding-standards)),
+    are often integrated using glue code, and are problematic to update because package
+    managers and other automated tooling are unaware of their existence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another source of code debt is the amount of exploration and experimentation
+    involved in creating machine learning models. It can easily produce dead experimental
+    code paths, which are usually badly documented by comments (Section [8.1](documenting-code.html#comments))
+    and can lead to wasted effort as we try to achieve code coverage (Section [9.4.6](troubleshooting-code.html#test-coverage)).
+    It can also limit the time we can spend on improving the quality of the code we
+    produce from prototype to production level. Practices such as code review (Section
+    [6.6](writing-code.html#code-review)) and constant refactoring (Section [6.7](writing-code.html#refactoring))
+    can address both these issues, as we will discuss in the next chapter. They will
+    also help in tackling low-quality code which, as a source of technical debt, significantly
+    increases the number of bugs and the time required to fix them, slowing down development
+    (Tornhill and Borg [2022](#ref-tornhill)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.3 Machine Learning Pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Modern software development schools like Agile (Beck et al. [2001](#ref-agile))
+    and DevOps (Humble and Farley [2011](#ref-devops)) have pushed for the automation
+    of testing, release management and deployment processes since the early 2000s,
+    leading to the adoption of *continuous integration* / *continuous delivery* and
+    *deployment* (CI/CD) solutions (Duvall, Matyas, and Glover [2007](#ref-cicd))
+    to manage the software development life cycle. Continuous integration is the practice
+    of developing code by committing small changes frequently to a version control
+    repository. Each change is validated by an automated software testing solution,
+    manually reviewed, and then integrated into the mainline branch the production
+    builds are created from. As a result, the mainline branch is always in a working
+    state and changes to the code are immediately visible to all developers. (More
+    on that in Chapter [6](writing-code.html#writing-code).) Continuous delivery and
+    continuous deployment focus on being able to release a working version of the
+    software at any time and to deploy it on production systems. (More on that in
+    Chapter [7](deploying-code.html#deploying-code).) In both cases, the emphasis
+    is on using automated processes, versioning, configuration management, software
+    testing and code review to enable an effortless, fast and reliable software development
+    life cycle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Life cycle of a machine learning pipeline.](../Images/49327be097cb9b8e87d715419cc5dac1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5.2: Life cycle of a machine learning pipeline.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Nowadays, we have many integrated CI/CD solutions to build machine learning
+    pipelines (called “MLOps”). However, a complete understanding of how a pipeline
+    works becomes crucial when its development evolves from a simple proof of concept
+    running on some developer’s local environment into a larger piece of software
+    managed by a team and running on multiple systems. (Most real-world pipelines
+    are complex enough to require a team to manage them.) At first, we explore some
+    sample data and we try different models to gauge their performance, spending little
+    to no time on software tests. Developing a pipeline then becomes the iterative
+    and increasingly complex process shown in Figure [5.2](design-code.html#fig:pipeline-lifecycle):
+    feeding new data from the ingestion phase to existing models for validating, monitoring
+    and troubleshooting them; generating new models as the data change; deploying
+    models and serving them continuously to downstream models or to the application
+    or service that users will access. This is what we call a *machine learning pipeline*:
+    the codification of these steps into independent, reusable, modular parts that
+    can be pipelined together to orchestrate the flow of data into, and outputs from,
+    machine learning models.[^(13)](#fn13) MLOps practices standardise and automate
+    how a pipeline is developed, giving us all the advantages that CI/CD brought to
+    traditional software engineering, and builds on the same foundations: effective
+    use of versioning, configuration management, automated testing, code review and
+    automated deployments. Continuous integration, in addition to the testing and
+    validation of code, now covers the testing and validation of the data and the
+    models. Continuous delivery and continuous deployment expand to the production
+    and deployment of the entire machine learning pipeline, again including the models.
+    This extended definition of CI/CD allows us to focus on the development, testing
+    and validation of the machine learning models, replacing homegrown solutions based
+    on glue code with systematic solutions based on industry standards.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure [5.2](design-code.html#fig:pipeline-lifecycle) takes the software development
+    life-cycle representation from Figure [1.2](intro.html#fig:software-life-cycle)
+    and puts it into context. It shows the key logical steps of reproducible machine
+    learning: what we should take care of to build a solid and maintainable pipeline.
+    Some boxes represent development stages, some are actual pieces of software that
+    will become modules in our pipeline, others are both. Broadly speaking, we can
+    group the modules in a pipeline into four stages: *data ingestion* and *preparation*;
+    *model training*, *evaluation* and *validation*; *model deployment* and *serving*;
+    and *monitoring*, *logging* and *reporting*. How the functionality provided by
+    each stage is split into modules is something that we can decide when we define
+    the scope of the pipeline; we can then produce a baseline implementation to develop
+    an understanding of its size and structure. However, well-established design principles
+    from software engineering apply (Ousterhout [2018](#ref-philo); Thomas and Hunt
+    [2019](#ref-pragpro)). Each module should do one thing and do it completely (the
+    “Single Responsibility Principle”), encapsulating as much complexity as possible
+    and abstracting it behind a simple interface (a “deep module”). Thus, we can keep
+    the complexity of the pipeline in check by avoiding *change amplification* (making
+    a simple change requires modifying code many different locations) and by reducing
+    *cognitive load* (how much does a developer need to know in order to successfully
+    make the change) as well as *unknown unknowns* (which parts of the code should
+    be touched is not obvious). Simple interfaces are less likely to change: they
+    also reduce coupling between the modules if we limit the number of dependencies
+    and avoid common anti-patterns such as implicit constraints (say, functions should
+    be called in a specific order) and pass-through variables containing all kinds
+    of unrelated information (say, the whole global state in a context object). Simple
+    interfaces should also reflect domain knowledge by exposing methods and data structures
+    with domain meaning, with names taken from the ubiquitous language (Chapter [8](documenting-code.html#documenting-code))
+    and with default settings that make common cases simple to implement. This approach
+    is likely to result in a pipeline architecture patterned after the workflow of
+    domain experts, which allows them to help validate models and inference outputs
+    in a “human-in-the-loop” setup (Wu et al. [2022](#ref-xiao); Xin et al. [2018](#ref-xin)).
+    Furthermore, a modular pipeline can be easily managed by an *orchestrator* which
+    can deploy the modules (Chapter [7](deploying-code.html#deploying-code)), allocate
+    them to systems with the appropriate hardware resources (Chapter [2](hardware.html#hardware))
+    and control their execution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.3.1 Project Scoping
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Starting from the top of Figure [5.2](design-code.html#fig:pipeline-lifecycle),
+    the first step in building a machine learning pipeline is to understand the problem
+    it should solve, what data it can use to do so, what outputs it should produce,
+    and who its end users will be. To clarify these points, we should first identify
+    who will be involved in developing the pipeline or will interact with it (the
+    “stakeholders”): a combination of software developers, machine learning experts,
+    domain experts and users. Together they will have all the information necessary
+    to define the scope of the pipeline.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The process of scoping a machine learning pipeline and the underlying systems
+    (Chapter [2](hardware.html#hardware)) involves the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Identifying the problem we want to solve:* the stakeholders should work together
+    to explicitly define the problem that the pipeline should solve and to evaluate
+    its impact. Domain experts should have a concrete business or academic need to
+    address and, together with the other stakeholders, they should decide whether
+    the problem is worth solving and whether solving it will be valuable to enough
+    people. This process is much smoother if the domain experts have some familiarity
+    with the classes of problems that can be effectively tackled with machine learning.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Identifying the targets we want to optimise for:* the stakeholders should
+    decide what it means to have solved the problem successfully. To this end, the
+    domain experts should set measurable domain metrics with achievable threshold
+    values to define “success”. These metrics should be:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: comparable across different data, models and technical solutions to make it
+    possible to contrast different pipeline implementations;
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: easy to understand and to interpret;
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: simple enough that they can be collected in real-time for logging and monitoring
+    (Section [5.3.6](design-code.html#monitoring-pipeline));
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: actionable.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Identifying what data we need*: data are a critical component of a machine
+    learning pipeline because they determine its performance (Section [5.1](design-code.html#data-as-code)).
+    Therefore, it is essential to identify all the data sources we want to use, who
+    owns them, and the technical details of how the data are stored (files, databases
+    or data lakes) and structured (data schema). This allows us to track data provenance
+    and reduce technical debt (Section [5.2.1](design-code.html#data-debt)). In particular,
+    we should be wary about data sources that provide overlapping information because
+    they introduce hidden dependencies in the pipeline. They can easily be inconsistent
+    because of differences in their schemas (say, the same variable is scaled or discretised
+    in different ways) and, even if they are consistent, they can diverge over time
+    (say, one data source changes schema and the others do not). A common case is
+    that of partially pre-processed data, which should always be reconciled with the
+    raw data they originate from and stored in the same versioned repository. In addition,
+    we should collect data following the best practices accumulated in decades of
+    survey sampling (Lohr [2021](#ref-lohr); Groves et al. [2009](#ref-groves)) and
+    experimental design (Montgomery [20AD](#ref-montgomery)) to make sure that the
+    data we collect to train the machine learning models (Section [5.3.4](design-code.html#model-pipeline))
+    are representative of the data the models will perform inference on (Section [5.3.5](design-code.html#production-pipeline)).
+    Sampling bias can have unpredictable effects on the performance of the pipeline.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Analysis:* we should assess how much data we can collect and what variable
+    types they will contain. With this information, we can start evaluating different
+    models based on their sample size requirements, their probabilistic assumptions
+    and the inference types they support (prediction, classification, etc.). As a
+    general rule, it is always preferable to start with simpler models because they
+    enable a fast feedback loop: if simple models cannot achieve our targets, we can
+    move to more complex models and use the simpler ones as baselines. In addition,
+    we should take into consideration:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The *robustness* of the model against the noise in the data, against model misspecification
+    and adversarial attacks.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Interpretability* and *explainability*, that is, how well we can understand
+    the behaviour and the outputs of the models. Some models are inherently interpretable
+    either because of their simple structure (say, regression models) or because of
+    their construction (say, Bayesian networks (Scutari and Denis [2021](#ref-scutari))).
+    For others (say, deep neural networks), we can introduce auxiliary models to provide
+    post hoc explanations: some of them are application-agnostic (Linardatos, Papastefanopoulos,
+    and Kotsiantis [2021](#ref-explainability)) while others are specific to natural
+    language processing (Li et al. [2016](#ref-nlp-viz)) or computer vision (Simonyan,
+    Vedaldi, and Zisserman [2014](#ref-cv-viz)).'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The *fairness* of model outputs, which should not induce the machine learning
+    pipeline to discriminate against individuals or groups based on sensitive attributes
+    such as gender, race or age. While there is much literature on this topic (Mehrabi
+    et al. [2021](#ref-fairness)), there is no consensus on how fairness should be
+    measured. What there is consensus on is that machine learning models can easily
+    incorporate the biases present in the data they are trained from. Therefore, we
+    should consider carefully how the data are collected and we should constrain models
+    to limit or disregard the discriminating effect of known sensitive attributes.
+    Failures to do so have often ended in the news: Amazon’s sexist recruitment tool
+    (BBC [2018](#ref-sexist-hr)), Facebook image recognition labelling black men as
+    primates (BBC [2021](#ref-primates)[a](#ref-primates)) and Twitter’s racist preview
+    cropping (BBC [2021](#ref-racist-preview)[b](#ref-racist-preview)) are just a
+    few examples.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Privacy* and *security* concerns for sensitive data (Papernot et al. [2018](#ref-papernot)).
+    Machine learning models excel at extracting useful information from data, but
+    at the same time, they should protect privacy by not disclosing personally identifiable
+    information. How to achieve that is an open problem, with research investigating
+    approaches like differential privacy (Gong et al. [2020](#ref-differential-privacy)),
+    defences against adversarial attacks and data re-identification (Narayanan and
+    Shmatikov [2008](#ref-reid)), and distributed learning implementations such as
+    federated learning (Li et al. [2021](#ref-federated)) and edge computing (Khan
+    et al. [2019](#ref-edge)) (Section [2.3](hardware.html#hardware-cloud)).'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A machine learning pipeline typically spans several data sources and several
+    models: as a result, we will iterate over these steps a few times depending on
+    the nature of the project and of the organisation undertaking it. In the end,
+    we will have the information we need to compile a mission statement document (Section
+    [8.4](documenting-code.html#domaindocs)) and to sketch the layout of the architecture
+    (Section [8.3](documenting-code.html#designdocs)) and of our software test suite
+    (Section [9.4.1](troubleshooting-code.html#testing-goals)). The architecture is
+    typically represented with a directed acyclic graph (DAG): see Figure [8.2](documenting-code.html#fig:uber-design)
+    for an illustrative example. Each node will correspond to one of the modules in
+    the pipeline, with incoming and outgoing arcs showing its inputs and outputs,
+    respectively. The DAG therefore maps the paths of execution of the pipeline and
+    the flow of data and information from data ingestion to training, inference and
+    reporting. The DAG may be quite large for particularly complex pipelines: splitting
+    it into smaller DAGs corresponding to different sections of the pipeline and working
+    with them independently may be more convenient.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.3.2 Producing a Baseline Implementation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Data validation, model development, tuning, training and validation are initially
+    explored by individual developers and machine learning experts on local hardware,
+    if suitable hardware is available. After experimentation, they will eventually
+    produce a minimal, working prototype of some part of the pipeline. This is often
+    called a *baseline implementation* or *proof of concept*, and it will only involve
+    the smallest amount of code that allows us to check whether we can achieve our
+    targets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This initial exploration of the problem does not typically involve all the
+    CI/CD development workflows discussed above and in Chapter [6](writing-code.html#writing-code):
+    at this stage, the code and the models are too volatile. However, developers and
+    machine learning experts should at least agree on a common, unified development
+    environment (software dependencies management, build processes and configurations).
+    This environment should be buildable in a reproducible and reliable way, which
+    requires configuration management, and it should be as close as possible to our
+    target production environment. For convenience, the development environment should
+    be modular in the same way as the pipeline, so that we can run only the modules
+    we are working on: it is typically impossible to run the whole pipeline on a developer
+    workstation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After checking that our proof of concept achieves all its targets, we then:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Construct a suite of software tests (Section [9.4.2](troubleshooting-code.html#testing-what))
+    and push both to our version control repository to start taking advantage of continuous
+    integration. We can then transform the proof of concept into production-quality
+    code by gradually refactoring (Section [6.7](writing-code.html#refactoring)) and
+    documenting it (Chapter [8](documenting-code.html#documenting-code)) with the
+    help of code review (Section [6.6](writing-code.html#code-review)).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Improve scalability. A proof of concept is typically built using a small fraction
+    of the available data, so we must ensure that its computational complexity (Chapter
+    [4](algorithms.html#algorithms)) is small enough to make learning and inference
+    feasible in production when all data are used. Time complexity is important to
+    allow for timely model retraining and for inference under latency constraints;
+    space complexity must fit the machine learning systems (Chapter [2](hardware.html#hardware))
+    we have available. If our development system is similar to the production systems,
+    we can expect computational complexity to translate into practical performance
+    in similar ways and predict the latter reliably.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 5.3.3 Data Ingestion and Preparation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'After scoping the pipeline and producing a baseline implementation of its parts,
+    we can start designing and implementing its modules in a more structured way.
+    A machine learning pipeline is the formalisation of a data processing workflow.
+    Therefore, the first part of the pipeline will comprise one or more *data ingestion*
+    modules where we collect data from various sources such as relational databases,
+    legacy OLTP/OLAP systems and modern in-house or cloud data lakes. These modules
+    vary in nature depending on the machine learning systems the pipeline will run
+    on: their design will be heavily influenced by factors such as data locality (Sections
+    [2.2](hardware.html#hardware-using) and [2.3](hardware.html#hardware-cloud)),
+    data provenance (Section [5.2.1](design-code.html#data-debt)), the availability
+    of different types of storage (Section [2.1.2](hardware.html#hardware-memory))
+    and compliance with privacy frameworks like HIPAA and FCRA in the United Stated
+    or GDPR in Europe (Section [5.3.1](design-code.html#scoping-pipeline)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data ingestion is followed by *data preparation*. Preparing and cleaning the
+    data is a hard but crucial step involving data scientists, domain experts and
+    machine learning experts (Kenett and Redman [2019](#ref-kenett)). Modules for
+    data preparation build on the exploratory analysis of the data used to produce
+    the baseline implementation of the models, which is often limited to a high-level
+    analysis of summary statistics, graphical visualisations and some basic feature
+    selection. Their purpose is to clean and improve the quality of the data in the
+    most automatic and reproducible way possible, making subsequent stages of the
+    pipeline more reliable. In addition to validating the types, the acceptable values
+    and the statistical distribution of each feature, data preparation modules should
+    address the issues discussed in Section [9.1](troubleshooting-code.html#data-problems).
+    They can also automate both feature selection and *feature engineering* (that
+    is, the transformation of existing features into new ones that are better suited
+    to model training or that are more meaningful in domain terms). Current software
+    solutions for data and machine learning pipelines handle these tasks in a flexible
+    way by taking as configuration arguments a processing function and a validation
+    function that checks the properties of the now-clean data. The former may, for
+    example, remove outliers, impute missing data and sort labels and features; the
+    latter serves as a quality gate (Section [5.2.1](design-code.html#data-debt))
+    and as the kernel of a property-based software test (Section [9.4.2](troubleshooting-code.html#testing-what)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the data are split into multiple sets for later use as training, validation
+    and test sets. (Making sure to avoid data leakage, see Section [9.3](troubleshooting-code.html#signs-of-trouble).)
+    Each data set is tagged with information about its origin and with the version
+    of the code that was used to extract and clean it, to track data provenance. These
+    tags become part of our configuration management, and the data is stored as an
+    artefact under versioning for later use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.3.4 Model Training, Evaluation and Validation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: After ingestion and preparation, a machine learning pipeline passes the data
+    either to *model training* modules or to *inference* modules (which we will discuss
+    in Section [5.3.5](design-code.html#production-pipeline)). The trained models
+    are then *evaluated* (on their statistical performance) and *validated* (in domain
+    terms) using software tests and human expert judgement to ensure they are efficient,
+    reproducible and scalable. Only models that perform sufficiently well in both
+    statistical and domain terms will be considered suitable for deployment and serving.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Training* a machine learning model consists in identifying an optimal instance
+    in some model class (neural networks, random forests, etc.) by iteratively applying
+    a combination of feature engineering, hyperparameter tuning and parameter optimisation.
+    This is what the “learning” in “machine learning” refers to: a computer system
+    is trained to learn a working model of some piece of the real world from the information
+    contained in the data. The probabilistic techniques used for this purpose are
+    specific to each model class and are beyond the scope of this book: see Kuhn and
+    Johnson (M. Kuhn and Johnson [2013](#ref-kuhn)) for an approachable treatment
+    of this topic. Training is a computationally demanding task, especially in the
+    case of deep learning. The role of the pipeline is to schedule the training workload
+    on compute systems with the appropriate hardware capabilities (as discussed in
+    Section [2.4](hardware.html#hardware-choice)) and to monitor its progress. It
+    should also simplify the parallel training of models with predefined, regular
+    patterns of hyperparameters; and it should automate software tests implementing
+    property-based testing of the model’s probabilistic properties (Section [9.4.2](troubleshooting-code.html#testing-what)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training can take quite different forms depending on the nature of the data
+    (Section [9.4.3](troubleshooting-code.html#offline-vs-online)). In *static learning*,
+    the model is trained from scratch on *cold* (offline) data selected to be representative
+    of the data currently observed in production. Its statistical performance is then
+    evaluated against either a separate set of cold data or a small stream of production
+    data. In either case, the data should be labelled or validated by domain experts
+    to address the issues discussed in Section [5.2.1](design-code.html#data-debt)
+    and to maximise model quality. In *dynamic learning*, the model is continuously
+    trained and evaluated on a live *stream* of (online) production data collected
+    in real time. This requires fine-grained monitoring to be in place (Section [5.3.6](design-code.html#monitoring-pipeline)).
+    If data drift is gradual, we may prevent the model from going stale by fine-tuning
+    it (Gama et al. [2014](#ref-gama)). If, on the other hand, data drift is sudden,
+    it may be preferable to retrain the model from scratch with a batch of recent
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Model evaluation* modules check whether the predictive accuracy of the model
+    the pipeline just trained is better in statistical terms than that of the corresponding
+    model currently in production. To assess both simultaneously, we can perform a
+    *canary deployment*: running the current and the new model in parallel on the
+    same data to compare them directly. (More on this in Chapter [7](deploying-code.html#deploying-code).)
+    In the case of streaming data, it is standard practice to use A/B testing (Amazon
+    [2021](#ref-amazon-ab-testing); Zheng [2015](#ref-evaluatingml)) for this purpose,
+    assigning new data points at random to either model. At the same time, we can
+    check whether the new model is preferable to the current one in domain terms using
+    the metrics we decided to optimise for (Section [5.3.1](design-code.html#scoping-pipeline)).
+    We call this *model validation*, in contrast with the evaluation of the model
+    in purely statistical terms. The two may be related because models with poor statistical
+    properties will typically not encode the domain well enough for practical use.
+    However, models with good statistical properties are not always of practical use
+    either: in particular when the loss function the model is trained to minimise
+    is too different from that implied by how costly prediction errors are in business
+    or domain terms. In general, it is better to choose well-matched domain metrics
+    and statistical accuracy measures for consistency. Unlike model evaluation, which
+    can be automated to a large extent using software tests and continuous integration,
+    model validation should involve domain experts. Even if we practise domain-driven
+    development (Evans [2003](#ref-domain-driven)) and involve them in the design
+    of the pipeline, in implementing it (Chapter [6](writing-code.html#writing-code))
+    and in documenting it (Chapter [8](documenting-code.html#documenting-code)), there
+    will always be some domain knowledge or intuition that they were not able to convey
+    to developers and machine learning experts. As unscientific as it may sound, there
+    is knowledge that is essentially impossible to put into numbers. Therefore, there
+    will be issues we cannot write tests for, but that experts can “eyeball” and flag
+    in model outputs because “they look wrong” and “do not quite make sense.” This
+    approach is known as “human-in-the-loop” in the literature, and it is known to
+    improve the quality of machine learning across tasks and application fields (Wu
+    et al. [2022](#ref-xiao); Xin et al. [2018](#ref-xin)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When a model is finally found to perform well in both statistical and domain
+    terms, the pipeline should trigger a CI/CD process to generate an *artefact* containing
+    the model and all the relevant information from the training process. An artefact
+    can be, from simple to complex:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A (usually binary) file in a standardised format that will be stored and versioned
+    in a general-purpose *artefact registry*. The format can be either model-independent,
+    like ONNX (ONNX [2021](#ref-onnx)), or specific to the machine learning framework
+    used for training.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A (usually Docker (Docker [2022](#ref-docker)[a](#ref-docker))) container that
+    embeds the model and wraps it with application code that provides APIs for inference,
+    health checking and monitoring. The container is then stored and versioned in
+    a *container registry*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: An annotated file uploaded to a *model registry* that provides experiment tracking,
+    model serving, monitoring and comparison between models in addition to versioning.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Platforms like GitHub and GitLab integrate both a general-purpose artefact registry
+    (GitHub [2022](#ref-github-artefact)[b](#ref-github-artefact); GitLab [2022](#ref-gitlab-artefact)[a](#ref-gitlab-artefact))
+    and a container registry (GitHub [2022](#ref-github-registry)[c](#ref-github-registry);
+    GitLab [2022](#ref-gitlab-registry)[b](#ref-gitlab-registry)), as does Nexus (Sonatype
+    [2022](#ref-nexus)). MLOps platforms like TensorFlow Extended (TFX) (TensorFlow
+    [2021](#ref-tensorflow-extended)[b](#ref-tensorflow-extended)) implement experiment
+    tracking and other machine-learning-specific features. We will return to this
+    topic in Section [7.1](deploying-code.html#deployment-prep).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Regardless of their form, artefacts should be *immutable*: they cannot be altered
+    once generated so they can be used as the single source of truth for the model.
+    Data artefacts (Section [5.3.3](design-code.html#data-pipeline)), code (Section
+    [6.5](writing-code.html#versioning)) and often other software artefacts are also
+    stored as immutable artefacts and versioned. When their versions are linked, we
+    have a complete configuration management solution that allows for reproducible
+    builds of any development, testing or production environment that has ever been
+    used in the pipeline.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.3.5 Deployment, Serving and Inference
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Not all the artefacts we produce will be *deployed* immediately, or at all:
+    continuous delivery only ensures that we are always ready to deploy our latest
+    models. In academia, we cannot make any change to a pipeline halfway through a
+    set of experiments without potentially introducing confounding in the results.
+    In business, we may have service-level agreements with our customers that make
+    it risky to deploy new models without a compelling reason to do so. Artefacts
+    may also be found to be unsuitable for deployment for security reasons: for instance,
+    we may find out that a container contains vulnerable dependencies or is misconfigured
+    (Section [7.1.4](deploying-code.html#container-packaging)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Model deployment is not implemented as a module: rather, it is the part of
+    the pipeline orchestration that enables models to be deployed to a target environment.
+    Models deployed in production will be *served* so that users, applications or
+    other models can access their inference capabilities. Models deployed to test
+    environments will be evaluated by software tests and expert judgement, and those
+    deployed to development environments can be used for troubleshooting bugs or further
+    investigation of the data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How a machine learning model is deployed depends on how it has been packaged
+    into an artefact and on how it will be used. File artefacts can be either embedded
+    in a software library that exposes inference methods locally or served “as-a-service”
+    from a model registry using suitable remote APIs and protocols (such as RESTful
+    or, when we need low latency, gRPC (Ganiev et al. [2021](#ref-ganiev))). Container
+    artefacts can be deployed by all orchestration platforms in common use, which
+    provide built-in monitoring and logging of hardware and software metrics (load,
+    memory and I/O use) as well as troubleshooting facilities. Despite being intrinsically
+    more complex, container artefacts are easier to deploy because they are ephemeral
+    and highly portable, and because we can manage as-a-code both their runtime dependencies
+    and configuration. We will develop this topic in detail in Sections [7.1.4](deploying-code.html#container-packaging)
+    and [7.2](deploying-code.html#deployment-strategies) using Dockerfiles as a reference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.3.6 Monitoring, Logging and Reporting
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '*Monitoring* modules collect the metrics we identified in the scoping phase
+    (Section [5.3.1](design-code.html#scoping-pipeline)) to track at all times whether
+    the pipeline achieves the required statistical and domain performance levels.
+    The metrics should describe both the pipeline as a whole and individual modules
+    to allow us to pinpoint the source of any issue we may have to troubleshoot. In
+    particular:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Data ingestion and preparation modules (Section [5.3.3](design-code.html#data-pipeline)):
+    we should monitor the same data metrics we check with property-based software
+    tests to guard against data drift and data degradation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Training modules (Section [5.3.4](design-code.html#model-pipeline)): we should
+    monitor the same metrics we use for model validation and evaluation consistently
+    across all models in the pipeline to separate issues with individual models from
+    issues arising from the data. Especially when using online data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Serving and inference modules (Section [5.3.5](design-code.html#production-pipeline)):
+    we should monitor the same metrics we monitor during training to ensure that performance
+    has not degraded over time (the so-called “training-serving skew”). And we should
+    do that for all inference requests (possibly in small batches) so that we can
+    guarantee that outputs are always in line with our targets. This is crucial to
+    enable human-in-the-loop validation by domain experts for black-box models whose
+    failure modes are mostly unknown and difficult to test.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The coverage of monitoring facilities is important for the same reason why
+    test coverage is important: both are tasked to identify a broad range of issues
+    with the data (Section [9.1](troubleshooting-code.html#data-problems)), with the
+    models (Section [9.2](troubleshooting-code.html#model-problems)) and with the
+    pipeline (Section [9.2.4](troubleshooting-code.html#troubleshooting-pipelines))
+    with enough precision to allow for root-cause analyses. Software tests perform
+    this function at development and deployment time; monitoring does it at runtime.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practice, we can implement monitoring with a client-server software such
+    as Prometheus (Prometheus Authors and The Linux Foundation [2022](#ref-prometheus)).
+    Each module in the pipeline produces all relevant metrics internally, tags them
+    to track provenance (which module, and which instance of the module if we have
+    multiple copies running in parallel) and makes them available in a structured
+    format through the client interface. Monitoring modules then provide the corresponding
+    server that pulls the metrics from all clients and saves them into an *event store*
+    database. They will also filter the metrics, sanitise them, and run frequent checks
+    for anomalies. If any is found, the monitoring modules can then trigger alerts
+    and send failure reports to the appropriate people using, for instance, Alertmanager
+    (which is part of Prometheus) or PagerDuty (PagerDuty [2022](#ref-pagerduty)).
+    If our pipeline is sufficiently automated, we may also trigger model retraining
+    automatically at the same time. This is the only way to address anomalies in a
+    timely manner and to provide guarantees on the quality of the outputs of the pipeline.
+    Cross-referencing the information in the event store to that in our configuration
+    management system is invaluable in comparing the performance of our current production
+    environment against that of past (now unavailable) environments. The same metrics
+    may also be useful for troubleshooting infrastructure issues, like excessive consumption
+    of computing resources, memory and I/O, as well service issues that impact downstream
+    services and models, like readiness (whether a specific API is ready to accept
+    requests) and excessive inference latency (how long it takes for the API to respond).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Logging* modules complement monitoring by recording relevant information about
+    events that occur inside individual modules or within the pipeline orchestration,
+    capturing exceptions and errors. Typically, at least part of a machine learning
+    pipeline runs on remote systems: since we cannot access them directly, especially
+    in the case of cloud instances (Section [2.3](hardware.html#hardware-cloud)),
+    we are limited in our ability to debug and troubleshoot issues. Logging makes
+    this problem less severe by recording what each module is doing in a sequence
+    of timestamped *log messages*, ranging from simple plain-text messages (as we
+    may produce ourselves) to more structured JSON or binary objects (from frameworks
+    or language interpreters). Each log message has a “level” that determines its
+    severity and that allows us to control how much we want to log for each module:
+    for instance, a set of labels like `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
+    Each log message is also tagged with its provenance, which allows us to distinguish
+    between:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: system logs, which provide information on the load of the machine learning systems,
+    the runtime environment and the versions of relevant dependencies;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: training logs, which describe the model structure, how well it fits the data
+    and the values of its parameters and hyperparameters for each training iteration;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: inference logs, which describe inputs, outputs, accuracy and latency for each
+    request and each API.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Therefore, logs provide a measure of observability when we otherwise would
+    have none: all modules should implement logging as much as monitoring. However,
+    the more messages we generate, the more resources logging requires: which poses
+    practical limits on how much we can afford to log, especially on production systems.
+    In development environments, we may just append log messages to a file. In production
+    environments, we should aggregate log messages from the whole pipeline to a remote
+    log collector instead of locally. Log collectors can normalise log messages, make
+    them easy to browse and make it possible to correlate events happening in different
+    modules.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similar to monitoring modules, logging modules are implemented with a client-server
+    software such as Fluentd (The Fluentd Project [2022](#ref-fluentd)) complemented
+    by a search engine like Elasticsearch and a web frontend like Kibana (Elasticsearch
+    [2022](#ref-elastic)). The two software stacks have some apparent similarities:
+    both have a remote server aggregating information from clients inside the modules.
+    The underlying reason for this architecture is that we should locate the server
+    on a system that is completely separate from those the machine learning pipeline
+    runs on: when the latter crashes and burns, we need to be able to access the information
+    stored by monitoring and logging servers to investigate what its last known status
+    was and decide how to best restore it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, monitoring and logging have two key technical differences. Firstly,
+    logging should support unstructured data, whereas monitoring only handles data
+    in the form of `{key, type, value}` triplets. Logging gives observability from
+    outside the code we wrote to implement a module, reporting information that we
+    do not produce directly and whose format we cannot necessarily control. Monitoring
+    gives observability from the inside: we incorporate the client component into
+    our code and we give it access to its internal state. Hence the information we
+    expose to the monitoring server is necessarily structured in various data types
+    and data structures (Chapter [3](types-structures.html#types-structures)). Secondly,
+    logs are pushed from the clients to the servers as they are generated, whereas
+    monitoring servers pull the metrics from the clients in the modules at regular
+    intervals. Therefore, the databases used by the logging servers are general-purpose
+    event stores, whereas those used for monitoring are optimised for time series
+    data. The ability to access the internal state of all modules at regular intervals
+    makes monitoring servers ideal for observing any gradual degradation in the machine
+    learning pipeline.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Reporting* modules implement graphical interfaces that display the information
+    collected by the monitoring and logging modules. Building on best practices from
+    data science (Kenett and Redman [2019](#ref-kenett)), they provide web interfaces
+    with intuitive, interactive *dashboards* that can be used by developers, machine
+    learning experts and domain experts alike. Graphical displays in common use are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Data ingestion and preparation modules (Section [5.3.3](design-code.html#data-pipeline)):'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Plots of the empirical distribution both of individual features and of pairs
+    of features against each other such as histograms, boxplots, heatmaps and pairwise
+    scatterplots (for continuous features) or barplots and tileplots (for discrete
+    features).
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Plots of key summaries from minimal statistical models such as simple linear
+    regressions to assess the magnitude and the sign of the relationships between
+    features and to explore potential fairness issues.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Training modules (Section [5.3.4](design-code.html#model-pipeline)):'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Plots of model performance over the course and at the end of the training process,
+    like profile plots of the loss function against epochs for deep neural networks
+    and heatmaps for confusion matrices produced by classification models.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Plots that help interpret the model behaviour, showing either its parameters
+    or the outputs of explainability approaches like LIME (Ribeiro, Singh, and Guestrin
+    [2016](#ref-lime)) and SHAP (Lundberg and Lee [2017](#ref-shap)).
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For less computationally-intensive models, interactive dashboards that can trigger
+    model training, with sliders to pick hyperparameters on the fly.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Serving and inference modules (Section [5.3.5](design-code.html#production-pipeline)):'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Plots of the empirical distribution of input data against historical data, to
+    detect data drift.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Time series plots of the accuracy measures used in model validation and the
+    metrics used for model evaluation, to detect when models become stale.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Time series plots of latency and readiness.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All plots should also include confidence intervals to convey the likely range
+    of values for each of the quantities they display, wherever it makes sense.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Domains like natural language processing and computer vision may require specialised
+    graphical interfaces in addition to the above: for instance, visualising word
+    relevance in natural language processing (Li et al. [2016](#ref-nlp-viz)) and
+    pixel relevance in computer vision (Simonyan, Vedaldi, and Zisserman [2014](#ref-cv-viz))
+    or splitting images into layers with semantic meaning (Ribeiro, Singh, and Guestrin
+    [2016](#ref-lime)). Such interfaces can be very useful to involve domain experts
+    in validating model training and the outputs from the inference modules. Instances
+    that were not classified or predicted correctly can then be visually inspected,
+    labelled and used to retrain the machine learning models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Amazon. 2021\. *Dynamic A/B Testing for Machine Learning Models with Amazon
+    SageMaker MLOps Projects*. [https://aws.amazon.com/blogs/machine-learning/dynamic-a-b-testing-for-machine-learning-models-with-amazon-sagemaker-mlops-projects/](https://aws.amazon.com/blogs/machine-learning/dynamic-a-b-testing-for-machine-learning-models-with-amazon-sagemaker-mlops-projects/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Arpteg, A., B. Brinne, L. Crnkovic-Friis, and J. Bosch. 2018\. “Software Engineering
+    Challenges of Deep Learning.” In *Euromicro Conference on Software Engineering
+    and Advanced Applications*, 50–59\. IEEE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: BBC. 2018\. *Amazon Scrapped “Sexist AI” Tool*. [https://www.bbc.com/news/technology-45809919](https://www.bbc.com/news/technology-45809919).
+  prefs: []
+  type: TYPE_NORMAL
+- en: BBC. 2021a. *Facebook Apology as AI Labels Black Men “Primates”*. [https://www.bbc.com/news/technology-58462511](https://www.bbc.com/news/technology-58462511).
+  prefs: []
+  type: TYPE_NORMAL
+- en: BBC. 2021b. *Twitter Finds Racial Bias in Image-Cropping AI*. [https://www.bbc.com/news/technology-57192898](https://www.bbc.com/news/technology-57192898).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Beck, K., M. Beedle, A. Van Bennekum, A. Cockburn, W. Cunningham, M. Fowler,
+    J. Grenning, et al. 2001\. *The Agile Manifesto*. [https://www.agilealliance.org/wp-content/uploads/2019/09/agile-manifesto-download-2019.pdf](https://www.agilealliance.org/wp-content/uploads/2019/09/agile-manifesto-download-2019.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bogner, J., R. Verdecchia, and I. Gerostathopoulos. 2021\. “Characterizing
+    Technical Debt and Antipatterns in AI-Based Systems: A Systematic Mapping Study.”
+    In *2021 IEEE/ACM International Conference on Technical Debt (TechDebt)*, 64–73.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cheney, J., L. Chiticariu, and W.-C. Tan. 209AD. “Provenance in Databases:
+    Why, How and Where.” *Foundations and Trends in Databases* 1 (4): 379–474.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Crook, J., and J. Banasik. 2004\. “Does Reject Inference Really Improve the
+    Performance of Application Scoring Models?” *Journal of Banking and Finance* 28:
+    857–74.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cunningham, W. 1992\. “The WyCash Portfolio Management System.” In *Addendum
+    to the Proceedings of ACM Object-Oriented Programming, Systems, Languages & Applications
+    Conference*, 29–30.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cunningham, W. 2011\. *Ward Explains the Debt Metaphor*. [https://wiki.c2.com/?WardExplainsDebtMetaphor](https://wiki.c2.com/?WardExplainsDebtMetaphor).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dimakopoulou, M., Z. Zhou, S. Athey, and G. Imbens. 2018\. *Estimation Considerations
+    in Contextual Bandits*. [https://arxiv.org/abs/1711.07077](https://arxiv.org/abs/1711.07077).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dimakopoulou, M., Z. Zhou, S. Athey, and G. Imbens. 2018\. *Estimation Considerations
+    in Contextual Bandits*. [https://arxiv.org/abs/1711.07077](https://arxiv.org/abs/1711.07077).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2019\. “Balanced Linear Contextual Bandits.” In *Proceedings of the AAAI Conference
+    on Artificial Intelligence*, 3445–53.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Duvall, P. M., S. Matyas, and A. Glover. 2007\. *Continuous Integration: Improving
+    Software Quality and Reducing Risk*. Addison-Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Elasticsearch. 2022\. *Free and Open Search: The Creators of Elasticsearch,
+    ELK & Kibana*. [https://www.elastic.co/](https://www.elastic.co/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ETF OAuth Working Group. 2022\. *OAuth 2.0*. [https://oauth.net/2/](https://oauth.net/2/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Evans, E. 2003\. *Domain-Driven Design: Tackling Complexity in the Heart of
+    Software*. Addison-Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Gama, J., I. Žliobaitè, A. Bifet, M. Pechenizkiy, and A. Bouchachia. 2014\.
+    “A Survey on Concept Drift Adaptation.” *ACM Computing Surveys* 46 (4): 44.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ganiev, A., C. Chapin, A. Andrade, and C. Liu. 2021\. “An Architecture for Accelerated
+    Large-Scale Inference of Transformer-Based Language Models.” In *Proceedings of
+    the 2021 Conference of the North American Chapter of the Association for Computational
+    Linguistics*, 163–69.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GitHub. 2022b. *Storing Workflow Data as Artifacts*. [https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts](https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts).
+  prefs: []
+  type: TYPE_NORMAL
+- en: GitHub. 2022c. *Working with the Container Registry*. [https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
+  prefs: []
+  type: TYPE_NORMAL
+- en: GitLab. 2022a. *GitLab Artifacts*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GitLab. 2022b. *GitLab Container Registry*. [https://docs.gitlab.com/ee/user/packages/container_registry/](https://docs.gitlab.com/ee/user/packages/container_registry/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Gong, M., Y. Xie, K. Pan, and K. Feng. 2020\. “A Survey on Differentially Private
+    Machine Learning.” *IEEE Computational Intelligence Magazine* 15 (2): 49–64.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Groves, R. M., F. J. Fowler, M. P. Couper, J. M. Lepkowski, E. Singer, and R.
+    Tourangeau. 2009\. *Survey Methodology*. Wiley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Humble, J., and D. Farley. 2011\. *Continuous Delivery*. Addison Wesley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hunt, E. 2016\. *Tay, Microsoft’s AI Chatbot, Gets a Crash Course in Racism
+    from Twitter*. [https://www.theguardian.com/technology/2016/mar/24/tay-microsofts-ai-chatbot-gets-a-crash-course-in-racism-from-twitter](https://www.theguardian.com/technology/2016/mar/24/tay-microsofts-ai-chatbot-gets-a-crash-course-in-racism-from-twitter).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kenett, R. S., and T. C. Redman. 2019\. *The Real Work of Data Science*. Wiley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Khan, W. Z., E. Ahmed, S. Hakak, I. Yaqoob, and A. Ahmed. 2019\. “Edge Computing:
+    A Survey.” *Future Generation Computer Systems* 97: 219–35.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kuhn, M., and K. Johnson. 2013\. *Applied Predictive Modeling*. Springer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Li, J., X. Chen, E. Hovy, and D. Jurafsky. 2016\. “Visualizing and Understanding
+    Neural Models in NLP.” In *Proceedings of the 2016 Conference of the North American
+    Chapter of the Association for Computational Linguistics: Human Language Technologies*,
+    681–91\. Association for Computational Linguistics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Li, Q., Z. Wen, Z. Wu, S. Hu, N. Wang, Y. Li, X. Liu, and B. He. 2021\. “A
+    Survey on Federated Learning Systems: Vision, Hype and Reality for Data Privacy
+    and Protection.” *IEEE Transactions on Knowledge and Data Engineering* Advance
+    publication.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Linardatos, P., V. Papastefanopoulos, and S. Kotsiantis. 2021\. “Explainable
+    AI: A Review of Machine Learning Interpretability Methods.” *Entropy* 23 (1):
+    18.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lohr, S. L. 2021\. *Sampling: Design and Analysis*. 3rd ed. CRC Press.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lundberg, S. M., and S.-I. Lee. 2017\. “A Unified Approach to Interpreting Model
+    Predictions.” In *Advances in Neural Information Processing Systems (NIPS)*, 4765–74.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Mehrabi, N., F. Morstatter, N. Saxena, K. Lerman, and A. Galstyan. 2021\. “A
+    Survey on Bias and Fairness in Machine Learning.” *ACM Computing Surveys* 54 (6):
+    115.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Montgomery, D. C. 20AD. *Design and Analysis of Experiments*. 10th ed. Wiley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Narayanan, A., and V. Shmatikov. 2008\. “Robust De-Anonymization of Large Sparse
+    Datasets.” In *Proceedings of the IEEE Symposium on Security and Privacy*, 111–25.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ONNX. 2021\. *Open Neural Network Exchange*. [https://github.com/onnx/onnx](https://github.com/onnx/onnx).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ousterhout, J. 2018\. *A Philosophy of Software Design*. Yaknyam Press.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'PagerDuty. 2022\. *PagerDuty: Uptime Is Money*. [https://www.pagerduty.com/](https://www.pagerduty.com/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Papernot, N., P. McDaniel, A. Sinha, and M. P. Wellman. 2018\. “SoK: Security
+    and Privacy in Machine Learning.” In *Proceedings of the IEEE European Symposium
+    on Security and Privacy*, 399–414.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Paszke, A., S. Gross, F. Massa, A. Lerer, J. Bradbury, G. Chanan, T. Killeen,
+    et al. 2019\. “PyTorch: An Imperative Style, High-Performance Deep Learning Library.”
+    In *Advances in Neural Information Processing Systems (Nips)*, 32:8026–37.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Prometheus Authors, and The Linux Foundation. 2022\. *Prometheus: Monitoring
+    System and Time Series Databases*. [https://prometheus.io/](https://prometheus.io/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ribeiro, M. T., S. Singh, and C. Guestrin. 2016\. “Why Should I Trust You? Explaining
+    the Predictions of Any Classifier.” In *Proceedings of the 22nd ACM SIGKDD International
+    Conference on Knowledge Discovery and Data Mining*, 1135–44\. ACM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Scikit-learn Developers. 2022\. *Scikit-learn: Machine Learning in Python*.
+    [https://scikit-learn.org/](https://scikit-learn.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sculley, D., G. Holt, D. Golovin, E. Davydov, T. Phillips, D. Ebner, V. Chaudhary,
+    and M. Young. 2014\. “Machine Learning: The High Interest Credit Card of Technical
+    Debt.” In *SE4ML: Software Engineering for Machine Learning (NIPS 2014 Workshop)*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scutari, M., and J.-B. Denis. 2021\. *Bayesian Networks with Examples in R*.
+    2nd ed. Chapman & Hall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '.Seven, D. 2014\. *Knightmare: A DevOps Cautionary Tale*. [https://dougseven.com/2014/04/17/knightmare-a-devops-cautionary-tale/](https://dougseven.com/2014/04/17/knightmare-a-devops-cautionary-tale/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sherman, E. 2022\. *What Zillow’s Failed Algorithm Means for the Future of Data
+    Science*. [https://fortune.com/education/business/articles/2022/02/01/what-zillows-failed-algorithm-means-for-the-future-of-data-science/](https://fortune.com/education/business/articles/2022/02/01/what-zillows-failed-algorithm-means-for-the-future-of-data-science/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Simonyan, K., A. Vedaldi, and A. Zisserman. 2014\. “Deep Inside Convolutional
+    Networks: Visualising Image Classification Models and Saliency Maps.” In *Proceedings
+    of the 2nd International Conference on Learning Representations (ICLR), Workshop
+    Track*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sonatype. 2022\. *Nexus Repository Manager*. [https://www.sonatype.com/products/nexus-repository](https://www.sonatype.com/products/nexus-repository).
+  prefs: []
+  type: TYPE_NORMAL
+- en: TensorFlow. 2021b. *TensorFlow Extended (TFX)*. [https://www.tensorflow.org/tfx/](https://www.tensorflow.org/tfx/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Fluentd Project. 2022\. *Fluentd: Open Source Data Collector*. [https://www.fluentd.org/](https://www.fluentd.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thomas, D., and A. Hunt. 2019\. *The Pragmatic Programmer: Your Journey to
+    Mastery*. Anniversary. Addison-Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tornhill, A., and M. Borg. 2022\. “Code Red: The Business Impact of Code Quality:
+    A Quantitative Study of 39 Proprietary Production Codebases.” In *Proceedings
+    of International Conference on Technical Debt*, 1–10.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Wu, X., L. Xiao, Y. Sun, J. Zhang, T. Ma, and L. He. 2022\. “A Survey of Human-in-the-Loop
+    for Machine Learning.” *Future Generation Computer Systems* 135: 364–81.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Xin, D., L. Ma, J. Liu, S. Song, and A. Parameswaran. 2018\. “Accelerating
+    Human-in-the-Loop Machine Learning: Challenges and Opportunities.” In *Proceedings
+    of the Second Workshop on Data Management for End-to-End Machine Learning*, 1–4.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Zheng, A. 2015\. *Evaluating Machine Learning Models*. O’Reilly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By “traditional software”, we mean any software that is not related to analytics,
+    data science or machine learning.[↩︎](design-code.html#fnref11)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The choice of the language is often dictated by the orchestration software.
+    However, YAML is becoming a de facto standard because of its readability, portability
+    and maturity.[↩︎](design-code.html#fnref12)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'In software engineering, “pipeline” is used to mean the process of developing
+    and delivering software: CI/CD is a pipeline. In this book, we use it to mean
+    the software infrastructure to develop and put to use the machine learning models
+    and, by extension, the process of building and operating it.[↩︎](design-code.html#fnref13)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

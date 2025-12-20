@@ -1,0 +1,1027 @@
+- en: Chapter 3 Variable Types and Data Structures
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://ppml.dev/types-structures.html](https://ppml.dev/types-structures.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In exploring the components that machine learning systems are built on, we stressed
+    that different types of hardware are optimised to work with data and models stored
+    in specific formats. Both are complex entities comprising a variety of elements
+    that are organised into *data structures* such as data frames (representing tabular
+    data) or standardised model formats like ONNX (ONNX [2021](#ref-onnx)). The individual
+    elements inside these data structures are *variables* of specific *types* such
+    as integer numbers, floating point numbers and strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this chapter we revisit the variable types we mentioned in Chapter [2](hardware.html#hardware),
+    as well as string representations, and we discuss possible reasons to choose one
+    over another for different classes of data (Section [3.1](types-structures.html#variable-types)).
+    We then give some notable examples of how variables are organised in data structures
+    such as vectors and lists (Section [3.2.1](types-structures.html#vectors-lists)),
+    data frames (Section [3.2.2](types-structures.html#dataframes)) and matrices (Section
+    [3.2.3](types-structures.html#matrices)). Different choices of variable types
+    (Section [3.3](types-structures.html#right-variables)) and data structures (Section
+    [3.4](types-structures.html#right-data-structures)) represent different trade-offs
+    both in terms of hardware support, as we saw in Chapter [2](hardware.html#hardware),
+    and in terms of the computational complexity of the machine learning algorithms
+    that will operate on them, as we will discuss in Chapter [4](algorithms.html#algorithms).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.1 Variable Types
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Machine learning software primarily deals with numbers that are the mathematical
+    representation of the data we are modelling. Images can be represented using the
+    values of the colour channels of each of their pixels; text can be encoded into
+    strings, which are then converted to frequencies for particular words; sensor
+    data are recorded as a time series. We can store each of them with different types
+    of variables, each with pros and cons that we will discuss in Section [3.3](types-structures.html#right-variables).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.1.1 Integers
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Integer variables can be used to represent natural (\(\mathbb{N}\)) or integer
+    numbers (\(\mathbb{Z}\)). They are often used to represent Boolean variables as
+    *indicators* (also known as *dummy variables*) as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4fb7610c15d4c942edbb576525b2157e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: More generally, they can be used to give a numeric representation to finite
+    sets by mapping each element to a different integer number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c1e62830c60b87282430c1bc8318fba5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Enumerations in C or factors in R are constructed exactly in this way to minimise
+    memory usage. However, this numeric representation is not suitable for modelling
+    discrete variables because it makes parameter estimates dependent on the specific
+    mapping between elements and integer numbers.[⁷](#fn7) Instead, we map discrete
+    variables to their *one-hot encoding*:[⁸](#fn8) each element in the set is assigned
+    an indicator variable that takes a value of 1 if the element is observed, and
+    0 otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d2db59281f543994669c64e9b01050d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The number of elements we want to represent determines how many bits of memory
+    each integer will use: \(n\) bits allow for \(2^n\) distinct values. A single
+    bit is enough for a Boolean value, although, in practice, it is usually stored
+    using at least 1 byte. A finite set with \(k\) elements can be represented with
+    \(\log_2 k\) bits: one-hot encoding side-steps this limitation by using indicator
+    variables at the cost of using more memory.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Natural and integer numbers cannot be completely represented by integer variables:
+    that would require an infinite number of bits. For this reason, programming languages
+    provide integer variables of different *sizes* such as 8, 16, 32 and 64 bits.
+    These sizes are all multiples of 8 bits because processors are optimised to work
+    on bytes. The size of an integer variable determines the largest number it can
+    represent. For instance, the largest (*unsigned*) natural number we can represent
+    in 32 bits is \(2^{32} - 1 \approx 4.29 \times 10^9\), and the largest (*signed*)
+    integer number is \(\pm 2^{31} - 1 \approx \pm 2.14 \times 10^{9}\) because 1
+    bit is reserved for encoding the sign. (If that bit is set to zero, the number
+    is considered to be positive.) Numbers that are outside of this range are said
+    to *overflow*, meaning that their bit representation is larger than the size of
+    the integer variable and thus overflows the memory reserved for that variable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the sake of the example, consider the natural number 3134 represented as
+    a 16-bit unsigned integer variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0928beb318cbdbc3da5ed86cbb81d2ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It’s easy to check that this representation is equivalent to the “natural”
+    one, they just use different bases: \[\begin{equation*} 2^1 + 2^2 + 2^3 + 2^4
+    + 2^5 + 2^{10} + 2^{11} = 3134. \end{equation*}\] The largest number that can
+    be represented in 16 bits is \(2^{16} - 1 = 65535\), and 3134 is comfortably smaller
+    than that: we can easily see that the 4 *most-significant bits* that represent
+    the 4 largest powers of 2 (\(2^{15}\), \(2^{14}\), \(2^{13}\) and \(2^{12}\))
+    are all equal to zero. Now consider a much larger number: 247586.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/70be4fcf3e6f53c305e5cdb47849431d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again, we can easily check that \[\begin{equation*} 2^1 + 2^5 + 2^8 + 2^9 +
+    2^{10} + 2^{14} + 2^{15} + 2^{16} + 2^{17} = 247586. \end{equation*}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unfortunately, 247586 is larger than 65535 and cannot be represented in 16
+    bits. If we try to store it in 16 bits, we overflow: the integer variables will
+    contain only the 16 *least-significant bits* representing the powers from \(2^0\)
+    to \(2^{15}\). The bits corresponding to \(2^{16}\) and \(2^{17}\) will be silently
+    dropped, and the integer variable will contain the number \[\begin{equation*}
+    2^1 + 2^5 + 2^8 + 2^9 + 2^{10} + 2^{14} + 2^{15} = 50978. \end{equation*}\]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of signed integers, the bits that overflow will overwrite the sign
+    bit, and result in the integer variable storing a number that may be incorrect
+    in both sign and absolute value. Consider again the number 247586, this time represented
+    as a 16-bit signed integer variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1bd802543062fb519ba05462ed1f1c34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The first 15 bits of the binary representation are stored correctly, the bit
+    corresponding to \(2^{15}\) overwrites the sign bit, and the last two bits corresponding
+    to \(2^{16}\) and \(2^{17}\) are again silently dropped. As a result, the integer
+    variable will contain the number \[\begin{equation*} - (2^1 + 2^5 + 2^8 + 2^9
+    + 2^{10} + 2^{14}) = -18210. \end{equation*}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an exception to the rule, R represents a missing integer value (`NA`) with
+    the largest negative signed integer for a given precision. In Python, Pandas uses
+    masked arrays for the same purpose and keeps a separate Boolean variable that
+    indicates whether the integer is a missing value (denoted `pandas.NA`). NumPy
+    does not support missing values for integer variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Range limitations aside, integer variables allow *exact computer arithmetic*:
+    their bit representation coincides with the mathematical representation of integer
+    and natural numbers in base 2, so there is no rounding or loss of precision.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.1.2 Floating Point
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Floating point variables are used to represent real (\(\mathbb{R}\)) and complex
+    numbers (\(\mathbb{C}\)), the former with a single variable and the latter with
+    two (one for the real part, one for the imaginary part). Each variable is composed
+    of four parts: the *sign* \(S\), the *bias* or *offset* \(O\), an *exponent* \(E\)
+    and a *mantissa* \(M\). The floating point representation of a real number \(x\)
+    is then \[\begin{equation*} x = (-1)^S * (1 + M) 2^{E + O}. \end{equation*}\]
+    The overall size of the variable in bits is typically one of 16, 32, and 64 bits,
+    often called *half-precision*, *single-precision*, *double-precision*. The number
+    of bits assigned to each of the exponent (after adding the offset) and the mantissa
+    depends on what encoding is used; the sign is always stored in a single bit. The
+    variables defined in the IEEE 754 standard (Overton [2001](#ref-overton)) reserve:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **precision** | **exponent** | **mantissa** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --: | --: |'
+  prefs: []
+  type: TYPE_TB
+- en: '| half (16 bit) | 5 bits | 10 bits |'
+  prefs: []
+  type: TYPE_TB
+- en: '| single (32 bit) | 8 bits | 23 bits |'
+  prefs: []
+  type: TYPE_TB
+- en: '| double (64 bit) | 11 bits | 52 bits |'
+  prefs: []
+  type: TYPE_TB
+- en: The value of the offset is determined as \(O = 2^{|E| - 1} - 1\) where \(|E|\)
+    is the size of the exponent in bits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The alternative “brain” format devised by Google in the process of developing
+    TPUs (see Section [2.1.1](hardware.html#hardware-compute)) typically has size
+    16 bits and is known as “bfloat16”. It works in the same way as the IEEE 754 floating
+    point, so we will not discuss it further; the only difference is that it allocates
+    8 bits to the exponent and 7 bits to the mantissa.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What does this mean in terms of binary representation? Consider the number
+    435.25\. In the usual scientific notation, which is in base 10, we can write it
+    as \(4.3525 \times 10^2\). If we do the same in base 2, the scientific notation
+    becomes \(1.7001953125 \times 2^8\). The exponent is \(8\), and the mantissa is
+    \(0.7001953125\). As a half-precision floating point variable, 435.25 then has
+    the following binary representation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9a2d64045472ae45c5aeea4e31b91cf5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The exponent is stored after adding the offset: \[\begin{equation*} 8 + (2^{5
+    - 1} - 1) = 23 = 2^0 + 2^1 + 2^2 + 2^4. \end{equation*}\] The resulting number
+    is treated as unsigned, regardless of whether the original exponent was positive
+    or negative. If the sign is stored in the most significant bit of the variable,
+    the exponent is adjusted with the offset, and the mantissa is stored in the least
+    significant bits, we can compare floating point numbers just by ranking their
+    binary representations, which can be done efficiently with hardware instructions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The mantissa is \[\begin{equation*} 2^{-1} + 2^{-3} + 2^{-4} + 2^{-7} + 2^{-8}
+    + 2^{-10} = 0.7001953, \end{equation*}\] which differs from \(0.7001953125\) by
+    \(1.25 \times 10^{-8}\). This difference is known as the *floating point error*
+    arising from the limits in the precision that can be achieved with the number
+    of bits of the mantissa. The only numbers that can be represented exactly are
+    those that factorise into the powers of 2 available in the exponent and in the
+    mantissa. This obviously excludes all numbers with an infinite number of digits,
+    such as \(\pi\), \(e\) or \(1/3\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What is the range of floating point numbers? The largest number (positive or
+    negative) that we can represent is limited by the size of the exponent: with \(|E|\)
+    bits we can represent up to \(2^{|E|}\) exponents. The offset ensures that the
+    available exponents are equally divided between positive and negative numbers
+    ranging from \(-2^{|E| - 1} - 2\) to \(2^{|E| - 1} - 1\) due to the offset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **precision** | **smallest exponent** | **largest exponent** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --: | --: |'
+  prefs: []
+  type: TYPE_TB
+- en: '| half | \(-(2^{4} - 2) = -14\) | \(2^{4} - 1 = 15\) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| single | \(-(2^{7} - 2) = -126\) | \(2^{7} - 1 = 127\) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| double | \(-(2^{10} - 2) = -1022\) | \(2^{10} - 1 = 1023\) |'
+  prefs: []
+  type: TYPE_TB
+- en: 'This range is smaller than the theoretical \(2^{|E|}\) values it could potentially
+    contain because some combinations of bits are reserved for special classes of
+    numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Zero is encoded with the exponent field and the mantissa filled with 0s.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Positive and negative infinity (`+Inf`, `-Inf`) are encoded with the exponent
+    field filled with 1s and a mantissa filled with 0s.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Irrepresentable numbers (usually denoted `NaN`) are encoded with the exponent
+    field filled with 1s and at least one non-zero bit in the mantissa. Different
+    patterns of bits in the mantissa are used for different types of irrepresentable
+    numbers: the most common is the missing value identifier `NA`. Typically, `NaN`
+    arises from dividing a number by zero or by trying to apply a mathematical function
+    to a value outside its domain, for instance, taking the logarithm of a negative
+    number.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Subnormal numbers, that is, numbers that are too small to be written in binary
+    scientific notation with the available exponents. In other words, their leading
+    exponent is smaller than the smallest available exponent. They are encoded with
+    the exponent field filled with 0s. These numbers have reduced precision because
+    they effectively use only part of the mantissa. As an example, \(2^{-10} \times
+    2^{-14} \approx 5.96 \times 10^{-8}\) is represented as follows in half precision:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/5e99bc399ccb5d3c2411b7aea644d999.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'How coarse is floating point rounding? For any given precision, that depends
+    on the magnitude of the number. As we saw in the example above, the mantissa can
+    encode only so many significant decimal digits: \(\log_{10}(2^{10}) \approx 3\)
+    digits for half-precision, \(\log_{10}(2^{23}) \approx 7\) for single precision,
+    \(\log_{10}(2^{51}) \approx 16\) for double precision. This effectively creates
+    a grid of values that can be represented exactly, and any other number is rounded
+    to the nearest number that can be represented exactly or to `+Inf`/`-Inf`. The
+    grid becomes coarser, in absolute terms, as the exponent becomes larger. Consider
+    a number like 0.0002 that is small for a half-precision variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9bb7a7170667c44853d8921c3a78e29.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The exponent is \[\begin{equation*} -13 + (2^{5 - 1} - 1) = 2^1 \end{equation*}\]
+    and the mantissa is \[\begin{equation*} 2^{-1} + 2^{-3} + 2^{-7} + 2^{-8} + 2^{-9}
+    = 0.638671875, \end{equation*}\] which gives \[\begin{equation*} 1.638671875 \times
+    2^{-13} \approx 0.000200033. \end{equation*}\] Increasing this number by the least
+    possible amount by adding \(2^{-10}\) and decreasing it by the same amount shows
+    that the nearest numbers that can be represented in half precision are \(\approx
+    0.000200033 \pm 1.19 \times 10^{-7}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now consider a relatively large number (for half precision) like 10002:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d21e052a7bdf6dde92199a309492390.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The exponent is \[\begin{equation*} 13 + (2^{5 - 1} - 1) = 28 = 2^2 + 2^3 +
+    2^4 \end{equation*}\] and the mantissa is \[\begin{equation*} 2^{-3} + 2^{-4}
+    + 2^{-5} + 2^{-9} = 0.220703125, \end{equation*}\] which gives \(1.220703125 \times
+    2^{13} = 10000\). The closest numbers that can be represented in half precision
+    are 9992 and 10008: all the numbers in between are rounded. This leaves an interval
+    of \(\pm 8\) around 10000\. For large enough numbers, floating point variables
+    cannot even represent integer numbers without rounding!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How can we keep the errors introduced by floating point rounding in check?
+    Errors compound across operations, and machine learning models typically perform
+    large numbers of operations compared to the size of their inputs. (More on that
+    in Chapter [4](algorithms.html#algorithms).) Fortunately, probability theory and
+    statistics have historically standardised computations to work on the logarithmic
+    scale to make closed-form mathematical derivations easier. Working with the logarithmic
+    transforms of floating point numbers reduces the chances that large numbers will
+    overflow to `+Inf`/`-Inf` or that small numbers will be rounded down to zero.
+    In the case of numbers with subnormal floating point representations, we also
+    retain better precision because their logarithm will not be subnormal. This is
+    particularly important in the common case of summing up large numbers of log-probabilities.
+    Working with numbers on the same scale (that is, they have similar exponents)
+    also helps in avoiding catastrophic losses in precision. When operations involve
+    numbers on very different scales, the difference in the granularity of the floating
+    point rounding may cause the result to have unacceptably large errors even though
+    all the operands are accurate. As an extreme example, consider adding 10002 and
+    0.0002: the result would be 10000, the closest floating point number in half precision!
+    A similar issue is *catastrophic cancellation*, which may happen when subtracting
+    two floating point numbers that are very close to each other.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unlike integer arithmetic, floating point arithmetic is not exact because of
+    the impact of floating point rounding. The results of operations involving floating
+    point variables can differ in many ways from the mathematical operations they
+    implement, even in common scenarios. It is easy to demonstrate with a simple recurrence
+    such as \[\begin{align*} x_0 = 4, x_1 = 4.25, x_{n + 1} = 108 - \left(815 - \frac{1500}{x_{n
+    - 1}}\right) \frac{1}{x_n}, \end{align*}\] which converges to 100 in double precision
+    even though the true limit in \(\mathbb{R}\) is 5 (Rump [2020](#ref-wrongfp)[b](#ref-wrongfp)).
+    This can happen even if all the operands are exactly representable, as proved
+    in (Rump [2020](#ref-wrongfp2)[a](#ref-wrongfp2)). Some effects of this discrepancy
+    are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numbers that should be equal are not equal. We should always compare numbers
+    with a tolerance that is a function of the floating point precision we are using.
+    The default in R is the square root of the smallest representable number, obtainable
+    as `sqrt(.Machine$double.eps)`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conversely, numbers that should not be equal may end up being equal.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The order in which operations are performed matters, even when the mathematical
+    operations or functions they implement are commutative and/or associative. Structuring
+    code so that key computations are implemented only once and therefore ensuring
+    that operations are always performed in the same sequences is the best way to
+    prevent this issue.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The order in which operations are performed matters also because intermediate
+    results may underflow to zero or overflow to `+Inf`/`-Inf` unless we reorder operations
+    to prevent that from happening.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Working on a log-scale is the best option when dealing with the small probabilities
+    that often arise from multivariate distributions or from a large number of data
+    points. Otherwise, the final result is likely to underflow to zero.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3.1.3 Strings
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Strings are sequences of characters encoded in binary form and stored into variables.
+    Their binary format varies, but it typically is UTF-8 on Linux and MacOS X and
+    UTF-16 on Windows. Both are Unicode standards (Unicode [2021](#ref-unicode)) that
+    use between 1 and 4 bytes to encode each character and support many alphabets,
+    mathematical symbols and pictograms such as emoji.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the context of machine learning software, character strings are typically
+    only encountered as input data in natural language processing (NLP) applications.
+    In other settings, they are used as human-readable labels for the items in a set
+    and can be represented using integers as we saw in Section [3.1.1](types-structures.html#integers).
+    In fact, they are eventually given a numerical representation even in NLP in order
+    to feed them to algorithms such as word2vec (Rong [2014](#ref-word2vec)), GLOVE
+    (Pennington, Socher, and Manning [2014](#ref-glove)) and BERT (Devlin et al. [2019](#ref-bert)).
+    In NLP, strings are also preprocessed taking into account their meaning and their
+    grammatical and syntactical properties to facilitate later analyses. For instance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Common words that do not add meaning to a sentence, often called *stopwords*,
+    are removed to reduce the dimensionality of the data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Words may be *stemmed*, that is, different words may be reduced to their common
+    stem after removing suffixes and prefixes to identify which are in fact the same
+    word.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Words may be *tagged* with their syntactic role.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Words may be *normalised* by making all characters lower-case and sometimes
+    by removing accents and diacritics as well. Complex, composite characters can
+    be encoded in different ways in both UTF-8 and UTF-16, and transforming them into
+    their *canonical form* is essential to identify unique words correctly.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Extraneous characters such as punctuation, hyphenation and numbers may be removed
+    as non-informative. Abbreviations and acronyms may be expanded to make explicit
+    the words they correspond to. Similarly, emoji may be replaced by a textual description.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A detailed treatment of these topics is beyond the scope of this book, and we
+    refer the reader to monographs such as (Aggarwal [2018](#ref-mlfortext)) and to
+    the documentation of relevant software libraries such as Spacy (Explosion [2021](#ref-spacy))
+    and NLTK (NLTK Team [2021](#ref-nltk)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.2 Data Structures
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data structures are particular ways of organising variables of one or more types
+    for effective and efficient processing. Different data structures will be most
+    effective for different operations or different algorithms. We will discuss both
+    aspects further in Section [3.4](types-structures.html#right-data-structures)
+    and later in Chapter [4](algorithms.html#algorithms), characterising memory and
+    computational efficiency in terms of space and time complexity. Here we will only
+    cover those data structures that are foundational for machine learning software,
+    referring the reader to other excellent resources (Brass [2008](#ref-brass); Cormen
+    [2013](#ref-cormen)) for a broader coverage of the topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Why use data structures? Firstly, they make code more compact by allowing us
+    to abstract away basic variable manipulations that would otherwise be repeatedly
+    implemented in different places. Our code will be clearer and most likely have
+    fewer bugs as a result. Secondly, data structures tell the software how particular
+    groups of variables belong together, both in terms of how they are laid out in
+    memory and how we operate on them. This makes it possible for the software we
+    write to be compiled or interpreted (see Section [6.1](writing-code.html#programming-language))
+    to operate efficiently on the variables contained in the data structures. Thirdly,
+    the information that particular groups of variables belong together will be useful
+    to developers working on our code. Those variables may describe the parts of a
+    single mathematical object or real-world entity, they may have the same semantic
+    meaning or they may have attached metadata that can be used for interpretation
+    and debugging purposes: all facts that are useful to know when reading and developing
+    code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.2.1 Vectors and Lists
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The most fundamental data structures in machine learning software are *vectors*
+    and *lists*. Both can contain any type of variable, and are defined by their *length*
+    (the number of elements they contain). Their conceptual structure is shown in
+    Figure [3.1](types-structures.html#fig:arrays).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![A schematic view of the logical structure and the memory layout of vectors
+    (left) and lists (right).](../Images/21f8ba5543c0ba4d0732b529111bfe86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3.1: A schematic view of the logical structure and the memory layout
+    of vectors (left) and lists (right).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Vectors are *homogeneous* data structures holding sequences of variables of
+    the same type. The variables are stored sequentially in a single block of memory,
+    so vectors can be accessed with a single memory access using a *pointer* to their
+    first element. (A pointer is itself a variable that contains a memory address.)
+    Reading the variables stored in a vector is trivial because all elements occupy
+    the same number of bytes in memory: the \(i\)th element is located at a memory
+    address that is that of the first element plus \(i\) times the variable type size.
+    Copying the whole vector is also trivial, since it is stored as a single block
+    of memory. The same is true for subsets of variables that are adjacent to each
+    other within a vector.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lists, on the other hand, are *heterogeneous* data structures that can contain
+    different kinds of elements. They essentially act as vectors of pointers to arbitrary
+    data structures or variable types. Therefore, each element in a list can be anything:
+    a single variable of some type, a vector of any length, a second list, a matrix,
+    etc. However, this means that accessing the elements of a list is less trivial
+    since we need to locate each element and access it separately. However, copying
+    the list and subsetting it can be easier: if we do not need to modify the contents
+    of its elements, we can just copy (all or a subset of) the pointers to the elements
+    to create a new list. This is called a *shallow copy*, and can significantly reduce
+    memory use. However, we must duplicate the elements as well if we need to modify
+    them later in the new list in order to avoid altering the original list they are
+    attached to. Copying both the list and its elements is called a *deep copy*. In
+    contrast, subsetting vectors requires a deep copy in the general case. Shallow
+    copies are only possible when copying a whole vector or when subsetting a slice
+    of adjacent elements.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Storing variables into vectors makes *vectorised* computations possible: a
+    function can be applied independently to each element of the vector, potentially
+    leveraging hardware’s SIMD and FMA instructions to achieve instruction- and data-level
+    parallelism as we discussed in Section [2.2](hardware.html#hardware-using). If
+    the return value of the function is a scalar, the results can be saved in a second
+    vector of the same length. Otherwise, the results can be saved in a dense matrix
+    (Section [3.2.3](types-structures.html#matrices)) or in a data frame (Section
+    [3.2.2](types-structures.html#dataframes)) in which each row or column contains
+    the return values for a single input element. Vectorised computations are also
+    possible for lists using thread-level parallelism, assuming that the function
+    can handle all the types of variables stored in the list. Its outputs would then
+    be stored in a second list regardless of whether each of them is a scalar or not.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.2.2 Representing Data with Data Frames
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'A data frame is a *heterogeneous* two-dimensional data structure with columns
+    of potentially different types. Its primary task is storing tabular data and the
+    associated metadata, such as column- and row-names. The implementations in Julia
+    (DataFrame.jl) and Python (Pandas and Scikit-Learn (Scikit-learn Developers [2022](#ref-sklearn)))
+    have been heavily inspired by R data frames: they only have minor differences
+    in their semantics. The most notable is that operations on two data frames will
+    match cells by position in R and Julia (regardless of row- and column-names) and
+    by row- and column-names in Python (regardless of the cell positions).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![A schematic view of tabular data (bottom right) encoded as a data frame (left,
+    top).](../Images/5f584445c8c6e64e3d25eec8eb938cc9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3.2: A schematic view of tabular data (bottom right) encoded as a data
+    frame (left, top).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The fundamental structure of a data frame is that of a list: each column in
+    the tabular data is a vector that is stored as an element along with its own metadata
+    as shown in Figure [3.2](types-structures.html#fig:dataframes). Therefore, each
+    column is stored in a separate block of memory, and there are no constraints on
+    the types of variables that can be stored in different columns. In addition, a
+    data frame typically contains its dimensions and the labels of the rows and of
+    the columns as metadata, making it possible to access its contents as we would
+    with a table. The dimensions are the number of rows and columns of the data frame.
+    The labels of the columns (called “column names” in R) can be used to access them
+    by their names instead of by their positions in the data frame, which improves
+    the readability of code and thus our ability to debug it. It makes the code invariant
+    to the data layout as well. The labels of the rows (“row names” in R) serve the
+    same function but are not used as often: they usually have no practical use in
+    the common case in which we assume that data points are independent and identically
+    distributed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Data frames make it efficient to operate on columns. Creating a new data frame
+    with a subset of columns is like subsetting a list, with the additional step of
+    carrying over row and column labels as needed. Copying it can be done efficiently
+    with a shallow copy. Adding a column to a data frame is similar: we perform a
+    shallow copy into a new data frame with an empty slot in which we can insert the
+    vector storing the column’s values. Applying a function to each column of a data
+    frame can be vectorised and performed in parallel, and the appropriate method
+    can be called for each column in the case of generic functions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, operating on rows is not efficient in most cases. Adding or removing
+    data points involves modifying the length of each column, which will likely involve
+    copying the chosen data points to newly-allocated vectors of the appropriate length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.2.3 Dense and Sparse Matrices
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: A matrix is a *homogeneous* two-dimensional data structure holding a grid of
+    variables of the same type arranged into rows and columns. It is the programming
+    construct that represents the mathematical objects of the same name studied in
+    linear algebra. Matrices can be *dense* or *sparse*. Most of the elements of dense
+    matrices are informative (that is, non-zero cells) and therefore must be stored
+    in the data structure. On the other hand, most of the elements of sparse matrices
+    are equal to zero so we can save considerable amounts of memory by storing only
+    the locations and the values of the few non-zero elements. We will cover the trade-off
+    between speed and memory use for these two types of matrices in Section [4.5.2](algorithms.html#bigO-sparsem)
+    while discussing computational complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In Python, dense matrices are implemented in NumPy as a special case of multidimensional
+    arrays along with vectors (Harris et al. [2020](#ref-numpy)). The same is true
+    in R. In both cases, the data structure encoding a multidimensional array comprises
+    the *pointer* to the first element of the array; the *variable type* of the elements;
+    and the *dimensions of the array*, which determine its shape (Figure [3.3](types-structures.html#fig:multidimensional-arrays)).
+    The dimensions and the variable type of the elements determine the *strides*:
+    the number of bytes skipped in memory to proceed to the next element along a given
+    dimension. They are pre-calculated and stored in NumPy but not in R. On the other
+    hand, R arrays contain labels for their dimensions (row and column names in the
+    case of matrices). The elements are stored as a vector, typically in *column-major
+    order*: the columns of the matrix are concatenated starting from the left-most
+    one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![A schematic view of a dense matrix (left) encoded as a multidimensional array
+    with variables stored in column-major format (right).](../Images/1e7a82e4cfe3f8a0799d3e4ca549f856.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3.3: A schematic view of a dense matrix (left) encoded as a multidimensional
+    array with variables stored in column-major format (right).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storing dense matrices as a list of columns, or as a list of rows, is typical
+    in C and but it is less common in higher-level languages, where we can use data
+    frames for the same purpose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The fact that multidimensional arrays store their dimensions as metadata allows
+    three types of operations on their elements. The first is vectorised operations
+    in which a function is applied individually to each element. The second is what
+    is called *broadcasting* in Python and Julia and *recycling* in R: when a function
+    operates on two arrays with different dimensions, the shorter array is repeated
+    (that is, virtually concatenated to itself) to make the shapes of the operands
+    match. The third is *marginalisation* or *reduction*: aggregating elements across
+    one or more dimensions of an array, for instance, by summing or averaging them,
+    to produce a second array with fewer dimensions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sparse matrices are supported in R through the Matrix package (Bates and Maechler
+    [2021](#ref-matrixpkg)) and in Python through the SciPy package (Virtanen et al.
+    [2020](#ref-scipy)). For brevity, we will only illustrate in detail the *compressed
+    sparse column* data structure that is the most widely used in both packages. Consider
+    the sparse matrix shown in Figure [3.4](types-structures.html#fig:matrices) along
+    with its compressed representation from the Matrix package. The three vectors
+    in the data structure contain, from top to bottom: the *start* and *end indexes*
+    of each column (\(C\)), the *row* of each non-zero cell in the matrix (\(R\))
+    and its *value* (\(V\)). This representation assumes that the non-zero cells are
+    stored in position order, starting from the top-left cell, moving down within
+    each column, and considering columns from left to right.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![A schematic view of a sparse matrix (left) and its compressed sparse column
+    (right) format representation.](../Images/dd1cef84f415d779187ba250d16f5dc9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3.4: A schematic view of a sparse matrix (left) and its compressed sparse
+    column (right) format representation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Say, for instance, that we would like to read the value of the cell (2, 3)
+    in the matrix from the data structure. The required steps are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use the column delimiters in \(C\) to find which subset of \(R\) and \(V\) to
+    read. The \(i\)th column of the matrix starts at the index stored in the \(i\)th
+    element of \(C\) (\(C[3] = 3\)) and ends by the index stored in the \((i + 1)\)th
+    element of \(C\) (\(C[4] = 5\)), where the next column starts. This implies that
+    there are \(5 - 3 = 2\) non-zero elements in the third column. If the start and
+    end indexes are identical, there are no non-zero cells in the column.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We read the two row coordinates stored in \(R[3]\) and \(R[4]\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If we do not find the row coordinate we are looking for, the cell has value
+    zero.
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Otherwise, the value of the cell will be stored in the element of \(V\) that
+    has the same index as the row coordinate. In our case, the row coordinates of
+    the non-zero elements of the third column are \(R[3] = 2\) and \(R[4] = 3\). Row
+    coordinate \(2\) is in \(R[3]\), so we can read the corresponding cell value from
+    \(V[3]\).
+  prefs:
+  - PREF_IND
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Other data structures for sparse matrices include the *compressed row column*,
+    which is identical to the above save that the roles of \(R\) and \(C\) are reversed
+    and the *coordinate list* (called the “triplet format”), which stores row and
+    column coordinates directly in \(R\) and \(C\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.3 Choosing the Right Variable Types for the Job
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The floating point format used to represent real numbers in Section [3.1.2](types-structures.html#floating-point)
+    has a more complex structure than the fixed point format for integer variables
+    in Section [3.1.1](types-structures.html#integers). Intuitively, this might suggest
+    that the same operation is more efficient on integer variables than on floating
+    point variables. This is not usually the case for two reasons. Firstly, high-level
+    languages like Python and R have additional checks to deal with integer overflow.
+    In R, integers are stored using 32 bits and they are either replaced with `NaN`
+    or transformed into double-precision floating point variables when they overflow.
+    In base Python, integers are stored with *arbitrary precision*: their size is
+    extended as needed to prevent them from overflowing. Pandas (McKinney [2017](#ref-pandas))
+    integer variables have size 64 bits, and NumPy (Harris et al. [2020](#ref-numpy))
+    provides integer variables in sizes 8, 16, 32 and 64 bits: both can overflow and,
+    unlike in R, are not replaced with `NaN`. Consider the following vector inner
+    product benchmark in R:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On average, the inner product takes 196.7% longer with integer vectors than
+    it does with double-precision floating point vectors on a 7th-generation Intel
+    Core processor. The same benchmark in Python and NumPy is shown below, and the
+    results are similar: the inner product takes 40.5% longer with integer vectors.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Secondly, it should be apparent from Section [2.1.1](hardware.html#hardware-compute)
+    that in recent years much effort has been put into improving hardware support
+    for floating point numbers. CPUs, GPUs and TPUs have all been optimised to handle
+    single- and double-precision floating point variables with SIMD and FMA instructions
+    as much as they have been optimised to handle integer variables, if not more.
+    Therefore, depending on the available hardware and on the ability of compilers
+    to leverage it, using floating point variables may lead to faster code when using
+    low-level languages. However, whether that will be the case for a specific machine
+    learning software depends on the exact combination of hardware and software used
+    and can only be ascertained by benchmarking it. Matching software and hardware
+    was a key point in Section [2.2](hardware.html#hardware-using) and Section [2.4](hardware.html#hardware-choice).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The size of the variables also matters: we saw in Section [2.1.2](hardware.html#hardware-memory)
+    how faster forms of memory are smaller, and how copying data between different
+    types of memory can impact operational intensity. We should always choose the
+    smallest size of integer or floating point variables that we can handle with SIMD
+    and FMA hardware instructions, and that has a large enough range to represent
+    the numbers we are working with. The effect on performance is noticeable even
+    in the simple Python benchmark above: reducing the size of the floating point
+    and integer variables in the vectors from 64 bits (the default) to 32 bits and
+    then to 16 bits produces interesting patterns in the normalised running times.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **variable type** | **64 bits** | **32 bits** | **16 bits** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --: | --: | --: |'
+  prefs: []
+  type: TYPE_TB
+- en: '| floating point | 100% | 54.1% | 887.1% |'
+  prefs: []
+  type: TYPE_TB
+- en: '| integer | 100% | 62.2% | 61.6% |'
+  prefs: []
+  type: TYPE_TB
+- en: Reducing the size of both floating point and integer variables from 64 to 32
+    bits improves the speed of the inner product by a factor of 1.5–2, as we would
+    expect. Reducing the size of the variables further to 16 bits provides only marginal
+    benefits for integer variables but, surprisingly, slows floating point variables
+    by a factor of nearly 9. That is a strong indication that we are unable to leverage
+    SIMD and FMA instructions as we do for integers of the same size!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Size matters even more in the case of floating point variables. As we noted
+    in Section [3.1.2](types-structures.html#floating-point), the smaller the precision,
+    the larger the floating point errors are likely to be. They also propagate with
+    each operation and compound each other. This can become a critical issue with
+    variables that are involved in most of the steps of an algorithm, such as the
+    *accumulator variables* used to calculate a sum or product of a series of values,
+    and with those that are rescaled to predefined ranges with other computed quantities.
+    An example from classical statistics is computing the empirical correlation between
+    two vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We compute the average of each vector, which we store in two accumulator variables.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We compute the variance of each vector by summing up the squared differences
+    from its average, which we store in two more accumulator variables.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We do the same with the cross-product of the differences to compute the covariance,
+    which is an additional accumulator variable.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We divide the covariance by the square root of the product of the variances.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Each of these steps can potentially build up an error large enough to produce
+    a correlation coefficient that is either greater than 1 or less than -1\. Floating
+    point errors compound and propagate from the means to the variances and the covariances,
+    affecting the final division through the accumulator variables that store them.
+    In such a situation, we should store accumulator variables with a higher precision
+    than the variables they are accumulating to limit the magnitude of the errors
+    of the individual operations: for instance, we should store the average of numbers
+    stored in single precision as a double precision variable. Using FMA instructions
+    may also help because, as we noted in Section [2.1.1](hardware.html#hardware-compute),
+    they operate at higher precision and only round their final result. Choosing the
+    scale of the numbers being accumulated may also help by keeping all variables
+    in a range that is not prone to overflow or underflow. Keeping all variables on
+    the same scale also prevents catastrophic loss of precision, particularly in multiplications
+    and divisions. This is the reason why so much numeric software works with quantities
+    on log-scales: large numbers are reduced in magnitude and do not overflow or lose
+    precision easily, and small numbers become large negative numbers instead of underflowing
+    or losing precision.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Last but not least, floating point rounding may be unacceptable for legal reasons
+    in some applications, particularly in finance and accounting. Fixed point integers
+    may be used instead, with the convention that the smallest possible amount of
+    currency (say, 1/100th of 0.01) is taken as the unit value. A rare open-source
+    example of this approach in the commercial world is Oanda’s libfixed (Oanda [2018](#ref-libfixed))
+    library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.4 Choosing the Right Data Structures for the Job
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The choice of data structures can have an even larger impact than that of variable
+    types because it determines memory access patterns. Operational intensity depends
+    crucially on efficient memory use and access, as we argued in Sections [2.1.2](hardware.html#hardware-memory)
+    and [2.2](hardware.html#hardware-using).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lists can be more memory efficient than vectors if we need to repeatedly subset
+    them, for example, because we need to work on combinations or permutations of
+    their values. If shallow copies are acceptable, lists are faster to duplicate
+    as well because we do not have to allocate memory for and copy their elements.
+    If shallow copies are not acceptable, then vectors are faster to copy because
+    all their elements are stored as a single block of memory and can be copied with
+    a single operation. And they are not less memory efficient, since their size is
+    determined by their length. In fact, lists use more memory than vectors because
+    they contain pointers to each element in addition to the elements themselves:
+    the difference can be significant if the elements are small overall. These considerations
+    are important for optimising performance given the effects on memory latency discussed
+    in Sections [2.1.2](hardware.html#hardware-memory) and [2.2](hardware.html#hardware-using).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can make similar considerations for data frames and matrices, since data
+    frames essentially behave as lists whose elements are the columns storing the
+    variables in the tabular data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideally, we should choose which data structures to use in our code taking into
+    account what data structures are used in the libraries and in the other software
+    that are part of the machine learning pipeline. If different parts of the pipeline
+    encode data and models in different ways, we will be forced to convert between
+    them, which is inefficient and increases memory use. For instance, R typically
+    imports data as data frames. However, the underlying BLAS and LAPACK code that
+    powers many models (all linear regressions among them) requires data to be stored
+    as dense matrices in column-major format. Converting a data frame into a matrix
+    requires copying all the data into a single memory block, column by column, which
+    doubles memory use and wastes processor time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should also choose data structures based on how the algorithms that use them
+    access their contents. Data that are processed together should be stored together
+    to allow algorithms to perform as few separate memory accesses as possible. For
+    instance, if we mostly process whole columns in tabular data, then a data frame
+    is ideal because a single column can be efficiently read from memory as a single
+    memory block. However, a data frame makes memory access very inefficient if we
+    need to process individual rows in various combinations because each variable
+    in a row is stored in a separate memory block and because we need to access all
+    variables to read each row. If the data are homogeneous, storing them in a dense
+    matrix with cells stored in row-major order is a better choice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Aggarwal, C. C. 2018\. *Machine Learning for Text*. Springer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bates, D., and M. Maechler. 2021\. *Matrix: Sparse and Dense Matrix Classes
+    and Methods*. [https://cran.r-project.org/web/packages/Matrix/](https://cran.r-project.org/web/packages/Matrix/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Brass, P. 2008\. *Advanced Data Structures*. Cambridge University Press.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cormen, T. H. 2013\. *Algorithms Unlocked*. The MIT Press.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Devlin, J., M.-W. Chang, K. Lee, and K. Toutanova. 2019\. “BERT: Pre-training
+    of Deep Bidirectional Transformers for Language Understanding.” In *Proceedings
+    of the Annual Conference of the North American Chapter of the Association for
+    Computational Linguistics (NNACL-HLT)*, 4171–86.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Explosion. 2021\. *Spacy: Industrial-Strength Natural Language Processing*.
+    [https://spacy.io/](https://spacy.io/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Harris, C. R., K. J. Millman, Stéfan J. van der Walt, R. Gommers, P. Virtanen,
+    D. Cournapeau, E. Wieser, et al. 2020\. “Array Programming with NumPy.” *Nature*
+    585 (7285): 357–62.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: McKinney, W. 2017\. *Python for Data Analysis*. 2nd ed. O’Reilly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'NLTK Team. 2021\. *NLTK: A Natural Language Toolkit*. [https://www.nltk.org/](https://www.nltk.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Oanda. 2018\. *A C++ Fixed Point Math Library Suitable for Financial Applications*.
+    [https://github.com/oanda/libfixed](https://github.com/oanda/libfixed).
+  prefs: []
+  type: TYPE_NORMAL
+- en: ONNX. 2021\. *Open Neural Network Exchange*. [https://github.com/onnx/onnx](https://github.com/onnx/onnx).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overton, M. L. 2001\. *Numerical Computing with IEEE Floating Point Arithmetic*.
+    SIAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pennington, J., R. Socher, and C. Manning. 2014\. “Glove: Global Vectors for
+    Word Representation.” In *Proceedings of the 2014 Conference on Empirical Methods
+    in Natural Language Processing (EMNLP)*, 1532–43.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rong, X. 2014\. “Word2vec Parameter Learning Explained.” *arXiv Preprint arXiv:1411.2738*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rump, S. M. 2020a. “Addendum to ’On Recurrences Converging to the Wrong Limit
+    in Finite Precision’.” *Electronic Transactions on Numerical Analysis* 52: 571–75.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rump, S. 2020b. “On Recurrences Converging to the Wrong Limit in Finite Precision.”
+    *Electronic Transactions on Numerical Analysis* 52: 358–69.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Scikit-learn Developers. 2022\. *Scikit-learn: Machine Learning in Python*.
+    [https://scikit-learn.org/](https://scikit-learn.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unicode. 2021\. *Unicode Technical Documentation*. [https://www.unicode.org/main.html](https://www.unicode.org/main.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Virtanen, P., R. Gommers, T. E. Oliphant, M. Haberland, T. Reddy, D. Cournapeau,
+    E. Burovski, et al. 2020\. “SciPy 1.0: Fundamental Algorithms for Scientific Computing
+    in Python.” *Nature Methods* 17: 261–72.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we use the colour in a regression model, the effect of “green” on the response
+    will be twice that of “red”, which clearly does not make any sense since the numbers
+    associated with the colours are arbitrary.[↩︎](types-structures.html#fnref7)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: One-hot encoding is a particular case of what are known as *contrasts* in statistics.
+    Since they are collinear, we usually drop one before using them in a model.[↩︎](types-structures.html#fnref8)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

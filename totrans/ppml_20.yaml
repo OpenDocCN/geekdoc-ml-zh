@@ -1,0 +1,934 @@
+- en: 'Chapter 12 Recommending Recommendations: A Recommender System Using Natural
+    Language Understanding'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://ppml.dev/nlp.html](https://ppml.dev/nlp.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*In collaboration with Carlo Lipizzi, Teaching Associate Professor & Program
+    Lead, School of Systems and Enterprises, Stevens Institute of Technology.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Part [**1**](hardware.html#) we covered the foundations underlying machine
+    learning pipelines; in Part [**2**](design-code.html#) we discussed how to create
+    and maintain them well; and in Part [**3**](development-tools.html#) we provided
+    a brief overview of the tools and technologies involved. We now put all this material
+    into context by discussing an abridged version of a real-world machine learning
+    pipeline that Carlo Lipizzi built for the U.S. Department of Defense. We base
+    our discussion on Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations))
+    and the references therein. An adapted version of the pipeline code and configurations
+    is available at
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/pragprogml](https://github.com/pragprogml) .'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We first define the scope of the pipeline and put it into the appropriate domain
+    context (Section [12.1](nlp.html#nlp-domain)). We then outline the machine learning
+    models involved and how we can think of them as a data processing pipeline (Section
+    [12.2](nlp.html#nlp-model)). Finally, we sketch a suitable hardware and software
+    infrastructure for the pipeline to run on (Section [12.3](nlp.html#nlp-infra))
+    and the modules that are most interesting from a software engineering perspective
+    (Section [12.4](nlp.html#nlp-architecture)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 12.1 The Domain Problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first step in creating a machine learning pipeline is to define its scope,
+    starting with the problem it will try to solve (Section [5.3.1](design-code.html#scoping-pipeline)).
+    Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)) frame it as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “a system to determine what are the most relevant recommendations that stakeholders
+    are providing to the Defense Acquisition community […] extracting user-specific
+    relevance from text and recommending a document or part of it.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In other words, we envisage that users will submit one or more documents and
+    that the machine learning pipeline will rank them in terms of overall relevance,
+    highlighting the most relevant passages in each document at the same time. This
+    would be an ideal opening in the mission statement document (Section [8.4](documenting-code.html#domaindocs)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The domain metrics that Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations))
+    focus on are the *relevance of each document*, which is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “By counting the number of words with a similarity more than a threshold (such
+    as 0.50) and normalising it with respect to the number of the words in each document,
+    an average similarity measure is calculated that presents the level of similarity
+    of the entire document with respect to the entire benchmarks. […] A document with
+    a higher measure is more relevant or like the benchmarks.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'and the *relevance of individual passages*, which is defined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “To determine the relevant parts of each recommendation, the document was looked
+    at in segments of words. […] It was found that with a window of 20 words from
+    the similarity matrix, the actual document (which includes the raw text) would
+    have a window of 35 words that would make up important and relevant recommendations.
+    To assure high-quality moving average windows, the threshold of average similarity
+    is set to 0.75\. Any window of words above that threshold is then traced back
+    to the original document and is highlighted.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What is the threshold for success? From a domain perspective, we want relevant
+    documents to be ranked consistently higher than unrelated documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “A good indicator that the model learned is that the control document’s similarity
+    (0.25) was significantly lower than the worst recommendation document (0.5). This
+    means that the model did an accurate job of learning the domain of recommendations
+    and finding the parallels in the documents.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In statistical terms, we can evaluate the performance of the pipeline using
+    any of the popular measures of rank agreement. If we have access to a set of documents
+    labelled by domain experts as either relevant or unrelated, a simple but effective
+    choice may be the hit ratio among the top \(k\) documents: \[\begin{equation*}
+    \mathrm{HR} = \frac{\text{number of relevant documents among the top $k$}}{k}\,.
+    \end{equation*}\] Firstly, we may assume that users will only look for relevant
+    results among the first \(k\) of documents: after all, 70%–90% of users never
+    go beyond the first page of Google results (Shelton [2017](#ref-first-page)).
+    Therefore, the accuracy of the ranking of later documents is not as important
+    from a domain perspective. Secondly, the labelling of the documents will inevitably
+    be noisy (Section [5.2.1](design-code.html#data-debt)): different domain experts
+    will produce different rankings. Hopefully, we can estimate HR using a subset
+    of documents that all experts agree are either highly relevant or unrelated. Granular
+    measures of rank agreement such as Kendall’s \(\tau\) or Spearman’s \(\rho\) may
+    not be robust against the noise in the labels, limiting our ability to contrast
+    the performance of different machine learning models. In turn, this may impact
+    the ability of the monitoring infrastructure (Section [5.3.6](design-code.html#monitoring-pipeline))
+    to automatically trigger model retraining (Section [5.3.4](design-code.html#model-pipeline))
+    or rollbacks (Section [7.6](deploying-code.html#rollback)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the ranking to be well-defined, we should specify what “relevant” means.
+    Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)) base the pipeline
+    design on the *room theory* framework developed in their previous work (Lipizzi,
+    Borrelli, and de Oliveira Capela [2021](#ref-room-theory)). The key idea behind
+    this framework is that we need to make machine learning models aware of the context
+    they operate in to achieve a semantic understanding of the documents they analyse.
+    The same word may have different meanings in different domains: disambiguating
+    them and their relevance is essential to move from natural language processing
+    (NLP) to natural language understanding (NLU). Lipizzi et al. (Lipizzi, Borrelli,
+    and de Oliveira Capela [2021](#ref-room-theory)) propose to achieve NLU by having
+    domain experts carefully select the documents the models will be trained on to
+    form a knowledge base for a specific topic. In addition, experts identify the
+    key terms in the domain and give them weights to encode their relative importance.
+    New documents will be compared to this knowledge base, as distilled by a machine
+    learning model: the more similar they are to those in the knowledge base, the
+    more they are considered relevant. Clearly, this approach does not work if we
+    train our models on a large general-purpose data set like the Wikipedia corpus:
+    as we argued in Section [5.3.1](design-code.html#scoping-pipeline), identifying
+    what data we need to collect is essential for the pipeline to perform well. In
+    the case of Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)), these
+    data are a corpus of documents on a specific type of goods or services that is
+    within the purview of the procurement processes of the U.S. Department of Defense.
+    The corpus should be large enough to cover all the relevant information on that
+    type of goods or services: if it is too small, it may not contain all key terms
+    and phrases or it may not allow us to model their relationships accurately. On
+    the other hand, if it is too large, it may lack focus and it may lower the quality
+    of the rankings produced by the models. We should train the machine learning models
+    in the pipeline using only documents on the exact same topic as those that the
+    pipeline will be ranking (Section [9.1](troubleshooting-code.html#data-problems)).
+    Limiting the focus of the pipeline in this way may also help in preventing models
+    from becoming stale (Section [5.2.1](design-code.html#data-debt)) as quickly,
+    since there will be fewer relevant terms and they will only be used with a specific
+    technical meaning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 12.2 The Machine Learning Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The pipeline in Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations))
+    is relatively straightforward from a machine learning perspective because it includes
+    just a single model. As a result, it is not susceptible to model feedback loops
+    (Section [5.2.2](design-code.html#model-debt)) and is robust against correction
+    cascades (Sections [5.2.2](design-code.html#model-debt) and [9.1.2](troubleshooting-code.html#troubleshooting-heterogeneous-data)).
+    The data and the models interact in the pipeline as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The documents that encode the domain knowledge on the acquisition of a specific
+    type of goods or services are ingested and prepared (Section [5.3.3](design-code.html#data-pipeline))
+    using standard NLP techniques including those described in Section [3.1.3](types-structures.html#string-types).
+    They are a static data set that is used for training (Section [5.3.4](design-code.html#model-pipeline)).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The domain knowledge is distilled from the documents into word embeddings using
+    word2vec (Rong [2014](#ref-word2vec)) and the list of key terms with the associated
+    weights provided by the domain experts. The embeddings represent what Lipizzi
+    et al. (Lipizzi, Borrelli, and de Oliveira Capela [2021](#ref-room-theory)) call
+    the “room” and are the core of our machine learning model. The key terms are the
+    vocabulary we pass to word2vec.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Inference (Section [5.3.5](design-code.html#production-pipeline)) involves users
+    submitting new documents which are then prepared in the same way as those in the
+    training set. The relevance of each document is measured as the degree of similarity
+    with the “room” by pooling cosine distance and scaling it by the document’s length.
+    Therefore, the machine learning model outputs a scalar number between 0 and 1
+    which is then used to rank the model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: At the same time, the model parses each new document sequentially, identifies
+    sequences of words with high relevance and highlights them. Therefore, each inference
+    request also returns a modified version of the document that was submitted by
+    the user.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Training and inference are both computationally efficient. The time complexity
+    (Chapter [4](algorithms.html#algorithms)) of training varies between \(O(N \log(V))\)
+    and \(O(NV)\), where \(N\) is the number of documents and \(V\) is the number
+    of words in the vocabulary, depending on the implementation of word2vec. Inference
+    is \(O(N)\) both for estimating relevance and for highlighting relevant portions
+    of text, and it can be implemented as a single pass over each document. In addition,
+    word embeddings can be updated when new documents are available (Kaji and Kobayashi
+    [2017](#ref-kaji)): there is no need to relearn them from scratch when the embeddings
+    become stale.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In practice, Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)) limit
+    \(V\) by asking the domain experts to provide a list of a few hundred key terms:
+    manually assembling such a list is feasible because we are targeting a single
+    type of goods or services as discussed in Section [12.1](nlp.html#nlp-domain).
+    The sample size requirements of word2vec are dramatically reduced for the same
+    reason (Dusserre and Padró [2017](#ref-word2vec-ssize)), so both \(N\) and \(V\)
+    are limited for practical purposes. We can, however, expand the scope by extending
+    the pipeline to include an ensemble of models (one for each type of goods or services)
+    in which the appropriate model is selected either (manually) by the user or (automatically)
+    by matching the new document to the closest “room”. The latter task can reuse
+    the inference module that computes document similarity, so it has linear time
+    complexity and should not noticeably impact the time complexity of the pipeline.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The inputs and outputs of each of data ingestion, data preparation, model training
+    and inference have well-defined characteristics that make it easy to construct
+    a suite of software tests based on property-based testing (Section [9.4](troubleshooting-code.html#testing))
+    and to monitor their behaviour in production (Section [5.3.6](design-code.html#monitoring-pipeline)).
+    The models and the algorithms involved are easy to replace with new ones that
+    have better performance in model evaluation and validation (Section [5.3.4](design-code.html#model-pipeline))
+    because we can demonstrate them to be functionally equivalent to those we are
+    currently using. In particular:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data ingestion takes PDFs containing text as inputs and outputs the words therein
+    as a vector of strings.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data preparation takes a vector of strings as input, performs the operations
+    discussed in Section [3.1.3](types-structures.html#string-types) and outputs a
+    second vector of strings containing only the key terms in the list provided by
+    the domain experts.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model training takes the output from data preparation as an input and outputs
+    the word embeddings, which can be either a sparse or a dense matrix (Sections
+    [3.2.3](types-structures.html#matrices) and [4.5.2](algorithms.html#bigO-sparsem)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Inference takes the word embeddings and one or more new, preprocessed documents
+    as inputs and outputs a relevance score (a scalar) and a document with highlights
+    as outputs. The outputs may or may not be ordered in order of reverse relevance,
+    depending on whether they are meant for programmatic use rr for a dashboard.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We should test that data ingestion correctly handles well-formed PDFs, and
+    either fails outright or degrades gracefully when handed malformed PDFs or PDFs
+    with structured data that cannot be parsed as text (for instance, tables and equations).
+    Optionally, we could augment data ingestion with bitmapping and OCR to try and
+    salvage such documents. Data preparation should handle text related to the goods
+    or services within the scope of the pipeline, dropping unrelated words and rejecting
+    texts in a language different from English. We should also test that model training
+    and inference complete successfully for boundary and valid inputs (say, documents
+    with no relevant keyword, just one relevant keyword, all relevant keywords) and
+    to fail for invalid inputs (say, empty documents, `NA` strings). Finally, we should
+    add integration and system testing to examine the stability of all outputs and
+    of the pipeline as a whole: submitting PDFs containing text with small perturbations
+    (replacing a word with a synonym, etc.) should result in very similar relevance
+    scores. We can do the same with invariants like punctuation and capitalisation,
+    both of which should be removed during data preparation. These tests and the corresponding
+    monitoring facilities should be designed to cover all parts of the pipeline, to
+    be as few as possible (Section [9.4.6](troubleshooting-code.html#test-coverage))
+    and to be fast enough to allow for live monitoring.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having such a suite of software tests integrated in our CI/CD and monitoring
+    facilities makes it possible to safely plug in new software and models to upgrade
+    different parts of the pipeline. However, we should measure and log how many resources
+    the upgraded parts use (Section [5.3.6](design-code.html#monitoring-pipeline)).
+    Firstly, we should ensure that the hardware infrastructure we will draw up in
+    Section [12.3](nlp.html#nlp-infra) is sufficient to run them or scale it as appropriate
+    (Section [2.4](hardware.html#hardware-choice)). Secondly, monitoring facilities
+    should still be able to provide real-time feedback. After all, NLP models are
+    notorious for being resource intensive (Section [9.2.3](troubleshooting-code.html#troubleshooting-costly-models))!
+    For the particular application in Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)),
+    it is particularly important for inference to have low latency because we envisage
+    that users will expect the documents to be ranked in real time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 12.3 The Infrastructure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'How the software implementation of the pipeline should be divided into modules
+    should be apparent: the data processing steps we described in Section [12.2](nlp.html#nlp-model)
+    map well to the general architecture we discussed in Section [5.3](design-code.html#processing-pipeline).
+    In order to support it, we should perform some capacity planning and estimate
+    its compute, memory and storage needs (Section [2.4](hardware.html#hardware-choice)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The pipeline described in Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations))
+    is not particularly demanding in terms of computing power. The narrow focus of
+    the “room” on a single type of goods or services means that we can keep our training
+    set small and limit our storage needs as well. We do not have stringent memory
+    requirements either: the word embeddings are limited in size because of the limited
+    number of key terms in the vocabulary. Furthermore, we do not need to load the
+    complete training set into memory to learn them: we can use the documents in smaller
+    batches and learn the embeddings incrementally (Kaji and Kobayashi [2017](#ref-kaji)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, at a bare minimum, we need:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a machine learning system for model training, optimised for compute and memory;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a set of systems with less memory and compute but good network connectivity
+    to distribute the inference load and keep latency low;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a storage system to hold the PDF documents used for training, the prepared textual
+    data we extract from them and a model repository with the embeddings;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a separate system hosting the pipeline orchestrator, the CI/CD infrastructure
+    and the server components of logging and monitoring (Section [5.3.6](design-code.html#monitoring-pipeline)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We should also take care of assigning sufficient resources to all the environments
+    we use (test, pre-production, production) and of making as similar as possible
+    in their hardware configurations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The machine learning system dedicated to model training may be a local system:
+    this facilitates experimentation because observability is more limited on remote
+    systems (Section [2.3](hardware.html#hardware-cloud)). Furthermore, we should
+    plan for the future: we should equip it with GPUs or TPUs to be able to explore
+    more complicated NLP models (with an eye towards adopting them and replacing word2vec
+    if they perform better) and to accelerate word2vec to the point where increasing
+    the size of the training set over time becomes a non-issue. It then makes sense
+    for the storage systems holding the raw and prepared data to be local systems
+    as well, and to be placed in the same facility as that performing model training
+    to reduce the overhead of data access in model training. Cold storage (Section
+    [2.1.2](hardware.html#hardware-memory)) is suitable for raw data (the PDF documents):
+    we need to access them only when working on data ingestion and preparation, not
+    for training. Hot storage may be better for the prepared data, again to limit
+    the overhead of data accesses and increase operational intensity (Section [2.2](hardware.html#hardware-using)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In contrast, the machine learning systems running the inference modules are
+    better placed in geographically-distributed cloud instances if the users are spread
+    over the world, which is definitely the case for U.S. Defense personnel, to reduce
+    latency across the board. We may locate the model repository in the same cloud
+    to facilitate model deployment (Section [5.3.5](design-code.html#production-pipeline)
+    and Chapter [7](deploying-code.html#deploying-code)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the orchestrator, the CI/CD infrastructure, and the logging and monitoring
+    facilities should be placed on completely separate hardware and network connections
+    to ensure they will be available and accessible regardless of any hardware or
+    software issues affecting the other modules in the pipeline. We should also set
+    them up (or the MLOps platform, if we are using one in their place) in a clustered
+    configuration to avoid single points of failure and strive for maximum scalability
+    and reliability. They will be required to restore the pipeline to a functional
+    state, for instance, by rolling back malfunctioning machine learning models. Keeping
+    the model registry in the cloud makes replicating it it in different geographical
+    regions easier, increasing its availability and reliability in adverse scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can we design a backup and disaster recovery strategy? That depends on how
+    we manage our infrastructure and on whether the infrastructure is local, remote
+    or a mix of both. If we can rely on configuration management and we have our infrastructure
+    completely described as-code, it may be preferable to re-create it from scratch
+    and re-run the CI/CD pipeline. Just re-running the CI/CD pipeline may be enough
+    to fix minor issues such as a botched module deployment. For instance, Kubernetes
+    (The Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes)) can back
+    up the state of any cluster it manages and restore from a single component to
+    the complete cluster in case of disaster (Velero Authors [2022](#ref-velero)[b](#ref-velero)).
+    If our infrastructure is not stored as-code, which may be the case for legacy
+    environments, we can only rely on taking regular snapshots of all systems and
+    restoring them as needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If part of our infrastructure is remote, we should keep in mind that cloud providers
+    and third-party services can fail and have downtimes of a day or two. Therefore,
+    it is safer to have a set of geographically-distributed systems with a mix of
+    cloud and local deployments. In the case of inference modules, we can thus ensure
+    that the users or the services that consume the inference outputs can fall back
+    to a functioning system in case of failures (hopefully handling retries and fallbacks
+    transparently).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 12.4 The Architecture of the Pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We aim to develop a pipeline that is as close as possible to production grade
+    for the use case presented by Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)),
+    while keeping it simple enough that it can serve as a useful illustration of the
+    practices we discussed in Parts [**2**](design-code.html#) and [**3**](development-tools.html#).
+    To make it completely reproducible, we use only open-source components, installed
+    and executed as standalone applications or from container images (Docker [2022](#ref-docker)[a](#ref-docker)).
+    Furthermore, we choose to manage the whole pipeline with a Git (The Git Development
+    Team [2022](#ref-git-git)) monorepo (Section [6.4](writing-code.html#filesystem-structure))
+    that encloses all the components to configure, provision, start and monitor its
+    execution. Additional documentation on the pipeline architecture and a list of
+    the software prerequisites for our development environment can be found on the
+    `README.md` file in the repository’s root.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will use as reference architecture the pipeline structure presented in Section
+    [5.3](design-code.html#processing-pipeline), which outlines at a high level a
+    pipeline enclosed in five architectural modules:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: data ingestion and data preparation (Section [12.4.1](nlp.html#nlp-ingestion-preparation));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: data tracking and versioning (Section [12.4.2](nlp.html#nlp-tracking-with-dvc));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model training, validation and experiment tracking (Section [12.4.3](nlp.html#nlp-training-exp-tracking));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model packaging (Section [12.4.4](nlp.html#nlp-model-packaging));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: CI/CD deployment and inference (Section [12.4.5](nlp.html#nlp-deployment-inference)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![The architecture of our NLU ML pipeline.](../Images/27108feb5f2e81c28088058d44055315.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 12.1: The architecture of our NLU ML pipeline.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We decided on this design, shown in Figure [12.1](nlp.html#fig:nlu-pipeline),
+    for two reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pipelines are rarely managed end-to-end by a single software solution in practice:
+    in the vast majority of cases, they comprise and integrate multiple platforms
+    and components working together.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Different pieces of software have different strengths and weaknesses and each
+    excels in a specific area: as we have pointed out in Part [**3**](development-tools.html#),
+    there is no one-size-fits-all MLOps solution! Using separate solutions for data
+    engineering, model training and experimental tracking, we can illustrate different
+    open-source tools and how to interface them.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 12.4.1 Data Ingestion and Data Preparation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'For reproducibility, we decided to use a set of freely-accessible documents
+    instead of those originally used in Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)):
+    a corpus of scientific articles belonging to a research topic that is fairly homogeneous
+    but, at the same time, has a large enough number of publications. The corpus we
+    chose comprises the arXiv preprints whose abstract contains the terms “causal
+    inference”, “causal network”, “counterfactual” or “causal reasoning”, and that
+    were submitted between August 1, 2021 and August 31, 2022\. The resulting query'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: submitted using the arXiv’s public APIs (ArXiv [2022](#ref-arxiv-api)), returns
+    a corpus of 1044 articles with the associated metadata, including the HTTP URL
+    of the PDF file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Data ingestion and data preparation steps.](../Images/8e80f14f4d57f9a9a5ac7ada0ca07bc5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 12.2: Data ingestion and data preparation steps.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We implement this part of the pipeline using Apache Airflow (The Apache Software
+    Foundation [2022](#ref-airflow)[a](#ref-airflow)), which we introduced in Section
+    [10.3](development-tools.html#build-test-doc-tools). The DAG that represents the
+    data ingestion and data preparation steps is shown in Figure [12.2](nlp.html#fig:nlu-ingestion):
+    each step is implemented as a Python function and called by Airflow using the
+    generic `PythonOperator` and `pythonVirtualenvOperator` interfaces. More in detail:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*ArXiv Query*: we call the arXiv APIs and process the returned list to extract
+    the PDF URLs.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Article Download*: we download the PDFs returned by the query with a multi-threaded
+    HTTP Python client, respecting the rate limits imposed by arXiv, and we store
+    them in a local filesystem or local object storage (implemented with MinIO (MinIO
+    [2022](#ref-minio))).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Text Conversion*: we extract the text in PDF into a plain-text file using
+    one of the many available Python libraries, such as PyPDF2 (Fenniak [2022](#ref-pypdf2)),
+    PdfMiner (Shinyama, Guglielmetti, and Marsman [2022](#ref-pdfminer.six)) or Spacy
+    (Explosion [2021](#ref-spacy)). As before, we process multiple documents in parallel
+    using a thread pool.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Basic Cleaning*, *n-Gramming*, *Stopwords Removal*: we preprocess the text
+    files using NLP libraries such NLTK (NLTK Team [2021](#ref-nltk)), Spacy (Explosion
+    [2021](#ref-spacy)) and Gensim (Řehůřek and Sojka [2022](#ref-gensim)[a](#ref-gensim)).
+    In particular, we perform case conversion, punctuation and stopword removal, stemming,
+    lemmatisation and n-gramming.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Tokens*: what is left are tokens[^(26)](#fn26) suitable for modelling in NLP
+    and NLU applications.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The Python code for the Airflow DAG provides a programmatic view of how the
+    blocks in Figure [12.1](nlp.html#fig:nlu-pipeline) are implemented and linked
+    together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The two main challenges we tackle are the scalability of extracting the text
+    from the PDF files and the robustness of the software tests. We achieve scalability
+    with multithreading in the Python code we call from Airflow; we could have achieved
+    similar results at the level of the Airflow DAG using Celery (Apache Software
+    Foundation [2022](#ref-celery-executor)[a](#ref-celery-executor)) or the Kubernetes
+    (The Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes)) executor,
+    or by completely replacing Airflow with Apache Spark (The Apache Software Foundation
+    [2022](#ref-spark)[f](#ref-spark)). As for cleaning the extracted text, we develop
+    a set of custom methods to perform the basic NLP cleaning tasks, and a custom
+    n-gramming method for detecting the unigrams, bigrams and trigrams identified
+    as the key terms by experts in the domain of causal inference. Both are organised
+    in dedicated submodules and complemented by unit tests. The n-grams list is a
+    static resource file versioned in Git and referenced via environment variables
+    in the pipeline stages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The output of the DAG is a list of tokens that we will model with word2vec.
+    The tokens, the list of the PDF URLs, the list of n-grams and the metadata that
+    define the arXiv query are stored inside a data tracking and versioning repository
+    backed by DVC (Iterative [2022](#ref-dvc)[b](#ref-dvc)) to ensure reproducibility
+    and to allow us to track data provenance, as discussed in Section [5.3.3](design-code.html#data-pipeline).
+    We can integrate Airflow and DVC with a custom Airflow operator or by calling
+    the `dvc` commandline client from the Airflow built-in operator `BashOperator`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Airflow DAG is configured to write task logs to `stdout`, where they are
+    collected by a tool such as Fluentd (The Fluentd Project [2022](#ref-fluentd))
+    and forwarded to a logging database such as Elasticsearch (Elasticsearch [2022](#ref-elastic)).
+    Airflow can also be configured to export task execution metrics to dashboards
+    built by tools such as Grafana (GrafanaLabs [2022](#ref-grafana)). The logs themselves
+    take the form of a JSON object representation of the `LogRecord` object in the
+    Python Airflow code, which can be passed to the Python logging module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 12.4.2 Data Tracking and Versioning
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'In addition to ingesting and cleaning the data in a reproducible way, we also
+    want to track all the data sets that are produced by the steps described in Section
+    [12.4.1](nlp.html#nlp-ingestion-preparation): the DAG may be scheduled to run
+    daily with different search queries to create additional knowledge domains as
+    described in Lipizzi et al. (Lipizzi et al. [2022](#ref-recommendations)) or to
+    retrain existing word2vec models. Therefore, we choose to version the machine
+    learning code (Section [6.5](writing-code.html#versioning)) together with the
+    text corpus. This allows us to evaluate different NLP frameworks, choices for
+    the parameters of word2vec and sets of n-grams from the domain experts.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we mentioned in Section [12.4.1](nlp.html#nlp-ingestion-preparation), we
+    choose DVC to implement data versioning. DVC can also perform experiment tracking,
+    but we will implement that in Section [12.4.3](nlp.html#nlp-training-exp-tracking)
+    with MLflow (which we introduced in Section [10.1](development-tools.html#exploration-experiment-tracking)
+    along with DVC). We initialise the Git repository for use by DVC, and we pull
+    the tokens produced by the Airflow DAG from the remote object-storage we stored
+    them in with the command *dvc pull*. This also pulls the corresponding metadata,
+    which are versioned and stored in a YAML `.dvc` file like that below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `md5` attribute represents the hash of content and the `path` attribute
+    is the path of the file or directory relative to the working directory, which
+    defaults to the file’s location. We can then start experimenting using a development
+    flow like the following.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 12.4.3 Training and Experiment Tracking
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The tokens we produced in Section [12.4.1](nlp.html#nlp-ingestion-preparation)
+    and tracked in Section [12.4.2](nlp.html#nlp-tracking-with-dvc) are the input
+    for the word2vec implementation in Gensim, available from `models.word2vec`, together
+    with the list of n-grams provided by the domain experts (the `vocabulary` variable
+    in the code below). word2vec returns a `wv` object that stores each embedding
+    (that is, a word vector) in a structure called `KeyedVectors` that maps the n-grams
+    (the “keys”) to vectors. The `KeyedVectors` can be used to perform operations
+    on the vectors, such as computing their distance or their similarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We obtain the tokens by calling the `get_url()` method of the DVC Python API
+    (Iterative [2022](#ref-dvc-api)[c](#ref-dvc-api)), which returns the URL of the
+    storage location of `corpus_path` for a specific revision defined in `revision`
+    of the dataset present in the `path`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The corpus is sequentially read, tokenised and fed directly to the `train()`
+    method of word2vec. We set the arguments of the `train()` method (Řehůřek and
+    Sojka [2022](#ref-word2vec-api)[b](#ref-word2vec-api)) using environment variables,
+    as suggested in Section [5.1](design-code.html#data-as-code), to facilitate multiple
+    experimentations with different combinations of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*vector_size*: the number of dimensions of the word vectors (default: 100);'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*window*: the maximum distance between the current and predicted word within
+    a sentence (default: 5).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*min_count*: the minimum frequency for a word to be considered (default: 5).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*workers*: the number of worker threads to train the model (default: 3).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'As for experiment tracking, we implement it using the following MLflow tracking
+    APIs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`log_param()`: for tracking the word2vec parameters and the metadata associated
+    with the input tokens, in particular the arXiv query that produced them and the
+    DVC file path and hash they were pulled from;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`log_metric()`: for logging the dimensions of the embeddings produced by the
+    model;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`log_artifact()`: for logging the name of a local file or directory, such as
+    those containing the n-grams from the domain experts and the word vectors of the
+    trained model, as an artefact of the experiment.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here is a short example of how we use these methods in our code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We save the model in MLflow using its `python_function` interface, which supports
+    custom models implemented as generic Python functions. Specifically, we serialise
+    the learned word vectors contained in `model.wv` with the Gensim function `save()`,
+    and we reload them later with the function `KeyedVectors.load()` when the serving
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 12.4.4 Model Packaging
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: BentoML (BentoML [2022](#ref-bentoml)), which we introduced in Section [11.2](production-tools.html#production-software),
+    can import a serialised Python model or an MLflow model, and it can bind its API
+    to a RESTful endpoint with a minimal use of glue code. Therefore, it is a convenient
+    choice to package and serve the word2vec model. In our case, the classification
+    API that computes the degree of similarity between the PDF document submitted
+    by the user and those used to train the word2vec model (that is, what we call
+    the “room” in Section [12.1](nlp.html#nlp-domain)) is exposed as a `/classify`
+    endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code snippet below shows the declaration of the service with the API and
+    decorator provided by BentoML. Once the service is running, the API will be available
+    at `/classify`: it will accept a PDF file as input and return a scalar between
+    0 and 1\. As a future enhancement, we could build an additional `/rank` API endpoint
+    that accepts a JSON-formatted list of PDF URLs as input, runs calls `/classify`
+    API for each of them and returns a sorted list of documents with the associated
+    ranking and similarities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 12.4.5 Deployment and Inference
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'One advantage of using containers to deploy and serve models is that they can
+    be deployed locally using Docker or in a target (possibly remote) environment
+    using Kubernetes (Section [7.1.4](deploying-code.html#container-packaging)). This
+    is an important point in our use case: as discussed in Section [12.3](nlp.html#nlp-infra),
+    our pipeline runs on a combination of local and remote systems. Therefore, we
+    use the `bentoml containerize` command to build a container image with all the
+    requirements needed to run the inference API we defined in Section [12.4.4](nlp.html#nlp-model-packaging):
+    the output is a Docker container with a stateless RESTful API server implemented
+    in Python. The commands for building the container are shown below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![The OpenAPI specification generated by BentoML.](../Images/a327ff14abdfde1b2e10ed90daf493a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 12.3: The OpenAPI specification generated by BentoML.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After starting the container, the API server is reachable at `http://127.0.0.1:3000`.
+    The URL `http://127.0.0.1:3000/classify` serves the API from Section [12.4.4](nlp.html#nlp-model-packaging)
+    and `http://127.0.0.1:3000/` displays a web page with the dynamically-generated
+    OpenAPI documentation (SmartBear Software [2021](#ref-swagger)) (Figure [12.3](nlp.html#fig:openapi)).
+    We also make available additional liveness and readiness APIs to support deployment
+    on Kubernetes, as well as a `/metrics` endpoint that returns the service metrics
+    in Prometheus format (Prometheus Authors and The Linux Foundation [2022](#ref-prometheus)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The RESTful interface is designed to be used programmatically: we can access
+    it using tools like `curl` or API testing tools like Postman (Velero Authors [2022](#ref-postman)[a](#ref-postman)).
+    We can also query it in our continuous integration setup to run integration tests
+    and verify that the build process successfully created the container image. However,
+    the RESTful interface can also serve as a backend to build web applications that
+    consume the API outputs and display them through dashboards (using the tools we
+    discussed in Section [11.3](production-tools.html#production-dashboard)) or simple
+    web interfaces (using libraries such as React (Meta Platforms [2022](#ref-react)[b](#ref-react))
+    or frameworks such as Vue.js (You [2022](#ref-vue)); or libraries for UI development
+    in Python such as Gradio (Abid et al. [2022](#ref-gradio)) and Streamlit (Streamlit
+    [2022](#ref-streamlit))). They are useful to domain experts to inspect the inference
+    outputs and validate them and the model that generates them as humans-in-the loop
+    (Sections [5.3.4](design-code.html#model-pipeline) and [5.3.6](design-code.html#monitoring-pipeline)).
+    In particular, they make it possible for domain experts to iteratively refine
+    the list of key terms we use as the vocabulary of word2vec as envisaged by Lipizzi
+    et al. (Lipizzi et al. [2022](#ref-recommendations)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To validate the `/classify` API, we can upload (POST) the PDF of a scientific
+    article on causal inference with the command-line tool `curl`,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: and another on a completely different topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we can see from the relevance scores, the “/classify” API responds correctly
+    for both relevant and unrelated documents (Section [9.4.6](troubleshooting-code.html#test-coverage)).
+    The underlying `classify()` method computes the cosine distance between the `KeyedVectors`,
+    returns the degree of similarity as a float, and logs the PDF metadata and the
+    relevance to a remote logging database via Fluentd.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Docker image that serves the APIs can be automatically rebuilt using tools
+    like Jenkins (Jenkins [2022](#ref-jenkins)[b](#ref-jenkins)), GitLab CI or GitHub
+    Actions each time we release a new model. We can deploy it to a container service
+    or to an orchestrator by applying one of the techniques discussed in Section [7.2](deploying-code.html#deployment-strategies).
+    Thanks to its stateless composition, the container can scale horizontally if necessary
+    (we just deploy more instances of it) so we can handle increasing loads over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Abid, A., A. Abdalla, A. Ali, D. Khan, A. Alfozan, and J. Zou. 2022\. *Gradio:
+    Hassle-Free Sharing and Testing of ML Models in the Wild*. [https://www.gradio.app/docs/](https://www.gradio.app/docs/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apache Software Foundation. 2022a. *Celery Executor*. [https://airflow.apache.org/docs/apache-airflow/stable/executor/celery.html](https://airflow.apache.org/docs/apache-airflow/stable/executor/celery.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: ArXiv. 2022\. *arXiv API Access*. [https://arxiv.org/help/api](https://arxiv.org/help/api).
+  prefs: []
+  type: TYPE_NORMAL
+- en: BentoML. 2022\. *Unified Model Serving Framework*. [https://docs.bentoml.org/en/latest/](https://docs.bentoml.org/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Docker. 2022a. *Docker*. [https://www.docker.com/](https://www.docker.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dusserre, E., and M. Padró. 2017\. “Bigger Does Not Mean Better! We Prefer Specificity.”
+    In *Proceedings of the 12th International Conference on Computational Semantics*,
+    1–6.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Elasticsearch. 2022\. *Free and Open Search: The Creators of Elasticsearch,
+    ELK & Kibana*. [https://www.elastic.co/](https://www.elastic.co/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Explosion. 2021\. *Spacy: Industrial-Strength Natural Language Processing*.
+    [https://spacy.io/](https://spacy.io/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fenniak, M. 2022\. *PyPDF2 Documentation*. [https://pypdf2.readthedocs.io/en/latest/](https://pypdf2.readthedocs.io/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GrafanaLabs. 2022\. *Grafana: The Open Observability Platform*. [https://grafana.com/](https://grafana.com/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Iterative. 2022b. *DVC: Data Version Control. Git for Data & Models*. [https://github.com/iterative/dvc](https://github.com/iterative/dvc).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Iterative. 2022c. *DVC Python API*. [https://dvc.org/doc/api-reference](https://dvc.org/doc/api-reference).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jenkins. 2022b. *Jenkins User Documentation*. [https://www.jenkins.io/doc/](https://www.jenkins.io/doc/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kaji, N., and H. Kobayashi. 2017\. “Incremental Skip-gram Model with Negative
+    Sampling.” In *Proceedings of the 2017 Conference on Empirical Methods in Natural
+    Language Processing*, 363–71.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lipizzi, C., H. Behrooz, M. Dressman, A. G. Vishwakumar, and K. Batra. 2022\.
+    “Acquisition Research: Creating Synergy for Informed Change.” In *Proceedings
+    of the 19th Annual Acquisition Research Symposium*, 242–55.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lipizzi, C., D. Borrelli, and F. de Oliveira Capela. 2021\. *A Computational
+    Model Implementing Subjectivity with the “Room Theory”: The case of Detecting
+    Emotion from Text*. [https://arxiv.org/abs/2005.06059](https://arxiv.org/abs/2005.06059).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Meta Platforms. 2022b. *React: A JavaScript Library for Building User Interfaces*.
+    [https://reactjs.org/](https://reactjs.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MinIO. 2022\. *MinIO Documentation*. [https://docs.min.io/docs](https://docs.min.io/docs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'NLTK Team. 2021\. *NLTK: A Natural Language Toolkit*. [https://www.nltk.org/](https://www.nltk.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Prometheus Authors, and The Linux Foundation. 2022\. *Prometheus: Monitoring
+    System and Time Series Databases*. [https://prometheus.io/](https://prometheus.io/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Řehůřek, R., and P. Sojka. 2022a. *Gensim Documentation*. [https://radimrehurek.com/gensim/auto_examples/index.html](https://radimrehurek.com/gensim/auto_examples/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Řehůřek, R., and P. Sojka. 2022a. *Gensim Documentation*. [https://radimrehurek.com/gensim/auto_examples/index.html](https://radimrehurek.com/gensim/auto_examples/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2022b. *Gensim Documentation*. [https://radimrehurek.com/gensim/models/word2vec.html](https://radimrehurek.com/gensim/models/word2vec.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rong, X. 2014\. “Word2vec Parameter Learning Explained.” *arXiv Preprint arXiv:1411.2738*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shelton, K. 2017\. *The Value of Search Results Rankings*. [https://www.forbes.com/sites/forbesagencycouncil/2017/10/30/the-value-of-search-results-rankings/](https://www.forbes.com/sites/forbesagencycouncil/2017/10/30/the-value-of-search-results-rankings/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shinyama, Y., P. Guglielmetti, and P. Marsman. 2022\. *Pdfminer.six’s Documentation*.
+    [https://pdfminersix.readthedocs.io/en/latest/](https://pdfminersix.readthedocs.io/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: SmartBear Software. 2021\. *OpenAPI Specification*. [https://swagger.io/specification/](https://swagger.io/specification/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streamlit. 2022\. *Streamlit Documentation*. [https://docs.streamlit.io/](https://docs.streamlit.io/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Apache Software Foundation. 2022a. *Airflow Documentation*. [https://airflow.apache.org/docs/](https://airflow.apache.org/docs/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Apache Software Foundation. 2022f. *Apache Spark Documentation*. [https://spark.apache.org/docs/latest](https://spark.apache.org/docs/latest).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Fluentd Project. 2022\. *Fluentd: Open Source Data Collector*. [https://www.fluentd.org/](https://www.fluentd.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Git Development Team. 2022\. *Git Source Code Mirror*. [https://github.com/git/git](https://github.com/git/git).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Kubernetes Authors. 2022a. *Kubernetes*. [https://kubernetes.io/](https://kubernetes.io/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Velero Authors. 2022a. *Postman Documentation*. [https://learning.postman.com/docs](https://learning.postman.com/docs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Velero Authors. 2022b. *Velero Documentation*. [https://velero.io/docs](https://velero.io/docs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You, E. 2022\. *Vue.js: The Progressive JavaScript Framework*. [https://vuejs.org/](https://vuejs.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A sequence of characters grouped to provide a semantic unit for NLP processing.[↩︎](nlp.html#fnref26)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

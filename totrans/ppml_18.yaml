@@ -1,0 +1,357 @@
+- en: Chapter 11 Tools to Manage Pipelines in Production
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://ppml.dev/production-tools.html](https://ppml.dev/production-tools.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The production environments of machine learning pipe-lines often have more moving
+    parts than those of traditional software, and the MLOps software to manage them
+    is a broad and fast-moving field with many platforms, projects and tools. The
+    underlying infrastructure may be more complex (Section [11.1](production-tools.html#production-infra)),
+    and the combination of data, code and models that makes up the pipeline is certainly
+    more heterogeneous (Section [11.2](production-tools.html#production-software)).
+    In addition to the tools and technologies we need to manage them, we also discuss
+    those that we may use to complement pipelines with the dashboards and reporting
+    capabilities that are common in data science (Section [11.3](production-tools.html#production-dashboard)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.1 Infrastructure Management
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Successfully running a machine learning application in production goes beyond
+    just implementing a pipeline: it involves managing different local and remote
+    compute systems and integrating different pieces of software that communicate
+    with each other through various APIs. Confusingly enough, the literature often
+    refers to both as “systems”, meaning anything that requires configuration, takes
+    some inputs and produces some outputs in response. With such an abstract definition,
+    compute systems, the GitHub organisation that hosts our code, the Amazon AWS EC2
+    instances that run part of it in the cloud and the Kubernetes cluster than manages
+    the resources of our local systems are all systems. Considering the prominent
+    role hardware plays in a machine learning application (Chapter [2](hardware.html#hardware)),
+    we find this definition unhelpful because it is too abstract to reason about the
+    architecture and the performance of the application itself (Chapter [5](design-code.html#design-code)).
+    The same goes for the even-more-abstracted view that “everything is just an API”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Managing the compute systems and the software in a real-world pipeline either
+    manually or with a few simple scripts (which would qualify as glue code, Section
+    [5.2.3](design-code.html#architecture-debt)) is often too burdensome: there are
+    too many of them, they follow different conventions (because they are produced
+    by different vendors), they are not backward compatible and their configuration
+    files use different languages and formats. Configuration management is the only
+    possible approach to keep this complexity under control and to ensure that the
+    pipeline is reproducible and auditable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the most widely-used tools for this task is Terraform (HashiCorp [2022](#ref-terraform)[b](#ref-terraform)),
+    which defines itself as a tool to achieve “infrastructure as code”. Terraform
+    is essentially an abstraction layer for a wide range of services (HashiCorp [2022](#ref-terraform-registry)[c](#ref-terraform-registry))
+    and platforms including Amazon AWS, Microsoft Azure, GitHub, GitLab and Airflow.
+    Each platform is exposed as a service “provider” that communicates through APIs
+    that we control, effectively decoupling our infrastructure from the APIs of the
+    original service. Terraform takes care of initialising resources in the original
+    service and of configuring them. For instance, we can use it to create remote
+    resources such as an EC2 instance on Amazon AWS, an object storage on Azure or
+    a VM on a local vSphere (VmWare [2022](#ref-vmware-vsphere)). However, it does
+    not handle the installation or the configuration of operating systems and software
+    packages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cloud instances, VMs and development machines based on Vagrant (HashiCorp [2022](#ref-vagrant)[d](#ref-vagrant))
+    and Packer (HashiCorp [2022](#ref-packer)[a](#ref-packer)) can be installed and
+    configured using specialised tools such as Ansible (Ansible Project [2022](#ref-ansible)),
+    Puppet (Puppet [2022](#ref-puppet)) and Chef (Progress Software [2022](#ref-chef)).
+    All three tools provide a complete solution to configuration management: we can
+    define all resources and their configurations as code and store that code in a
+    version control system. They also have modules for testing the configuration management
+    code, for validating changes before applying them to a specific target environment,
+    and for identifying manual modifications or tampering of the configuration files.
+    As a result, they are convenient to integrate and automate in a CI/CD pipeline.
+    Furthermore, Ansible, Puppet and Chef can all be invoked on instances and VMs
+    created by Terraform on their first boot by software like cloud-init (Canonical
+    [2022](#ref-cloud-init)[a](#ref-cloud-init)). However, they have different learning
+    curves and they require different technical skills to operate. Ansible is written
+    in Python, uses YAML declarative configuration files and has an *agentless* architecture
+    (that is, it can be run without installing anything on the instances we want to
+    configure). Puppet and Chef use Ruby-based domain-specific languages and have
+    a *master-slave* architecture (that is, we install “agents” on the instances to
+    configure them).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As for containers, the de facto standard management tool is Kubernetes (The
+    Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes)), an open-source
+    orchestration system originally developed by Google and now maintained by the
+    Cloud Native Computing Foundation (CNCF). Kubeflow (The Kubeflow Authors [2022](#ref-kubeflow))
+    extends Kubernetes by integrating it with popular machine learning frameworks
+    like Tensorflow, notebooks like Jupyter and data pipelines like Pachyderm: the
+    result is an integrated platform specifically geared towards managing, developing,
+    deploying and scaling machine learning pipelines. Kubeflow can be deployed on
+    managed Kubernetes services like Amazon EKS (Amazon Web Services [2022](#ref-eks)[a](#ref-eks)),
+    Azure AKS (Microsoft [2022](#ref-aks)[b](#ref-aks)) or Google Kubernetes Engine
+    (Google [2022](#ref-gke)[c](#ref-gke)) as well as on local Kubernetes clusters.
+    The latter, which are admittedly more complex to run, can be set up with CNCF-certified
+    open-source solutions like the Kubernetes Fury Distribution (SIGHUP [2022](#ref-kfd))
+    and Typhoon (Poseidon Laboratories [2022](#ref-typhoon)). Both are based on Terraform
+    and Ansible and integrate with other CNCF components like software-defined networking,
+    monitoring and logging (Section [5.3.6](design-code.html#monitoring-pipeline))
+    to facilitate the interoperability between cloud and local deployments.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.2 Machine Learning Software Management
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Machine learning applications can be designed, tested, maintained and delivered
+    in production using integrated MLOps platforms that blend tooling and practices
+    from DevOps (Section [5.3](design-code.html#processing-pipeline)) with data processing
+    (Section [5.3.3](design-code.html#data-pipeline)), model training and serving
+    (Sections [5.3.4](design-code.html#model-pipeline), [5.3.5](design-code.html#production-pipeline)
+    and [7.2](deploying-code.html#deployment-strategies)). This is a very recent trend
+    at the time of this writing, so the label “MLOps platform” (or “Machine Learning
+    Platform”) has been attached to quite a variety of tools. At one end of the spectrum,
+    we have online platforms like AWS Sagemaker (Amazon [2022](#ref-sagemaker)[d](#ref-sagemaker)),
+    Vertex AI (Google [2022](#ref-vertex)[f](#ref-vertex)), Tensorflow Extended (TensorFlow
+    [2022](#ref-tfx)[d](#ref-tfx)), Databricks (Databricks [2022](#ref-databricks))
+    and Neptune (Neptune Labs [2022](#ref-neptune)). At the other, we have more lightweight
+    solutions like Airflow, MLflow and DVC that are built on top of a collection of
+    smaller open-source tools that are not specific to machine learning applications.
+    On top of that, we have established CI/CD platforms such as GitLab that are working
+    on MLOps features (GitLab [2022](#ref-gitlab-mlops)[c](#ref-gitlab-mlops)) which
+    overlap with those of the platforms above. We expect it will take a few years
+    before MLOps platforms consolidate into a small number of clear categories. In
+    the meantime, we are choosing between tools that are not mature and have different,
+    unclear trade-offs: there certainly is no one-size-fits-all solution at the moment!
+    However, we can safely mention one trade-off: integrated platforms are limiting
+    because they are often opinionated (they make it difficult to support configurations
+    and workflows other than those envisaged by the authors) and because they are
+    opaque (their components are not visible from the outside). Adopting them early
+    in the life of the pipeline may limit our ability to change its architecture at
+    a later time, may prevent us from exploring different configurations to explore
+    their trade-offs, and may limit our ability to develop software engineering skills.
+    In contrast, manually integrating smaller open-source tools gives us more freedom
+    but requires more work and some level of software engineering skills up front.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solutions based on Kubernetes such as Kubeflow and Polyaxon (Polyaxon [2022](#ref-polyaxon))
+    integrate and compose different tools, including Jupyter notebooks; model training
+    (on both CPUs or GPUs) and experiment tracking for TensorFlow and other frameworks;
+    and model serving with different solutions such as TensorFlow Serving (TensorFlow
+    [2022](#ref-tf-serving)[b](#ref-tf-serving)), SeldonCore (Seldon Technologies
+    [2022](#ref-seldon-core)) and Kserve (The KServe Authors [2022](#ref-kserve)).
+    Kubeflow focuses on managing machine learning workflows end-to-end, while Polyaxon
+    complements it by providing distributed training, hyperparameter tuning and parallel
+    task execution. Polyaxon can also schedule and manage Kubeflow operators and track
+    metrics, outputs, models and resource usage to compare experiments. If a solution
+    like Kubeflow is over-complicated for managing our pipeline, we can also consider
+    replacing it with Argo Workflow (Argo Project [2022](#ref-argo-workflow)), a simpler
+    orchestrator that can run parallel jobs on a Kubernetes cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The architecture of Kubeflow builds on the same key ideas as Kubernetes, in
+    particular operators and namespaces. In fact, each machine learning library that
+    is supported by Kubeflow (TensorFlow (TensorFlow [2021](#ref-tensorflow)[a](#ref-tensorflow)),
+    PyTorch (Paszke et al. [2019](#ref-pytorch)), etc.) is encapsulated in a Kubernetes
+    operator that can run local and distributed jobs. Pipelines are executed inside
+    separate namespaces: each user can leverage the Kubernetes namespace isolation
+    to prevent others from accessing notebooks, models or inference endpoints without
+    proper authorisation (Section [5.2.2](design-code.html#model-debt)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Seldon core (Seldon Technologies [2022](#ref-seldon-core)) and KServe (The KServe
+    Authors [2022](#ref-kserve)) are specialised MLOps frameworks to package, deploy,
+    monitor and manage machine learning models as custom resources on Kubernetes (The
+    Kubernetes Authors [2022](#ref-kubernetes)[a](#ref-kubernetes)). Both encapsulate
+    models stored in binary artefacts or code wrappers into containers that expose
+    the models’ capabilities via REST/gRPC APIs with auto-generated OpenAPI specification
+    files. Furthermore, both integrate with Prometheus (Prometheus Authors and The
+    Linux Foundation [2022](#ref-prometheus)) and Grafana (GrafanaLabs [2022](#ref-grafana))
+    (for monitoring metrics), with Elasticsearch (Elasticsearch [2022](#ref-elastic))
+    or Grafana Loki (Grafana Labs [2022](#ref-loki)) (for logging), and with other
+    tools (for features like detecting data drift and performing progressive deployments,
+    which we discussed in Section [5.2.1](design-code.html#data-debt) and [7.2](deploying-code.html#deployment-strategies)).
+    Two other options with a similar architecture are BentoML (BentoML [2022](#ref-bentoml))
+    and MLEM (Iterative [2022](#ref-mlem)[d](#ref-mlem)). The former is a Python framework
+    with a simple object-oriented interface for packaging models into containers and
+    creating HTTP(S) services. The latter, which is from the same authors as DVC,
+    stores model metadata as plain text files versioned in a Git repo, which becomes
+    the single source of truth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tensorflow Extended (TensorFlow [2022](#ref-tfx)[d](#ref-tfx), also known as
+    TFX) is a platform to host end-to-end machine learning pipelines based on Tensorflow.
+    TFX is designed to run on top of different platforms (Google Cloud via Vertex
+    AI, Amazon AWS) and orchestration frameworks (Apache Airflow, Kubeflow and Apache
+    Beam (The Apache Software Foundation [2022](#ref-beam)[b](#ref-beam))), supports
+    distributed processing (with frameworks like Apache Spark), and allows for local
+    model and data exploration using TensorBoard (TensorFlow [2022](#ref-tensorboard)[c](#ref-tensorboard))
+    and Jupyter notebooks. The TFX pipeline is highly modular and is structured in
+    different components along the lines of those we discussed in Chapter [5](design-code.html#design-code),
+    all tied together by dependencies represented as a DAG. The metadata required
+    for experiment tracking are saved using the ML metadata library (TensorFlow [2022](#ref-mlmd)[a](#ref-mlmd),
+    also known as MLMD), along with monitoring information and the pipeline’s logs,
+    in a data store that supports relational databases. All this functionality comes
+    at the cost of complexity and lack of flexibility in certain areas: choosing whether
+    to use TFX requires a careful evaluation of our use case before deciding whether
+    to adopt it or not.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unlike Kubeflow (built around Kubernetes) or TFX (built around Tensorflow),
+    MLflow (Zaharia and The Linux Foundation [2022](#ref-mlflow)) is a library-agnostic
+    platform written in Python that can be integrated with any machine learning library
+    through lightweight APIs. The goal of MLflow is to support MLOps by providing
+    four key features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a project packaging format built on Conda (Anaconda [2022](#ref-conda)[b](#ref-conda))
+    and Docker (Docker [2022](#ref-docker)[a](#ref-docker)) which guarantees reproducibility
+    and which makes projects easy to share;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an experiment tracking API to log parameters, code and results together with
+    an interactive user interface to compare models and data across experiments;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a model packaging format and a set of APIs for deploying models to target platforms
+    such as Docker, Apache Spark and AWS Sagemaker; and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a model registry with a graphical interface and a set of APIs to work collaboratively
+    on models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As we mentioned earlier, we can implement machine learning pipelines using general-purpose
+    open-source orchestrators like Airflow and Luigi (Spotify [2022](#ref-luigi)[a](#ref-luigi))
+    or using more integrated tools such as Dagster (Elementl [2022](#ref-dagster))
+    and Prefect 2.0 (Prefect [2022](#ref-prefect)). Both Dagster and Prefect 2.0 implement
+    pipelines in Python as modules linked in a DAG, and they provide a web interface
+    that makes it easy to visualise pipelines running in production, to monitor their
+    progress and to troubleshoot them. Monitoring is outsourced to Prometheus in both
+    Airflow and Luigi. Pachyderm, unlike Airflow and Luigi, supports unstructured
+    data like videos and images as well as tabular data from data warehouses. Furthermore,
+    it can trigger pipelines automatically based on data changes, version data of
+    any type and scale resources automatically (since it is built on containers and
+    runs on Kubernetes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can implement experiment tracking using more lightweight tools than Kubeflow:
+    two examples are MLflow Tracking and DVC (integrated with a CI/CD pipeline such
+    as Gitlab’s or Jenkins), which we discussed in Section [10.1](development-tools.html#exploration-experiment-tracking).
+    A related tool is CML (Iterative [2022](#ref-cml)[a](#ref-cml)), which is developed
+    by the same authors as DVC: an open-source command-line tool that can be easily
+    integrated into any CI/CD pipeline to add auto-generated reports with plots of
+    model metrics in each pull request/merge request. In order to do that, CML monitors
+    changes in the data and automates model training and evaluation as well as the
+    comparison of ML experiments across project iterations. Neptune (Neptune Labs
+    [2022](#ref-neptune)) is also designed specifically for storing and tracking metadata
+    across multiple experiments. It implements the practices we presented in Section
+    [5.3.4](design-code.html#model-pipeline): in particular, saving model artefacts
+    in a model registry along with references to the associated data, code, metrics
+    and environment configurations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The other option we have is using managed cloud platforms such as Sagemaker
+    and Vertex AI. Their strength is the deep integration with Amazon AWS and Google
+    Cloud, respectively, which makes it straightforward to implement progressive delivery
+    techniques, to centralise logging and monitoring, and to train and serve models
+    using GPUs. AWS also offers integrations with Redshift (Amazon [2022](#ref-redshift)[a](#ref-redshift))
+    and with Databricks to access data; Vertex AI does the same with BigQuery (Google
+    [2022](#ref-big-query)[a](#ref-big-query)), and supports working with feature
+    stores as well. Both platforms support Jupyter notebooks for interactive exploration,
+    and both support pipelines: Sagemaker via a custom Python library, Vertex AI via
+    Kubeflow and TFX. In addition, Vertex AI allows us to develop machine learning
+    models in Jupyter notebooks, to deploy models saved in object storage buckets,
+    and to upload them to a dedicated model registry. In conclusion, both platforms
+    are chasing each other’s features, and they are very comprehensive: but they can
+    be confusing because of that.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, feature stores are increasing in popularity in MLOps for storing and
+    cataloguing frequently used features and for enabling feature reuse across models,
+    thus reducing coupling and duplication. They are available from open-source tools
+    such as Feast (Feast Authors [2022](#ref-feast)) and Hopsworks (Hopsworks [2022](#ref-hopsworks)),
+    Vertex AI and Databricks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.3 Dashboards, Visualisation and Reporting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Data visualisation is an essential part of data science and machine learning:
+    it helps explain complex data and makes them understandable by users and domain
+    experts, allowing them to participate in the design and maintenance of the pipeline
+    (Chapter [5](design-code.html#design-code)). As in Section [11.2](production-tools.html#production-software),
+    we can choose to implement it with a spectrum of solutions, from low-level libraries
+    for data exploration to more comprehensive visualisation platforms that create
+    interactive dashboards and data reports.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The decade-old Matplotlib (Hunter [2022](#ref-matplotlib)) library is the most
+    widely adopted Python package for basic data visualisation, followed by its descendant
+    Seaborn (Waskom [2022](#ref-seaborn)), which tries to tackle some of the complexity
+    of Matplotlib while producing figures with a more modern look.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At a higher level, we have Plotly (Plotly [2022](#ref-plotly)[c](#ref-plotly)),
+    Bokeh (Bokeh [2022](#ref-bokeh)) and Altair (Altair [2022](#ref-altair)) for Python,
+    and the ggplot2 package (Wickham [2022](#ref-ggplot2)[a](#ref-ggplot2)) for R.
+    These libraries have similar features and aesthetics, and they can create static,
+    animated and interactive visualisation. Plotly, Bokeh and ggplot2 are programmatic;
+    Altair uses the declarative JSON syntax of the Vega-Lite (Satyanarayan et al.
+    [2022](#ref-vega-lite)) language and a simple set of APIs to implement the “Grammar
+    of Graphics” (Wilkinson [2005](#ref-gog)), which has inspired the design of ggplot2
+    as well. Ggplot2 has a Python port called Plotnine (Kibirige [2022](#ref-plotnine))
+    and Altair has an R wrapper (Lyttle, Jeppson, and Altair Developers [2022](#ref-r-altair))
+    based on the reticulate package (Ushey, Allaire, and Tang [2022](#ref-reticulate)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: These packages are the foundation upon which more advanced web dashboards like
+    Dash (Plotly [2022](#ref-plotly-dash)[b](#ref-plotly-dash)), Bokeh Server and
+    Shiny (Chang et al. [2022](#ref-shiny)) are built. Dash provides interfaces for
+    Jupyter notebooks and for multiple languages such as Python, R and Julia, while
+    Bokeh only supports Python. Both libraries are good starting points for creating
+    dashboards, although Plotly has a faster learning curve. Shiny, on the other hand,
+    is the de facto standard for creating web-based interactive visualisations in
+    R due to its deep integration with RStudio and R Markdown. Other open-source options
+    are Voilà (Voilà Dashboards [2022](#ref-voila)), Streamlit (Streamlit [2022](#ref-streamlit)),
+    and Panel (Holoviz [2022](#ref-panel)). Voilà can turn Jupyter notebooks into
+    standalone applications and dashboards, which is useful when generating quick
+    data analysis reports. Streamlit and Panel build web dashboards that interact
+    with data by composing widgets, tables and plots from Plotly, Bokeh and Altair,
+    as well as viewable objects and controls. Panel has better support for Jupyter
+    notebooks compared to Streamlit and Voilà.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Applications for visual analytics and business intelligence like Tableau (Tableau
+    Software [2022](#ref-tableau)) and Microsoft PowerBI (Microsoft [2022](#ref-powerbi)[e](#ref-powerbi))
+    are also suitable for creating dashboards, and are especially useful to management
+    or domain experts who need to create their own dashboards but who may not be as
+    familiar with programming. Tableau can execute Python code on the fly and display
+    its outputs within Tableau visualisations via TabPy (Tableau [2022](#ref-tab-py)).
+    PowerBI, on the other hand, does not yet have a complete integration with Python:
+    it only allows reports to be placed within Jupyter notebooks but without a direct
+    connection between the data in the notebook and the PowerBI report.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we can leverage standard monitoring and reporting tools such as Prometheus
+    (Prometheus Authors and The Linux Foundation [2022](#ref-prometheus)) and Grafana
+    (GrafanaLabs [2022](#ref-grafana)) to display metrics related to data, features
+    and models. We discussed in Section [5.3.6](design-code.html#monitoring-pipeline)
+    how important it is to monitor every part of the pipeline: this makes it likely
+    that we are already using Prometheus and Grafana to monitor other things, and
+    we may as well use them to track and compare data and models across environments
+    in addition to other metrics. This approach is certainly robust: it uses highly-tested
+    components. However, it requires a significant engineering effort to integrate
+    the training and serving modules with Prometheus and to integrate the dashboards
+    into the server-side infrastructure. We can build a similar setup with a more
+    opinionated approach using the TFX validation module on Google Vertex AI, which
+    implements training-serving skew detection (TensorFlow [2022](#ref-tfx)[d](#ref-tfx)),
+    or using Amazon Sagemaker with its Monitor (Amazon [2022](#ref-sagemaker-monitor)[b](#ref-sagemaker-monitor)).'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,834 @@
+- en: Chapter 8 Documenting Pipelines
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://ppml.dev/documenting-code.html](https://ppml.dev/documenting-code.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Ideally, the code we write should be self-explanatory: everyone should be able
+    to understand how it works and why it was implemented the way it was just by reading
+    it. In practice, this aspiration is impossible to achieve for real-world codebases
+    of any significant size even if we put effort into making code as clear as possible
+    (Chapter [6](writing-code.html#writing-code)). Hence we need *documentation*:
+    a living, natural-language explanation of the machine learning systems and of
+    the pipeline that evolves along with them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Documentation is not a single entity, but rather a collection of information
+    with different scopes, levels of detail, technical levels and audiences: comments
+    explaining the “whats” and especially the “whys” of different chunks of code (Section
+    [8.1](documenting-code.html#comments)); documents describing the public interface
+    of each module and how to use it (Section [8.2](documenting-code.html#apidocs));
+    a holistic description of how the pipeline is structured and of how its parts
+    fit together (Section [8.3](documenting-code.html#designdocs)); white papers detailing
+    what machine learning models have been implemented and why, and what business
+    or academic needs they address (Section [8.4](documenting-code.html#domaindocs)).
+    To complement these pieces of information, we should showcase how we envisage
+    the machine learning pipeline will be used in practical day-to-day operations
+    (Section [8.5](documenting-code.html#usecases)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8.1 Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There is no consensus among software engineers about the need to include comments
+    in the code, nor about their frequency and contents. Some argue that “comments
+    are, at best, a necessary evil […] to compensate for our failure to express ourselves
+    in code” (Martin [2008](#ref-cleancode)); some that “too many comments are as
+    bad as too few, and you can achieve a middle ground economically” (McConnell [2004](#ref-codecomplete));
+    and others that “good code has lots of comments […] keep the low-level knowledge
+    in the code, where it belongs, and reserve the comments for other, high-level
+    explanations” (Thomas and Hunt [2019](#ref-pragpro)). The only things that everybody
+    agrees on are that comments can easily become out-of-date as the code they refer
+    to changes over time, and that comments that do not provide any additional information
+    over the code itself are redundant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Machine learning pipelines can be reasoned about from three different perspectives
+    (Section [5.3.1](design-code.html#scoping-pipeline)): the domain they operate
+    in, such as the business operation or the academic field that generates the data
+    it will process; the software architecture, that is, the engineering effort of
+    organising the software in separate modules that can be worked on efficiently
+    and that have a well-defined purpose; and the models that power them with their
+    probabilistic properties. The interplay between these perspectives determines
+    both low-level and high-level design decisions in ways that are extremely difficult
+    to represent in the code. We choose machine learning models considering the characteristics
+    of the data they will process; performance optimisations (Sections [2.2](hardware.html#hardware-using)
+    and [2.4](hardware.html#hardware-choice)) may (or may not) be worthwhile depending
+    on the combination of models and compute systems; and our efforts to structure
+    the software into modules (Section [5.3](design-code.html#processing-pipeline))
+    and data structures (Sections [3.3](types-structures.html#right-variables) and
+    [3.4](types-structures.html#right-data-structures)) must reconcile the conflicting
+    goals of representing abstract mathematical concepts and real-world domain concepts
+    at the same time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a result, the idea that comments should focus on complementing code by stating
+    the “whys” (say, the rationales for particular design decisions and how non-obvious
+    low-level optimisations work and why they are needed) and that they should leave
+    the code itself to illustrate the “whats” (say, the sequence of steps that produces
+    the outputs of a function) is much more nuanced than it is in either enterprise
+    or academic software. In both these settings, modern development practices ensure
+    that domain experts and software engineers have a shared conceptual model of the
+    key domain concepts and, in doing so, establish a *ubiquitous language* (Evans
+    [2003](#ref-domain-driven)) to identify and discuss them. This language is used
+    throughout all documentation and in the code (to name classes, methods and variables),
+    so that all the people involved have a common understanding of the “whats” and
+    the “whys” of what the code is doing. However, it is difficult to establish such
+    a ubiquitous language in the context of machine learning software (Section [6.2](writing-code.html#naming))
+    because the backgrounds of the people involved are more varied: it is rare for
+    any single person to have a broad enough background to be able to understand the
+    machine learning systems and software well from a domain, software and machine
+    learning perspectives at any given time. The rise of professional figures such
+    as domain (data) analysts (domain + machine learning) and machine learning engineers
+    (software engineering + machine learning) who can work on pipelines from two different
+    perspectives is partly a response to this issue.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, we believe that there is value in annotating code with comments
+    describing both the “whats” and the “whys” but that do so from a perspective that
+    is different from the one the code is written from. Code implementing models (Section
+    [5.3.4](design-code.html#model-pipeline)) should be structured well enough for
+    a machine learning engineer to understand its behaviour clearly: comments should
+    focus on how the parameters of the model and its outputs map to domain concepts,
+    and they can also state how optimising the model for a compute system’s hardware
+    led to the use of specific data structures. Code that pre-processes inputs to
+    a machine learning pipeline (Section [5.3.3](design-code.html#data-pipeline))
+    and post-processes its outputs for consumption by third parties (Sections [5.3.5](design-code.html#production-pipeline)
+    and [5.3.6](design-code.html#monitoring-pipeline)) should be clear to domain experts,
+    since it is just encoding domain concepts into data structures and vice versa;
+    but it is worthwhile to comment on the statistical properties we expect those
+    inputs and outputs to have, and to relate them to the machine learning models
+    they are produced from or fed to. Finally, code that orchestrates the modules
+    in the pipeline (either directly or by configuring a third-party MLOps solution,
+    see Section [5.3](design-code.html#processing-pipeline)) should be clear from
+    both domain and machine learning perspectives because it is linking different
+    models in a data processing pipeline designed after domain workflows. However,
+    the algorithmic complexity of particular models and the hardware characteristics
+    of the compute systems the models run on can influence how the code is organised
+    into modules and how the modules are connected to each other in ways that should
+    be documented because they may not be readily apparent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Other than that, the advice in (Ousterhout [2018](#ref-philo); Fowler [2018](#ref-refactoring);
+    Thomas and Hunt [2019](#ref-pragpro); Evans [2003](#ref-domain-driven)) on how
+    to write comments applies well to machine learning software. The goal of comments
+    is to ensure that the structure and the behaviour of the software is obvious to
+    the readers: other developers, so that they can modify the code quickly and with
+    confidence, and users, so that they can understand it and use it appropriately.
+    The readers could eventually deduce such information by reading the code, but
+    the process would be time-consuming and error-prone: especially when they are
+    approaching the code from a different perspective than the one from which the
+    code was written. Comments should be concise and located close to the code: for
+    instance, prefacing a block of code performing a particular task with a description
+    of the implementation issues that were considered and the probability results
+    that shaped it. (This may also help in relating tests to the code, see Section
+    [9.4.2](troubleshooting-code.html#testing-what). Additional information that does
+    not belong in any single place in the code may be found in commit messages as
+    discussed in Section [6.5](writing-code.html#versioning).) They should be written
+    just before or at the same time as the code to ensure that they are written in
+    the first place and that any design issues are still fresh in the developer’s
+    minds. For the same reason, they should be updated along with the code whenever
+    the code is modified. This approach may also help in refining the architecture
+    of the code early on (Sections [5.3.1](design-code.html#scoping-pipeline) and
+    [5.3.2](design-code.html#baseline-pipeline)) by making it easier to discuss pros
+    and cons of different designs and by allowing domain experts to look into the
+    implementation of key domain concepts to some extent. Finally, expressing the
+    same idea twice, in the code and in the comments, and from different perspectives
+    can have similar benefits to code review (Section [6.6](writing-code.html#code-review))
+    because it forces developers to rethink what they are doing from the point of
+    view of a user of the software.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8.2 Documenting Public Interfaces
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In addition to augmenting blocks of code inside functions and modules, we should
+    use comments to document module interfaces, their methods and their general behaviour.
+    In particular, each module should come with a high-level description of what it
+    does and of the situations in which it makes sense to use it. Both should be written
+    from the point of view of a prospective user: in the spirit of abstracting away
+    complexity and reducing cognitive load, users should be able to use the module
+    without reading its implementation (Ousterhout [2018](#ref-philo)). As discussed
+    earlier, people working on and using machine learning pipelines will come from
+    a variety of backgrounds, and many may struggle to read code written from a perspective
+    far from their own. Therefore, comments prefacing module interfaces should describe
+    them from all relevant perspectives to make them approachable in the same way
+    as other comments (Section [8.1](documenting-code.html#comments)). These descriptions,
+    together with the method signatures, should provide all the essential information
+    on the modules: the meaning of the methods and of their arguments as well as any
+    constraints, side effects and preconditions they may have. If we find it difficult
+    to put such information in writing in a clear and concise way, it may well be
+    that the interface is not a good abstraction and that the module should be refactored
+    (Section [6.7](writing-code.html#refactoring)) to give it a better sense of purpose.
+    The documentation that describes it should be changed at the same time to remain
+    up-to-date.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Documenting individual functions in a similar way may make sense for those few
+    functions that are not completely encapsulated inside a single module. Other functions
+    are either not visible to the module users, so they only need to be documented
+    to the extent that is required by the developers of that module; or they are visible
+    to the module users, and they should be documented among its methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to keep this type of documentation close to the code it refers to,
+    so that it is easier to keep the two in sync, we can annotate each module with
+    a long-form comment covering the information above. These comments should be structured
+    in a standard format, possibly with additional in-house conventions, to ensure
+    consistency and to make it more straightforward to write them. Tools such as Doxygen
+    (van Heesch [2022](#ref-doxygen)) can enforce comment formats for all programming
+    languages typically found in machine learning pipelines (namely, C, , R and Python),
+    which is convenient because different modules may be implemented in different
+    languages (Section [6.1](writing-code.html#programming-language)). They can also
+    generate documents in common formats such as HTML, PDF and DOCX from the comments.
+    This is especially convenient for keeping documentation up to date as interfaces
+    change, because we can just update the comments along with the code and regenerate
+    those documents as needed. We can also use language-specific tools such as Roxygen
+    (Wickham, Danenberg, et al. [2022](#ref-roxygen2)) in R or Sphinx (Brandl and
+    the Sphinx Team [2022](#ref-sphinx)) in Python if either language is dominant
+    in the machine learning pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What should we write in these long-form comments in practice?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What we can expect from the module: the signatures of the methods, its semantics
+    and its behaviour in both success and failure scenarios. These include the meaning
+    and the data types of exported variables as well as a list of all the possible
+    error conditions and how they are handled.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What problem the module solves, and a brief summary of why it was designed the
+    way it was. This might include a discussion of alternative solutions that have
+    been evaluated and discarded (Section [5.3.1](design-code.html#scoping-pipeline))
+    to avoid re-evaluating them unless we are changing the module in a fundamental
+    way. However, such decisions typically span across module boundaries and are better
+    documented in the architecture documentation (Section [8.3](documenting-code.html#designdocs)).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Short examples of how the module is used, possibly in combination with other
+    modules, are also nice to have.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Pointers to the relevant sections of the technical documentation (Section [8.4](documenting-code.html#domaindocs))
+    and to books or papers that describe the algorithms used in the module.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Popular open-source machine learning software provides many examples of how
+    to do this well. Take, for instance, Scikit-learn. We can access the documentation
+    of its module interfaces from the landing page of its website (Scikit-learn Developers
+    [2022](#ref-sklearn)) via a link labelled “API”. All modules are listed in alphabetical
+    order, from `sklearn.base` all the way to `sklearn.utils`. For each of them, we
+    have a short description summarising what algorithms, models or general functionality
+    it implements, links to long-form documentation that gives further details and
+    shows typical usage patterns, and a list of all the attributes and the functions
+    it exports. The page documenting each class further details its methods and their
+    arguments as well as any variables it exports. All this documentation is generated
+    by Sphinx from comments in the Scikit-learn code. The source files in which the
+    comments appear are linked from each page, making it easy to explore the code
+    the page describes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![An abridged version of the online documentation generated by Sphinx from
+    the comments in the DBSCAN module of Scikit-learn.](../Images/259eef0937fcf1ecc0ddef18f04139b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8.1: An abridged version of the online documentation generated by Sphinx
+    from the comments in the DBSCAN module of Scikit-learn.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, consider the documentation of the module implementing the DBSCAN
+    clustering algorithm (Schubert et al. [2017](#ref-dbscan)). The online documentation
+    is shown in Figure [8.1](documenting-code.html#fig:dbscan-documentation). The
+    Sphinx comment the module description is generated from appears just before its
+    declaration and it is enclosed in triple double-quotes (`"""`). Section headers
+    are marked by ten dashes (`-----------`) and the lists of parameters and attributes
+    are formatted using indentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The “Notes” section links further examples and illustrates the computational
+    complexity (Chapter [4](algorithms.html#algorithms)) of DBSCAN, complementing
+    the pointers to similar functionality in the OPTICS module and the layman’s explanation
+    of how DBSCAN works in the User Guide.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition, the documentation of DBSCAN provides a list of all the exported
+    methods along with a short description of what each of them implements, of its
+    arguments (including their types and default values) and of its return value.
+    The comment generating the documentation of the `fit()` method, for instance,
+    is the following.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Unfortunately, the comment conflates function arguments with the parameters
+    of the underlying models and algorithms: this is not ideal because it implies
+    that they can be reasoned about interchangeably (which is not true, for instance,
+    for floating point variables, see Section [3.1.2](types-structures.html#floating-point))
+    and because it suggests that function arguments should map one-to-one to parameters
+    (which depends entirely on how the machine learning pipeline is structured, see
+    in particular Sections [5.2.3](design-code.html#architecture-debt), [5.2.4](design-code.html#code-debt)
+    and [5.3.4](design-code.html#model-pipeline)). On the good side, however, it specifies
+    what is the expected type for all arguments, which is a useful detail for module
+    users to have in a dynamically-typed language like Python. Types can be enforced
+    using a type checker such as mypy (The mypy Project [2014](#ref-mypy)), effectively
+    turning Python into a statically-typed language for any function with type annotations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another example of documenting interfaces at scale is the infrastructure that
+    CRAN (CRAN Team [2022](#ref-cran)) uses to distribute and enforce quality standards
+    on R packages. Each package has a dedicated web page on CRAN’s website, which
+    includes a short description of the functionality provided by the package and
+    links to its Changelog, to relevant web pages and to its reference manual. Its
+    entries follow a structured “R Documentation” format, based on a subset of LaTeX,
+    with predefined sections (“Description”, “Arguments”, “Details”, “Examples”, “References”)
+    that package authors are required to fill for each function they export from the
+    package. R Documentation files can be generated by including comments in the Doxygen
+    format in the code and processing them with Roxygen: CRAN does not require that,
+    but cross-checks that function names and arguments are consistent between the
+    code and the documentation, and it executes all the examples to make sure they
+    run. Furthermore, CRAN reports the status of any tests shipped with the package
+    on its web page. The package’s web page also links long-form documentation that
+    provides further details on relevant algorithms and models and that showcases
+    them with comprehensive examples. These long-form documents, known as *vignettes*,
+    are notebooks interleaving R code with Markdown or LaTeX prose whose sources are
+    part of the package. CRAN will compile them to make them available alongside the
+    package sources.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A popular R package that contains all these types of documentation is rstanarm
+    (Muth, Oravecz, and Gabry [2018](#ref-rstanarm)), which implements a suite of
+    Bayesian regression models on top of Stan (Carpenter et al. [2017](#ref-stan)).
+    The authors provide both the reference manual and a set of vignettes illustrating
+    how to use it. Its web page on CRAN links the GitHub repository with the package’s
+    source code where we can easily see the Doxygen comments the reference manual
+    is created from. For instance, the comment prefacing the `stan_mvmer()` function
+    looks as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Doxygen comment is identified by the fact that each line starts with a single
+    quote. The first paragraph gives the title of the entry in the reference manual
+    for the function, which is declared to be public by the `@export`. The second
+    paragraph is the “Description”, the `@params` are the “Arguments”, and the `@return`
+    describes the return value of the function. The text that follows the `@details`
+    ends up in the “Details” section, and the code after the `@examples` provides
+    short examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Longer examples and technical discussions that are too cumbersome to include
+    in the reference manual are shipped as a set of vignettes, which in the case of
+    rstanarm are R Markdown documents. Unlike the reference manual, vignettes can
+    include figures and mathematical equations typeset in LaTeX, and they can easily
+    be converted to PDF, HTML and DOCX documents using the knitr package (Xie [2015](#ref-knitr)).
+    The R Markdown format differs from plain Markdown only in its YAML header, which
+    tells knitr the type of document the file should be compiled into and some of
+    its metadata. For instance, in `glmer.Rmd`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Code chunks are delimited by triple backticks, followed by the language label
+    (R in this case) and by a list of options that will be evaluated by knitr when
+    compiling the document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]{r, results = "hide"}\n'','
+  prefs: []
+  type: TYPE_NORMAL
+- en: post1 <- stan_nlmer(circumference ~ SSlogis(age, Asym, xmid, scal)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ~ Asym|Tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: data = Orange, cores = 2, seed = 12345, init_r = 0.5)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that, by default, knitr executes all code every time the document is compiled,
+    in the order in which it appears. Therefore, we cannot have the issues with out-of-order
+    execution and inconsistent state that affect Jupyter notebooks (Project Jupyter
+    [2022](#ref-jupyter)) (Section [10.2.2](development-tools.html#notebooks)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8.3 Documenting Architecture and Design
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Architecture documentation binds together the public interface documentation
+    of the individual modules to give an overall view of how the machine learning
+    systems and the pipeline are structured as a whole. It summarises the rationale
+    of the decisions made when designing them, the properties of their (hardware and
+    software) components and their interactions, and how they relate to the requirements
+    for the pipeline (Clements et al. [2011](#ref-clements)) (Section [5.3.1](design-code.html#scoping-pipeline)).
+    All this should be written in the same ubiquitous language as the comments and
+    the module interfaces documentation, and for the same reasons: the architecture
+    is the primary means of evaluating how the pipeline and the underlying systems
+    work, whether they can be modified in specific ways, and whether they meet current
+    or new requirements we may have. These activities necessarily involve discussions
+    among domain experts, software engineers and machine learning specialists that
+    greatly benefit from the clarity brought by the ubiquitous language. In particular,
+    architecture documentation should document all those cross-module design decisions
+    that do not belong in any single module interface documentation: a prime example
+    is the design and workings of glue code (Sections [5.2.3](design-code.html#architecture-debt)
+    and [9.2.4](troubleshooting-code.html#troubleshooting-pipelines)), which is often
+    the least documented part of a machine learning pipeline.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A natural starting point to document the architecture and the design of a machine
+    learning pipeline is the DAG that describes its paths of execution (Section [5.3](design-code.html#processing-pipeline)).
+    The nodes in the DAG represent the modules that implement the different processing
+    stages the data go through, and an explanation of their roles in the pipeline
+    should be linked to the documentation of the respective interfaces. The presence
+    of arcs linking the nodes suggests that the corresponding modules have been designed
+    to be interoperable, and the design decisions that make it possible should also
+    be documented. Furthermore, arcs determine the temporal sequence of the processing
+    stages and may be associated with event triggers (say, pull updated models for
+    serving as they become available), scheduled tasks (say, retrain a model after
+    a certain amount of new data becomes available) or human inputs (say, for model
+    validation). Accommodating future needs that are not yet made explicit in the
+    form of arcs in the DAG may have influenced the design of module interfaces, and
+    such considerations should be documented as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is, however, just one possible perspective from which we can describe a
+    machine learning pipeline. Its design is likely to be influenced by the combination
+    of the local and remote compute systems it runs on or it may run on in the future
+    because individual modules will have different requirements (Section [2.4](hardware.html#hardware-choice)).
+    How the overall functionality of the pipeline is structured into modules may be
+    influenced by the domain or the business it operates in. For instance, a machine
+    learning pipeline that uses computer vision for supporting clinicians in diagnosing
+    diseases from medical images (like the use case example in Section [8.5](documenting-code.html#usecases))
+    may have the DAG patterned after the tasks performed by different specialists
+    and after the progression of clinical information in the diagnostic process. Or,
+    in a business context, different parts of the pipeline may be under the supervision
+    of different units within the company, with clear boundaries to avoid overlaps
+    for personnel and budget reasons. The interplay of the models and of various algorithms
+    at a probabilistic level provides one more view of the machine learning pipeline
+    as an overarching, hierarchical model whose components may or may not be related
+    to how the code is organised into modules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thorough documentation of the architecture and of the design decisions behind
+    a machine learning pipeline and the underlying systems will naturally comprise
+    a set of documents written from different perspectives to provide different conceptual
+    views. Using the ubiquitous language (Section [8.1](documenting-code.html#comments))
+    across all documents will help cross-referencing them and make them accessible
+    to all the people working on or using different modules. Cross-referencing the
+    documents with each other and with the interface documentation of each module
+    will allow readers to navigate them and to jump from one document to another to
+    view related pieces of information. Describing a real-world pipeline and the systems
+    it runs on in a single document is not practical: the result would be unwieldy
+    and difficult to keep up to date.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Overall, the DAG can provide a suitable outline of the structure of the whole
+    documentation for the machine learning pipeline and a map to navigate it. A systems
+    diagram like Figure [2.1](hardware.html#fig:schematic) can serve a similar purpose
+    for documenting the machine learning systems. Domain concepts can then be organised
+    informally with a diagram of some sort; it will rarely be worthwhile to use a
+    formal graphical specification such as UML (Fowler [2003](#ref-uml)). Ideally,
+    all these graphical representations will share some similarities and will be meaningful
+    to all of domain experts, machine learning experts and software engineers. If
+    the domain experts do not understand the architecture of the system, there may
+    be something wrong with it: they can communicate any issues they may have using
+    the ubiquitous language, and discuss them while we iterate project scoping (Section
+    [5.3.1](design-code.html#scoping-pipeline)) and prototyping (Section [5.3.2](design-code.html#baseline-pipeline))
+    until everybody is comfortable with the design.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For obvious reasons, it is difficult to find public, detailed examples of design
+    documentation because companies consider their machine learning pipelines to be
+    valuable assets that give them a competitive advantage. Much of that information,
+    however, is available on the engineering blogs of companies like Uber (Uber Technologies
+    [2022](#ref-uber-blog)) and Spotify (Spotify [2022](#ref-spotify-blog)[b](#ref-spotify-blog)).
+    We will use them as sources to outline an example of how design documentation
+    and mission statements (Section [8.4](documenting-code.html#domaindocs)) should
+    be organised.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![Uber''s machine learning pipeline for early fraud detection, based on \cite{uber-fraud}:
+    the domain DAG (top), the machine learning DAG (middle) and the software architecture
+    DAG (bottom).](../Images/860a9e5c01568e080ccd724dce2c664d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8.2: Uber’s machine learning pipeline for early fraud detection, based
+    on : the domain DAG (top), the machine learning DAG (middle) and the software
+    architecture DAG (bottom).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider the machine learning pipeline for early fraud detection at Uber (Zelvenskiy
+    et al. [2022](#ref-uber-fraud)). After briefly describing what business problem
+    the pipeline is solving, the blog post illustrates the pipeline from each of the
+    domain, machine learning and software architecture perspectives. We show each
+    of them in Figure [8.2](documenting-code.html#fig:uber-design):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The domain perspective (top panel): Uber receives from its customers a constant
+    stream of orders which will be initially screened by a machine learning model
+    for frauds. If found to be suspicious, they will be passed to a human expert for
+    manual validation and either approved or rejected (Section [5.3.6](design-code.html#monitoring-pipeline)).
+    The decisions made by the human experts are then fed back into the machine learning
+    model doing the automatic screening to improve its performance over time and to
+    prevent issues with data drift (see Sections [5.2.1](design-code.html#data-debt)
+    and [9.1.3](troubleshooting-code.html#troubleshooting-dynamic-data)).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The machine learning perspective (middle panel): the data flows through different
+    pre-processing algorithms, including feature selection, to the models tasked to
+    detect suspicious transactions. The same models will prioritise such transactions
+    and schedule them for manual review.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The software architecture perspective (bottom panel): each node in the DAG
+    is a piece of software (possibly running on specific hardware) implementing the
+    algorithms and the models found in the previous pipeline, storing data, or moving
+    information around.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Each of these pipelines will be easier to reason about for people with different
+    backgrounds, and it can be used to provide pointers to more detailed information
+    on the data processing steps, the models or the modules associated with the individual
+    nodes. All pipelines span the same four stages (data ingestion and preparation,
+    automatic screening, manual screening, outcome) but provide very different views
+    and insights on how fraud detection is implemented. For instance, the second and
+    the third pipelines highlight the feedback loop tying model retraining to manual
+    review, which doubles as a data labelling step, and to the statistical distribution
+    of the relevant features in the data. However, looking at the pipelines side by
+    side makes it possible to relate the different perspectives they come from as
+    well as the relationships between the nodes that appear in the same stage but
+    in different DAGs. In a sense, the DAGs provide a visual representation of the
+    conceptual model behind the ubiquitous language. Their main limitation is the
+    inability to describe the semantic meaning of the arcs effectively, as is the
+    case for UML: this information is what the various documents in the architecture
+    documentation provide, complementing what we can see from the DAGs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8.4 Documenting Algorithms and Business Cases
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The documentation of individual modules and of how they work together in the
+    machine learning pipeline should be supplemented by two other documents:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a *technical report* detailing the relevant probabilistic and statistical properties
+    of the machine learning models; and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: a *mission statement* describing, at a high level, what is the goal of the machine
+    learning pipeline from a domain or business perspective.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'There are several reasons for preparing a technical report covering the relevant
+    facts about the algorithms and the models. Firstly, we can establish a coherent
+    mathematical notation that agrees with the ubiquitous language (Section [8.1](documenting-code.html#comments))
+    and with the variable naming scheme used by our modules (Section [6.2](writing-code.html#naming)),
+    and that can be related to that of any external libraries we may be using. Different
+    parts of the scientific literature have different notation practices: the same
+    concepts may be expressed with different notation or have different definitions,
+    or the same notation may have different meanings. This is likely to cause some
+    confusion because of the variety of approaches involved in a real-world machine
+    learning pipeline. Secondly, a technical report will reduce the need to access
+    the academic literature, which can become difficult over time because journal
+    papers, conference proceedings and their supplementary materials can be locked
+    behind paywalls or simply vanish from the Internet when their authors change employers.
+    Thirdly, we can limit ourselves to the properties of the models and of the algorithms
+    that are relevant to us, and we can concentrate on documenting those properties
+    well and in an approachable way. (It is not common for the canonical reference
+    for a model to be its clearest illustration, especially in machine learning where
+    8-page conference papers represent a fair share of the literature!) In particular,
+    we can focus on the pros and cons of any models and algorithms we evaluate for
+    use in the pipeline with respect to the specific domain that is relevant to us.
+    This will be more informative than most benchmarking efforts based on reference
+    data sets from the literature. Finally, we can easily cross-reference the technical
+    report with both module interface (Section [8.2](documenting-code.html#apidocs))
+    and design documentation (Section [8.3](documenting-code.html#designdocs)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A mission statement, which (Clements et al. [2011](#ref-clements)) calls a
+    “domain vision statement”, is a brief document of 1–2 pages identifying the core
+    domain of the machine learning pipeline and its aims as established during project
+    scoping (Section [5.3.1](design-code.html#scoping-pipeline)). It serves two purposes:
+    evaluating whether the pipeline is fit for its intended purpose and guiding its
+    evolution at a strategic level. By stating its purpose, the mission statement
+    tells us what outcome we should judge. In turn, this allows us to define a scale
+    of measurement ranging from “bad performance” to “good performance” according
+    to how effectively and efficiently the pipeline fulfils its purpose. At the same
+    time, it can serve as a high-level guideline for evolving it. The compute systems,
+    the machine learning models and the domain concepts the pipeline is built upon
+    will inevitably change over time. With each change, we can plan at the tactical
+    level how to evolve it by pinpointing which components we should update and how.
+    However, all these local changes should be consistent with a long-term strategy
+    that ensures that the pipeline evolves coherently as a whole over time as its
+    intended purpose changes. In other words, the mission statement is the “aspirational”
+    counterpart of the more technical design documentation (Section [8.3](documenting-code.html#designdocs))
+    and of the more practical use cases (Section [8.5](documenting-code.html#usecases)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, consider the mission statement behind the machine learning pipeline
+    powering Spotify’s home screen (Edmundson [2021](#ref-spotify-ml)). Firstly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “At Spotify, our goal is to connect listeners with creators, and one way we
+    do that is by recommending quality music and podcasts on the Home page. Machine
+    learning is central to how we personalize the Home page user experience and connect
+    listeners to the creators that are most relevant to them.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The pipeline is a recommender system that matches users with contents. This
+    requires tracking the users’ listening data and Spotify’s catalogue of music and
+    podcasts, which has implications in terms of hardware, data ingestion and data
+    processing capabilities in the pipeline. Both user data and the catalogue will
+    change over time, as will their features: hence the models predicting which music
+    and which podcasts the users may like should be updated at regular intervals.
+    How often will depend on how quickly the catalogue changes, on how quickly the
+    size of the users’ listening data grows and on what models we will use, so it
+    is not appropriate nor possible to recommend a schedule for the updates. For the
+    same reason, what features of the data will be used to provide the recommendations
+    is left unstated. Furthermore, the exact definition of “quality” and “relevant”
+    will depend on the specific technical criteria putting them into numbers, on how
+    engagement will be measured, on the models, and on how their accuracy metrics
+    relate to revenue.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Secondly, the two final outputs of the pipeline are introduced in domain terms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '“Stage 1: Candidate generation: The best albums, playlists, artists, and podcasts
+    are selected for each listener. Stage 2: Ranking: Candidates are ranked in the
+    best order for each listener.”'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The pipeline is expected to present the users with recommendations ranked in
+    terms of (predicted) preference. Again, details such as how many items are recommended
+    and how they are ranked are implementation details that are bound to change over
+    time and thus do not belong in the mission statement. The outputs are then described
+    in more detail:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '“The Podcast Model: Predicts podcasts a listener is likely to listen to in
+    the ‘Shows you might like’ shelf. The Shortcuts Model: Predicts the listener’s
+    next familiar listen in the Shortcuts feature. The Playlists Model: Predicts the
+    playlists a new listener is likely to listen to in the ‘Try something else’ shelf.”'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The statement does not specify which models will be used, nor how many. It
+    does not even state that they will be machine learning models: in fact, it later
+    says that “some content is generated via heuristics and rules and some content
+    is manually curated by editors.” Which models or heuristics are appropriate will
+    depend on what features will be available in the data, on what state-of-the-art
+    models will be available from the literature, and on what software and hardware
+    will be needed to provide recommendations in real time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thirdly, how the outputs of the pipeline are presented to the users:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “The Home page consists of cards — the square items that represent an album,
+    playlist, etc. — and shelves — the horizontal rows that contain multiple cards.”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Note how the statement introduces the metaphor the user interface will be based
+    on, but without describing any implementation details. It would not be appropriate
+    to do it here: we will want to change the interface over time in response to any
+    insights from usability studies and from usage patterns collected by telemetry.
+    Furthermore, different platforms and operating systems will have different capabilities
+    and will require at least some levels of customisation. For instance, it is often
+    impossible to design a user interface with good ergonomics on both mobile and
+    desktop systems.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8.5 Illustrating Practical Use Cases
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Last but not least, topical examples showcasing the machine learning pipeline
+    in action can be very valuable. Pipelines are built to address some need like
+    automating and speeding up analyses or improving products: the best way to motivate
+    their development, use and maintenance is to show that they can address that need
+    effectively and efficiently in the context of the domain or of the business line
+    of the prospective users. Users will then be able to relate to the problems the
+    machine learning pipeline is tackling and they will be in a position to appreciate
+    the advantages of using it. The types of documentation presented in the previous
+    sections are either too technical, too abstract or too focused on the inner workings
+    of the pipeline for this purpose.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An example of a very effective use case is the InnerEye project (Microsoft Research
+    Cambridge [2022](#ref-innereye)) from Microsoft Research Cambridge (UK), which
+    aims to develop machine learning pipelines for medical imaging. The video linked
+    in the reference talks about the specific application of performing image segmentation
+    in 3D medical images taken from cancer patients scheduled to be treated with radiotherapy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*It states the need in clinical terms*: speeding up the segmentation in magnetic
+    resonance (MR) and computerised tomography (CT) scans while retaining a sufficient
+    degree of accuracy.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*It states the problem in a way prospective users can relate to*: radiologists
+    do segmentation manually, outlining the tumour in a sequence of dozens of cross-section
+    images with a visual tool to obtain a 3D contour. This is a slow process, and
+    the precision of the contour is limited. It takes hours of preparation to map
+    tumours and healthy tissues to target treatment for the former and to limit exposure
+    for the latter.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*It states how the machine learning pipeline can address the need from the
+    perspective of the user*: automatic or human-assisted segmentation. The video
+    shows the user interface that would be used by the radiologists, to give them
+    a feeling of how it would fit in their everyday work. This makes it possible to
+    contrast, live, the time it takes for manual, automatic and human-assisted segmentation
+    as well as the level of detail and precision of the segmentation.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*It states the value of the solution to the user*: it takes minutes instead
+    of hours to prepare a treatment plan for a patient with the desired accuracy.
+    Furthermore, the same tools can be used to track how cancer is responding to therapy.
+    These improvements will lead to better treatments and better outcomes.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note that the video does not make any quantitative statements about running
+    times nor about the statistical accuracy of the segmentation as neither would
+    be easily interpretable for radiologists. Instead, the InnerEye project has a
+    web page linking all the scientific publications where we can find these numbers.
+    Machine learning engineers can use them to evaluate the pipeline from the perspective
+    of their own discipline. Furthermore, the InnerEye project news page highlights
+    that the machine learning pipeline has been deployed and is currently used on
+    actual patients at Addenbrooke’s Hospital in Cambridge. The implication that it
+    obtained regulatory approval and that a radiology department finds it worthwhile
+    to use it are strong indications that the machine learning pipeline is not an
+    academic endeavour but something that provides value in real-world clinical practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we would like to point out that practical use cases may also be instrumental
+    in gathering feedback from prospective users. Illustrating them will provide a
+    natural venue for users to discuss how the machine learning pipeline would be
+    useful (or not) and what their strong (weak) points appear to be from their perspective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Brandl, G., and the Sphinx Team. 2022\. *Sphinx: Python Documentation Generator*.
+    [https://www.sphinx-doc.org/en/master/](https://www.sphinx-doc.org/en/master/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Carpenter, B., A. Gelman, M. D. Hoffman, D. Lee, B. Goodrich, M. Betancourt,
+    M. Brubaker, J. Guo, P. Li, and A. Riddell. 2017\. “Stan: A Probabilistic Programming
+    Language.” *Journal of Statistical Software* 76 (1): 1–32.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Clements, P., F. Bachmann, L. Bass, D. Garlan, J. Ivers, R. Little, P. Merson,
+    R. Nord, and J. Stafford. 2011\. *Documenting Software Architectures: Views and
+    Beyond*. 2nd ed. Addison-Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CRAN Team. 2022\. *The Comprehensive R Archive Network*. [https://cran.r-project.org/](https://cran.r-project.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edmundson, A. 2021\. *The Rise (and Lessons Learned) of ML Models to Personalize
+    Content on Home*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Evans, E. 2003\. *Domain-Driven Design: Tackling Complexity in the Heart of
+    Software*. Addison-Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fowler, M. 2003\. *UML Distilled*. 3rd ed. Addison-Wesley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fowler, M. 2018\. *Refactoring: Improving the Design of Existing Code*. 2nd
+    ed. Addison-Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Martin, R. C. 2008\. *Clean Code*. Prentice Hall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: McConnell, S. 2004\. *Code Complete*. 2nd ed. Microsoft Press.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Microsoft Research Cambridge. 2022\. *Project InnerEye–Democratizing Medical
+    Imaging AI*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Muth, C., Z. Oravecz, and J. Gabry. 2018\. “User-Friendly Bayesian Regression
+    Modeling: A Tutorial with rstanarm and shinystan.” *The Quantitative Methods for
+    Psychology* 14 (2): 99–119.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ousterhout, J. 2018\. *A Philosophy of Software Design*. Yaknyam Press.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Project Jupyter. 2022\. *Jupyter*. [https://jupyter.org/](https://jupyter.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Schubert, E., J. Sander, M. Ester, H. P. Kriegel, and X Xu. 2017\. “DBSCAN
+    Revisited, Revisited: Why and How You Should (Still) Use DBSCAN.” *ACM Transactions
+    on Database Systems* 42 (3): 19.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Scikit-learn Developers. 2022\. *Scikit-learn: Machine Learning in Python*.
+    [https://scikit-learn.org/](https://scikit-learn.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spotify. 2022b. *Spotify Engineering Blog*. [https://engineering.atspotify.com/](https://engineering.atspotify.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The mypy Project. 2014\. *mypy: Optional Static Typing for Python*. [http://mypy-lang.org/](http://mypy-lang.org/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thomas, D., and A. Hunt. 2019\. *The Pragmatic Programmer: Your Journey to
+    Mastery*. Anniversary. Addison-Wesley.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Uber Technologies. 2022\. *Uber Engineering Blog*. [https://eng.uber.com/](https://eng.uber.com/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: van Heesch, D. 2022\. *Doxygen*. [https://www.doxygen.nl/index.html](https://www.doxygen.nl/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Wickham, H., P. Danenberg, G. Csárdi, M. Eugster, and RStudio. 2022\. *roxygen2:
+    In-Line Documentation for R*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Xie, Y. 2015\. *Dynamic Documents with R and knitr*. 2nd ed. CRC Press.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Zelvenskiy, S., G. Harisinghani, T. Yu, E. Ng, and R. Wei. 2022\. *Project
+    Radar: Intelligent Early-Fraud Detection*. [https://eng.uber.com/project-radar-intelligent-early-fraud-detection/](https://eng.uber.com/project-radar-intelligent-early-fraud-detection/).'
+  prefs: []
+  type: TYPE_NORMAL
