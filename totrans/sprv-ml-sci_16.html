@@ -1,0 +1,743 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>10  Causality</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>10  Causality</h1>
+<blockquote>原文：<a href="https://ml-science-book.com/causality.html">https://ml-science-book.com/causality.html</a></blockquote>
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-two.html">Integrating Machine Learning Into Science</a></li><li class="breadcrumb-item"><a href="./causality.html"><span class="chapter-number">10</span>  <span class="chapter-title">Causality</span></a></li></ol></nav>
+<div class="quarto-title">
+
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Machine learning exploits all available information to make predictions – and there are many ways to predict things. A good example of this is assessing a person’s COVID risk. You can predict it from features such as:</p>
+<ul>
+<li>wearing a mask</li>
+<li>symptoms like dry cough</li>
+<li>vitamin D levels</li>
+</ul>
+<p>From a causal perspective, these features relate differently to the COVID risk. This difference is illustrated in the so-called <em>causal graph</em> below, which is a graphical tool for thinking about causal dependencies.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/d9849ad0150ca072cb94716dd6b44d48.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%" data-original-src="https://ml-science-book.com/images/dag-cough-covid.jpg"/></p>
+</figure>
+</div>
+<ul>
+<li><strong>Causes:</strong> Wearing a mask is a causal factor for the COVID risk. Why is it a cause? Well, those who put on a mask can thereby lower their COVID risk <span class="citation" data-cites="howard2021evidence"><a href="references.html#ref-howard2021evidence" role="doc-biblioref">[1]</a></span>. The fact that masks are causal for COVID risk is highlighted by the outgoing arrow from the mask node to the COVID node.</li>
+<li><strong>Effects:</strong> Dry cough is an effect of COVID <span class="citation" data-cites="alimohamadi2020determine"><a href="references.html#ref-alimohamadi2020determine" role="doc-biblioref">[2]</a></span>. People who are healthy and then get infected with COVID likely get dry cough as a symptom. Importantly, it is not a cause of COVID – if people take cough sirup this may help against their cough but does not change their COVID risk. The fact that dry coughing is an effect of COVID is highlighted by the incoming arrow to the cough node from the COVID node.</li>
+<li><strong>Associations:</strong> Vitamin D levels are associated with COVID risk <span class="citation" data-cites="d2022vitamin"><a href="references.html#ref-d2022vitamin" role="doc-biblioref">[3]</a></span>. For example, in the overall population, people with higher vitamin D levels less often get COVID than people with low vitamin D levels. Still, it is unclear if higher vitamin D levels cause a lower COVID risk or if the association arises for entirely different reasons. The unexplained association between vitamin D levels and COVID is highlighted by an undirected dashed arrow.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></li>
+</ul>
+<div class="raven-box">
+<p>Initially, there was a lot of hype about machine learning in Raven Medicine. Some even proclaimed the end of costly medical experiments. But the enthusiasm soon waned: Machine learning provided little insight into how to treat Ravens to make them healthy. Was the red pill or the blue pill more effective? The old proverb “correlation is not causation” hit the machine learning enthusiasts hard.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/f0a114295bfd0436fd7a196513a13a93.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%" data-original-src="https://ml-science-book.com/images/raven-causality.jpg"/></p>
+</figure>
+</div>
+</div>
+<section id="prediction-does-not-require-causal-understanding" class="level2" data-number="10.1">
+<h2 data-number="10.1" class="anchored" data-anchor-id="prediction-does-not-require-causal-understanding"><span class="header-section-number">10.1</span> Prediction does not require causal understanding</h2>
+<p>All the features we have just listed can be equally helpful in predicting COVID risk with machine learning. You may decide to rely only on causes or only on effects:</p>
+<ul>
+<li><strong>Predict effects from causes:</strong> An example is the protein folding problem discussed at the beginning, where the amino acid sequence causally determines the protein structure <span class="citation" data-cites="scholkopf2012causal"><a href="references.html#ref-scholkopf2012causal" role="doc-biblioref">[5]</a></span>.</li>
+<li><strong>Predict causes from effects:</strong> An example is predicting the presence of a black hole from its gravitational effects on the surrounding bodies.</li>
+<li><strong>Mixed prediction:</strong> This is probably the most common case. An example is medical diagnosis. To diagnose malaria, doctors take into account symptoms like high fever but at the same time causes such as a mosquito bite from your South America travels.</li>
+</ul>
+<p>In the end, it is your decision as a modeler what you want to incorporate in your prediction model, whether it is causes, effects, causes of effects, or even spurious associations. For the machine learning model to successfully predict, all that matters is that the feature contains information about the target variable.</p>
+</section>
+<section id="costly-experiments-distinguish-causes-from-effects" class="level2" data-number="10.2">
+<h2 data-number="10.2" class="anchored" data-anchor-id="costly-experiments-distinguish-causes-from-effects"><span class="header-section-number">10.2</span> Costly experiments distinguish causes from effects</h2>
+<p>Controlled experiments are the best approach to distinguish between causes and effects. Let’s say you have two variables, vitamin D and COVID. To establish whether higher vitamin D levels reduce the COVID risk, you could run a <em>randomized control trial (RCT)</em>. You have 10,000 test subjects: 5,000 <em>randomly</em> selected subjects belong to the treatment group (they get vitamin D supplements); the other 5,000 belong to the control group (they get placebos). If after a certain time, the COVID infections in the treatment group are significantly lower than in the control group, you can conclude that vitamin D is a causal factor for COVID risk. Easy, right?!</p>
+<p>Unfortunately, conducting controlled experiments in the real world is cumbersome. It takes a lot of time, money, and resources. Some experiments can be ethically or legally problematic, such as the administration of harmful drugs to humans. Other experiments are beyond the capabilities of humans – like investigating the effects of pushing Jupiter out of its solar trajectory – you’d need to be as strong as Saitama <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> for that…</p>
+<p>Social scientists, in particular, often deal with <em>observational data</em>. Observational data is data that is measured without controlled conditions. Like asking random people on the streets for their vitamin D levels and if they had COVID. Observational data is what we gather all the time – the little measuring device in your pocket is piling up tons of it.</p>
+</section>
+<section id="machine-learning-can-generate-causal-insights" class="level2" data-number="10.3">
+<h2 data-number="10.3" class="anchored" data-anchor-id="machine-learning-can-generate-causal-insights"><span class="header-section-number">10.3</span> Machine learning can generate causal insights</h2>
+<p>Observational data is what you are likely feeding your machine learning algorithm. Unfortunately, observational data alone does not provide causal insight <span class="citation" data-cites="pearl2018book"><a href="references.html#ref-pearl2018book" role="doc-biblioref">[6]</a></span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"/>
+</div>
+<div class="callout-title-container flex-fill">
+Insight
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>It is impossible to distinguish causes from effects from observational data alone <span class="citation" data-cites="pearl2018book"><a href="references.html#ref-pearl2018book" role="doc-biblioref">[6]</a></span>.</p>
+</div>
+</div>
+<p>If you cannot even distinguish between causes and effects from observational data alone, how can machine learning help with causality? It turns out that machine learning can help with causal inference (answering causal questions with the help of data), but usually not for free: You have to make assumptions about causal structures.</p>
+<p>These are the causal questions that machine learning can help with:</p>
+<ul>
+<li><strong>Studying associations to form causal hypotheses:</strong> Machine learning helps to investigate associations in data such as the association between COVID and vitamin D levels, which can be the starting point for causal hypothesizing.</li>
+<li><strong>Estimating causal effects:</strong> Machine learning can be used to estimate causal effects, such as quantifying the effect of vitamin D on the COVID risk.</li>
+<li><strong>Learning causal models:</strong> You can use machine learning to learn causal models. Causal models are formal tools to reason about real-world interventions and counterfactual scenarios.</li>
+<li><strong>Learning causal graphs:</strong> Causal graphs encode the direction of causal relationships, and machine learning can help learn them directly from data.</li>
+<li><strong>Learning causal representations:</strong> Machine learning can learn causal variables, which are high-level representations (e.g. objects) of low-level inputs (e.g. pixels).</li>
+</ul>
+<p>These five tasks structure the rest of this chapter.</p>
+</section>
+<section id="studying-associations-to-form-causal-hypotheses" class="level2" data-number="10.4">
+<h2 data-number="10.4" class="anchored" data-anchor-id="studying-associations-to-form-causal-hypotheses"><span class="header-section-number">10.4</span> Studying associations to form causal hypotheses</h2>
+<p>You may have heard that machine learning models are capturing complex associations in data. But what are associations? It is easiest to understand associations by their opposite, namely statistical independence. Two events are independent if knowing one event is uninformative about the other, e.g. knowing about your COVID risk does not tell anything about the weather on the planet Venus. More formally, two features <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are <em>statistically independent</em> if <span class="math inline">\(\mathbb{P}(A\mid B)=\mathbb{P}(A)\)</span>. We call two features <em>associated</em> whenever they are not statistically independent. For example, COVID risk is associated with wealth. Statistically, the higher your wealth the lower your COVID risk <span class="citation" data-cites="gong2022wealth"><a href="references.html#ref-gong2022wealth" role="doc-biblioref">[7]</a></span>. But be careful, associations are complex creatures. For example, wealthier venders are likely to have a higher COVID risk than poor venders because they have contact with more customers. This is called an <em>interaction effect</em>.</p>
+<p>Like classical statistical techniques, machine learning together with interpretability methods (see <a href="interpretability.html" class="quarto-xref"><span>Chapter 9</span></a>) enables you to read out complex properties of your data. You can for example study:</p>
+<ul>
+<li><strong>Feature effects &amp; interactions:</strong> How is the target associated with certain input features? <!-- <br>
+Formal: $\mathbb{P}(Y\mid X_{S}=x_S,X_{-S})$ --></li>
+<li><strong>Feature importance:</strong> How much do certain features contribute to the prediction of the target? <!-- <br>
+Formal: $\mathbb{E}[L(Y,f(X_{-S}))-L(Y,f(X))]$ --></li>
+<li><strong>Attention:</strong> What features is our model listening to when predicting the target? <!-- <br>
+Formal: $\hat{f}'(x)$ or variants thereof[^Notation] --></li>
+</ul>
+<section id="form-causal-hypotheses-with-the-reichenbach-principle" class="level3" data-number="10.4.1">
+<h3 data-number="10.4.1" class="anchored" data-anchor-id="form-causal-hypotheses-with-the-reichenbach-principle"><span class="header-section-number">10.4.1</span> Form causal hypotheses with the Reichenbach principle</h3>
+<p>Assume you find in your data the association between vitamin D and the COVID risk. Then, the <strong>Reichenbach principle</strong> can guide you in forming a causal hypothesis. The principle states three possibilities where the association can come from <span class="citation" data-cites="sep-physics-Rpcc"><a href="references.html#ref-sep-physics-Rpcc" role="doc-biblioref">[8]</a></span>:</p>
+<ol type="1">
+<li>Vitamin D can be a cause of COVID.</li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/09895202d28297e5abf0b48d1a57531b.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%" data-original-src="https://ml-science-book.com/images/dag-vitaminD-covid.jpg"/></p>
+</figure>
+</div>
+<ol start="2" type="1">
+<li>COVID can be a cause of vitamin D.</li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/d525ce89882804721623f3cb2721197e.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%" data-original-src="https://ml-science-book.com/images/dag-covid-vitaminD.jpg"/></p>
+</figure>
+</div>
+<ol start="3" type="1">
+<li>Or, there is a common cause <span class="math inline">\(Z\)</span> of both, vitamin D and COVID.</li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/601366aea4e96d9ed42b420b0ed3e30f.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%" data-original-src="https://ml-science-book.com/images/dag-confounder.jpg"/></p>
+</figure>
+</div>
+<p>Nothing against Reichenbach, but in reality, there are two more explanations for the association:</p>
+<ul>
+<li>First, the association can be <em>spurious</em>. It is only there because of limited data. If you continue gathering data, the association will vanish. <a href="#fig-spurious" class="quarto-xref">Figure <span>10.1</span></a> shows an almost perfect association between worldwide non-commercial space launches and the number of doctorates awarded in sociology <span class="citation" data-cites="vigen2015spurious"><a href="references.html#ref-vigen2015spurious" role="doc-biblioref">[9]</a></span>. But is it causal? Perhaps Elon Musk can boost his business by awarding a few PhD scholarships in sociology…</li>
+<li>Second, the association can result from a <em>selection bias</em> in the data collection process. It occurs if the data sample is not representative of the overall population. For example, while niceness and handsomeness are probably statistically independent traits in the overall population, they can become dependent if you only look at people you would date <span class="citation" data-cites="ellenberg2014not"><a href="references.html#ref-ellenberg2014not" role="doc-biblioref">[10]</a></span>.</li>
+</ul>
+<div id="fig-spurious" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-spurious-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/8aee4a295d94e5e9aa7d5fa8c311d67e.png" class="img-fluid figure-img" data-original-src="https://ml-science-book.com/images/spurious2.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-spurious-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 10.1: There is an almost perfect association between the worldwide non-commercial space launches and the number of sociology doctorates awarded. Chart by Tyler Vigen, CC-BY (https://creativecommons.org/licenses/by/4.0/)
+</figcaption>
+</figure>
+</div>
+<p>But how to identify the correct explanation for the association between COVID and vitamin D? Because there is a lot of data (not spurious) and the association is found in the overall population (no selection bias), you may infer that one of Reichenbach’s three cases applies. Gibbons et al. <span class="citation" data-cites="gibbons2022association"><a href="references.html#ref-gibbons2022association" role="doc-biblioref">[11]</a></span> compared a large group of veterans receiving different vitamin D supplementations to a group without treatment. They found that the treatment with vitamin D reduces the risk of getting COVID significantly and therefore recommend broad supplementation. Even though the study was not a randomized control trial, it strongly indicates that there is a causal link between vitamin D levels and COVID risk.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/09895202d28297e5abf0b48d1a57531b.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%" data-original-src="https://ml-science-book.com/images/dag-vitaminD-covid.jpg"/></p>
+</figure>
+</div>
+<p>The scientific story may continue at that point: There might be unknown common causes of both vitamin D and COVID risk. Moreover, the causal link does not explain by what mechanism in the body vitamin D acts on COVID risk. That’s how science works, new questions keep popping up…</p>
+</section>
+<section id="select-explanatory-variables-with-feature-importance" class="level3" data-number="10.4.2">
+<h3 data-number="10.4.2" class="anchored" data-anchor-id="select-explanatory-variables-with-feature-importance"><span class="header-section-number">10.4.2</span> Select explanatory variables with feature importance</h3>
+<p><em>Importances</em> of features primarily allow you to evaluate which features are most informative for predicting the target. For example, they may tell you whether vitamin D levels contain any information about your COVID risk beyond the information that is already contained in the mask and the cough features. But importance itself gives no causal insight. It can still be useful for a causal analysis: importance allows you to understand what information is redundant, noisy, or just unnecessary. This may prove helpful in selecting sparse and robust features for a causal analysis <span class="citation" data-cites="yu2020causality"><a href="references.html#ref-yu2020causality" role="doc-biblioref">[12]</a></span>.</p>
+<p>Imagine you know a person’s age, country of origin, gender, favorite color, and favorite band. You want to predict again her COVID risk. By studying feature importance, you may find out that:</p>
+<ul>
+<li>The favorite color has very little importance under all constellations. It might even have negative importance as it introduces noise.</li>
+<li>The favorite band is extremely informative. You can even drop all other features without a major loss in predictive performance.</li>
+<li>If you know the age, country of origin, and gender of a person, knowing her favorite band does not add much.</li>
+</ul>
+<p>Depending on your goal, this can be very insightful. You can generally drop the favorite color feature, it is not predictive and will not provide insights for a causal analysis. If you want to reason about policy interventions to lower the COVID risk, you can exclude the favorite band from your causal analysis. If, on the other hand, you are a sociologist who wants to study how taste in music is related to health, you may want to keep all features.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/4a936296dba52672b5d3879588ea2fcc.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%" data-original-src="https://ml-science-book.com/images/dag-multi-covid.jpg"/></p>
+</figure>
+</div>
+</section>
+<section id="find-high-level-variables-with-attention" class="level3" data-number="10.4.3">
+<h3 data-number="10.4.3" class="anchored" data-anchor-id="find-high-level-variables-with-attention"><span class="header-section-number">10.4.3</span> Find high-level variables with attention</h3>
+<p>The question of what a model is attending to in its decisions is prominent in interpretability research, particularly in image classification <span class="citation" data-cites="adebayo2018sanity"><a href="references.html#ref-adebayo2018sanity" role="doc-biblioref">[13]</a></span>. Although scientists may be more concerned with the relationship in the data than in the model, model attention may still be relevant if the input features have meaning only in the aggregate, not individually. Think of pixels that constitute images, letters that constitute sentences, or frequencies that constitute sounds. Attention can point you to meaningful constructs or subparts that are associated with the target and allow you to form causal hypotheses about them.</p>
+<p>For example, while predicting COVID from CT scans sounds like taking a sledgehammer to crack a nut, it can be an interesting approach to learning more about how the disease affects the human body. Even though the input features themselves are pixels, they collectively form higher-level concepts that can be highlighted by saliency-based interpretability techniques. This approach was for example used by <span class="citation" data-cites="hu2020weakly"><a href="references.html#ref-hu2020weakly" role="doc-biblioref">[14]</a></span> to detect lesions in the lungs of COVID patients as illustrated in <a href="#fig-lesions" class="quarto-xref">Figure <span>10.2</span></a>.</p>
+<div id="fig-lesions" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-lesions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/5ff5d7bb631e9fa2190c3a0cd3c37b73.png" class="img-fluid figure-img" data-original-src="https://ml-science-book.com/images/lesions.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-lesions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 10.2: Lesions in CT scans of lungs detected with integrated gradients, small in green, mixed in yellow, large in red. Figure by <span class="citation" data-cites="hu2020weakly"><a href="references.html#ref-hu2020weakly" role="doc-biblioref">[14]</a></span>, CC-BY (https://creativecommons.org/licenses/by/4.0/)
+</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="estimating-causal-effects-with-machine-learning" class="level2" data-number="10.5">
+<h2 data-number="10.5" class="anchored" data-anchor-id="estimating-causal-effects-with-machine-learning"><span class="header-section-number">10.5</span> Estimating causal effects with machine learning</h2>
+<p>So far, we have assumed that researchers are searching in the dark, where they use machine learning to find interesting associations to form and test causal hypotheses. However, often researchers have causal knowledge or intuitions about how features relate to each other. Their goal is causal inference, or, to be more precise, to estimate causal effects, which is a more well-defined problem than just exploring associations.</p>
+<p>Causal graphs show causal dependencies, e.g. if you put on a mask, it will causally affect your COVID risk. But this begs the question of <strong>how</strong> it affects your risk. Is wearing a mask lowering your COVID risk and if yes, by how much? This question asks for a <em>causal effect</em>. Questions for causal effects were omnipresent during the pandemic:</p>
+<ul>
+<li>How does vaccination affect the COVID risk of elderly people?</li>
+<li>How does the average COVID risk change with contact restrictions compared to without them?</li>
+<li>How does treatment with vitamin D pills lower the COVID risk of African Americans <span class="citation" data-cites="gibbons2022association"><a href="references.html#ref-gibbons2022association" role="doc-biblioref">[11]</a></span>?</li>
+</ul>
+<p>Causal effects always have the same form. You compare a variable of interest such as COVID risk <em>with treatment</em>, for example, masks, against those <em>without treatment</em> (no-mask). This gives us the so-called <em>Average Treatment Effect</em> (ATE). In the case of masks being the treatment, we can formally describe the effect on the COVID risk:</p>
+<p><span class="math display">\[\text{ATE}=\mathbb{E}[\text{COVID}\mid do(\text{mask}=1)] - \mathbb{E}[\text{COVID}\mid do(\text{mask}=0)]\]</span></p>
+<p>Let’s unpack this formula. The <em>do</em> in the ATE denotes the do-operator, which means you intervene on a variable and set it to a certain value. Thus, the first term describes the expected COVID risk if you force people to wear masks. The second term describes the expected COVID risk if you force people not to wear masks. The difference between the two terms describes the causal effect of masks on the COVID risk.</p>
+<p>In many cases, rather than asking for the ATE, you ask for the treatment effect for a specific subgroup of people that share certain characteristics. During the pandemic, for example, researchers might have asked about the causal effect of masks for children under 10 years of age. This is the so-called <em>Conditional Average Treatment Effect</em> (CATE):</p>
+<p><span class="math display">\[\begin{align*}
+\text{CATE} &amp;= \mathbb{E}[\text{COVID} \mid do(\text{mask}=1), \text{age}&lt;10] \\
+&amp;\quad - \mathbb{E}[\text{COVID} \mid do(\text{mask}=0), \text{age}&lt;10]
+\end{align*}\]</span></p>
+<p>The <em>do()</em> terms in the two formulas give the impression that you have to run controlled experiments to estimate the causal effects. And conducting experiments would be the most reliable way – if you can do it, you should! Unfortunately, experiments are sometimes not feasible. In some situations, you are lucky because you can estimate the ATE and CATE from observational data alone. If this is the case, the causal effect is <em>identifiable</em>.</p>
+<section id="identify-causal-effects-with-the-backdoor-criterion" class="level3" data-number="10.5.1">
+<h3 data-number="10.5.1" class="anchored" data-anchor-id="identify-causal-effects-with-the-backdoor-criterion"><span class="header-section-number">10.5.1</span> Identify causal effects with the backdoor criterion</h3>
+<p>The classical way to identify a causal effect is via the so-called <em>backdoor criterion</em>. The idea is simple. Let’s say you want to know the ATE of masks on the COVID risk. You only have observational data. But your data allows you to read out: 1. how many people with masks got infected and 2. how many people without masks got infected. Just subtract the latter from the former and you are finished, right? No! The problem is that the information you want to obtain is potentially blurred by other factors. For example:</p>
+<ul>
+<li><strong>Sticking to the rules:</strong> People who stick to the rules are more likely to wear masks and also follow other rules like contact restrictions. Therefore, they also have on average a lower COVID risk.</li>
+<li><strong>Number of contacts:</strong> People who have many contacts (e.g. postmen, salespeople, or doctors) wear masks to lower their own risk and the COVID risk of others. But many contacts increase also their COVID risk.</li>
+<li><strong>Age:</strong> Younger people are less likely to wear masks because they think masks do not look cool or because COVID is less dangerous for young people. At the same time, young people are more resistant to getting infected with COVID <span class="citation" data-cites="fischer2020resistance"><a href="references.html#ref-fischer2020resistance" role="doc-biblioref">[15]</a></span>.</li>
+</ul>
+<p>Those factors are called <em>confounders</em>. They are both a cause of the treatment and the variable of interest. Imagine you knew all those confounders and accounted for them. Then, you could isolate the association that is solely due to the masks themselves. This is exactly what the backdoor criterion is doing. If you know all confounders <span class="math inline">\(W\)</span>, the ATE can be estimated by:</p>
+<p><span class="math display">\[\begin{align*}
+\text{ATE} &amp;= \mathbb{E}_W[\mathbb{E}_{\text{COVID}\mid W}[\text{COVID} \mid \text{mask}=1, W]] \\
+&amp;\quad - \mathbb{E}_W[\mathbb{E}_{\text{COVID} \mid W}[\text{COVID} \mid \text{mask}=0, W]]
+\end{align*}\]</span></p>
+<p>A great success, there are no do-terms left. But be aware that knowledge of all confounders is a super strong requirement that can rarely ever be met in reality. And not knowing a confounder may bias your estimate significantly. The same happens if you mistake a variable for a confounder that is caused by both the treatment and the variable of interest (this is called a <em>collider bias</em>). So conditioning on more features is not always better.</p>
+<p>The back-door criterion is not the only option to identify causal effects. There is for example also its friendly sibling, the <em>frontdoor criterion</em>. Both, the front and the backdoor criterion are special cases of the do-calculus. Whenever it is possible to identify a causal effect, you can do so using the do-calculus. This book will stay at this surface level on the question of identifiability, if you like math and want to dig deeper, check out <span class="citation" data-cites="pearl2009causality"><a href="references.html#ref-pearl2009causality" role="doc-biblioref">[16]</a></span>. The cool thing is, you don’t have to know all of that necessarily to do causal analysis. The identification step can be fully automated given a causal graph, for example, using the Python package <em>DoWhy</em> <span class="citation" data-cites="dowhy"><a href="references.html#ref-dowhy" role="doc-biblioref">[17]</a></span>.</p>
+<p>Let’s take a look into two machine learning-based methods that allow for estimating causal effects: the T-Learner and Double Machine Learning <a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. Both are designed for the backdoor criterion setting. That means, in both cases, you assume that you have observed all confounders <span class="math inline">\(W\)</span>, and your causal graph looks like this</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/31aa88212051de02d4fcc0bfdf4dbd20.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:20.0%" data-original-src="https://ml-science-book.com/images/dag-mask-covid.jpg"/></p>
+</figure>
+</div>
+</section>
+<section id="how-to-estimate-causal-effects-with-the-t-learner" class="level3" data-number="10.5.2">
+<h3 data-number="10.5.2" class="anchored" data-anchor-id="how-to-estimate-causal-effects-with-the-t-learner"><span class="header-section-number">10.5.2</span> How to estimate causal effects with the T-Learner</h3>
+<p>The T-Learner is maybe the simplest approach to estimate the ATE (or with slight modifications CATE) from observational data. The name T-Learner stems from using <strong>t</strong>wo different learners to estimate the ATE. The T-learner uses the formula from the backdoor criterion:</p>
+<p><span class="math display">\[\begin{align*}
+    \text{ATE} &amp;= \mathbb{E}_W[\underbrace{\mathbb{E}_{\text{COVID}\mid W}[\text{COVID} \mid  \text{mask}=1, W]}_{\phi_1}] \\
+        &amp;\quad - \mathbb{E}_W[\underbrace{\mathbb{E}_{\text{COVID}\mid W}[\text{COVID} \mid  \text{mask}=0, W]}_{\phi_0}]
+\end{align*}\]</span></p>
+<p>The T-Learner fits two machine learning models, <span class="math inline">\(\hat{\phi_0}: \mathcal{W}\rightarrow \mathcal{Y}\)</span> and <span class="math inline">\(\hat{\phi_1}: \mathcal{W}\rightarrow \mathcal{Y}\)</span>, where <span class="math inline">\(\hat{\phi_0}\)</span> is estimated only with data where <span class="math inline">\(\text{mask}=0\)</span> and <span class="math inline">\(\hat{\phi_1}\)</span> with data where <span class="math inline">\(\text{mask}=1\)</span>. The ATE can then be computed by averaging over different values of <span class="math inline">\(W\)</span> via</p>
+<p><span class="math display">\[\text{ATE}\approx \frac{1}{n}\sum\limits_{i=1}^n \left(\hat{\phi_1}(w_i)-\hat{\phi}_0(w_i)\right).\]</span></p>
+</section>
+<section id="how-to-estimate-causal-effects-with-double-machine-learning" class="level3" data-number="10.5.3">
+<h3 data-number="10.5.3" class="anchored" data-anchor-id="how-to-estimate-causal-effects-with-double-machine-learning"><span class="header-section-number">10.5.3</span> How to estimate causal effects with Double Machine Learning</h3>
+<p>Double Machine Learning is an improvement over the T-Learner. Not only is the name much cooler, but the estimation of the ATE is much more sophisticated <span class="citation" data-cites="chernozhukov2018double"><a href="references.html#ref-chernozhukov2018double" role="doc-biblioref">[22]</a></span>. The estimate is both unbiased and data-efficient. The estimation process works as follows:</p>
+<ol type="1">
+<li><strong>Predict outcome &amp; treatment from controls:</strong> Fit a machine learning model to predict COVID from the confounders <span class="math inline">\(W\)</span>. This gives you the prediction <span class="math inline">\(\widehat{\text{COVID}}\)</span>. Next, fit a machine learning model to predict whether people wear masks or not from the confounders <span class="math inline">\(W\)</span>. This gives you the prediction <span class="math inline">\(\widehat{\text{mask}}\)</span>. You need to split your data into training and estimation data, the machine learning models should be learned only from the training data.</li>
+<li><strong>Estimate outcome residuals from treatment residuals:</strong> Fit a linear regression model to predict <span class="math inline">\(\text{COVID}-\widehat{\text{COVID}}\)</span> from <span class="math inline">\(\text{mask}-\widehat{\text{mask}}\)</span>. Then, your estimand of interest is the coefficient <span class="math inline">\(\beta_1\)</span>. Why? Well, surprisingly, this coefficient describes the treatment effect. But you need quite some math to show this, search for the Frisch-Waugh-Lovell theorem if you want to learn more. The linear regression must be fitted on the estimation data not the training data for models from step 1.</li>
+<li><strong>Cross-fitting:</strong> Run steps 1 and 2 again, but this time switch the training data you use to fit the machine learning models in step 1 with the estimation data you use in step 2 for the linear regression. Average your two estimates <span class="math inline">\(\hat{\beta_1}^1\)</span> and <span class="math inline">\(\hat{\beta_1}^2\)</span> to obtain your final estimate <span class="math inline">\(\hat{\beta_1}=(\hat{\beta_1}^1+\hat{\beta_1}^2)/2\)</span>.</li>
+</ol>
+<p>Why does this strange procedure make sense? If you want to get the details, check out <span class="citation" data-cites="chernozhukov2018double"><a href="references.html#ref-chernozhukov2018double" role="doc-biblioref">[22]</a></span>. The key ideas are:</p>
+<ul>
+<li>You want to get rid of the bias in your estimation that stems from regularization in your machine learning model. This is done in steps one and two, exploiting the so-called Neyman orthogonality condition.</li>
+<li>You want to get rid of the bias in your estimation that stems from overfitting to the data you have and at the same time be data efficient. If you would train our machine learning model on the same data on which you estimate the linear coefficient, you would introduce an overfitting bias. Splitting the data into training and estimation data circumvents this pitfall. However, splitting the data just once is less data efficient. Thus, you switch the roles of training and estimation data and compute the average in step three.</li>
+</ul>
+<p>If you want to use Double Machine Learning in your research, check out the package <code>DoubleML</code> in R <span class="citation" data-cites="DoubleML2021R"><a href="references.html#ref-DoubleML2021R" role="doc-biblioref">[23]</a></span> and Python <span class="citation" data-cites="DoubleML2022Python"><a href="references.html#ref-DoubleML2022Python" role="doc-biblioref">[24]</a></span>. Generally, there are many more methods now to estimate causal effects with machine learning, check out <span class="citation" data-cites="dandl2023causality"><a href="references.html#ref-dandl2023causality" role="doc-biblioref">[25]</a></span>, <span class="citation" data-cites="Knaus2022"><a href="references.html#ref-Knaus2022" role="doc-biblioref">[20]</a></span> or <span class="citation" data-cites="kunzel2019metalearners"><a href="references.html#ref-kunzel2019metalearners" role="doc-biblioref">[21]</a></span> to get an overview.</p>
+</section>
+</section>
+<section id="learning-causal-models-if-we-know-the-causal-graph" class="level2" data-number="10.6">
+<h2 data-number="10.6" class="anchored" data-anchor-id="learning-causal-models-if-we-know-the-causal-graph"><span class="header-section-number">10.6</span> Learning causal models if we know the causal graph</h2>
+<p>Causal graphs are simple objects that contain:</p>
+<ul>
+<li><strong>Nodes:</strong> Describe the features that are interesting to you, like the COVID risk, if you wear masks, if you have a dry cough, or your vitamin D levels.</li>
+<li><strong>Arrows:</strong> describe how the features are causally linked. Like the causal arrow between COVID risk and dry cough.</li>
+</ul>
+<p>Usually, you pose two additional assumptions on causal graphs – they should be directed and acyclic. Directed means that each arrow has a start node and end node, not unlike the dashed arrow in the case of vitamin D in the beginning which treats both nodes the same. Acyclic means that it should not be possible to start from a node and return to it while only walking along the directed arrows. If the graph is directed and acyclic, we talk about a DAG – a directed-acyclic graph.</p>
+<p>So, causal graphs are a tool to reason about causal relations. But wouldn’t it be nice to have <em>causal models</em>? Models that once they are constructed allow you to think about a whole range of questions without always running this whole treatment effect estimation process?</p>
+<p>What is the effect of masks on the COVID risk? How about both masks and contact restrictions? What if you only look at older people? Imagine all these questions can be answered with one model.</p>
+<section id="bayesian-causal-networks-allow-to-reason-about-interventions" class="level3" data-number="10.6.1">
+<h3 data-number="10.6.1" class="anchored" data-anchor-id="bayesian-causal-networks-allow-to-reason-about-interventions"><span class="header-section-number">10.6.1</span> Bayesian causal networks allow to reason about interventions</h3>
+<p>In causal graphs, we talked about the nodes of the graph, like the mask node, the COVID node, or the cough node. But how to interpret these nodes specifically? The perspective of Causal Bayesian Networks (CBNs) is to see these nodes as random variables. If causal graphs are a combination of graphs and causality, CBNs add probability theory to the mix.</p>
+<p>CBNs allow you to ask classical probabilistic questions, like what is the probability that people wear masks if they have a cough <span class="math inline">\(\mathbb{P}(\text{mask}\mid \text{cough}=1)\)</span>. But what CBNs are ultimately designed for is answering causal questions about interventions. Like what is the average COVID risk if everyone must wear a mask <span class="math inline">\(\mathbb{P}(\text{COVID}\mid do(\text{mask}=1))\)</span>?</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/ecb8db9924b65d32c163ee3897b1a432.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%" data-original-src="https://ml-science-book.com/images/dag-mask-covid-cough.jpg"/></p>
+</figure>
+</div>
+<p>Let’s check out this simplified causal graph with only three variables: mask, COVID risk, and cough. Mask is causal for COVID risk and COVID is causal for cough. In this simple setting, you must specify three things to obtain a CBN:</p>
+<ol type="1">
+<li>The marginal probability of wearing a mask, i.e. <span class="math inline">\(\mathbb{P}(\text{mask})\)</span>.</li>
+<li>The COVID risk for both people who either wear or don’t wear masks, that means <span class="math inline">\(\mathbb{P}(\text{COVID}\mid \text{mask}=0)\)</span> and <span class="math inline">\(\mathbb{P}(\text{COVID}\mid \text{mask}=1)\)</span>.</li>
+<li>The probability of having a cough if the COVID risk is low or high, that means <span class="math inline">\(\mathbb{P}(\text{cough}\mid \text{COVID}=1)\)</span> and <span class="math inline">\(\mathbb{P}(\text{cough}\mid \text{COVID}=0)\)</span>.</li>
+</ol>
+<p>Let’s look at a toy example. Assume that 50% of people wear masks. Assume the COVID risk is 80% low / 20% high if people wear a mask and reversed if people do not wear a mask. And, the probability that people have a cough if they have a high COVID risk is 90%, and conversely, 10% if they have a low COVID risk.</p>
+<p>Then, you can ask the following question and address it formally:</p>
+<ul>
+<li><strong>Observational question:</strong> What is the probability of wearing a mask, having a high COVID risk, and not coughing? This can be computed by:</li>
+</ul>
+<!--
+\begin{align*}
+\mathbb{P}(\text{mask}=1&,\text{COVID}=high,\text{cough}=0)=\\
+&=\mathbb{P}(\text{mask}=1)\;\mathbb{P}(\text{COVID}=high\mid \text{mask}=1)\; \mathbb{P}(\text{cough}=0\mid \text{COVID}=high) \\
+& =0.5\cdot 0.2 \cdot 0.1=0.01
+\end{align*}
+-->
+<p><span class="math display">\[\begin{align*}
+&amp;\mathbb{P}(\text{mask}=1, \text{COVID}=1, \text{cough}=0) \\
+&amp;=\mathbb{P}(\text{mask}=1) \times \mathbb{P}(\text{COVID}=1 \mid \text{mask}=1) \\
+&amp; \quad \times \mathbb{P}(\text{cough}=0 \mid \text{COVID}=1) \\
+&amp;= 0.5 \times 0.2 \times 0.1 = 0.01
+\end{align*}\]</span></p>
+<p>So this is a pretty unlikely combination. You can also ask a causal question, like:</p>
+<ul>
+<li><strong>Interventional question:</strong> What is the probability of having a high COVID risk and cough if the policymaker enforces masks? This can be computed by:</li>
+</ul>
+<!--
+\begin{align*}
+\mathbb{P}(\text{COVID}=high&,\text{cough}=1\mid do(\text{mask}=1))=\\
+&=\mathbb{P}(\text{COVID}=high\mid \text{mask}=1)\mathbb{P}(\text{cough}=1\mid \text{COVID}=high) \\
+& = 0.2\cdot 0.9=0.18
+\end{align*}
+-->
+<p><span class="math display">\[\begin{align*}
+&amp;\mathbb{P}(\text{COVID}=1, \text{cough}=1 \mid do(\text{mask}=1)) \\
+&amp;= \mathbb{P}(\text{COVID}=1 \mid \text{mask}=1)  \times \mathbb{P}(\text{cough}=1 \mid \text{COVID}=1) \\
+&amp;= 0.2 \times 0.9 = 0.18
+\end{align*}\]</span></p>
+<p>Let’s generalize the ideas of this example. What do you need for a BCN?</p>
+<ul>
+<li>The marginal distribution <span class="math inline">\(\mathbb{P}(X_r)\)</span> of all nodes in the causal graph without incoming arrows. These nodes are called root nodes.</li>
+<li>For all non-root nodes, you need their conditional distribution <span class="math inline">\(\mathbb{P}(X_j\mid pa_j)\)</span> given their direct causes. The direct causes of a node are called parents.</li>
+</ul>
+<p>If you have those two ingredients specified, you have a BCN. It allows you to compute both observational and interventional probabilities:</p>
+<p><strong>Observational probabilities:</strong></p>
+<p><span class="math display">\[\mathbb{P}(X)=\prod\limits_{i=1}^p \mathbb{P}(X_i | pa_i)\]</span></p>
+<p><strong>Interventional probabilities:</strong></p>
+<p><span class="math display">\[\mathbb{P}(X_{-j}\mid do(X_j=z))=\prod\limits_{\substack{i\neq j, \\j\not\in pa_i}}\mathbb{P}(X_i\mid pa_i) \prod\limits_{j\in pa_i}\mathbb{P}(X_i\mid pa_i,X_j=z)\]</span></p>
+<p>To calculate interventional probabilities, you set the intervened variable to the desired value wherever it appears in the formula and the corresponding probability that the variable has this value to <span class="math inline">\(1\)</span>.</p>
+<p>All of this is nice theory and toy modeling. But how about the real world where you do not magically have the BCN? Indeed, in practice, you can learn the BCN if you know the causal graph. All that differs between a BCN and a causal graph are marginal and conditional probabilities. If you have data, this is exactly where machine learning can help – estimating conditional probabilities. We generally advise estimating conditional probabilities with non-parametric machine learning models like neural networks or random forests, however, for small data sizes classical parametric approaches like maximum likelihood estimation or expectation maximization might be preferable <span class="citation" data-cites="rothfuss2019conditional"><a href="references.html#ref-rothfuss2019conditional" role="doc-biblioref">[26]</a></span>.</p>
+</section>
+<section id="structural-causal-models-allow-you-to-reason-about-counterfactuals" class="level3" data-number="10.6.2">
+<h3 data-number="10.6.2" class="anchored" data-anchor-id="structural-causal-models-allow-you-to-reason-about-counterfactuals"><span class="header-section-number">10.6.2</span> Structural causal models allow you to reason about counterfactuals</h3>
+<p>Interventional questions are often important if we want to act. But what if you want to explain <em>why</em> something has happened? Let’s say <em>you</em> got COVID and want to know why. Was it not wearing a mask? Or, was it that party last week? Or did you catch it in the metro from this guy who was sneezing heavily?</p>
+<p>Answering why questions is always the most difficult, but usually also the most interesting. What is needed to answer such questions? You have to think through counterfactual scenarios. You know that you went to the party and you also know that you got COVID. To answer the why question, you need to find out how you got infected. Would you have got COVID if you hadn’t gone to the party? Would you have caught COVID if you hadn’t spoken to your charming but coughing neighbor at the party?</p>
+<p>BCNs are not expressive enough to reason about counterfactual scenarios. Why not? Firstly, BCNs describe causal relations probabilistically on the level of groups of individuals who share certain features. Like the probability of getting COVID if everyone is forced to the party. The causal relationships are learned from data of people who did and of people who did not attend the party. The why question is more specific. It asks why you individually got COVID. Did you get COVID <em>because</em> you attended the party?<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> Secondly, the fact that you got COVID is informative about you, it might reveal information about your properties on which there is no data. Like info about your immune system and how resilient it is against COVID. This information should not be ignored.</p>
+<p>To answer why questions you need to simulate alternative scenarios, i.e. to perform counterfactual reasoning. A Structural Causal Model (SCM) is a model designed to simulate such alternative scenarios. Instead of describing probabilistic relationships in the data, a SCM explicitly models the mechanism that generates the data.</p>
+<p>Let’s look at a super simple SCM with just two factors: whether you go to the party or not and whether you have COVID or not. These factors that you have explicit information about are called the endogenous variables.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/a8930b2c5b082900875182945d29d36a.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%" data-original-src="https://ml-science-book.com/images/dag-party-covid.jpg"/></p>
+</figure>
+</div>
+<p>The model moreover contains two <em>exogenous</em> variables. Exogenous variables describe background factors on which you have no data but which play a role in determining the endogenous variables. For example, whether you go to the party or not might be determined by whether you are in the mood for partying. Similarly, whether you get COVID or not might be influenced by how well your immune system is currently working. The exogenous variables are very powerful in SCMs. These factors completely determine the endogenous variables.</p>
+<p>The SCM is thus specified by:</p>
+<ul>
+<li>Two noise terms: <span class="math inline">\(U_{\text{mood}}=Ber(0.5)\)</span> describes whether you are in the mood for partying and the chances are fifty-fifty. <span class="math inline">\(U_{\text{immune}}=Ber(0.8)\)</span> describes whether your immune system is up and the chances are pretty high (80%) that your immune system works well.</li>
+<li>One structural equation for the endogenous party variable, i.e. <span class="math inline">\(\text{party}:= U_{\text{mood}}\)</span>. Whether you go to the party is fully determined by whether you are in the mood for it.</li>
+<li>One structural equation for the endogenous COVID variable, i.e. <span class="math inline">\(\text{COVID}:=max(0,\text{party}-U_{\text{immune}})\)</span>. That means, you only get COVID if you are at the party and your immune system is down.</li>
+</ul>
+<p>This SCM allows you to answer the counterfactual question: You went to the party and you caught COVID, would you have gotten COVID if you hadn’t gone to the party? Such counterfactuals are computed in three steps:</p>
+<ul>
+<li><strong>Abduction:</strong> What does the fact that you got COVID tell you about the noise variables? Well, you could not have caught COVID with your immune system up. Thus, you can infer that <span class="math inline">\(U_{\text{immune}}=0\)</span>. Similarly, you know that you were in the mood for partying because otherwise, you would not have gone, i.e. <span class="math inline">\(U_{\text{mood}}=1\)</span>.</li>
+<li><strong>Action:</strong> Let’s say you would not have gone to the party, that means you intervene and turn the party variable from one to zero, i.e. <span class="math inline">\(do(\text{party}=0)\)</span>.</li>
+<li><strong>Prediction:</strong> What happens with the COVID variable if you switch party to zero? According to the structural equation of COVID, you only get COVID if both happens, you go to the party and your immune system is down. Thus, you do not get COVID.</li>
+</ul>
+<p>In consequence, if you hadn’t gone to the party, you would not have caught COVID. So, you got COVID <strong>because</strong> you went to the party.</p>
+<p>What if the counterfactual had not been true? Would partying still be a cause? Well, then things get more complicated. It could for instance be that you would have gone for sports instead of the party and caught COVID there. But partying would still have been the actual cause of you catching COVID. Search for <em>actual causation</em> to learn more about the topic.</p>
+<p>Let’s generalize the ideas of the example. For a SCM, you need:</p>
+<ul>
+<li>A set of exogenous variables <span class="math inline">\(U\)</span> that are determined by factors outside the model and independent from each other.</li>
+<li>A set of endogenous variables <span class="math inline">\(X\)</span> that are fully determined by the factors inside the model.</li>
+<li>A set of structural equations <span class="math inline">\(F\)</span> that describe for each endogenous variable <span class="math inline">\(X_j\)</span> how it is determined by its parents and its exogenous variable <span class="math inline">\(X_j=f(pa_j, U_j)\)</span>.</li>
+</ul>
+<p>Obtaining SCMs in real life is difficult. You may use machine learning to learn the structural equations if you know the causal dependencies between variables. However, even for that, you need quite some data, and making parametric assumptions can be advisable.</p>
+<p>Like counterfactuals themselves, SCMs are highly speculative objects. There is no easy way to verify that a given SCM is correct, it always relies on counterfactual assumptions. Still, since humans reason in terms of counterfactuals all the time and are deeply concerned with <em>why</em> questions, it is nice to have a formalism that can capture counterfactual reasoning.</p>
+</section>
+</section>
+<section id="learning-causal-graphs-from-data" class="level2" data-number="10.7">
+<h2 data-number="10.7" class="anchored" data-anchor-id="learning-causal-graphs-from-data"><span class="header-section-number">10.7</span> Learning causal graphs from data</h2>
+<p>Machine learning has revived an old idea – with enough data, we might be able to completely automatize science. In Part 1 and Part 2 of this chapter, you always needed a human scientist in the background. Someone to come up with interesting hypotheses, run experiments, or provide us with a causal graph. This part will be the most ambitious, it asks:</p>
+<blockquote class="blockquote">
+<p>Can you get a causal graph just from data, without entering domain knowledge? This problem is often referred to as <em>causal structure learning</em> or <em>causal discovery</em>.</p>
+</blockquote>
+<p>Didn’t we tell you in the beginning that observational data alone doesn’t do the trick? Correct! But it is intriguing to see how far you can go, especially if you add some additional assumptions. Clear the stage for a truly fascinating branch of research!</p>
+<p>Imagine all you have is a dataset containing 5,000 entries. Each entry contains information about a person’s BMI, COVID vaccination status, flu vaccination status, COVID risk, fatigue, fever, appetite, and the density of population in the area the person lives in (Example based on <span class="citation" data-cites="jehi2020individualizing"><a href="references.html#ref-jehi2020individualizing" role="doc-biblioref">[28]</a></span> and <span class="citation" data-cites="konig2023improvement"><a href="references.html#ref-konig2023improvement" role="doc-biblioref">[29]</a></span>). The task is to structure these features in a causal graph – the problem of <em>causal discovery</em>. Let’s say the true graph that you want to learn looks like this:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/e39de7c6dad49aab27b5a89b510311b0.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%" data-original-src="https://ml-science-book.com/images/dag-covid-large.jpg"/></p>
+</figure>
+</div>
+<p>Before you can approach this problem, you have to get some more background on how causal mechanisms, associations, and data relate to each other. The causal mechanism generates data. Within this data, features are associated with each other. That means that causal dependencies induce statistical (in-)dependencies. Particularly, if you have a causal graph, the so-called causal Markov condition applies:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"/>
+</div>
+<div class="callout-title-container flex-fill">
+Causal Markov condition:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given its parents in the causal graph, a variable is statistically independent of all its non-descendants. Or formally, let <span class="math inline">\(G\)</span> be a causal graph and <span class="math inline">\(X_i\)</span> be any variable in the network, then for all its non-descending variables <span class="math inline">\(nd_i\)</span> holds <span class="math inline">\(X_i\perp \!\!\! \perp nd_i\mid pa_i\)</span>. Descendants of a given variable <span class="math inline">\(X_i\)</span> are all the variables that can be reached from <span class="math inline">\(X_i\)</span> by walking along the direction of arrows.</p>
+</div>
+</div>
+<p>To get an intuition on the causal Markov condition, take a look at the graph below. Consider the variable appetite as an example. Its parents are COVID and density. Its nondescendants are BMI, COVID-vac, flu-vac, fever, and fatigue.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> The causal Markov condition allows you for example to say that appetite is statistically independent of fever if you know COVID and density. The formal way to write this is <span class="math inline">\(\;\text{appetite} \perp \!\!\! \perp \text{fever}\mid \text{COVID}, \text{density}\)</span>, where <span class="math inline">\(\perp \!\!\! \perp\)</span> is the symbol for independence.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/7956b8e8ec56dba496c1a618f43c3f50.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%" data-original-src="https://ml-science-book.com/images/dag-covid-parents.jpg"/></p>
+</figure>
+</div>
+<p>Cool, causal graphs induce statistical independencies, but what to do with that? Well, you have a dataset, so you can test for statistical independencies.<br/>
+There are many different approaches to test such (conditional) independencies, and they vary regarding the parametric assumptions they pose. Some test the statistical dependency to be Gaussian or linear (e.g. partial correlation), or are tailored for categorical data like the chi-squared test <span class="citation" data-cites="peters2017elements"><a href="references.html#ref-peters2017elements" role="doc-biblioref">[30]</a></span>. Others allow for a greater variety of dependencies, like tests based on the Hilbert-Schmidt independence criterion (HSIC) <span class="citation" data-cites="fukumizu2007kernel"><a href="references.html#ref-fukumizu2007kernel" role="doc-biblioref">[31]</a></span>. The current trend goes even more non-parametric towards machine learning based tests for conditional independence. Questions of independence are translated into classification problems, where powerful machine learning models can be utilized (e.g. neural nets or random forests) <span class="citation" data-cites="sen2017model"><a href="references.html#ref-sen2017model" role="doc-biblioref">[32]</a></span>, <span class="citation" data-cites="watson2021testing"><a href="references.html#ref-watson2021testing" role="doc-biblioref">[33]</a></span>. However, the fewer parametric assumptions you pose, the more statistical dependencies are possible. Thus, non-parametric tests usually have a very bad statistical power, which means you need a lot of data to identify independencies <span class="citation" data-cites="shah2020hardness"><a href="references.html#ref-shah2020hardness" role="doc-biblioref">[34]</a></span>. This problem gets worse the more variables you condition on – conditioning can be viewed as reducing the data you can test with. Incorrect conditional dependencies can lead to incorrect causal conclusions.</p>
+<p>Let’s say you found a set of statistical independencies, how does this help you to learn the causal graph? Well, statistical independencies in the data are only compatible with certain kinds of causal structures. The data narrows down the causal stories that make sense. So the question is, how many <em>faithful</em> causal graphs (see the box: “Central assumptions in causality”) are compatible with the data?</p>
+<p>As an example, assume you had only three variables: fatigue, COVID, and fever. By running statistical tests, you find that</p>
+<ul>
+<li>fatigue is independent of fever given COVID (Formally, <span class="math inline">\(\text{fatigue}\perp \!\!\! \perp \text{fever}\mid \text{COVID}\)</span>)</li>
+<li>None of the three variables is unconditionally independent of the other.</li>
+</ul>
+<p>Then, three causal stories (causal chains) would explain this data.</p>
+<ul>
+<li>Story 1: <span class="math inline">\(\text{fatigue}\rightarrow \text{COVID}\rightarrow \text{fever}\)</span>.</li>
+<li>Story 2: <span class="math inline">\(\text{fatigue}\leftarrow \text{COVID}\leftarrow \text{fever}\)</span>.</li>
+<li>Story 3: <span class="math inline">\(\text{fatigue}\leftarrow \text{COVID}\rightarrow \text{fever}\)</span> (called fork structure)</li>
+</ul>
+<p>All of these stories (or causal graphs) are faithful and compatible with the given statistical (in-)dependencies. Also, one can show that there is no other causal graph that satisfies this.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"/>
+</div>
+<div class="callout-title-container flex-fill">
+The elements of causality: chains, forks, and immoralities
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let’s assume you have the variables <span class="math inline">\(X, Y\)</span>, and <span class="math inline">\(Z\)</span>. Three basic path structures in causal graphs are distinguished in causal discovery:</p>
+<ul>
+<li><em>Causal chains</em>, where <span class="math inline">\(Y\)</span> is called a <em>mediator</em>:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/97287f66736cded2ea051b1979effbea.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:30.0%" data-original-src="https://ml-science-book.com/images/dag-mediator.jpg"/></p>
+</figure>
+</div>
+<ul>
+<li><em>Forks</em>, where <span class="math inline">\(Y\)</span> is called a <em>common cause</em>:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/902a64ed49f44f74face68fe85cd5932.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:20.0%" data-original-src="https://ml-science-book.com/images/dag-common-cause.jpg"/></p>
+</figure>
+</div>
+<ul>
+<li><em>Immoralities</em>, where <span class="math inline">\(Y\)</span> is called a <em>collider</em>:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/ccd1944eccf15f1ecaa1bd86a5451ecd.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:20.0%" data-original-src="https://ml-science-book.com/images/dag-collider.jpg"/></p>
+</figure>
+</div>
+<p>Causal chains and forks imply identical conditional dependencies:</p>
+<ol type="1">
+<li><span class="math inline">\(X \perp \!\!\! \perp Z \mid Y\)</span> (X and Z are independent given Y)</li>
+<li>X and Y are dependent</li>
+<li>X and Z are dependent</li>
+<li>Y and Z are dependent</li>
+</ol>
+<p>Immoralities, however, exhibit a distinct pattern:</p>
+<ol type="1">
+<li><span class="math inline">\(X \perp \!\!\! \perp Z\)</span> (X and Z are marginally independent)</li>
+<li>X and Z are dependent conditional on Y</li>
+<li>X and Y are dependent</li>
+<li>Y and Z are dependent</li>
+</ol>
+</div>
+</div>
+<p>We call the set of faithful causal models that satisfies the same set of statistical (in-)dependencies the <em>Markov equivalence class</em>. How can you find the Markov equivalence class if all you have is a dataset? We provide one of many answers here, the so-called PC algorithm.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+<p><strong>The Peter-Clark (PC) algorithm:</strong> The most well-known algorithmic approach for finding the Markov equivalence class of causal models that is compatible with the statistical (in-)dependencies found in a dataset <span class="citation" data-cites="spirtes2000causation"><a href="references.html#ref-spirtes2000causation" role="doc-biblioref">[36]</a></span>. It requires causal sufficiency and the faithfulness condition to be satisfied. It runs the following steps:</p>
+<ol type="1">
+<li><p><strong>Identify the skeleton:</strong> We start with a fully connected network with undirected arrows. Then, step by step we look through all unconditional and conditional independencies between features. We start with unconditional independencies, continue with independencies conditional on one variable, then two, and so on. If two features are (conditionally) independent, we erase the arrows between them. In the end, we get the so-called skeleton graph without directed arrows.</p>
+<ul>
+<li><em>Unconditional independence:</em> By running a statistical test, we learn that BMI, COVID-vac, flu-vac, and density are all pairwise independent. This allows us to erase the arrows between those variables.</li>
+<li><em>Independence conditioned on one variable:</em> Conditioning on COVID makes fatigue, fever, and appetite pairwise independent. Moreover, BMI, COVID-vac, flu-vac, and density become independent of fatigue and fever. We can erase all arrows between these variables.</li>
+<li><em>Independence conditioned on two variables:</em> If we condition on COVID and density, BMI, COVID-vac, and flu-vac become independent of appetite. We can therefore erase all arrows between appetite and these variables.</li>
+<li>We find no further independencies. So this is our resulting skeleton!</li>
+</ul></li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/ed1eff85fc7411b022c1e97748423100.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%" data-original-src="https://ml-science-book.com/images/dag-covid-undirected.jpg"/></p>
+</figure>
+</div>
+<ol start="2" type="1">
+<li><p><strong>Identify immoralities:</strong> Immoralities are paths of the form <span class="math inline">\(X\rightarrow Y\leftarrow Z\)</span> that lead to unique (in)dependencies, namely to <span class="math inline">\(X\perp \!\!\! \perp Z\)</span> and <span class="math inline">\(X,Z\)</span> are dependent conditional on <span class="math inline">\(Y\)</span>. We can use this uniqueness to orient some arrows. Go through all unconditional independencies <span class="math inline">\(X\perp \!\!\! \perp Z\)</span> where the nodes are connected via one intermediate variable <span class="math inline">\(Y\)</span>, check whether conditioning on <span class="math inline">\(Y\)</span> makes them dependent. If yes, you found an immorality and can orient the arrows.</p>
+<ul>
+<li>As you can see, in our skeleton all arrows are undirected. We now check for all unconditionally independent variables that become dependent if we condition on one variable. This is the case for BMI, COVID-vac, flu-vac, and density. They are unconditionally independent but become dependent if we condition the COVID variable. We can therefore orient some arrows in our graph.</li>
+</ul></li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/44fcc5def264d8a1c48e2c9889532da4.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%" data-original-src="https://ml-science-book.com/images/dag-covid-partial.jpg"/></p>
+</figure>
+</div>
+<ol start="3" type="1">
+<li><p><strong>Apply logic:</strong> Now you have identified all immoralities. Thus, if you find three variables that are connected like this <span class="math inline">\(X\rightarrow Y-Z\)</span> where the arrow between <span class="math inline">\(Y\)</span> and <span class="math inline">\(Z\)</span> is undirected, you can infer that <span class="math inline">\(X \rightarrow Y \rightarrow Z\)</span>, because otherwise there would be another immorality that you must have discovered. Also, we search for an acyclic graph. So if there is only one way to avoid making a cycle, that is the way you orient the arrows.</p>
+<ul>
+<li>Which arrows would lead to new immoralities? If fatigue, fever, and appetite had arrows towards COVID, new immoralities would emerge that would have been found in the statistical testing. Thus, they must have arrows coming from the COVID variable. Now only one arrow is left undirected, the arrow between density and appetite. If this arrow would go from density towards appetite, there would be a cycle: <span class="math inline">\(\text{COVID}\rightarrow \text{appetite}\rightarrow \text{density}\rightarrow \text{COVID}\)</span>. Thus, the arrow must go from density to appetite.</li>
+</ul></li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/64b872d3d938cd8a81df221131fe4e83.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%" data-original-src="https://ml-science-book.com/images/dag-covid-full.jpg"/></p>
+</figure>
+</div>
+<p>Cool, we were able to identify the full causal graph just from the (in-)dependencies! But we were lucky. If we had looked at a more complex graph, the PC algorithm would have spit out a graph where some arrows are left unoriented. All possible ways for orienting these remaining arrows define the Markov equivalence class. But can you go further? Is there a way to identify the correct causal model among the Markov equivalence class? You need something extra for this:</p>
+<ul>
+<li><strong>Perform real-world experiments:</strong> You could simply run experiments. There are proven bounds for how many experiments you have to perform to identify the correct causal graph. For instance, if multi-node interventions are allowed, <span class="math inline">\(log_2[n]+1\)</span> interventions are sufficient to identify the causal graph, where <span class="math inline">\(n\)</span> is the number of nodes <span class="citation" data-cites="eberhardt2005"><a href="references.html#ref-eberhardt2005" role="doc-biblioref">[37]</a></span>.</li>
+<li><strong>Pose more assumptions:</strong> One of the most prominent assumptions for the identifiability of the causal graph is the linearity of the relationship and non-Gaussian noise terms in the structural equations. Alternatively, you can assume non-linearity and the additivity of noise. Check out <span class="citation" data-cites="peters2017elements"><a href="references.html#ref-peters2017elements" role="doc-biblioref">[30]</a></span> to learn more. Most approaches rely on the idea that the noise variables are independent in one but not in the other causal direction.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"/>
+</div>
+<div class="callout-title-container flex-fill">
+Central assumptions in causality
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You can see causal models as devices for interpreting data. But when are the interpretations correct? Only if certain assumptions are satisfied. Causality is therefore a deeply assumption-driven field. The most crucial ones are listed here:</p>
+<ul>
+<li><strong>Causal sufficiency</strong>: This is one of the key assumptions in the field. It is sometimes also referenced as the assumption of <strong>no unobserved confounders</strong>. It means that you have not missed a causally relevant variable in your model that would be a cause of two or more variables in the model. This assumption is not testable and without it, far less can be derived <span class="citation" data-cites="manski2003partial"><a href="references.html#ref-manski2003partial" role="doc-biblioref">[38]</a></span>.</li>
+<li><strong>Independence of mechanisms:</strong> Means that causal models are modular. Intervening on one structural equation does not affect other structural equations. Or on a probabilistic take, changing the marginal distribution of one variable does not affect the conditional distributions where this variable acts as a causal parent. This assumption seems almost definitional to mechanistic modeling and implies the independence of the exogenous noise terms <span class="citation" data-cites="peters2017elements"><a href="references.html#ref-peters2017elements" role="doc-biblioref">[30]</a></span>.</li>
+<li><strong>Faithfulness:</strong> Is connected to how to interpret causal graphs probabilistically. Faithfulness means that every causal dependence in the graph results in a statistical dependence. Note that it is hard to justify faithfulness in finite data regimes <span class="citation" data-cites="uhler2013geometry"><a href="references.html#ref-uhler2013geometry" role="doc-biblioref">[39]</a></span>.</li>
+<li><strong>Positivity:</strong> For every group of the population, you have both subgroups with and without treatment. This is crucial when it comes to <em>treatment effect estimation</em>. If positivity is violated, you extrapolate (non-)treatment effects for certain subgroups, which can go terribly wrong.</li>
+</ul>
+<p>This list is far from complete, there are many more, such as consistency, exchangeability, and no interference <span class="citation" data-cites="neal2020introduction pearl2009causality"><a href="references.html#ref-pearl2009causality" role="doc-biblioref">[16]</a>, <a href="references.html#ref-neal2020introduction" role="doc-biblioref">[40]</a></span>. The correctness of your interpretations of data with causal models or the causal models you may partially derive from data are extremely sensitive to these assumptions. If possible, check if they apply!</p>
+</div>
+</div>
+</section>
+<section id="learning-causal-representations-from-data" class="level2" data-number="10.8">
+<h2 data-number="10.8" class="anchored" data-anchor-id="learning-causal-representations-from-data"><span class="header-section-number">10.8</span> Learning causal representations from data</h2>
+<p>Causal discovery only makes sense if the features are meaningful representations and you can talk meaningfully about their causal relationships. This is the case with highly structured, tabular data that has been heavily pre-processed by the human mind. But the data you often have, especially the data you want to analyze with machine learning, doesn’t look like that, it consists of:</p>
+<ul>
+<li>images made of pixels</li>
+<li>texts made of letters</li>
+<li>sounds made of frequencies</li>
+</ul>
+<p>For example, it makes no sense to construct a causal model where the variables are single pixels. However, it may be meaningful to talk about the causal relationships between objects in images. How can you go from pixels to these objects? How can you get meaningful higher-order representations from lower-order features?<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a></p>
+<p>Machine learning is a field concerned with learning higher-order representations. Causal representation learning therefore describes a dream that many in machine learning share – the dream of fusing symbolic approaches like causal models with modern machine learning. This would combine the strengths of both worlds: learning complex meaningful representations from data AND reasoning symbolically in a transparent and logical manner.</p>
+<p>Indeed, doing so is extremely difficult and the research in this field is still in its infancy. Machine learning models learn complex representations to perform their predictions, however, whether the representations are in any sense similar to the ones humans form or at all understandable to us is an open question. Adding labels to the representations you want and modifying the loss function to use these representations might be one way to go <span class="citation" data-cites="koh2020concept"><a href="references.html#ref-koh2020concept" role="doc-biblioref">[42]</a></span>. But it is data costly! Is there a way to make sure that machine learning models learn meaningful representations that could be used to construct causal models? Can you maybe even build in constraints informed by your understanding of causality to learn such representations? We’ll give you some hunch in this direction…</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"/>
+</div>
+<div class="callout-title-container flex-fill">
+Variational autoencoders (VAEs)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Autoencoders consist of two parts. An encoder maps the input to a higher-order representation and a decoder maps the higher-order representation back to the original input space. The only difference in a variational autoencoder is that input is encoded into a set of parameters of a probability distribution, whereas the decoder takes a sample from this distribution and maps it back to the original input space. VAEs are (unlike the rest of the book) unsupervised learning techniques. They allow, among other things, to compress high-dimensional information into low-dimensional features with little or no loss of information.</p>
+<div id="vae" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="../Images/b64616f87eb09d22e29451da05b7ca9e.png" class="img-fluid figure-img" data-original-src="https://ml-science-book.com/images/VAE.jpg"/></p>
+<figcaption>Structure of a Variational Autoencoder.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>Putting causal constraints in variational autoencoders:</strong> You can see the probability distributions in the middle of VAEs as abstractions of the low-level features your data lives in. Therefore, VAEs are constantly discussed in the context of representation learning in general and there are many ways to incorporate knowledge about these representations both via the architecture and the loss function <span class="citation" data-cites="bengio2013representation"><a href="references.html#ref-bengio2013representation" role="doc-biblioref">[43]</a></span>. Instead of learning representations and then looking at how you can incorporate them in causal models, you can do the reverse and ask: What makes representations good candidates for causal models and how can such knowledge be incorporated into the VAE framework? Since research on the topic is still in its infancy, we will only provide a list of a few ideas inspired by <span class="citation" data-cites="scholkopf2021toward"><a href="references.html#ref-scholkopf2021toward" role="doc-biblioref">[44]</a></span> :</p>
+<ul>
+<li><strong>Sparsity:</strong> One key idea in causality is that a few powerful representations are enough to explain all kinds of complex phenomena. This can for example be enforced by the size of the middle VAE layer.</li>
+<li><strong>Generality across domains:</strong> Powerful representations are useful across tasks. What makes them useful is that they capture robust patterns in nature. You can enforce this for instance in VAEs by training them to use the same representations for different decoding tasks.</li>
+<li><strong>Independence:</strong> First, if two representations contain the same information, one of them is redundant. But you want to have simple models to efficiently communicate about the world. Second, the core idea in causality is that you have independent sources of variation and that you can disentangle these sources and their interactions. One approach for achieving this in VAEs is modifying the loss to make sure that the representations in the intermediate layer are statistically independent.</li>
+<li><strong>Human interventions:</strong> What makes a variable suitable for causal modeling is that you can intervene upon it. Thus, 42 % of randomly selected atoms from a table do not constitute a good representation, as you cannot use or intervene in these 42% in isolation. This human-centered causal bias can be entered into VAEs for example through video data, where objects are constantly moved and intervened upon but stay persistent.</li>
+<li><strong>Simple relationships:</strong> Causal models are rarely densely connected. Instead, a handful of causal relationships between higher-order variables give rise to the associations you observe in the world. This inductive bias of simplicity can be enforced via the decoder architecture or the loss function.</li>
+</ul>
+</section>
+<section id="causality-helps-to-formulate-problems" class="level2" data-number="10.9">
+<h2 data-number="10.9" class="anchored" data-anchor-id="causality-helps-to-formulate-problems"><span class="header-section-number">10.9</span> Causality helps to formulate problems</h2>
+<p>After finishing this chapter, you may feel a little overwhelmed. A lot of theoretical concepts were presented and at the same time, there was little practical advice, e.g. compared to the domain-knowledge chapter (see <a href="domain.html" class="quarto-xref"><span>Chapter 8</span></a>). We have the impression that the link between causal theory and the practical problems of scientists is underdeveloped in current research. For example, there are only a few examples where causal discovery algorithms have been used to gain insights from practice.</p>
+<p>Nevertheless, we believe that every researcher should be familiar with the concepts presented above, such as the Reichenbach principle, treatment effect estimation, and causal modeling. Causality is what many of you are ultimately looking for when you want to control, explain, and reason about a phenomenon. While causality as a field does often not provide ready-made practical solutions, it offers you a language to formulate your problem and describe possible solutions.</p>
+<p>Many of the chapters in this book are closely related to causality:</p>
+<ul>
+<li>Some domain knowledge (see <a href="domain.html" class="quarto-xref"><span>Chapter 8</span></a>) you want to encode may be causal.</li>
+<li>Many questions addressed via model interpretation (see <a href="interpretability.html" class="quarto-xref"><span>Chapter 9</span></a>), such as algorithmic recourse, are ultimately causal questions <span class="citation" data-cites="konig2023improvement"><a href="references.html#ref-konig2023improvement" role="doc-biblioref">[29]</a></span>.</li>
+<li>Causality is one leading approach to improving robustness (see <a href="robustness.html" class="quarto-xref"><span>Chapter 11</span></a>) <span class="citation" data-cites="scholkopf2022causality"><a href="references.html#ref-scholkopf2022causality" role="doc-biblioref">[45]</a></span>.</li>
+<li>Approaches for better uncertainty quantification, such as conformal prediction (see <a href="uncertainty.html" class="quarto-xref"><span>Chapter 12</span></a>) are currently being integrated into causal inference <span class="citation" data-cites="lei2021conformal"><a href="references.html#ref-lei2021conformal" role="doc-biblioref">[46]</a></span>.</li>
+</ul>
+<!-- [^acyclic-graphs]: In principle, it is also possible to describe time with acyclic structural causal models (SCMs). However, at a different level of resolution. Acyclic SCMs can describe differential equations in equilibrium states but give no insight into the convergence rate towards equilibrium [@mooij2013ordinary]. -->
+<!-- [^Notation]: Here, $X_{-S}$ refers to all feature values except of features $S$, $f(X)$ and $f(X_{-S})$ describe the optimal predictor based on features $X$ and $X_{-S}$ respectively, and $\hat{f}'(x)$ is the derivative of the machine learning model $\hat{f}$. -->
+
+
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-howard2021evidence" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">J. Howard <em>et al.</em>, <span>“An evidence review of face masks against COVID-19,”</span> <em>Proceedings of the National Academy of Sciences</em>, vol. 118, no. 4, p. e2014564118, 2021, doi: <a href="https://doi.org/10.1073/pnas.2014564118">10.1073/pnas.2014564118</a>.</div>
+</div>
+<div id="ref-alimohamadi2020determine" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">Y. Alimohamadi, M. Sepandi, M. Taghdir, and H. Hosamirudsari, <span>“Determine the most common clinical symptoms in COVID-19 patients: A systematic review and meta-analysis,”</span> <em>Journal of preventive medicine and hygiene</em>, vol. 61, no. 3, p. E304, 2020, doi: <a href="https://doi.org/10.15167/2421-4248/jpmh2020.61.3.1530">10.15167/2421-4248/jpmh2020.61.3.1530</a>.</div>
+</div>
+<div id="ref-d2022vitamin" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">O. D’Ecclesiis <em>et al.</em>, <span>“Vitamin d and SARS-CoV2 infection, severity and mortality: A systematic review and meta-analysis,”</span> <em>PLoS One</em>, vol. 17, no. 7, p. e0268396, 2022, doi: <a href="https://doi.org/10.1371/journal.pone.0268396">10.1371/journal.pone.0268396</a>.</div>
+</div>
+<div id="ref-ayoub2021football" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">F. Ayoub, T. Sato, and A. Sakuraba, <span>“Football and COVID-19 risk: Correlation is not causation,”</span> <em>Clinical Microbiology and Infection</em>, vol. 27, no. 2, pp. 291–292, 2021, doi: <a href="https://doi.org/10.1016/j.cmi.2020.08.034 ">10.1016/j.cmi.2020.08.034 </a>.</div>
+</div>
+<div id="ref-scholkopf2012causal" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">B. Schölkopf, D. Janzing, J. Peters, E. Sgouritsa, K. Zhang, and J. Mooij, <span>“On causal and anticausal learning,”</span> <em>arXiv preprint arXiv:1206.6471</em>, 2012, doi: <a href="https://doi.org/10.48550/arXiv.1206.6471">10.48550/arXiv.1206.6471</a>.</div>
+</div>
+<div id="ref-pearl2018book" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">J. Pearl and D. Mackenzie, <em>The book of why: The new science of cause and effect</em>. Basic books, 2018.</div>
+</div>
+<div id="ref-gong2022wealth" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">Y. Gong and G. Zhao, <span>“Wealth, health, and beyond: Is COVID-19 less likely to spread in rich neighborhoods?”</span> <em>Plos one</em>, vol. 17, no. 5, p. e0267487, 2022, doi: <a href="https://doi.org/10.1371%2Fjournal.pone.0267487">10.1371%2Fjournal.pone.0267487</a>.</div>
+</div>
+<div id="ref-sep-physics-Rpcc" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">C. Hitchcock and M. Rédei, <span>“<span class="nocase">Reichenbach’s Common Cause Principle</span>,”</span> in <em>The <span>Stanford</span> encyclopedia of philosophy</em>, <span>S</span>ummer 2021., E. N. Zalta, Ed., <a href="https://plato.stanford.edu/archives/sum2021/entries/physics-Rpcc/" class="uri">https://plato.stanford.edu/archives/sum2021/entries/physics-Rpcc/</a>; Metaphysics Research Lab, Stanford University, 2021.</div>
+</div>
+<div id="ref-vigen2015spurious" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">T. Vigen, <em>Spurious correlations</em>. Hachette UK, 2015.</div>
+</div>
+<div id="ref-ellenberg2014not" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">J. Ellenberg, <em>How not to be wrong: The hidden maths of everyday life</em>. Penguin UK, 2014.</div>
+</div>
+<div id="ref-gibbons2022association" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[11] </div><div class="csl-right-inline">J. B. Gibbons <em>et al.</em>, <span>“Association between vitamin d supplementation and COVID-19 infection and mortality,”</span> <em>Scientific Reports</em>, vol. 12, no. 1, p. 19397, 2022, doi: <a href="https://doi.org/10.1038/s41598-022-24053-4">10.1038/s41598-022-24053-4</a>.</div>
+</div>
+<div id="ref-yu2020causality" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[12] </div><div class="csl-right-inline">K. Yu <em>et al.</em>, <span>“Causality-based feature selection: Methods and evaluations,”</span> <em>ACM Computing Surveys (CSUR)</em>, vol. 53, no. 5, pp. 1–36, 2020, doi: <a href="https://doi.org/10.1145/3409382">10.1145/3409382</a>.</div>
+</div>
+<div id="ref-adebayo2018sanity" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[13] </div><div class="csl-right-inline">J. Adebayo, J. Gilmer, M. Muelly, I. Goodfellow, M. Hardt, and B. Kim, <span>“Sanity checks for saliency maps,”</span> <em>Advances in neural information processing systems</em>, vol. 31, 2018, doi: <a href="https://doi.org/10.1609/aaai.v34i04.6064">10.1609/aaai.v34i04.6064</a>.</div>
+</div>
+<div id="ref-hu2020weakly" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[14] </div><div class="csl-right-inline">S. Hu <em>et al.</em>, <span>“Weakly supervised deep learning for covid-19 infection detection and classification from ct images,”</span> <em>IEEE Access</em>, vol. 8, pp. 118869–118883, 2020, doi: <a href="https://doi.org/10.1109/access.2020.3005510">10.1109/access.2020.3005510</a>.</div>
+</div>
+<div id="ref-fischer2020resistance" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[15] </div><div class="csl-right-inline">A. Fischer, <span>“Resistance of children to covid-19. how?”</span> <em>Mucosal Immunology</em>, vol. 13, no. 4, pp. 563–565, 2020, doi: <a href="https://doi.org/10.1038/s41385-020-0303-9">10.1038/s41385-020-0303-9</a>.</div>
+</div>
+<div id="ref-pearl2009causality" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[16] </div><div class="csl-right-inline">J. Pearl, <em>Causality</em>. Cambridge university press, 2009.</div>
+</div>
+<div id="ref-dowhy" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[17] </div><div class="csl-right-inline">A. Sharma and E. Kiciman, <span>“DoWhy: An end-to-end library for causal inference,”</span> <em>arXiv preprint arXiv:2011.04216</em>, 2020.</div>
+</div>
+<div id="ref-yoon2018ganite" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[18] </div><div class="csl-right-inline">J. Yoon, J. Jordon, and M. Van Der Schaar, <span>“GANITE: Estimation of individualized treatment effects using generative adversarial nets,”</span> in <em>International conference on learning representations</em>, 2018.</div>
+</div>
+<div id="ref-athey2019generalized" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[19] </div><div class="csl-right-inline">S. Athey, J. Tibshirani, and S. Wager, <span>“Generalized random forests,”</span> 2019, doi: <a href="https://doi.org/10.1214/18-aos1709">10.1214/18-aos1709</a>.</div>
+</div>
+<div id="ref-Knaus2022" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[20] </div><div class="csl-right-inline">M. C. Knaus, <span>“Double machine learning-based programme evaluation under unconfoundedness,”</span> <em>The Econometrics Journal</em>, vol. 25, no. 3, pp. 602–627, Jun. 2022, doi: <a href="https://doi.org/10.1093/ectj/utac015">10.1093/ectj/utac015</a>.</div>
+</div>
+<div id="ref-kunzel2019metalearners" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[21] </div><div class="csl-right-inline">S. R. Künzel, J. S. Sekhon, P. J. Bickel, and B. Yu, <span>“Metalearners for estimating heterogeneous treatment effects using machine learning,”</span> <em>Proceedings of the national academy of sciences</em>, vol. 116, no. 10, pp. 4156–4165, 2019, doi: <a href="https://doi.org/10.1073/pnas.1804597116">10.1073/pnas.1804597116</a>.</div>
+</div>
+<div id="ref-chernozhukov2018double" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[22] </div><div class="csl-right-inline">V. Chernozhukov <em>et al.</em>, <span>“Double/debiased machine learning for treatment and structural parameters.”</span> Oxford University Press Oxford, UK, 2018. doi: <a href="https://doi.org/10.1111/ectj.12097">10.1111/ectj.12097</a>.</div>
+</div>
+<div id="ref-DoubleML2021R" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[23] </div><div class="csl-right-inline">Bach, V. Chernozhukov, M. S. Kurz, and M. Spindler, <span>“<span>DoubleML</span> – <span>A</span>n object-oriented implementation of double machine learning in <span>R</span>.”</span> 2021. doi: <a href="https://doi.org/10.32614/cran.package.doubleml">10.32614/cran.package.doubleml</a>.</div>
+</div>
+<div id="ref-DoubleML2022Python" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[24] </div><div class="csl-right-inline">Bach, V. Chernozhukov, M. S. Kurz, and M. Spindler, <span>“<span>DoubleML</span> – <span>A</span>n object-oriented implementation of double machine learning in <span>P</span>ython,”</span> <em>Journal of Machine Learning Research</em>, vol. 23, no. 53, pp. 1–6, 2022, doi: <a href="https://doi.org/10.18637/jss.v108.i03">10.18637/jss.v108.i03</a>.</div>
+</div>
+<div id="ref-dandl2023causality" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[25] </div><div class="csl-right-inline">S. Dandl, <span>“Causality concepts in machine learning: Heterogeneous treatment effect estimation with machine learning &amp; model interpretation with counterfactual and semi-factual explanations,”</span> PhD thesis, lmu, 2023. doi: <a href="https://doi.org/10.5282/edoc.32947">10.5282/edoc.32947</a>.</div>
+</div>
+<div id="ref-rothfuss2019conditional" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[26] </div><div class="csl-right-inline">J. Rothfuss, F. Ferreira, S. Walther, and M. Ulrich, <span>“Conditional density estimation with neural networks: Best practices and benchmarks,”</span> <em>arXiv preprint arXiv:1903.00954</em>, 2019, doi: <a href="https://doi.org/10.48550/arXiv.1903.00954">10.48550/arXiv.1903.00954</a>.</div>
+</div>
+<div id="ref-beckers2018principled" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[27] </div><div class="csl-right-inline">S. Beckers and J. Vennekens, <span>“A principled approach to defining actual causation,”</span> <em>Synthese</em>, vol. 195, no. 2, pp. 835–862, 2018, doi: <a href="https://doi.org/10.1007/s11229-016-1247-1">10.1007/s11229-016-1247-1</a>.</div>
+</div>
+<div id="ref-jehi2020individualizing" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[28] </div><div class="csl-right-inline">L. Jehi <em>et al.</em>, <span>“Individualizing risk prediction for positive coronavirus disease 2019 testing: Results from 11,672 patients,”</span> <em>Chest</em>, vol. 158, no. 4, pp. 1364–1375, 2020, doi: <a href="https://doi.org/10.1016/j.chest.2020.05.580.">10.1016/j.chest.2020.05.580.</a></div>
+</div>
+<div id="ref-konig2023improvement" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[29] </div><div class="csl-right-inline">G. König, T. Freiesleben, and M. Grosse-Wentrup, <span>“Improvement-focused causal recourse (ICR),”</span> in <em>Proceedings of the AAAI conference on artificial intelligence</em>, 2023, pp. 11847–11855. doi: <a href="https://doi.org/10.1609/aaai.v37i10.26398">10.1609/aaai.v37i10.26398</a>.</div>
+</div>
+<div id="ref-peters2017elements" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[30] </div><div class="csl-right-inline">J. Peters, D. Janzing, and B. Schölkopf, <em>Elements of causal inference: Foundations and learning algorithms</em>. The MIT Press, 2017.</div>
+</div>
+<div id="ref-fukumizu2007kernel" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[31] </div><div class="csl-right-inline">K. Fukumizu, A. Gretton, X. Sun, and B. Schölkopf, <span>“Kernel measures of conditional dependence,”</span> <em>Advances in neural information processing systems</em>, vol. 20, 2007.</div>
+</div>
+<div id="ref-sen2017model" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[32] </div><div class="csl-right-inline">R. Sen, A. T. Suresh, K. Shanmugam, A. G. Dimakis, and S. Shakkottai, <span>“Model-powered conditional independence test,”</span> <em>Advances in neural information processing systems</em>, vol. 30, 2017, doi: <a href="https://doi.org/10.5555/3294996.3295055">10.5555/3294996.3295055</a>.</div>
+</div>
+<div id="ref-watson2021testing" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[33] </div><div class="csl-right-inline">D. S. Watson and M. N. Wright, <span>“Testing conditional independence in supervised learning algorithms,”</span> <em>Machine Learning</em>, vol. 110, no. 8, pp. 2107–2129, Aug. 2021, doi: <a href="https://doi.org/10.1007/s10994-021-06030-6">10.1007/s10994-021-06030-6</a>.</div>
+</div>
+<div id="ref-shah2020hardness" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[34] </div><div class="csl-right-inline">R. D. Shah and J. Peters, <span>“The hardness of conditional independence testing and the generalised covariance measure,”</span> <em>The Annals of Statistics</em>, vol. 48, no. 3, pp. 1514–1538, 2020, doi: <a href="https://doi.org/10.1214/19-AOS1857">10.1214/19-AOS1857</a>.</div>
+</div>
+<div id="ref-kalisch2012causal" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[35] </div><div class="csl-right-inline">M. Kalisch, M. Mächler, D. Colombo, M. H. Maathuis, and P. Bühlmann, <span>“Causal inference using graphical models with the r package pcalg,”</span> <em>Journal of statistical software</em>, vol. 47, pp. 1–26, 2012, doi: <a href="https://doi.org/10.18637/jss.v047.i11">10.18637/jss.v047.i11</a>.</div>
+</div>
+<div id="ref-spirtes2000causation" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[36] </div><div class="csl-right-inline">P. Spirtes, C. N. Glymour, and R. Scheines, <em>Causation, prediction, and search</em>. MIT press, 2000. doi: <a href="https://doi.org/10.1007/978-1-4612-2748-9">10.1007/978-1-4612-2748-9</a>.</div>
+</div>
+<div id="ref-eberhardt2005" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[37] </div><div class="csl-right-inline">F. Eberhardt, C. Glymour, and R. Scheines, <span>“On the number of experiments sufficient and in the worst case necessary to identify all causal relations among n variables,”</span> in <em>Proceedings of the twenty-first conference on uncertainty in artificial intelligence</em>, in UAI’05. Arlington, Virginia, USA: AUAI Press, 2005, pp. 178–184.</div>
+</div>
+<div id="ref-manski2003partial" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[38] </div><div class="csl-right-inline">C. F. Manski, <em>Partial identification of probability distributions</em>, vol. 5. Springer, 2003. doi: <a href="https://doi.org/10.1007/b97478">10.1007/b97478</a>.</div>
+</div>
+<div id="ref-uhler2013geometry" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[39] </div><div class="csl-right-inline">C. Uhler, G. Raskutti, P. Bühlmann, and B. Yu, <span>“Geometry of the faithfulness assumption in causal inference,”</span> <em>The Annals of Statistics</em>, pp. 436–463, 2013.</div>
+</div>
+<div id="ref-neal2020introduction" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[40] </div><div class="csl-right-inline">B. Neal, <span>“Introduction to causal inference,”</span> <em>Course Lecture Notes (draft)</em>, 2020.</div>
+</div>
+<div id="ref-beckers2019abstracting" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[41] </div><div class="csl-right-inline">S. Beckers and J. Y. Halpern, <span>“Abstracting causal models,”</span> in <em>Proceedings of the aaai conference on artificial intelligence</em>, 2019, pp. 2678–2685. doi: <a href="https://doi.org/10.1609/aaai.v33i01.33012678">10.1609/aaai.v33i01.33012678</a>.</div>
+</div>
+<div id="ref-koh2020concept" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[42] </div><div class="csl-right-inline">P. W. Koh <em>et al.</em>, <span>“Concept bottleneck models,”</span> in <em>International conference on machine learning</em>, PMLR, 2020, pp. 5338–5348.</div>
+</div>
+<div id="ref-bengio2013representation" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[43] </div><div class="csl-right-inline">Y. Bengio, A. Courville, and P. Vincent, <span>“Representation learning: A review and new perspectives,”</span> <em>IEEE Transactions on Pattern Analysis and Machine Intelligence</em>, vol. 35, no. 8, pp. 1798–1828, 2013, doi: <a href="https://doi.org/10.1109/TPAMI.2013.50">10.1109/TPAMI.2013.50</a>.</div>
+</div>
+<div id="ref-scholkopf2021toward" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[44] </div><div class="csl-right-inline">B. Schölkopf <em>et al.</em>, <span>“Toward causal representation learning,”</span> <em>Proceedings of the IEEE</em>, vol. 109, no. 5, pp. 612–634, 2021, doi: <a href="https://doi.org/10.1109/JPROC.2021.3058954">10.1109/JPROC.2021.3058954</a>.</div>
+</div>
+<div id="ref-scholkopf2022causality" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[45] </div><div class="csl-right-inline">B. Schölkopf, <span>“Causality for machine learning,”</span> in <em>Probabilistic and causal inference: The works of judea pearl</em>, 2022, pp. 765–804.</div>
+</div>
+<div id="ref-lei2021conformal" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[46] </div><div class="csl-right-inline">L. Lei and E. J. Candès, <span>“Conformal inference of counterfactuals and individual treatment effects,”</span> <em>Journal of the Royal Statistical Society Series B: Statistical Methodology</em>, vol. 83, no. 5, pp. 911–938, 2021, doi: <a href="https://doi.org/10.1111/rssb.12445">10.1111/rssb.12445</a>.</div>
+</div>
+</div>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn1"><p>There is also an association between COVID risk and the FIFA football ranking <span class="citation" data-cites="ayoub2021football"><a href="references.html#ref-ayoub2021football" role="doc-biblioref">[4]</a></span>. Here, the causal story is spuriously Messi…<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Saitama is the protagonist of the anime series “One-Punch Man” who defeats his opponents with just one punch. In one of the episodes, he accidentally damages good old Jupiter.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>There are two general approaches for estimating treatment effects with machine learning, model-agnostic and model-specific techniques. Model-specific techniques are based on a certain class of machine learning models, such as GANITE for neural nets <span class="citation" data-cites="yoon2018ganite"><a href="references.html#ref-yoon2018ganite" role="doc-biblioref">[18]</a></span> or causal forests for random forests <span class="citation" data-cites="athey2019generalized"><a href="references.html#ref-athey2019generalized" role="doc-biblioref">[19]</a></span>. Model-specific techniques often come with the advantage of valid confidence intervals. Other techniques are model agnostic, which means, you can simply plug in any machine learning model into the estimation. The T-Learner and Double Machine Learning we present here are examples of such model-agnostic approaches. Today, there are tons of approaches to estimating causal effects with machine learning, check out <span class="citation" data-cites="Knaus2022"><a href="references.html#ref-Knaus2022" role="doc-biblioref">[20]</a></span> or <span class="citation" data-cites="kunzel2019metalearners"><a href="references.html#ref-kunzel2019metalearners" role="doc-biblioref">[21]</a></span> to learn more.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>In the literature, it is differentiated between counterfactuals and actual causes <span class="citation" data-cites="beckers2018principled"><a href="references.html#ref-beckers2018principled" role="doc-biblioref">[27]</a></span>.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>The parents are indeed also non-descendants. However, the conditional independence you can derive from the causal Markov condition between <span class="math inline">\(E\)</span> of <span class="math inline">\(C\)</span> given you know <span class="math inline">\(C\)</span> holds trivially for an arbitrary variable by <span class="math inline">\(\mathbb{P}(E,C\mid C)=\mathbb{P}(E,C,C)/\mathbb{P}(C)=\mathbb{P}(E\mid C)=\mathbb{P}(E\mid C)\mathbb{P}(C\mid C).\)</span><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>The PC algorithm is already quite old but great for understanding the general idea of causal discovery. There are many extensions, generalizations, and alternatives of PCs on the market. We point you to <span class="citation" data-cites="peters2017elements"><a href="references.html#ref-peters2017elements" role="doc-biblioref">[30]</a></span> for an overview and to <span class="citation" data-cites="kalisch2012causal"><a href="references.html#ref-kalisch2012causal" role="doc-biblioref">[35]</a></span> for an R package implementing standard causal discovery algorithms.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>Causal abstraction is a cool framework for thinking about the relationship between low-level and high-level causal representations <span class="citation" data-cites="beckers2019abstracting"><a href="references.html#ref-beckers2019abstracting" role="doc-biblioref">[41]</a></span>. Science is all about causal models at different levels of description, think of the relationship between physical models, chemical models, and biological models.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    
+</body>
+</html>

@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>7  Generalization</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>7  Generalization</h1>
+<blockquote>原文：<a href="https://ml-science-book.com/generalization.html">https://ml-science-book.com/generalization.html</a></blockquote>
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-two.html">Integrating Machine Learning Into Science</a></li><li class="breadcrumb-item"><a href="./generalization.html"><span class="chapter-number">7</span>  <span class="chapter-title">Generalization</span></a></li></ol></nav>
+<div class="quarto-title">
+
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Little does Juan know that his chest X-ray was one of the data points for a pneumonia classifier. He presented with a fever and a bad cough at the emergency room, but it was “just” a bad flu. No pneumonia. The chest X-ray that ruled out pneumonia was labeled as “healthy” and later used to train a machine learning model. The pneumonia classifier is not for our imaginary Juan though, because this ER visit was years ago and the case is closed. While the machine learning experts don’t care about Juan’s images specifically, they care about cases <em>like</em> Juan’s: Patients coming to the emergency room with symptoms of a lung infection.</p>
+<p>That’s the promise of <strong>generalization</strong> in machine learning: to learn general rules from specific data and apply them to novel data. To generalize from Juan to many. Without generalization, machine learning would just be an inefficient database. But with generalization, machine learning models become useful prediction machines.</p>
+<p>In science, generalizing from specific observations to general principles is a fundamental goal. Scientists usually don’t care about specific experiments, surveys, simulations, or studies, but they use them to learn the rules of our world.</p>
+<p>This chapter discusses generalization in machine learning and is structured into three parts, each describing generalization with increasing scope.</p>
+<ul>
+<li><strong>Generalize to predict in theory:</strong> This is the theory of generalization as it is typically understood in machine learning. It concerns key topics from statistical learning theory, such as empirical risk, the IID assumption, and a discussion of the double descent phenomenon and its relationship to under- and overfitting.</li>
+<li><strong>Generalize to predict in practice:</strong> This section describes a more practical idea of generalization. Rarely does the training setup match the application. To generalize the model to the application requires attention to things like the data-generating process, non-IID scenarios, and distribution shifts.</li>
+<li><strong>Generalize to understand the phenomenon:</strong> This type of generalization is often implicitly the goal of scientists. It bridges the gap from machine learning theory to scientific applications and discusses data representativeness and the data-generating process.</li>
+</ul>
+<div class="raven-box">
+<p>Nuts are delicious but hard to crack. So the Ravens set out to build a nut quality predictor. Every tenth household had to bring a sample of nuts to Rattle so she could train a machine learning model. The model worked well on the training data, but it was terrible on unseen data. Rattle began to wonder how to ensure that machine learning models generalize.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/f430adf6dfc91e0c9d710913e218b9e3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%" data-original-src="https://ml-science-book.com/images/raven-generalization.jpg"/></p>
+</figure>
+</div>
+</div>
+<section id="generalize-to-predict-in-theory" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="generalize-to-predict-in-theory"><span class="header-section-number">7.1</span> Generalize to predict in theory</h2>
+<p>You want our models to work well on the dataset at hand but also on similar data. One language of similarity is that of statistical distributions. You can think of distributions like a huge bucket that contains infinitely many data points. From this bucket, you can draw data and record it. Think of the bucket that contains X-rays and their corresponding labels. We denote this bucket by the statistical distribution <span class="math inline">\(\mathbb{P}(X, Y)\)</span>, where <span class="math inline">\(X\)</span> describes the pixels of the X-ray images and <span class="math inline">\(Y\)</span> the labels.</p>
+<p>Equipped with distributions, we can describe more elegantly what our models should optimize. Machine learning models should make as few mistakes as possible in expectation. More technically, they should have minimal <em>expected loss</em> <span class="math inline">\(R(\hat{f})\)</span> (sometimes also called <em>expected risk</em>):</p>
+<p><span class="math display">\[R(\hat{f}) = \mathbb{E}_{X,Y}[L(Y, \hat{f}(X))] \]</span></p>
+<p>This formula describes the expected error the model will make on instances drawn from the distribution bucket <span class="math inline">\(\mathbb{P}(X,Y)\)</span>. The “error” for one data point is described by loss function L which quantifies the error between prediction <span class="math inline">\(\hat{f}(x)\)</span> (e.g. pneumonia) and the actual outcome <span class="math inline">\(y\)</span> (e.g. healthy). The problem is that you don’t know what the bucket – aka distribution – looks like. You only have a limited amount of data that you recorded. When you have data, you look at the errors the model makes on these data and average over it.</p>
+<p>You could use the training data to estimate the expected loss, but using training data makes for a bad estimator of <span class="math inline">\(R(\hat{f})\)</span>. The estimated loss would be over-optimistic, meaning too small. If a model overfits the training data (“memorizing” it), the training error can be low even though the model won’t work well for new data. It is like preparing students for an exam by giving them the questions and answers beforehand. This means they can simply memorize the answers and you won’t get an honest assessment of the student’s skills on the subject. The X-ray classifier might work perfectly for Juan and the other training data subjects, but not for new patients. But this has a simple solution: Estimate the expected risk using new data.</p>
+<p><span class="math display">\[\hat{R}(\hat{f}) = \sum_{i=1}^{n_{test}} L(y^{(i)}, \hat{f}(x^{(i)}))\]</span></p>
+<p>This formula is also known as test error, out-of-sample error, generalization error, or empirical risk (on the test set).</p>
+<p>Slowly but surely, we are piecing together a language to talk about generalization. A model generalizes well when <span class="math inline">\(\hat{R}(\hat{f})\)</span> is low and when the so-called generalization gap is small, which is defined as the following difference <span class="citation" data-cites="hardtrecht2022patterns"><a href="references.html#ref-hardtrecht2022patterns" role="doc-biblioref">[1]</a></span>:</p>
+<p><span class="math display">\[\delta_{gen}(\hat{f}) = R(\hat{f}) - \hat{R}(\hat{f})\]</span></p>
+<p>If the generalization gap is small, the model will perform similarly well for both training and unseen data. <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Let’s explore how the generalization error behaves in different scenarios.</p>
+<section id="underfitting-and-overfitting" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="underfitting-and-overfitting">Underfitting and overfitting</h3>
+<p>Machine learning can feel more like an art than a science, but there is an entire field dedicated to putting all the deep learning magic and mystical random forests on a scientific grounding: statistical learning theory, which provides a view of machine learning from a statistical lens. We explore statistical learning theory to shed light on generalization.</p>
+<p>Well-studied concepts are overfitting and its counterpart, underfitting. Underfitting is when the model is not complex enough to model the relation between input and output, so the model will have both a high training and test error but a potentially small generalization gap. Underfitting models are, frankly, bad! Overfitting is when the model function has a bit too much freedom: It fails to capture generalizable rules and instead “memorizes” the training data. That’s why overfitting is characterized by a low training error and a high test error and therefore a large generalization gap. Both underfitting and overfitting are undesirable as they both mean a failure to generalize well (measured as low out-of-sample error).</p>
+<p>Going back to the chest X-ray example: Imagine the classification algorithm would be a simple logistic regression classifier based on the average grey scale value of parts of the image. It might work better than random guessing, but wouldn’t produce a useful model. A case of underfitting. Overfitting in this same case would look like this: Let’s say you use for the chest X-ray a decision tree that is allowed to be grown to full depth. Inputs are the individual pixels and all typical restrictions are lifted, like having a minimum amount of data in each leaf. The tree could grow very deep and separate all training data, meaning each data point gets its leaf node. So the model would work perfectly on the training data. But when used on new data, the decision tree would fail. <a href="#fig-underfitting-overfitting" class="quarto-xref">Figure <span>7.1</span></a> showcases underfitting and overfitting on a simple 1-dimensional case.</p>
+<div id="fig-underfitting-overfitting" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-underfitting-overfitting-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/f0f62ca3cda0706e60bb656ccec905a6.png" class="img-fluid figure-img" data-original-src="https://ml-science-book.com/images/underfitting-overfitting.excalidraw.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-underfitting-overfitting-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 7.1: The data (dots) were produced by the true function (dotted line) plus some noise. A well-trained model would approximate the true function well. The linear model (blue line) underfits the true curve, while the too-flexible model (green curve) overfits the data.
+</figcaption>
+</figure>
+</div>
+<!-- The role of regularization -->
+<p>Whether a model will underfit or overfit depends on the machine learning algorithm responsible and the complexity of functions it can produce. By picking certain types of model classes and setting their hyperparameters, you can steer the flexibility of the models and therefore the balance between underfitting and overfitting. The typical approach in machine learning is to use fairly flexible models and then regularize them.</p>
+<p>Examples of such flexible models are neural networks and decision trees. Theorems show that both neural networks <span class="citation" data-cites="cybenko1989approximation hornik1991approximation"><a href="references.html#ref-cybenko1989approximation" role="doc-biblioref">[2]</a>, <a href="references.html#ref-hornik1991approximation" role="doc-biblioref">[3]</a></span> and decision trees can approximate arbitrary continuous functions <span class="citation" data-cites="halmos2013measure"><a href="references.html#ref-halmos2013measure" role="doc-biblioref">[4]</a></span>. These flexible models can then be regularized by specifying certain hyperparameters in modeling such as the learning rate, the architecture, the loss function, or enabling dropout <span class="citation" data-cites="goodfellow2016deep"><a href="references.html#ref-goodfellow2016deep" role="doc-biblioref">[5]</a></span>.</p>
+<p>Underfitting and overfitting don’t tell us about the types of errors the models make. This will be covered in <a href="uncertainty.html" class="quarto-xref"><span>Chapter 12</span></a> about uncertainty.</p>
+</section>
+<section id="double-descent-or-why-deep-learning-works" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="double-descent-or-why-deep-learning-works">Double descent or why deep learning works</h3>
+<p>We’ve painted a neat picture of what a perfectly balanced model looks like – models should be flexible enough not to underfit and regularized enough not to overfit. But now with deep learning, the over- and underfitting reasoning doesn’t seem to work any longer. Deep neural networks have millions or more parameters and can perfectly fit the training data in infinitely many ways, so you would expect strong overfitting. The thing is – they generalize. It is like in society: the laws of under and overfitting developed for the average John Doe model don’t apply to the fancy models rich in parameters. This surprising learning behavior in deep neural networks has been named <em>double descent</em> <span class="citation" data-cites="belkin2019reconciling"><a href="references.html#ref-belkin2019reconciling" role="doc-biblioref">[6]</a></span>. Double descent describes the out-of-sample error when increasing the ratio between parameters and data. The behavior can be sliced into two components:</p>
+<ol type="1">
+<li><strong>Typical under- and overfitting:</strong> The dataset remains fixed and you start with a simple neural network. If you increase the number of parameters in our model and fit it to the data, you observe the typical underfitting and overfitting. This is true until you reach the point where you have as many parameters as you have data points, the so-called <em>interpolation threshold</em>. The test error explodes when reaching the interpolation threshold.</li>
+<li><strong>Double descent:</strong> But unlike traditional under- and overfitting, the test error decreases if you increase the number of parameters beyond the interpolation threshold. Continuing to increase the network size, the test error may even become lower than the test error of the “ideal” model in the underfitting/overfitting world (see <a href="#fig-double-descent" class="quarto-xref">Figure <span>7.2</span></a>).</li>
+</ol>
+<div id="fig-double-descent" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-double-descent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/34fcfde89ab940ff5fca3cec07f73b7a.png" class="img-fluid figure-img" data-original-src="https://ml-science-book.com/images/double-descent.excalidraw.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-double-descent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 7.2: Double Descent. Image inspired by <span class="citation" data-cites="rocks2022memorizing"><a href="references.html#ref-rocks2022memorizing" role="doc-biblioref">[7]</a></span>
+</figcaption>
+</figure>
+</div>
+<p>Double descent is not exclusive to deep neural networks but also happens for simple linear models <span class="citation" data-cites="schaeffer2023double"><a href="references.html#ref-schaeffer2023double" role="doc-biblioref">[8]</a></span>, random forests, and decision trees, as suggested by <span class="citation" data-cites="belkin2019reconciling"><a href="references.html#ref-belkin2019reconciling" role="doc-biblioref">[6]</a></span>, possibly due to a shared inductive bias <span class="citation" data-cites="curth2024u"><a href="references.html#ref-curth2024u" role="doc-biblioref">[9]</a></span>. Double descent undermined the theory of underfitting versus overfitting. But under- and overfitting are still useful concepts. It is like with Newton’s theory of gravity when Einstein’s relativity came along: Underfitting and overfitting provide an accurate picture of things below the interpolation threshold, but beyond this threshold the classical picture becomes invalid.</p>
+<p>Double descent describes the what but not the why. We still have no definitive answers as to why overparameterization works so well, but there are theories:</p>
+<ul>
+<li>The lottery ticket hypothesis <span class="citation" data-cites="frankle2019lottery"><a href="references.html#ref-frankle2019lottery" role="doc-biblioref">[10]</a></span> says that there are subnetworks in certain trained neural networks that have similar performance to the overall network. Training a large network is like having multiple lottery tickets (aka subnetworks) and one will win.</li>
+<li>Benign overfitting <span class="citation" data-cites="bartlett2020benign"><a href="references.html#ref-bartlett2020benign" role="doc-biblioref">[11]</a></span>: Many low-variance directions in parameter space are required to achieve highly performing models. This is achieved through overparameterization and makes for “benign overfitting”.</li>
+<li>Implicit regularization <span class="citation" data-cites="smith2020origin"><a href="references.html#ref-smith2020origin" role="doc-biblioref">[12]</a></span>: Optimization algorithms such as stochastic gradient descent implicitly regularize the model. It was shown that stochastic gradient descent actually optimizes not only the loss but effectively the loss plus an implicit minimizer.</li>
+</ul>
+<p>We barely scratched the surface of statistical learning theory, and there are many more topics to explore:</p>
+<ul>
+<li>Quantifying the complexity of models (like VC dimensions).</li>
+<li>Learning guarantees for kernel methods like support vector machines.</li>
+<li>Studying consistency and convergence rates of learners.</li>
+<li>Providing bounds for the empirical risk.</li>
+</ul>
+</section>
+</section>
+<section id="generalize-to-predict-in-practice" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="generalize-to-predict-in-practice"><span class="header-section-number">7.2</span> Generalize to predict in practice</h2>
+<p>So far we’ve talked about generalization from a theoretical viewpoint that, in practice, is too narrow. Because in practice, you only have access to data but not to the underlying distributions. Data is messy, noisy, and cannot perfectly be trusted.</p>
+<section id="generalization-through-splitting-data" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="generalization-through-splitting-data">Generalization through splitting data</h3>
+<p>How do you obtain models that generalize while being data-efficient? The answer: data splitting! <!--We don't know the distributions, but we work with data.
+And we allow our models to generalize by splitting the data.--> Let’s explore this with an example: Rajpurkar et al. <span class="citation" data-cites="rajpurkar2017chexnet"><a href="references.html#ref-rajpurkar2017chexnet" role="doc-biblioref">[13]</a></span> built a chest X-ray image classifier to detect pneumonia. To ensure that the classifier generalizes to new data, they split the data into training data (93.6% of the data), validation data (6%) to control the learning rate, and test data (0.4%) to evaluate the final model. If they had used 100% of the data for training the model, they would run into two problems: 1) The model might perform badly since it is unclear how many epochs to train it, and 2) the modelers would have no idea about the performance of the model, except for an overly optimistic estimate on training data.</p>
+<p>But if you split the data, train a model on one part, and evaluate the model on the remaining part, you can get an honest estimate of the out-of-sample error. Great, problem solved?! Careful, while their approach gets them an unbiased estimate of the test error, the estimate possibly has a large variance. With only 420 images in the test set, 10 difficult cases that ended up in the test set by chance can spoil your performance estimate. One strategy to lower the variance is to split the data more often. For example with cross-validation: Split the data, for example, into 5 parts, combine 4 parts for training (and validation), and the remaining 1 part for testing. Repeat this setup 5 times so each part is once used as test data. Average the 5 estimates of the out-of-sample error and, voila, you have a more stable estimate (visualized in <a href="#fig-cv" class="quarto-xref">Figure <span>7.3</span></a>).</p>
+<div id="fig-cv" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cv-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/077e8c26c2ee256f25fb912d111d8a03.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%" data-original-src="https://ml-science-book.com/images/5-fold-cv.excalidraw.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cv-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 7.3: 5-fold cross-validation
+</figcaption>
+</figure>
+</div>
+<p>But there’s another problem. In each CV-loop, you split the data once into training and validation data. The validation data in <span class="citation" data-cites="rajpurkar2017chexnet"><a href="references.html#ref-rajpurkar2017chexnet" role="doc-biblioref">[13]</a></span> was used for adapting the learning rate, but you could also use it for hyperparameter tuning and model selection. A single split can lead to a similar problem as before: too much variance in the performance estimate. So you might want to have another cross-validation inside the outer cross-validation. This so-called nested cross-validation quickly blows up the number of models you have to train, but it is a more efficient use of your data. This quickly went from splitting the data into two parts (training and testing) to splitting the data 100 times (10-fold cross-validation within 10-fold cross-validation). Data splitting is at the heart of generalization.</p>
+</section>
+<section id="the-tricky-iid-assumption" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="the-tricky-iid-assumption">The tricky IID assumption</h3>
+<p>Statistical theory and data splitting practices rest on a crucial assumption: data are IID, which stands for “independent and identically distributed” and means that each data point is a random sample.</p>
+<ul>
+<li>Identically distributed: All the data points are from the same distribution and don’t change over time. If you had one set of X-ray data for model training from a children’s hospital but the model application from an adult hospital, they are not identically distributed.</li>
+<li>Independent: A data point doesn’t reveal the ground truth of another data point. The X-ray data are no longer independent if a patient appears multiple times. Sampling one X-ray of a patient reveals information about other X-rays of the same patient.</li>
+</ul>
+<p>IID is a typical assumption in statistical learning theory, but also when you randomly split data for generalization purposes you implicitly make this assumption. IID is restrictive and real-world data often violates it. Some examples:</p>
+<ul>
+<li>Store sales over time are not IID.</li>
+<li>Patient visits with possibly multiple visits per patient are not IID</li>
+<li>Satellite images of neighboring locations are not IID.</li>
+</ul>
+<p>An earlier version of the paper by Rajpurkar et al. <span class="citation" data-cites="rajpurkar2017chexnet"><a href="references.html#ref-rajpurkar2017chexnet" role="doc-biblioref">[13]</a></span> ran into this non-IID problem: They split the data randomly, but for some patients, there were multiple X-ray images in the data. This led to data leakage: The model had an easier job since the model was able to overfit patient characteristics (e.g. scars in the X-ray image) and that would help classify the “unseen” data. As a kid, our imaginary Juan fell from a tree and broke his rips. This past injury is still visible in chest X-ray images and uniquely identifies Juan. If Juan went multiple times to the emergency room, his images might end up in both training and testing, and the model may overfit on the scans.</p>
+<p>Rajpurkar et al. <span class="citation" data-cites="rajpurkar2017chexnet"><a href="references.html#ref-rajpurkar2017chexnet" role="doc-biblioref">[13]</a></span> fixed this problem by ensuring that a patient’s data can only be in training or testing, but not both. If IID is violated, generalization can break down in parts – unless we account for it. The IID assumption also helps us in estimating the test error: If the data are IID, we can estimate the generalization error in an unbiased way because of the law of large numbers.</p>
+</section>
+<section id="the-real-world-is-messy" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="the-real-world-is-messy">The real world is messy</h3>
+<p>When COVID hit, many machine learning research labs dropped their projects to work on COVID detectors, many of them from X-ray images. Partially understandable, but in hindsight, a waste of effort. Sounds harsh, but Wynants et al. <span class="citation" data-cites="wynants2020prediction"><a href="references.html#ref-wynants2020prediction" role="doc-biblioref">[14]</a></span> did a systematic review of 232 prediction models for COVID and found that only 2 (!) were promising. The remaining 230 had various problems, like non-representative selections of control patients, excluding patients with no event, risk of overfitting, unclear reporting, and lack of descriptions of the target population and care setting.</p>
+<p>If you want a functional COVID-19 X-ray classifier, you should be as close as possible to the data-generating process of a potential application. For instance, getting data directly from an ER where radiologists label the images with the diagnoses. This would generate a dataset that reflects a typical distribution of cases. However, the data that many machine learning labs used were quite different. So different that the research models and results are unusable. As the pandemic progressed, more and more X-rays of COVID-infected lungs were posted online in repositories. Often without metadata like missing demographics of the patient, without any verification process, and little documentation. But that’s not the worst part of COVID classifiers. For classification tasks, you also need negative examples, such as images of healthy lungs or from patients with, for example, pneumonia. These negative images were cobbled together from many pre-pandemic datasets. A red flag: Negative and positive X-ray data come from very different data-generating processes. Should a deep learning model find any hints or shortcuts that identify the data source, then it doesn’t have to detect COVID at all. But even that isn’t the worst yet. The worst is how the non-COVID dataset was assembled. Roberts et al. <span class="citation" data-cites="roberts2021common"><a href="references.html#ref-roberts2021common" role="doc-biblioref">[15]</a></span> looked more deeply into the most commonly used datasets and found the following fouls:</p>
+<ul>
+<li>The X-ray image datasets were put together from multiple other image datasets.</li>
+<li>One of these datasets was from children (only non-COVID).</li>
+<li>Some datasets were included more than once, leading to duplicated images, introducing non-IID problems and data leakage.</li>
+<li>For some of the datasets it is intransparent how they were collected</li>
+<li>Other datasets were collected through “open calls” to other researchers to submit data without further verification.</li>
+</ul>
+<p>These things should all raise red flags. It is like Frankenstein was employed to create a dataset. A data-generating process that deviates strongly from any application we can think of. A model trained on Frankenstein’s data can learn all matters of shortcuts and none will generalize to a meaningful application:</p>
+<ul>
+<li>Identify children’s lungs: If the model can identify that the image was from a child, it can safely predict “not COVID”.</li>
+<li>Identify the year: If the model can identify the year through explicit or implicit markers (like the type of machine) it can safely label “not COVID” for older images.</li>
+<li>Identify the dataset: Any characteristics that images from the same dataset share can be used to make the prediction task easier. It is enough when a dataset is processed differently (e.g. greyscaling) or comes from a different X-ray machine.</li>
+<li>Duplicates: Some images might have ended up both in training and test data, making the model seem to work better than it does.</li>
+</ul>
+<p>Even if you find a model that perfectly predicts identically distributed data, the models can’t be used. No application comes with a data distribution anywhere identical to this mess.</p>
+<p>In general, to generalize from training to application, you want the data-generating process considered in training to be as similar as possible to the one during deployment. It is difficult. The world is even messier than what we described here and there are many more challenges to generalization in practice:</p>
+<ul>
+<li><strong>Distribution Shifts:</strong> Imagine someone building a pneumonia classifier before COVID-19. COVID introduced a new type of pneumonia and due to lockdowns and social distancing, other types of pneumonia occurred less frequently. A massive distribution shift may worsen the performance of existing models. Distribution shifts are discussed in <a href="robustness.html" class="quarto-xref"><span>Chapter 11</span></a>.</li>
+<li><strong>Non-causal models:</strong> The more a model relies on associations but not causes, the worse it might generalize. See <a href="causality.html" class="quarto-xref"><span>Chapter 10</span></a>.</li>
+<li><strong>Using an unsuitable evaluation metric:</strong> While this may not show up in a low test error, picking a metric that doesn’t reflect the application task well will result in a model that transfers poorly to the real-world setting.</li>
+</ul>
+</section>
+</section>
+<section id="generalization-to-understand-a-phenomenon" class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="generalization-to-understand-a-phenomenon"><span class="header-section-number">7.3</span> Generalization to understand a phenomenon</h2>
+<p>Generalization to predict other data is one thing, but especially in science you often want to generalize insights from the model to the phenomenon you are studying. In more statistical terms this is about generalizing from a data sample to a larger population.</p>
+<p>Generalization of insights may even come in innocent ways that we don’t immediately recognize. For example, Rajpurkar et al. <span class="citation" data-cites="rajpurkar2017chexnet"><a href="references.html#ref-rajpurkar2017chexnet" role="doc-biblioref">[13]</a></span> claimed that their X-ray classifier performs on par with radiologists, even outperforming them on certain metrics. We could say they only refer to the test data and leave it at that. However, nobody is interested in the test data, but in the population they represent. Like a sample of X-rays taken typically in the emergency room. Unfortunately, the paper doesn’t define the population, which is typical for machine learning papers.</p>
+<p>When a researcher studies a phenomenon using machine learning and interpretability, such as the effect of fertilizers on almond yield (like <span class="citation" data-cites="zhang2019california"><a href="references.html#ref-zhang2019california" role="doc-biblioref">[16]</a></span>), they are also generalizing. They generalize, explicitly or implicitly, from their model and data to a larger context. Quoting from the abstract of <span class="citation" data-cites="zhang2019california"><a href="references.html#ref-zhang2019california" role="doc-biblioref">[16]</a></span>:</p>
+<blockquote class="blockquote">
+<p>We also identified several key determinants of yield based on the modeling results. Almond yield increased dramatically with the orchard age until about 7 years old in general, and the higher long-term mean maximum temperature during April–June enhanced the yield in the southern orchards, while a larger amount of precipitation in March reduced the yield, especially in northern orchards.</p>
+</blockquote>
+<p>The larger context depends on what the data <em>represents</em>. In the case of the fertilizer study, this might be all the 6,000 <span class="citation" data-cites="california"><a href="references.html#ref-california" role="doc-biblioref">[17]</a></span> orchards in California. Or maybe it is just the ones in Central Valley? It depends on how representative the dataset is. The word representativeness or especially representative data is overloaded and people use it differently in machine learning <span class="citation" data-cites="clemmensen2023data"><a href="references.html#ref-clemmensen2023data" role="doc-biblioref">[18]</a></span> and science <span class="citation" data-cites="chasalow2021representativeness"><a href="references.html#ref-chasalow2021representativeness" role="doc-biblioref">[19]</a></span>. In the broadest sense, “representativeness concerns the ability of one thing to stand for another—a sample for a population, an instance for a category” <span class="citation" data-cites="chasalow2021representativeness"><a href="references.html#ref-chasalow2021representativeness" role="doc-biblioref">[19]</a></span>. In machine learning some claim representativeness without argument, some claim non-representativeness because of selection biases, some mean that the sample is a random sample from the distribution, and some claim coverage in the sense that all relevant groups are covered (maybe not in the same frequency as target population though), some speak of it as prototypes and archetypes. But for science and especially for the goal of inference – to draw conclusions about the real world – you need the data to represent the target population, in the sense of the training data being a random sample from the population.</p>
+<p>In an ideal world, you start with your research question and define the population. Then you draw a perfectly representative sample because you can just randomly sample from the population, as easy as buying fresh bread in Germany. But that’s often far from reality.</p>
+<p>The other way would be to start with a dataset, argue which population it represents, and extend insights to this population. And sometimes it is a mixture of bottom-up and top-down approaches. Zhang et al. <span class="citation" data-cites="zhang2019california"><a href="references.html#ref-zhang2019california" role="doc-biblioref">[16]</a></span>, for example, describes that they collected data from the 8 major growers that make up 185 orchards in the Central Valley of California. Some in the northern, some in the central, and some in the southern region. However, they do not discuss whether their sample of orchards is representative, so it is unclear what to make of the results.</p>
+<p>Proving that your data is representative is difficult to impossible. If you know the population statistics, you can at least compare summary statistics between the training set and the population. As always, it is easier to disprove something: finding a single counter-argument is enough. For representativeness, the counter-arguments are called “selection biases”. Selection biases are like forces in your collection process that either exclude or at least undersample some groups or over-emphasize others. Selection bias is a good angle to view the collection process. If you have identified a selection bias, you can discuss its severity and maybe even counter it by weighting your samples. Some examples of selection biases include:</p>
+<ul>
+<li>Survivorship bias: The sample only includes “survivors” or those whose objects/subjects passed a selection process.</li>
+<li>Non-response bias: Human respondents can differ in meaningful ways from non-respondents.</li>
+<li>Exclusion bias: Some exclusion mechanism (e.g., due to missing data) biases the sample.</li>
+</ul>
+</section>
+<section id="no-free-lunch-in-generalization" class="level2" data-number="7.4">
+<h2 data-number="7.4" class="anchored" data-anchor-id="no-free-lunch-in-generalization"><span class="header-section-number">7.4</span> No free lunch in generalization</h2>
+<p>We structured this chapter along three types of generalization: to predict in theory, to predict in practice, and to understand a phenomenon. One of the most well-known theoretical results – the so-called no-free lunch theorems – has taught us that generalization never comes for free <span class="citation" data-cites="wolpert1996lack"><a href="references.html#ref-wolpert1996lack" role="doc-biblioref">[20]</a></span>. All versions of the theorems highlight the following: You will never have an ultimate learning algorithm that always spits out the best possible prediction model <span class="citation" data-cites="shalev2014understanding"><a href="references.html#ref-shalev2014understanding" role="doc-biblioref">[21]</a></span>. You must take an <em>inductive leap</em> to generalize from a data sample to anything beyond itself. Like making context-specific assumptions (e.g. smoothness or IID) <span class="citation" data-cites="sterkenburg2021no"><a href="references.html#ref-sterkenburg2021no" role="doc-biblioref">[22]</a></span>. There ain’t no such thing as a free lunch, if you want to eat different meals, you need different cooking recipes.</p>
+<p>And, unfortunately, there is no free dessert either. Even if you have a model that generalizes well to identically distributed data, you have to “pay” for any further generalization. When it comes to generalization from training to application or from sample to population, you need to make even more assumptions and put in extra effort. And sometimes you might not achieve them after all. Generalization is never free.</p>
+<p>The cost of generalization comes up in other chapters as well:</p>
+<ul>
+<li>When interpreting the model for the goal of understanding the phenomenon of interest, you make assumptions about representativeness for example (see also <a href="interpretability.html" class="quarto-xref"><span>Chapter 9</span></a>)</li>
+<li>For causal inference, you make assumptions about the causal structures in the world (<a href="causality.html" class="quarto-xref"><span>Chapter 10</span></a>)</li>
+<li>Robustness is about guarding your models against distribution shifts (<a href="robustness.html" class="quarto-xref"><span>Chapter 11</span></a>)</li>
+</ul>
+
+
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-hardtrecht2022patterns" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">M. Hardt and B. Recht, <em>Patterns, predictions, and actions: Foundations of machine learning</em>. Princeton University Press, 2022.</div>
+</div>
+<div id="ref-cybenko1989approximation" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">G. Cybenko, <span>“Approximation by superpositions of a sigmoidal function,”</span> <em>Mathematics of control, signals and systems</em>, vol. 2, no. 4, pp. 303–314, 1989, doi: <a href="https://doi.org/10.1007/BF02551274">10.1007/BF02551274</a>.</div>
+</div>
+<div id="ref-hornik1991approximation" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">K. Hornik, <span>“Approximation capabilities of multilayer feedforward networks,”</span> <em>Neural networks</em>, vol. 4, no. 2, pp. 251–257, 1991, doi: <a href="https://doi.org/10.1016/0893-6080(91)90009-T">10.1016/0893-6080(91)90009-T</a>.</div>
+</div>
+<div id="ref-halmos2013measure" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">P. R. Halmos, <em>Measure theory</em>, vol. 18. Springer, 2013. doi: <a href="https://doi.org/10.1007/978-1-4684-9440-2">10.1007/978-1-4684-9440-2</a>.</div>
+</div>
+<div id="ref-goodfellow2016deep" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">I. Goodfellow, Y. Bengio, and A. Courville, <em>Deep learning</em>. MIT press, 2016.</div>
+</div>
+<div id="ref-belkin2019reconciling" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">M. Belkin, D. Hsu, S. Ma, and S. Mandal, <span>“Reconciling modern machine-learning practice and the classical bias–variance trade-off,”</span> <em>Proceedings of the National Academy of Sciences of the United States of America</em>, vol. 116, no. 32, pp. 15849–15854, Aug. 2019, doi: <a href="https://doi.org/10.1073/pnas.1903070116">10.1073/pnas.1903070116</a>.</div>
+</div>
+<div id="ref-rocks2022memorizing" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">J. W. Rocks and P. Mehta, <span>“Memorizing without overfitting: Bias, variance, and interpolation in overparameterized models,”</span> <em>Physical review research</em>, vol. 4, no. 1, p. 013201, 2022, doi: <a href="https://doi.org/10.1103/PhysRevResearch.4.013201">10.1103/PhysRevResearch.4.013201</a>.</div>
+</div>
+<div id="ref-schaeffer2023double" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">R. Schaeffer <em>et al.</em>, <span>“Double <span>Descent</span> <span>Demystified</span>: <span>Identifying</span>, <span>Interpreting</span> &amp; <span>Ablating</span> the <span>Sources</span> of a <span>Deep</span> <span>Learning</span> <span>Puzzle</span>.”</span> arXiv, Mar. 2023. doi: <a href="https://doi.org/10.48550/arXiv.2303.14151">10.48550/arXiv.2303.14151</a>.</div>
+</div>
+<div id="ref-curth2024u" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">A. Curth, A. Jeffares, and M. van der Schaar, <span>“A u-turn on double descent: Rethinking parameter counting in statistical learning,”</span> <em>Advances in Neural Information Processing Systems</em>, vol. 36, 2024.</div>
+</div>
+<div id="ref-frankle2019lottery" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">J. Frankle and M. Carbin, <span>“The <span>Lottery</span> <span>Ticket</span> <span>Hypothesis</span>: <span>Finding</span> <span>Sparse</span>, <span>Trainable</span> <span>Neural</span> <span>Networks</span>.”</span> arXiv, Mar. 2019. doi: <a href="https://doi.org/10.48550/arXiv.1803.03635">10.48550/arXiv.1803.03635</a>.</div>
+</div>
+<div id="ref-bartlett2020benign" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[11] </div><div class="csl-right-inline">P. L. Bartlett, P. M. Long, G. Lugosi, and A. Tsigler, <span>“Benign <span>Overfitting</span> in <span>Linear</span> <span>Regression</span>,”</span> <em>Proceedings of the National Academy of Sciences</em>, vol. 117, no. 48, pp. 30063–30070, Dec. 2020, doi: <a href="https://doi.org/10.1073/pnas.1907378117">10.1073/pnas.1907378117</a>.</div>
+</div>
+<div id="ref-smith2020origin" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[12] </div><div class="csl-right-inline">S. L. Smith, B. Dherin, D. G. Barrett, and S. De, <span>“On the origin of implicit regularization in stochastic gradient descent,”</span> <em>arXiv preprint arXiv:2101.12176</em>, 2021, doi: <a href="https://doi.org/10.48550/arXiv.2101.12176">10.48550/arXiv.2101.12176</a>.</div>
+</div>
+<div id="ref-rajpurkar2017chexnet" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[13] </div><div class="csl-right-inline">P. Rajpurkar <em>et al.</em>, <span>“<span>CheXNet</span>: <span>Radiologist</span>-<span>Level</span> <span>Pneumonia</span> <span>Detection</span> on <span>Chest</span> <span>X</span>-<span>Rays</span> with <span>Deep</span> <span>Learning</span>.”</span> arXiv, Dec. 2017. doi: <a href="https://doi.org/10.48550/arXiv.1711.05225">10.48550/arXiv.1711.05225</a>.</div>
+</div>
+<div id="ref-wynants2020prediction" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[14] </div><div class="csl-right-inline">L. Wynants <em>et al.</em>, <span>“Prediction models for diagnosis and prognosis of covid-19: Systematic review and critical appraisal,”</span> <em>BMJ (Clinical research ed.)</em>, vol. 369, p. m1328, Apr. 2020, doi: <a href="https://doi.org/10.1136/bmj.m1328">10.1136/bmj.m1328</a>.</div>
+</div>
+<div id="ref-roberts2021common" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[15] </div><div class="csl-right-inline">M. Roberts <em>et al.</em>, <span>“Common pitfalls and recommendations for using machine learning to detect and prognosticate for COVID-19 using chest radiographs and CT scans,”</span> <em>Nature Machine Intelligence</em>, vol. 3, no. 3, pp. 199–217, 2021, doi: <a href="https://doi.org/10.1038/s42256-021-00307-0">10.1038/s42256-021-00307-0</a>.</div>
+</div>
+<div id="ref-zhang2019california" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[16] </div><div class="csl-right-inline">Z. Zhang, Y. Jin, B. Chen, and P. Brown, <span>“California almond yield prediction at the orchard level with a machine learning approach,”</span> <em>Frontiers in plant science</em>, vol. 10, p. 809, 2019, doi: <a href="https://doi.org/10.3389/fpls.2019.00809/full">10.3389/fpls.2019.00809/full</a>.</div>
+</div>
+<div id="ref-california" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[17] </div><div class="csl-right-inline"><span>“The <span>California</span> <span>Almond</span>.”</span> Accessed: Feb. 16, 2024. [Online]. Available: <a href="https://www.waterfordnut.com/almond.html">https://www.waterfordnut.com/almond.html</a></div>
+</div>
+<div id="ref-clemmensen2023data" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[18] </div><div class="csl-right-inline">L. H. Clemmensen and R. D. Kjærsgaard, <span>“Data <span>Representativity</span> for <span>Machine</span> <span>Learning</span> and <span>AI</span> <span>Systems</span>.”</span> arXiv, Feb. 2023. Accessed: Feb. 07, 2024. [Online]. Available: <a href="http://arxiv.org/abs/2203.04706">http://arxiv.org/abs/2203.04706</a></div>
+</div>
+<div id="ref-chasalow2021representativeness" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[19] </div><div class="csl-right-inline">K. Chasalow and K. Levy, <span>“Representativeness in <span>Statistics</span>, <span>Politics</span>, and <span>Machine</span> <span>Learning</span>,”</span> in <em>Proceedings of the 2021 <span>ACM</span> <span>Conference</span> on <span>Fairness</span>, <span>Accountability</span>, and <span>Transparency</span></em>, in <span>FAccT</span> ’21. New York, NY, USA: Association for Computing Machinery, Mar. 2021, pp. 77–89. doi: <a href="https://doi.org/10.1145/3442188.3445872">10.1145/3442188.3445872</a>.</div>
+</div>
+<div id="ref-wolpert1996lack" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[20] </div><div class="csl-right-inline">D. H. Wolpert, <span>“The lack of a priori distinctions between learning algorithms,”</span> <em>Neural computation</em>, vol. 8, no. 7, pp. 1341–1390, 1996, doi: <a href="https://doi.org/10.1162/neco.1996.8.7.1341">10.1162/neco.1996.8.7.1341</a>.</div>
+</div>
+<div id="ref-shalev2014understanding" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[21] </div><div class="csl-right-inline">S. Shalev-Shwartz and S. Ben-David, <em>Understanding machine learning: From theory to algorithms</em>. Cambridge university press, 2014. doi: <a href="https://doi.org/10.1017/CBO9781107298019">10.1017/CBO9781107298019</a>.</div>
+</div>
+<div id="ref-sterkenburg2021no" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[22] </div><div class="csl-right-inline">T. F. Sterkenburg and P. D. Grünwald, <span>“The no-free-lunch theorems of supervised learning,”</span> <em>Synthese</em>, vol. 199, no. 3, pp. 9979–10015, 2021, doi: <a href="https://doi.org/10.1007/s11229-021-03233-1">10.1007/s11229-021-03233-1</a>.</div>
+</div>
+</div>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn1"><p>Confusingly, the generalization gap is sometimes referred to as the generalization error.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    
+</body>
+</html>

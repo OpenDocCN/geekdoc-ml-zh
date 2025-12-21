@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>8  Domain Knowledge</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>8  Domain Knowledge</h1>
+<blockquote>原文：<a href="https://ml-science-book.com/domain.html">https://ml-science-book.com/domain.html</a></blockquote>
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-two.html">Integrating Machine Learning Into Science</a></li><li class="breadcrumb-item"><a href="./domain.html"><span class="chapter-number">8</span>  <span class="chapter-title">Domain Knowledge</span></a></li></ol></nav>
+<div class="quarto-title">
+
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Machine learning algorithms learn models from data without needing much input. At least compared to other modeling approaches. But what about all the domain knowledge that you already have? Having models learn from data seems like the opposite of using domain knowledge – you let an algorithm identify the relevant patterns and differentiate between signal and noise.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"/>
+</div>
+<div class="callout-title-container flex-fill">
+Domain knowledge
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Domain knowledge refers to facts that have been established in a field.</p>
+</div>
+</div>
+<p>Can you use domain knowledge to guide the model? This chapter shows that you can, from the standard steps of translating the problem into a prediction task to more creative means such as designing custom evaluation metrics. The chapter focuses on ways to infuse domain knowledge directly into the model. Less well-known is that you can extract domain knowledge from the model: Domain knowledge constrains the model and affects its performance, which gives us information on how valuable the domain knowledge is for this prediction task. This makes machine learning a two-way street between domain knowledge and predictive performance.</p>
+<div class="raven-box">
+<p>Krarah and Rattle brainstormed about the problems with the tornado prediction system. Rattle had tunnel vision and looked only for reasons in her theory of generalization. Krarah shouted in frustration: “You’re not even using the knowledge about tornadoes, which we’ve accumulated over centuries. No wonder it doesn’t work!” This call from reality was sorely needed for Rattle. But how could she integrate domain knowledge into machine learning?</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/0870d97a75f46dc35663ec3021fc4309.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%" data-original-src="https://ml-science-book.com/images/raven-domain.jpg"/></p>
+</figure>
+</div>
+</div>
+<section id="translate-the-question-into-a-prediction-task" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="translate-the-question-into-a-prediction-task"><span class="header-section-number">8.1</span> Translate the question into a prediction task</h2>
+<p>The Ravens were wrong. Machine learning models are typically infused with lots of domain knowledge already, even when it may seem otherwise at first. Most domain knowledge comes from “translating” the scientific question into the prediction task. Predicting tornadoes from radar data and not from the number of people reporting knee aches might seem common sense. But as soon as you get into the details of designing the prediction task, you typically rely on deeper domain knowledge. Designing the prediction task might not always feel like infusing domain knowledge, especially when the prediction task is long established, like in weather forecasting. But for scientific problems that aren’t typically set up as prediction tasks, the translation process allows for a lot of creativity, which should be guided by domain knowledge.</p>
+<p>A big part of the translation is creating features and targets. Whether you predict intelligence from the income of the parents or chocolate consumption <span class="citation" data-cites="maurage2013does"><a href="references.html#ref-maurage2013does" role="doc-biblioref">[1]</a></span> makes for very different models. But if you are a typical reader of this book, you already know these things. Time to get to the juicy and often overlooked means to infuse domain knowledge.</p>
+</section>
+<section id="constrain-the-model" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="constrain-the-model"><span class="header-section-number">8.2</span> Constrain the model</h2>
+<p>Machine learning is praised for the flexibility to learn any function, but sometimes you might want the opposite and constrain the model. Model constraints are a direct way to incorporate domain knowledge into the learning process. Some examples of constraints that can be put on the relation between features and the prediction:</p>
+<ul>
+<li><strong>Monotonicity:</strong> The model’s predictions have to increase or decrease monotonically with increasing values of the feature in question. Example: Ensuring credit risk scores decrease monotonically with income.</li>
+<li><strong>Linearity:</strong> Restrict the model to learn a linear relation between prediction and feature(s). Example: Predicting rent, where the price is linearly dependent on the size of the house.</li>
+<li><strong>Sparsity:</strong> Restrict the number of features to be used for the prediction. Example: In genomic studies, identifying a small subset of genes responsible for a particular disease.</li>
+<li><strong>Smoothness:</strong> Restrict the predictions to smoothly change when the input changes. Example: Predicting temperature as a function of altitude, where abrupt changes are not expected.</li>
+<li><strong>Cyclicity:</strong> A smoothness constraint that ensures that the predictions for the low and high end of a feature “meet”. Example: Predicting electricity demand based on the time of the day, considering the cyclical nature of a day, including a smooth transition from 23:59 to 00:00.</li>
+<li><strong>Range constraints:</strong> Restricting the domain of the predictions. For example, pH levels of a solution can only be between 0 and 14.</li>
+</ul>
+<p>How do you infuse these constraints into your models? How do you force a support vector machine to model one of the features linearly, but not all the other features? How do you make sure a random forest becomes sparse? Sometimes you can work with model-agnostic methods, such as feature pre-processing:</p>
+<ul>
+<li>To obtain sparse models, use a feature selection step as pre-processing, followed by your usual machine learning pipeline.</li>
+<li>To model a feature cyclically, transform the feature into two features with sin and cos transformations <span class="citation" data-cites="ianlondonEncodingCyclicalContinuous2016"><a href="references.html#ref-ianlondonEncodingCyclicalContinuous2016" role="doc-biblioref">[2]</a></span>.</li>
+</ul>
+<p>However, for other constraints, it is necessary to limit the model classes to ones that can handle the constraint. For instance, if you want your models to have monotonicity constraints for some features, you should only use model classes such as:</p>
+<ul>
+<li>Linear regression models.</li>
+<li>XGBoost, a library for a gradient boosting algorithm, which allows setting a monotonicity constraint.</li>
+<li>Neural networks with monotonicity constraints <span class="citation" data-cites="nguyenMonoNetInterpretableModels2019"><a href="references.html#ref-nguyenMonoNetInterpretableModels2019" role="doc-biblioref">[3]</a></span>.</li>
+</ul>
+<p>The more constraints you add, the smaller the pool of eligible model classes becomes. And the more specific the constraints, the more you depart from well-trodden paths, and you’ll find yourself using untested code from obscure machine learning publications instead of scikit-learn and other well-established machine learning libraries.</p>
+<p>If you find yourself wanting many model constraints that can’t be enforced in a model-agnostic way (e.g. feature engineering), you might want to look at frameworks and model families that are constraint-friendly, but also well-established:</p>
+<ul>
+<li><strong>Model-based boosting</strong> <span class="citation" data-cites="hofner2014model"><a href="references.html#ref-hofner2014model" role="doc-biblioref">[4]</a></span><strong>:</strong> A gradient-boosting-based approach allowing you to pick constraints for each of the features.</li>
+<li><strong>Deep neural networks:</strong> You can design many constraints through choices of the neural network architecture, loss function, and how the network is trained.</li>
+</ul>
+<p>Regardless of whether you add constraints through feature engineering or restrict the model classes, ensure to also fit an unconstrained model. As stated in the beginning, domain knowledge doesn’t only flow in the direction of the model, but model performance may tell you something about the predictiveness of that domain knowledge. By comparing the performances of constrained and unconstrained models, you can evaluate the constraint. A decrease in predictive performance when adding constraints might suggest that the domain knowledge behind it isn’t as robust as initially thought (unless you can argue otherwise).</p>
+</section>
+<section id="design-your-performance-metric" class="level2" data-number="8.3">
+<h2 data-number="8.3" class="anchored" data-anchor-id="design-your-performance-metric"><span class="header-section-number">8.3</span> Design your performance metric</h2>
+<p>There’s a temptation to measure model performance with an off-the-shelf metric such as the mean squared error or the F1 metric. An off-the-shelf metric can be fine, but you might be better off designing a custom metric. The performance metric is an excellent, but often overlooked, way to incorporate domain knowledge into the model.</p>
+<p>Poor modeling choices, lack of hyperparameter tuning, or bad features result in low predictive performance. That means the performance evaluation acts as a warning system. But if you’ve put an unsuitable warning system in place, there is no “meta-warning system” that will alert you. Except for reality, because at some point you realize that the model doesn’t fulfill its ulterior purpose. The lack of feedback makes it important to pick or design the right evaluation metric. Every metric makes judgments about how bad certain prediction errors are. For example, the mean squared error <span class="math inline">\(\frac{1}{n}\sum_{i=1}^{n}(y^{(i)} - \hat{f}(x^{(i)}))^2\)</span> comes with the following judgments:</p>
+<ul>
+<li><strong>Symmetry:</strong> Missing the outcome by -1 is as problematic as being off by +1.</li>
+<li><strong>Equality:</strong> Each data point’s prediction is equally important.</li>
+<li><strong>Non-linearity:</strong> Being off by 2 is four times as bad as being off by 1.</li>
+</ul>
+<p>Designing these “judgments” is an opportunity for leveraging domain knowledge. You might weigh certain errors higher, weigh a subset of your data higher, or anticipate distribution shifts.</p>
+<p>Let’s illustrate this with an example. Goschenhofer et al. <span class="citation" data-cites="goschenhofer2020wearable"><a href="references.html#ref-goschenhofer2020wearable" role="doc-biblioref">[5]</a></span> developed a wearable-based Parkinson’s severity monitor that predicted disease severity (<span class="math inline">\(y\)</span>) from severe slowing of movements (-4) to okay (0) to severe excessive movements (+4). Together with medical doctors, the authors identified three requirements for the performance metric: non-linearity, asymmetry, and lack of translation invariance. The metric should penalize larger errors more heavily. Particularly, errors with a sign change should be more costly. If the actual outcome is -1, a prediction of +1 is worse than -3 because getting the direction wrong is more harmful to the patient than an overestimation. Furthermore, diagnostic errors for patients with severe symptoms should have greater weight than errors for patients with mild symptoms. This is what the new performance metric looks like:</p>
+<p><span class="math display">\[\mathbb{P}(Y,X,\hat{f}) = \frac{1}{n}\sum_{i=1}^n\left[\frac{y^{(i)}}{4}\alpha + sign\left(y^{(i)} - \hat{f}(x^{(i)})\right)\right] \left(\hat{f}(x^{(i)}) - y^{(i)}\right)^2\]</span></p>
+<p>At its core, it is the squared loss between model prediction and ground truth label but multiplied with a factor controlling over- and underestimation, steered by the parameter <span class="math inline">\(\alpha \in [-1,1]\)</span>, and a sign error penalty. This controls the symmetry (negative <span class="math inline">\(\alpha\)</span> penalizes underestimation, positive <span class="math inline">\(\alpha\)</span> penalizes overestimation, and 0 means symmetric loss). Based on feedback from medical experts, the authors chose <span class="math inline">\(\alpha=0.25\)</span>. By multiplying <span class="math inline">\(\alpha\)</span> with the true label, the true label controls the direction of the asymmetric penalization. For example, classifying a true y=-1 as -3 “costs” 4, but if you classify it as +1, which is also 2 units apart, it costs +5. That’s the custom “sign error” penalty of the metric. <a href="#fig-custom-loss" class="quarto-xref">Figure <span>8.1</span></a> visualizes the loss function.</p>
+<!-- produced with scripts/custom-loss.r -->
+<div id="fig-custom-loss" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-custom-loss-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/232f9c4b3ed7e990d00cc85e35cfdd59.png" class="img-fluid figure-img" style="width:90.0%" data-original-src="https://ml-science-book.com/images/custom-loss.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-custom-loss-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 8.1: Custom Loss Function
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="align-loss-and-evaluation-metric" class="level2" data-number="8.4">
+<h2 data-number="8.4" class="anchored" data-anchor-id="align-loss-and-evaluation-metric"><span class="header-section-number">8.4</span> Align loss and evaluation metric</h2>
+<p>Ideally, the metric you choose can be used as a loss function, the function that is directly optimized during the training. However, this might not always be possible:</p>
+<ul>
+<li>The performance metric might not be differentiable, but, for example, training neural networks requires a loss function with a gradient.</li>
+<li>Some model classes have a “built-in” loss function, like the linear regression model which optimizes the squared loss by default, or decision trees that optimize the Gini metric.</li>
+<li>The performance metric might be difficult to optimize because it is non-convex or infeasible to compute.</li>
+<li>The performance metric might only work on an aggregation of your data (e.g. F1 score), but the model requires an instance-wise computable loss function.</li>
+</ul>
+<p>Here are some practical tips for working with loss functions and performance metrics:</p>
+<ul>
+<li>If possible, design the performance metric so that it is convex and has a gradient. This way, you can use it directly as a loss function, at least for some model classes such as neural networks.</li>
+<li>If you can’t develop the perfect loss function, at least align the loss function with the performance metric: Do they at least have the same optimum? Do they model the same (dis)similarities? Do they both have the same scaling? Think linear versus squared.</li>
+<li>Ensure that hyperparameter tuning and model selections are based on the performance metric and not the loss function.</li>
+<li>If you have different options for loss functions, you can treat the loss as a hyperparameter.</li>
+<li>Even if the loss function optimized by some model class seems like a mismatch, train the model anyway and let the model selection process decide. In the case of a huge mismatch between loss and performance metrics, it should show up in the performance evaluation.</li>
+</ul>
+</section>
+<section id="make-it-physical" class="level2" data-number="8.5">
+<h2 data-number="8.5" class="anchored" data-anchor-id="make-it-physical"><span class="header-section-number">8.5</span> Make it physical</h2>
+<!-- TODO: reread and refine -->
+<p>The loss function is also a means to model physics. Many physical processes are guided by partial differential equations (PDEs). These equations are relevant in predicting the weather, simulating the climate, understanding how aircraft fly, and understanding fluid dynamics. However, simulating PDE-based systems can be computationally costly and slow. Wouldn’t it be great to use machine learning instead?</p>
+<p>At first glance, these equations seem the opposite of what machine learning entails: They represent explicit physical laws, whereas neural networks are often seen as a mess of matrix multiplications. With physics-informed neural networks (PINNs) <span class="citation" data-cites="raissi2017physics"><a href="references.html#ref-raissi2017physics" role="doc-biblioref">[6]</a></span>, however, you can make a neural network learn physical laws/PDEs as well, making the neural network an emulator of a physical process. This leverages the property of neural networks being universal function approximators <span class="citation" data-cites="hornik1991approximation"><a href="references.html#ref-hornik1991approximation" role="doc-biblioref">[7]</a></span>. The trick lies in using a loss function that minimizes a two-part MSE:</p>
+<p><span class="math display">\[MSE = MSE_u + MSE_{\hat{f}},\]</span></p>
+<p>where <span class="math inline">\(MSE_u\)</span> corresponds to the initial and boundary conditions of the system, and <span class="math inline">\(MSE_{\hat{f}}\)</span> is the squared error between model output and the output of the original differential equations, based on collocation points, which are points in the domain where the PDE is enforced. Instead of purely emulating the process, physics-informed neural networks can also be used to discover the parameterization of PDEs from noisy measurements of the system <span class="citation" data-cites="raissi2017physicsa"><a href="references.html#ref-raissi2017physicsa" role="doc-biblioref">[8]</a></span>.</p>
+<p>Alternatively, instead of encoding PDEs via the loss function during training, you can also encode physics constraints directly into neural networks, resulting in what some refer to as Physics-encoded Neural Networks (PeNNs).</p>
+</section>
+<section id="considering-various-evaluation-metrics" class="level2" data-number="8.6">
+<h2 data-number="8.6" class="anchored" data-anchor-id="considering-various-evaluation-metrics"><span class="header-section-number">8.6</span> Considering various evaluation metrics</h2>
+<p>Supervised machine learning has a drawback: the evaluation is typically based on just one dimension, the performance metric. But life is never that simple! You might have multiple metrics that you care about. Fortunately, it is possible to train models that optimize different metrics, but it is not as simple as just having one metric.</p>
+<p>Imagine you want to predict tornadoes in the next hour. We could have accuracy or F1 score as one metric, but there’s more to life than just being right all the time. You might also want to consider the complexity of the model, like how sparse it is, or even the average time it takes to make a prediction (because nobody likes waiting, especially if there’s a tornado looming).</p>
+<p>There are two options to accomplish this:</p>
+<ul>
+<li>Combine both metrics into one. This only works when you can quantify your desired trade-off between the two metrics.</li>
+<li>Use multi-objective optimization for hyperparameter tuning and model selection.</li>
+</ul>
+<p>Here are a couple of metrics that you can optimize for, partially based on <span class="citation" data-cites="pfisterer2019multi"><a href="references.html#ref-pfisterer2019multi" role="doc-biblioref">[9]</a></span>:</p>
+<ul>
+<li><strong>Predictive Performance</strong>: Can be quantified using measures such as F1-Score, AUC, or mean absolute error.</li>
+<li><strong>Interpretability</strong> <span class="citation" data-cites="molnar2020quantifying"><a href="references.html#ref-molnar2020quantifying" role="doc-biblioref">[10]</a></span>: Metrics such as sparsity, interaction strength, and complexity of the main effects.</li>
+<li><strong>Fairness</strong>: Measured as disparate impact, equalized odds, or calibration.</li>
+<li><strong>Robustness</strong>: Measured via performance under perturbations, presence of adversarial examples, and under distribution shifts.</li>
+<li><strong>Alignment with physics-based models</strong> <span class="citation" data-cites="letzgus2023explainable"><a href="references.html#ref-letzgus2023explainable" role="doc-biblioref">[11]</a></span></li>
+<li><strong>Inference time</strong></li>
+<li><strong>Memory requirements</strong></li>
+</ul>
+<p>Let’s say you want to predict a disease outcome using gene expression data. From domain knowledge, you know that only a few genes might be relevant. But if you only optimize for predictive performance, the model might pick up more genes than necessary if it doesn’t hurt the performance bottom line. By also optimizing for sparsity in this example, you can find a model that satisfies both performance and sparsity<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. We’ve already discussed constraints in a previous section, but multi-objective optimization offers a slightly different approach to constraints. Optimizing for multiple objectives produces multiple “optimal” models. Each model is optimal regarding a different trade-off between the objectives, also known as “Pareto-efficient” models. Having multiple models can be both a bug and a feature. It is a bug because you typically want just one model. It is a feature because the set of Pareto efficient models allows you to choose the trade-off between the metrics that make sense based on domain knowledge. And that’s easier than having to decide beforehand how to balance both performance metrics.</p>
+<p>Again, we can observe the two-way street: Whether you collapse the objective into one function or embrace the multiplicity of models with different trade-offs – multi-objective optimization will enable you to explore different trade-offs and therefore evaluate domain knowledge.</p>
+</section>
+<section id="use-the-right-inductive-biases-and-learn-from-them" class="level2" data-number="8.7">
+<h2 data-number="8.7" class="anchored" data-anchor-id="use-the-right-inductive-biases-and-learn-from-them"><span class="header-section-number">8.7</span> Use the right inductive biases and learn from them</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"/>
+</div>
+<div class="callout-title-container flex-fill">
+Inductive bias
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The prior assumptions a machine learning algorithm imposes on the model to help generalize to unseen data.</p>
+</div>
+</div>
+<p>Imagine a machine learning algorithm that produces “models” that only memorize training data. To “predict”, this model would have to check whether the new data point is in the training data. If so, the model can return the outcome for the training data point. If not, it can’t make a prediction. But what if a training data point is almost identical to the new one? Could you just use the same prediction? The model could then just return the prediction of the nearest data point. Or, to make it robust, the average prediction of multiple close data points from the training data. That’s the idea behind K-nearest neighbors.</p>
+<p>But you could also have a model that makes different assumptions about how to generalize to new data, see <a href="#fig-inductive" class="quarto-xref">Figure <span>8.2</span></a>. If you get a new data point and one of the features is slightly different from one of the training data points, you could interpolate linearly between the neighboring data points for this new data point. If you do that for all features and training data points, then you end up with a linear regression model.</p>
+<div id="fig-inductive" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-inductive-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/817947b21bd6d878c8d498ef7628f009.png" class="img-fluid figure-img" style="width:80.0%" data-original-src="https://ml-science-book.com/images/inductive-bias.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-inductive-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 8.2: Same data, different inductive biases.
+</figcaption>
+</figure>
+</div>
+<p>Or you could use another strategy: Divide your data into partitions which are defined by binary decisions in the features. The partitions are chosen so that the training data points within have a similar outcome. This comes with a beautiful generalization strategy: For each new data point, you just have to check in which data partition it falls, based on the feature values, and then take the average outcome of all the training data points as a prediction. This is the strategy that decision trees use.</p>
+<p>All these examples show that each model class, like trees, k-nearest-neighbors, and linear models, comes with different inductive biases. The inductive bias is an instruction on how to generalize the relation between inputs and outputs to unseen data.</p>
+<p>Try out models with different inductive biases. If a certain inductive bias seems to stand out, study how it relates to the studied phenomenon. Can you learn about your problem at hand?</p>
+<p>A way to understand inductive biases better is by using tools from interpretable machine learning (see <a href="interpretability.html" class="quarto-xref"><span>Chapter 9</span></a>). Interpretable machine learning can also be used to extract insights from the models. Domain knowledge often comes in the form of causal knowledge (see <a href="causality.html" class="quarto-xref"><span>Chapter 10</span></a>).</p>
+
+
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-maurage2013does" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">P. Maurage, A. Heeren, and M. Pesenti, <span>“Does chocolate consumption really boost nobel award chances? The peril of over-interpreting correlations in health studies,”</span> <em>The Journal of Nutrition</em>, vol. 143, no. 6, pp. 931–933, 2013, doi: <a href="https://doi.org/10.3945/jn.113.174813">10.3945/jn.113.174813</a>.</div>
+</div>
+<div id="ref-ianlondonEncodingCyclicalContinuous2016" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">I. London, <span>“Encoding cyclical continuous features - 24-hour time,”</span> <em>Ian London’s Blog</em>. Jul. 2016. Accessed: Sep. 27, 2023. [Online]. Available: <a href="https://ianlondon.github.io/posts/encoding-cyclical-features-24-hour-time/">https://ianlondon.github.io/posts/encoding-cyclical-features-24-hour-time/</a></div>
+</div>
+<div id="ref-nguyenMonoNetInterpretableModels2019" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">A. Nguyen and M. R. Martı́nez, <span>“<span>MonoNet</span>: <span>Towards Interpretable Models</span> by <span>Learning Monotonic Features</span>.”</span> <span>arXiv</span>, Sep. 2019. doi: <a href="https://doi.org/10.48550/arXiv.1909.13611">10.48550/arXiv.1909.13611</a>.</div>
+</div>
+<div id="ref-hofner2014model" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">B. Hofner, A. Mayr, N. Robinzonov, and M. Schmid, <span>“Model-based boosting in r: A hands-on tutorial using the r package mboost,”</span> <em>Computational statistics</em>, vol. 29, pp. 3–35, 2014, doi: <a href="https://doi.org/10.1007/s00180-012-0382-5">10.1007/s00180-012-0382-5</a>.</div>
+</div>
+<div id="ref-goschenhofer2020wearable" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">J. Goschenhofer, F. M. Pfister, K. A. Yuksel, B. Bischl, U. Fietzek, and J. Thomas, <span>“Wearable-based parkinson’s disease severity monitoring using deep learning,”</span> in <em>Machine learning and knowledge discovery in databases: European conference, ECML PKDD 2019, w<span>ü</span>rzburg, germany, september 16–20, 2019, proceedings, part III</em>, Springer, 2020, pp. 400–415. doi: <a href="https://doi.org/10.1007/978-3-030-46133-1_24">10.1007/978-3-030-46133-1_24</a>.</div>
+</div>
+<div id="ref-raissi2017physics" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">M. Raissi, P. Perdikaris, and G. E. Karniadakis, <span>“Physics <span>Informed</span> <span>Deep</span> <span>Learning</span> (<span>Part</span> <span>I</span>): <span>Data</span>-driven <span>Solutions</span> of <span>Nonlinear</span> <span>Partial</span> <span>Differential</span> <span>Equations</span>.”</span> arXiv, Nov. 2017. doi: <a href="https://doi.org/10.48550/arXiv.1711.10561">10.48550/arXiv.1711.10561</a>.</div>
+</div>
+<div id="ref-hornik1991approximation" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">K. Hornik, <span>“Approximation capabilities of multilayer feedforward networks,”</span> <em>Neural networks</em>, vol. 4, no. 2, pp. 251–257, 1991, doi: <a href="https://doi.org/10.1016/0893-6080(91)90009-T">10.1016/0893-6080(91)90009-T</a>.</div>
+</div>
+<div id="ref-raissi2017physicsa" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">M. Raissi, P. Perdikaris, and G. E. Karniadakis, <span>“Physics <span>Informed</span> <span>Deep</span> <span>Learning</span> (<span>Part</span> <span>II</span>): <span>Data</span>-driven <span>Discovery</span> of <span>Nonlinear</span> <span>Partial</span> <span>Differential</span> <span>Equations</span>.”</span> arXiv, Nov. 2017. doi: <a href="https://doi.org/10.48550/arXiv.1711.10566">10.48550/arXiv.1711.10566</a>.</div>
+</div>
+<div id="ref-pfisterer2019multi" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">F. Pfisterer, S. Coors, J. Thomas, and B. Bischl, <span>“Multi-objective automatic machine learning with autoxgboostmc,”</span> <em>arXiv preprint arXiv:1908.10796</em>, 2019, doi: <a href="https://doi.org/10.48550/arXiv.1908.10796">10.48550/arXiv.1908.10796</a>.</div>
+</div>
+<div id="ref-molnar2020quantifying" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">C. Molnar, G. Casalicchio, and B. Bischl, <span>“Quantifying model complexity via functional decomposition for better post-hoc interpretability,”</span> in <em>Machine learning and knowledge discovery in databases: International workshops of ECML PKDD 2019, w<span>ü</span>rzburg, germany, september 16–20, 2019, proceedings, part i</em>, Springer, 2020, pp. 193–204. doi: <a href="https://doi.org/10.1007/978-3-030-43823-4_17">10.1007/978-3-030-43823-4_17</a>.</div>
+</div>
+<div id="ref-letzgus2023explainable" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[11] </div><div class="csl-right-inline">S. Letzgus and K.-R. Müller, <span>“An explainable <span>AI</span> framework for robust and transparent data-driven wind turbine power curve models,”</span> <em>Energy and AI</em>, p. 100328, Dec. 2023, doi: <a href="https://doi.org/10.1016/j.egyai.2023.100328">10.1016/j.egyai.2023.100328</a>.</div>
+</div>
+</div>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn1"><p>Multi-objective optimization is not the only method to introduce sparsity into your model. Generally, regularization is employed, implying that only models with inherent sparsity, such as LASSO (a sparse linear model), are considered.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    
+</body>
+</html>

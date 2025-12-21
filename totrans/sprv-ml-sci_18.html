@@ -1,0 +1,607 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>12  Uncertainty</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>12  Uncertainty</h1>
+<blockquote>原文：<a href="https://ml-science-book.com/uncertainty.html">https://ml-science-book.com/uncertainty.html</a></blockquote>
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-two.html">Integrating Machine Learning Into Science</a></li><li class="breadcrumb-item"><a href="./uncertainty.html"><span class="chapter-number">12</span>  <span class="chapter-title">Uncertainty</span></a></li></ol></nav>
+<div class="quarto-title">
+
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The Western United States has a problem with water – they don’t have enough of it. They even call it <em>The Dry West</em>, and if you have ever been to Utah, you know why. Because of this, water management is done for things that require planning, like water storage and agriculture. The Bureau of Reclamation, among others, is concerned with forecasting for each year how much water will be available in the season (from April to July) as measured at certain gauges in rivers and intakes of dams. Since the main water supply in the rivers comes from snowmelt in the mountain ranges and from precipitation, these are the most important features used in forecasting. In the past, hydrologists relied on traditional statistical models, but recently they dipped their toes into machine learning.</p>
+<p>Running out of drinking water or losing crops is not an option. That’s why decision-makers not only need a forecast, they need to know how certain that forecast is. For example, hydrologists often communicate uncertainty using quantile forecasts (see <a href="#fig-quantiles" class="quarto-xref">Figure <span>12.1</span></a>): A (correct) 90% quantile forecast means that there is a 90% chance that the actual streamflow will be below the forecast and a 10% chance that it will exceed the forecast. Forecasting the 10, 30, 50 (median), 70, and 90 percent quantiles is common.</p>
+<div id="fig-quantiles" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-quantiles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/2bb00f0d60f8aa4604f6199f8bcab8ec.png" class="img-fluid figure-img" style="width:90.0%" data-original-src="https://ml-science-book.com/images/uncertainty-beaver.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-quantiles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 12.1: Beaver River water supply forecasts of different “exceedances”, which are inverted quantiles (e.g., 90% exceedance = 10% quantile). The February 2024 report was provided by the natural resources conservation service of the U.S. Department of Agriculture, CC-BY (https://creativecommons.org/licenses/by/4.0/).
+</figcaption>
+</figure>
+</div>
+<p>In fact, in a world with perfect predictions, all quantiles would “collapse” to the same point, but nature does not allow you to peek into her cards so easily. You have to deal with unforeseen weather changes, measurement errors in mountain ranges, and inadequate spatial coverage. This chapter shows you how to integrate these factors into your machine learning pipeline and qualify your predictions with uncertainty estimates.</p>
+<p>For a more technical dive into machine learning uncertainty quantification, we recommend <span class="citation" data-cites="gruber2023sources"><a href="references.html#ref-gruber2023sources" role="doc-biblioref">[1]</a></span>, <span class="citation" data-cites="hoffmann2021multiplicity"><a href="references.html#ref-hoffmann2021multiplicity" role="doc-biblioref">[2]</a></span>, <span class="citation" data-cites="begoli2019need"><a href="references.html#ref-begoli2019need" role="doc-biblioref">[3]</a></span>, and <span class="citation" data-cites="hullermeier2021aleatoric"><a href="references.html#ref-hullermeier2021aleatoric" role="doc-biblioref">[4]</a></span>, all of which partially inspired our chapter.</p>
+<div class="raven-box">
+<p>All berries are tasty, but some are dangerous. As a result, berry studies has always been one of the best-funded sciences. So asking Rattle to automate berry classification seemed like a natural step. And indeed, after two weeks, Rattle delivered the world’s best berry classifier. The only problem was that nobody trusted the results: The classifier may be right on average, but is it also right for this berry?</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Images/8c792672e4800f3fea466e314a428c45.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%" data-original-src="https://ml-science-book.com/images/raven-uncertainty.jpg"/></p>
+</figure>
+</div>
+</div>
+<section id="frequentist-vs-bayesian-interpretation-of-uncertainty" class="level2" data-number="12.1">
+<h2 data-number="12.1" class="anchored" data-anchor-id="frequentist-vs-bayesian-interpretation-of-uncertainty"><span class="header-section-number">12.1</span> Frequentist vs Bayesian interpretation of uncertainty</h2>
+<p>Say a hydrologist tells you that there is a 10% probability that the April streamflow in the Beaver River will be less than 6.3 thousand acre-feet. How do you interpret that statement? The possible answers describe one of the oldest discussions within statistics: What is a probability?</p>
+<p><strong>Frequentist interpretation</strong></p>
+<p>Imagine that you examine the water supply (infinitely) many times under similar conditions, then 10% of the time, you would observe water supplies below 6.3 thousand acre-feet. Frequentists view statements about uncertainty as statements about the relative frequency of events in the long run under similar conditions.</p>
+<p>The frequentist interpretation of uncertainty has two central conceptual problems: 1) You simply cannot observe an event with an infinite number of repetitions under similar observational conditions, and it is even unclear whether their relative frequencies are well-defined. 2) You are faced with the so-called <em>reference class problem</em> – what defines relevant similar conditions?</p>
+<p><strong>Bayesian interpretation</strong></p>
+<p>The hydrologist believes with 10% confidence that the water supply will be less than 6.3 thousand acre-feet. This belief can be expressed in terms of bets she would be willing to make. For example, the hydrologist would be willing to bet up to 10 cents that the water supply will be below 6.3 thousand acre-feet, receiving 1 Dollar if the water supply is actually below 6.3 and nothing if it’s above. To a Bayesian, uncertainty describes subjective degrees of belief. In fact, this subjective belief is constantly updated as new data is observed using the Bayes formula<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
+<p>While the Bayesian approach seems to have solved the limitations of the frequentist approach, it faces its own problems: 1) What should you believe if you have not seen any evidence on the matter? This is the so-called problem of <em>prior belief</em>. 2) If uncertainty is a subjective statement about the world, can probabilities be correct? 3) Bayesian probabilities rely on calculating posterior probabilities with the Bayes formula, which is often computationally intractable.</p>
+<blockquote class="blockquote">
+<p>“Probability is the most important concept in modern science, especially as nobody has the slightest notion of what it means.” (Attributed to Bertrand Russell, 1929)</p>
+</blockquote>
+<p>There are also other less established interpretations of uncertainty, such as propensities, likelihoodism, objective Bayesianism, and many others. But whatever understanding of uncertainty you choose, you have to live with its limitations.</p>
+<p><strong>Laplace’s Demon: Uncertainties in a deterministic world</strong></p>
+<p>Does it matter for the frequentist or Bayesian interpretation of uncertainty whether the world is deterministic or not?</p>
+<p>Imagine a hypothetical being with infinite computational resources who knows the location and momentum of every particle in the world. Knowing the laws of nature, could it perfectly determine every past and future state of the world? If so, the world would be deterministic, there would be no uncertainty for that being. This thought experiment of a being with infinite knowledge and infinite computational resources is called the <em>Laplacian Demon</em>. It would be able to precisely calculate the water supply for April.</p>
+<p>Does it matter for the interpretation of uncertainty if such a Laplacian Demon exists? Not really! For frequentists, uncertainties are always defined relative to a reference class of similar conditions specified in a particular language. As long as these similar conditions do not determine the event, the uncertainty remains well-defined. Similarly, for Bayesians, uncertainties arise from <em>human</em> computational limitations, incomplete language for the system, insufficient knowledge of the laws, or lack of information about the state of the world. Therefore, both Bayesians and frequentists can reasonably speak of uncertainty at a higher level of description, regardless of whether there is no uncertainty at a lower level for Laplace’s hypothetical demon <span class="citation" data-cites="list2019levels"><a href="references.html#ref-list2019levels" role="doc-biblioref">[5]</a></span>. This chapter deals with uncertainties that arise from the restriction of the prediction task to certain features, inconclusive reference classes, or simply limited human capacities. We lack the expertise to make sophisticated speculations about potential irreducible uncertainties in the quantum world.</p>
+</section>
+<section id="the-shared-language-of-uncertainty" class="level2" data-number="12.2">
+<h2 data-number="12.2" class="anchored" data-anchor-id="the-shared-language-of-uncertainty"><span class="header-section-number">12.2</span> The shared language of uncertainty</h2>
+<p>While there are great fights about what uncertainty means, there is a relatively broad consensus about the language used to describe uncertainty.</p>
+<p><strong>Probability space</strong></p>
+<p>The most central concept for describing uncertainty is standard probability theory, which involves:</p>
+<ul>
+<li>A <em>sample space</em> <span class="math inline">\(\Omega\)</span> that describes all possible outcomes. In our example, an outcome could contain all kinds of information, such as the amount of snow in the U.S., global winds, and the water supply.</li>
+<li>An <em>event space</em> <span class="math inline">\(\mathcal{F}\)</span> that describes relevant sets of possible outcomes. One such set might be all outcomes where the water supply is exactly 6.3 thousand acre-feet.</li>
+<li>A <em>probability measure</em> <span class="math inline">\(\mathbb{P}\)</span> that assigns a non-negative real value to each element in the event space. For example, the event that the water supply is less than 6.3 thousand acre-feet can be assigned a probability of 0.1 (10%). <span class="math inline">\(\mathbb{P}\)</span> should satisfy the Kolmogorov axioms.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"/>
+</div>
+<div class="callout-title-container flex-fill">
+Kolmogorov Axioms
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The Kolmogorov axioms consist of three components: 1) Every event <span class="math inline">\(E\)</span> gets a probability assigned of greater or equal to zero, i.e. <span class="math inline">\(\mathbb{P}(E)\geq 0\)</span>. 2) <span class="math inline">\(\Omega\)</span> is in the event space and its probability is 1, i.e. <span class="math inline">\(\mathbb{P}(\Omega)=1\)</span>. This means that one of the outcomes in <span class="math inline">\(\Omega\)</span> has to occur for sure. 3) If you unite a countable infinite sequence of events <span class="math inline">\((E_1, E_2,\dots)\)</span> that are pairwise disjoint, then the union of the events has the same probability as the sum of the individual events, i.e. <span class="math inline">\(\mathbb{P}\left(\bigcup_{i=1}^{\infty} E_i\right) = \sum_{i=1}^{\infty} \mathbb{P}(E_i)\)</span>. For example, the event that the water supply is below 6.3 thousand acre-feet (with probability 0.1) and the event that the water supply is strictly above 6.3 thousand acre-feet (with probability 0.9) have no common outcomes, so their joint probability is the sum of the individual probabilities (=1).</p>
+</div>
+</div>
+<p>Together these three components form a probability space <span class="math inline">\((\Omega,\mathcal{F},\mathbb{P})\)</span>.</p>
+<p><strong>Random variables</strong></p>
+<p><em>Random variables</em> describe quantities based on random events from the event space <span class="math inline">\(\mathcal{F}\)</span>. Say you are interested in water supply. Random variables allow you to define a function <span class="math inline">\(Y\)</span> that maps each possible outcome to its corresponding water supply, i.e. <span class="math inline">\(Y: \Omega\rightarrow \mathbb{R}\)</span> with <span class="math inline">\(\omega\mapsto \text{water supply in } \omega\)</span>. This gives you an efficient way to describe events related to water supply, for example, <span class="math inline">\(Y=6.3\)</span> describes the event where the water supply is 6.3 thousand acre-feet. Throughout this book, we have used random variables to describe the features and the target variable.</p>
+<p><strong>Confidence vs credible intervals</strong></p>
+<p><em>Confidence intervals</em> and <em>credible intervals</em> quantify uncertainties in a compact way. Say you are not satisfied with a point prediction, and instead you want interval predictions that are likely to cover the true label. Such intervals can indeed be computed. Frequentists will give you confidence intervals, and Bayesians will give you credible intervals. But be careful, they come with different interpretations:</p>
+<ul>
+<li>Frequentist 95% confidence intervals say that with a relative frequency of 95% the true label is contained in an infinite sequence of confidence intervals computed for different data samples. Thus, frequentists see the true label as fixed and the intervals as random variables.</li>
+<li>Bayesian 95% credible intervals say that there is a 95% certainty that the outcome falls into the given interval. Thus, Bayesians see the interval as fixed and the true label as a random variable.</li>
+</ul>
+<p><strong>Quantiles</strong></p>
+<p>The <em>q-quantiles</em> are the cutoff points that divide the probability distribution of a random variable into q equally sized intervals. In practice, the quantiles are relatively easy to estimate:</p>
+<ol type="1">
+<li>Arrange your data along the variable of interest.</li>
+<li>Put <span class="math inline">\(\frac{100}{q}\)</span>-th of the data with the lowest variable value in the first bin, and so on until all the data is in one of the bins.</li>
+<li>Compute the average between the highest variable value in the k-th bin and the lowest value in the k+1-th bin. This average is your estimate of the k-th q-quantile.</li>
+</ol>
+<p>For example, the first 10% quantile describes the water supply volume where 10% of your observed volumes lie below. This can give you information about the distribution of the data beyond the mean value.</p>
+<p><strong>Imprecise probabilities</strong></p>
+<p>Standard probability theory assigns each event in the event space <span class="math inline">\(\mathcal{F}\)</span> a value between 0 and 1. This can sometimes be difficult: Think of a hydrologist who is asked for her certainty that the water supply will exceed 12 thousand acre-feet. Instead of giving a point probability of 70% certainty, she might say that her certainty lies between 65-75%. Notice how the information is different from a certainty judgment of 50-90%, even though the average is the same.</p>
+<p>Such scenarios are precisely what theories of <em>imprecise probabilities</em> are designed for. They allow you to express uncertainty about the probability of a concrete event:</p>
+<ul>
+<li><em>Credal sets</em>, for instance, describe sets of probability distributions rather than a single distribution.</li>
+<li><em>Upper and lower probabilities</em> describe the upper and lower limits of sets of probabilities assigned to a certain event.</li>
+<li><em>Interval probabilities</em> assign each event an interval <span class="math inline">\([a,b]\)</span> with <span class="math inline">\(a,b\in[0,1]\)</span> and <span class="math inline">\(a&lt;b\)</span>.</li>
+</ul>
+<p>There are tons of books on uncertainty quantification, and this small chapter cannot provide the same depth. Instead of providing an exhaustive list of all the concepts and languages used to describe uncertainty, our selection focuses on the most common ones.</p>
+</section>
+<section id="uncertainty-in-predictions-performance-properties" class="level2" data-number="12.3">
+<h2 data-number="12.3" class="anchored" data-anchor-id="uncertainty-in-predictions-performance-properties"><span class="header-section-number">12.3</span> Uncertainty in predictions, performance &amp; properties</h2>
+<p>Uncertainty matters whenever you estimate things. Scientists particularly care about the uncertainties in the estimations of predictions, performance, and properties.</p>
+<p><strong>Predictions</strong></p>
+<p>In the hydrology example, we were concerned with estimating the expected water supply. In this case, we care about the uncertainty in <em>predictions</em>. What is the probability that the water supply will be less than 6.3 thousand acre-feet? What predicted values cover the true label with 95% certainty? What is the variance in predictions from similarly performing models? Prediction uncertainty is the most common concern of researchers using machine learning. Whenever predictions are the basis for action, investigating prediction uncertainties is a key requirement.</p>
+<p><strong>Performance</strong></p>
+<p>A hydrologist may wish to compare her model with those of a competitor or with the state-of-the-art. This can be done by evaluating the error on historical/future data that was not used to train the model (i.e., the holdout set). However, this provides only a single estimate of the expected error on other unseen data. Therefore, it is often useful to estimate the test error repeatedly and to define confidence intervals. Whenever scientists want to fairly compare the performance of their model with others, they should be transparent about performance uncertainties.</p>
+<p><strong>Properties</strong></p>
+<p>In a classic statistical modeling context, hydrologists are interested in the uncertainties of model parameters, assuming that they reflect general properties of interest such as (causal) feature effect sizes. In machine learning, parameters such as weights in neural networks often do not lend themselves to such an intuitive interpretation. There are often neither uniquely optimal nor robust parameter settings. To analyze the properties of interest, such as feature effects and importance, you can generalize the notion of parameters to general properties of interest of the data distribution. These properties and their uncertainties can be efficiently estimated, for example, using targeted learning <span class="citation" data-cites="van2011targeted"><a href="references.html#ref-van2011targeted" role="doc-biblioref">[6]</a></span>. Alternatively, the same properties and uncertainties can be estimated using post-hoc interpretability techniques <span class="citation" data-cites="freiesleben2022scientific"><a href="references.html#ref-freiesleben2022scientific" role="doc-biblioref">[7]</a></span>. This allows hydrologists to answer questions about the most effective or important feature of water supply.</p>
+</section>
+<section id="uncertainty-quantifies-the-expected-error" class="level2" data-number="12.4">
+<h2 data-number="12.4" class="anchored" data-anchor-id="uncertainty-quantifies-the-expected-error"><span class="header-section-number">12.4</span> Uncertainty quantifies the expected error</h2>
+<p>When we talk about uncertainty, we are implicitly talking about errors. How close is the predicted water supply to the true future water supply? How close is your test error to the true generalization error? Does the estimated effect of precipitation on water supply match the true effect?</p>
+<p>In general terms, you always have a target quantity of interest <span class="math inline">\(T\)</span> (e.g., true water supply), and your estimate <span class="math inline">\(\hat{T}\)</span> (e.g., predicted water supply) and you want to know how large the error is, measured by some distance function <span class="math inline">\(L\)</span>: <span class="math display">\[
+\epsilon:=L(T,\hat{T})
+\]</span></p>
+<p>Unfortunately, you don’t have access to <span class="math inline">\(T\)</span>. If you did, you wouldn’t have to estimate anything at all. Therefore, you usually look at the expected error in your estimation, such as the expectation over datasets used in the estimation.</p>
+<p>The reason the expected error can be quantified is the so-called bias-variance decomposition, which works for many known distance functions such as the mean squared error or the 0-1 loss <span class="citation" data-cites="domingos2000unified"><a href="references.html#ref-domingos2000unified" role="doc-biblioref">[8]</a></span>:</p>
+<p><span class="math display">\[
+\underbrace{\mathbb{E}[L(T,\hat{T})]}_{\text{Expected error}} = \underbrace{L(\mathbb{E}[\hat{T}],T)}_{\text{Bias}} + \underbrace{\mathbb{E}[(L(\hat{T},\mathbb{E}[\hat{T}])]}_{\text{Variance}}
+\]</span></p>
+<ul>
+<li><strong>Bias</strong> describes how the expected estimate differs from the true target value <span class="math inline">\(T\)</span>. In a frequentist interpretation, the idea is that if you repeatedly estimate your target you will be correct on average. A biased estimator systematically underestimates or overestimates the target quantity.</li>
+<li><strong>Variance</strong> describes how the estimates vary, for example, for a different data sample. An estimator has high variance if the estimates are highly sensitive to the dataset it receives.</li>
+</ul>
+<div id="fig-biasVariance" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-biasVariance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/8ce63bb678d2af6d97aa3e18e7193d52.png" class="img-fluid figure-img" style="width:70.0%" data-original-src="https://ml-science-book.com/images/biasVariance.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-biasVariance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 12.2: Bias and variance explained intuitively on a dartboard, CC-BY (https://creativecommons.org/licenses/by/4.0/)
+</figcaption>
+</figure>
+</div>
+<p>But how does bias-variance decomposition help? For many estimators you can prove unbiasedness, meaning the bias term vanishes. Therefore, the expected error can be fully determined from the variance of the estimate. And the variance can estimated empirically or theoretically.</p>
+</section>
+<section id="sources-of-uncertainty" class="level2" data-number="12.5">
+<h2 data-number="12.5" class="anchored" data-anchor-id="sources-of-uncertainty"><span class="header-section-number">12.5</span> Sources of uncertainty</h2>
+<p>Predictions, performance, and properties are the juicy lemonade you get from our whole machine learning pipeline. Whether the lemonade tastes good depends on the water, the lemons, the squeezing technique, and the ice cubes. A lack of quality in any of these has a direct impact on the quality of your lemonade. Similarly, the expected errors in predictions, performance, and properties are due to errors in our task, modeling setup, and data.</p>
+<p>Machine learning modeling can be described as a series of steps. Each of these steps can introduce errors that propagate uncertainty in our estimate. The examples and errors shown in the <a href="#fig-pipeline" class="quarto-xref">Figure <span>12.3</span></a> focus on <em>prediction uncertainty</em>, but performance and property uncertainties can be captured in the same way.</p>
+<div id="fig-pipeline" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pipeline-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/03e06da2e94baf6026e8b2a354a66691.png" class="img-fluid figure-img" data-original-src="https://ml-science-book.com/images/uncertainties-dissected.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pipeline-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 12.3: The machine learning pipeline from the perspective of uncertainty. Each step describes an approximation of the true target value, CC-BY (https://creativecommons.org/licenses/by/4.0/)
+</figcaption>
+</figure>
+</div>
+<section id="task-uncertainty" class="level3" data-number="12.5.1">
+<h3 data-number="12.5.1" class="anchored" data-anchor-id="task-uncertainty"><span class="header-section-number">12.5.1</span> Task uncertainty</h3>
+<p>Specifying a machine learning task means specifying three things: 1. the prediction target <span class="math inline">\(Y\)</span>; 2. a notion of loss <span class="math inline">\(L\)</span>; 3. the input features <span class="math inline">\(X=(X_1,\dots,X_p)\)</span>. In machine learning theory, these three objects are usually considered fixed. In most practical settings, however, they must be chosen carefully.</p>
+<p><strong>Prediction target</strong></p>
+<p>Often, what you want to predict is vague, making it difficult to operationalize. How do you define the flow of a river? Is one measurement enough? Where to place the sensor? Or should you place multiple sensors and average over many measurements? Vague target variables are especially common in the social sciences. Social scientists are often interested in latent variables that cannot be measured directly. Think of concepts like intelligence, happiness, or motivation. For empirical research, these variables need to be operationalized by some measurable proxy. For example, using grades as a proxy for intelligence, money as a proxy for utility, or hours spent as a proxy for motivation. Operationalizations of latent variables are often debatable, to say the least.</p>
+<p>The <em>operationalization error</em> describes the difference between the true prediction target <span class="math inline">\(Y_{true}\)</span> and its operationalization <span class="math inline">\(Y\)</span> according to some distance function <span class="math inline">\(d\)</span>: <span class="math display">\[
+\epsilon_{operationalize}:=d(Y_{true},Y)
+\]</span></p>
+<p>The operationalization error is a big topic in measurement theory <span class="citation" data-cites="diamantopoulos2008advancing"><a href="references.html#ref-diamantopoulos2008advancing" role="doc-biblioref">[9]</a></span>, but it still needs to be better bridged to scientific practice <span class="citation" data-cites="carpentras2024we"><a href="references.html#ref-carpentras2024we" role="doc-biblioref">[10]</a></span>.</p>
+<p><strong>Loss</strong></p>
+<p>Uncertainty in the target variable leads to uncertainty in the choice of loss function. The loss function is defined over the co-domain of <span class="math inline">\(Y\)</span> and if <span class="math inline">\(Y\)</span> changes, so does the loss <span class="math inline">\(L\)</span> most of the time. An appropriate loss on the money domain <span class="math inline">\(]-\infty,\infty[\)</span> differs from the personal happiness evaluation domain <span class="math inline">\((1,2,\dots,10)\)</span>. Even if there is no uncertainty about <span class="math inline">\(Y\)</span>, there can still be uncertainty about the appropriate notion of loss in a given context. Is it better to define prediction error in water supply in terms of absolute distance or should particularly bad predictions be penalized more using the mean squared error?</p>
+<p><strong>Input features</strong></p>
+<p>You could use many different features to predict a certain target variable, and each combination of features would result in a different prediction. For example, the snow stations could be placed in different locations. But which is the best prediction? It is complicated! When you have multiple models making predictions based on different features, there is not necessarily one prediction model that is always superior. Each of the models may have its merits in different situations. Constraining the prediction task to a subset of input features <span class="math inline">\(X\)</span> may lead to a feature selection error.</p>
+<p>The <em>feature selection error</em> describes the difference between the operationalized target <span class="math inline">\(Y\)</span> and the Bayes-optimal prediction <span class="math inline">\(f_{dep}(X)\)</span> according to <span class="math inline">\(L\)</span> in the deployment distribution (see below in <a href="#sec-Bayes" class="quarto-xref"><span>Section 12.5.2</span></a> our explanation of Bayes-optimal predictors): <span class="math display">\[
+\epsilon_{feature}:=L(Y,f_{dep}(X)).
+\]</span> Adding features with predictive value tends to reduce the error. Thus, one might be interested in the difference between the optimal prediction of <span class="math inline">\(Y\)</span> based on feature set <span class="math inline">\(X\)</span> (snow-water equivalent at certain landmarks) and the optimal prediction based on <span class="math inline">\(X\)</span> plus <span class="math inline">\(Z\)</span> (weather forecasts). The <em>omitted features error</em> relative to <span class="math inline">\(X\)</span> describes the difference between the optimal prediction based on <span class="math inline">\(X\)</span> and the optimal prediction based on <span class="math inline">\(X\)</span> and <span class="math inline">\(Z\)</span>:</p>
+<p><span class="math display">\[
+\epsilon_{omitted}:= L(f_{dep}(X,Z),f_{dep}(X)).
+\]</span></p>
+</section>
+<section id="sec-Bayes" class="level3" data-number="12.5.2">
+<h3 data-number="12.5.2" class="anchored" data-anchor-id="sec-Bayes"><span class="header-section-number">12.5.2</span> Interlude: The Bayes-optimal predictor, epistemic, and aleatoric uncertainty</h3>
+<p>Given a task <span class="math inline">\((Y,L,X)\)</span>, we can define a central concept when it comes to uncertainty – the Bayes-optimal predictor. It describes a prediction function that takes input features <span class="math inline">\(X\)</span> (e.g., snow-water equivalent, weather forecasts, etc.) and always outputs the best prediction for <span class="math inline">\(Y\)</span> (i.e., water supply). This does not mean that the Bayes-optimal predictor always predicts the correct amount of water supply. It just gives the best possible guess based on <span class="math inline">\(X\)</span> only. As we discussed above, the features we have access to, such as snow-water equivalent and weather forecasts, even if perfectly accurate, will usually not completely determine the water supply. Other factors such as the rock layers below the river, the form of the riverbed, or the lakes connected to the river also affect the water supply. The error made by the Bayes-optimal predictor is the feature selection error <span class="math inline">\(\epsilon_{feature}\)</span> we defined above.</p>
+<p>Let’s define the Bayes-optimal predictor more formally. It describes the function <span class="math inline">\(f: \mathcal{X}\rightarrow \mathcal{Y}\)</span> that minimizes the generalization error (see <a href="generalization.html" class="quarto-xref"><span>Chapter 7</span></a> or <span class="citation" data-cites="hastie2009elements"><a href="references.html#ref-hastie2009elements" role="doc-biblioref">[11]</a></span>) and is defined pointwise <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> for <span class="math inline">\(x\in\mathcal{X}\)</span> by:</p>
+<p><span class="math display">\[f(x)=\underset{c}{\mathrm{argmin}}\;\;\mathbb{E}_{Y|X}[L(Y,c)\mid X=x].\]</span></p>
+<p>For many loss functions, you can theoretically derive the Bayes-optimal predictor. For example, if you face a regression task and measure loss with the mean-squared error, the optimal predictor is the conditional expectation of <span class="math inline">\(Y\)</span> given <span class="math inline">\(X\)</span>, i.e. <span class="math inline">\(f=\mathbb{E}_{Y\mid X}[Y \mid X]\)</span>. Alternatively, if you face a classification task and use the <span class="math inline">\(0-1\)</span> loss, the optimal predictor predicts the class with the highest conditional probability, i.e. <span class="math inline">\(\mathrm{argmax}_{y\in\mathcal{Y}}\;\;\mathbb{P}(y \mid X)\)</span>.</p>
+<p><strong>Aleatoric uncertainty, epistemic uncertainty, and why we don’t like the idea of irreducible uncertainties</strong></p>
+<p>In the discussion of uncertainty, a common taxonomy is to distinguish between aleatoric and epistemic uncertainty <span class="citation" data-cites="hullermeier2021aleatoric"><a href="references.html#ref-hullermeier2021aleatoric" role="doc-biblioref">[4]</a></span>. Aleatoric uncertainty is said to be irreducible. Even with infinite data on snow-water equivalent, weather, and water supply from the past, and fantastic modeling skills, you might still not be able to forecast water supply perfectly – the remaining error is subject to aleatoric uncertainty. Commonly, aleatoric uncertainty is identified with the feature selection error <span class="math inline">\(\epsilon_{feature}\)</span>. Epistemic uncertainty is seen as reducible and stems from your limited access to data, skill in modeling, or computation. For example, if you only have one month of historical data on snow-water equivalent, weather, and water supply, then you have high epistemic uncertainty – collecting more data can reduce this uncertainty.</p>
+<p>While we agree that the feature selection error <span class="math inline">\(\epsilon_{feature}\)</span> is of interest, we disagree with calling it irreducible. As mentioned above, including more features allows you to reduce the error in practice. Uncertainty must always be considered reducible or irreducible only relative to the assumptions that are considered fixed, such as the features, the model, or the data. Whether there is a truly irreducible uncertainty is for physicists to decide, not statisticians.</p>
+</section>
+<section id="distribution-uncertainty" class="level3" data-number="12.5.3">
+<h3 data-number="12.5.3" class="anchored" data-anchor-id="distribution-uncertainty"><span class="header-section-number">12.5.3</span> Distribution uncertainty</h3>
+<p>The next source of uncertainty is the deployment environment. You simply do not know whether the environment in which you will make your predictions will look exactly like the one you have observed. Over the past 100 years, climate change has significantly altered patterns important to water flow: The best water flow predictions in a given setting in 1940 might look different from the best predictions in 2024. It remains uncertain what environmental conditions will prevail on the Beaver River in the coming years: Will Timpanogos Glacier still be there? How much precipitation can be expected in this area? How many extreme weather events such as droughts or floods will occur?</p>
+<p>The <em>distribution error</em> describes the difference in prediction for a given input <span class="math inline">\(x\)</span> between the Bayes-optimal predictor <span class="math inline">\(f\)</span> with respect to the training distribution <span class="math inline">\((X_{train},Y_{train})\)</span> and the Bayes-optimal predictor <span class="math inline">\(f_{dep}(x)\)</span> with respect to the deployment distribution <span class="math inline">\((X_{dep},Y_{dep})\)</span>:</p>
+<p><span class="math display">\[
+\epsilon_{distribution}:= L(f_{dep}(x),f(x))
+\]</span></p>
+<p>We use <span class="math inline">\(X\)</span>, <span class="math inline">\(Y\)</span>, and <span class="math inline">\(f\)</span> instead of <span class="math inline">\(X_{train},Y_{train}, and f_{train}\)</span> to keep the notation easy to read.</p>
+</section>
+<section id="model-uncertainty" class="level3" data-number="12.5.4">
+<h3 data-number="12.5.4" class="anchored" data-anchor-id="model-uncertainty"><span class="header-section-number">12.5.4</span> Model uncertainty</h3>
+<p>The Bayes-optimal predictor is a theoretical construct. The best you can do to get it is to approximate it with a machine learning model. To do this, you need to specify what the relationship between <span class="math inline">\(X\)</span> (e.g. snow-water equivalent) and your target <span class="math inline">\(Y\)</span> (e.g. water supply) might be. The constraints you place on the model will potentially lead to a model misspecification error.</p>
+<p><strong>Model misspecification</strong></p>
+<p>Choosing the right <em>model class</em> for a problem is seen as essential, but what is the right class? What kind of relationship should you expect between snow-water equivalent and water supply? How can snow-water equivalent interact with the weather forecast features? This is difficult! Ideally, you want to choose a model class that contains models that are close to or even contain the Bayes-optimal predictor. Since you usually don’t know what the Bayes-optimal predictor looks like, this incentivizes choosing a large model class that allows you to express many possible functions. At the same time, finding the best-fitting model in a large model class is much harder than finding it in a small model class.</p>
+<p>Deep neural networks and tree-based ensembles describe highly expressive model classes. They can approximate arbitrary functions well <span class="citation" data-cites="cybenko1989approximation hornik1991approximation halmos2013measure"><a href="references.html#ref-cybenko1989approximation" role="doc-biblioref">[12]</a>, <a href="references.html#ref-hornik1991approximation" role="doc-biblioref">[13]</a>, <a href="references.html#ref-halmos2013measure" role="doc-biblioref">[14]</a></span> including the Bayes-optimal predictor. Simpler models like linear models or k-nearest neighbors are more constrained in their modeling capabilities.</p>
+<p>The bias-variance decomposition provides a good perspective on the uncertainties that can arise from model misspecification. Choosing an expressive model class will reduce the bias in your estimation of the Bayes-optimal predictor. However, it will increase the variance in the estimation process. Conversely, choosing a model class with low expressivity will generally result in a higher bias but lower variance.</p>
+<p><strong>Randomness in the hyperparameters selection</strong></p>
+<p>One constraint you place on the search for the optimal model within the model class is the <em>hyperparameters</em>. The learning rate in stochastic gradient descent, regularizers like dropout, or the number of allowed splits in random forests, all constrain the models that can <em>effectively</em> be learned. While the search for suitable hyperparameters can in some cases be automated using AutoML methods <span class="citation" data-cites="hutter2019automated"><a href="references.html#ref-hutter2019automated" role="doc-biblioref">[15]</a></span>, there remains a random element, as trying out all options always remains computationally intractable.</p>
+<p><strong>Random seeds and implementation errors</strong></p>
+<p>Most complex learning algorithms contain random elements, for example, bootstrapping in random forests and batch gradient descent in deep learning. This randomness is made reproducible with a seed. Running the same non-deterministic algorithm twice with different seeds will produce different predictions. And, there is generally no theoretical justification for choosing one seed over another. Also, implementation errors in machine learning pipelines can affect the learned model.</p>
+<p><strong>Model class, hyperparameters, and seeds constrain the set of effectively learnable models</strong></p>
+<p>Together, the choices of model class, hyperparameters, and random seeds constrain the effective model class – i.e. the class of models that can be learned under those choices. We call the learnable model closest to the Bayes-optimal predictor the <em>class-optimal predictor</em> and denote it by <span class="math inline">\(f^*\)</span>.</p>
+<p>The <em>model error</em> describes the difference between the Bayes-optimal predictor <span class="math inline">\(f\)</span> within the training distribution <span class="math inline">\((X,Y)\)</span> and the class-optimal predictor <span class="math inline">\(f^*\)</span>:</p>
+<p><span class="math display">\[
+\epsilon_{model}:= L(f(X),f^*(X)).
+\]</span></p>
+</section>
+<section id="data-uncertainty" class="level3" data-number="12.5.5">
+<h3 data-number="12.5.5" class="anchored" data-anchor-id="data-uncertainty"><span class="header-section-number">12.5.5</span> Data uncertainty</h3>
+<p>Finally, let us look at the ultimate source of uncertainty – the data. You have made measurements in the past and obtained data describing the snow-water equivalent, the weather conditions, and the corresponding water supply. Several things can go wrong:</p>
+<p><strong>Sampling</strong></p>
+<p>The data you have obtained is only a small sample of the underlying population. With a different sample or more data, your estimate of the label, performance, or property of interest may have looked entirely different.</p>
+<p>Uncertainty arising from the data sample can have a large impact on your estimate:</p>
+<ul>
+<li><strong>Randomness:</strong> You may have been unlucky and taken a sample that contains many outliers. For example, you took measurements on random days, but they happened to be very rainy days.</li>
+<li><strong>Data size:</strong> Your data sample may be too small to be representative of the underlying probability distribution. For example, one measurement per month is not enough for your model to learn the relevant dependencies.</li>
+<li><strong>Selection bias:</strong> Your sample may be biased, resulting in a non-representative sample. For example, you may have taken measurements only on dry days to avoid getting wet.</li>
+</ul>
+<p>The <em>sample error</em> describes the difference between the prediction of the class-optimal model <span class="math inline">\(f^*\)</span> and the learned model <span class="math inline">\(\hat{f}_D\)</span> based on the complete dataset <span class="math inline">\(D\)</span>: <span class="math display">\[
+\epsilon_{sample}:= L(f^*(X),\hat{f}_D(X))
+\]</span></p>
+<p>In the literature, this error is sometimes referred to as the <em>approximation error</em> <span class="citation" data-cites="hullermeier2021aleatoric jalaian2019uncertain"><a href="references.html#ref-hullermeier2021aleatoric" role="doc-biblioref">[4]</a>, <a href="references.html#ref-jalaian2019uncertain" role="doc-biblioref">[16]</a></span>, but we found the term <em>sample error</em> more informative about the nature of this error.</p>
+<p><strong>Measurement errors</strong></p>
+<p>All data are derived from measurements, or at least it is useful to think of it that way. Your water flow sensors make a measurement. Tracking the amount of snow is a measurement. Even just taking a picture of that snow is a measurement. A measurement error is the deviation of the result of a measurement from the (unknown) true property. It is inevitable to make measurement errors.</p>
+<ul>
+<li><strong>Measurement error in the target</strong> introduces a bias. Think of human transcription errors in water flow data.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> There are two directions for this bias: it could be above or below the true property of interest. You might get lucky and biases cancel out on average but that is unlikely, especially if the error is systematic.</li>
+<li><strong>Measurement errors in the features</strong> may or may not introduce a bias in the predictions. If there is a random error in the measurement of the snow-water equivalent, it can be washed out during training. Systematic measurement errors in the input features can have more serious consequences: If the snow-water equivalent measurement contains large errors, the model may rely on a proxy feature such as streamflow in the previous month.</li>
+</ul>
+<p><strong>Missing data</strong></p>
+<p>In an ideal dataset, no cell is empty. Scientific reality is often less tidy. Some values in your rows will look odd: The water flow on March 22 was <em>infinite</em>? The current snow-water equivalent is <em>not a number (NaN)</em>? The date human-entered record is <em>November 32 in 2102</em>? What should we do if some values are missing or undefined?<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>There are several reasons why data may be missing:</p>
+<ul>
+<li><strong>Missing completely at random (MCAR):</strong> The missing value mechanism is independent of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>. For example, the company that tracks the snow-water equivalent has a server problem and therefore the value is missing.</li>
+<li><strong>Missing at random (MAR):</strong> The probability of missingness depends on the observed data. For example, if the guy who sends you the snow-water equivalent sometimes misses it on Thursdays because it is his date night.</li>
+<li><strong>Missing not at random (MNAR):</strong> The probability of missingness depends on the missing information. For example, if you don’t get a snow-water equivalent measurement during a snowstorm because the staff can’t reach the sensors.</li>
+</ul>
+<p><strong>Measurement errors and missing values lead to another estimation error</strong></p>
+<p>Measurement errors and missing values make the data set you deal with in practice look different from the complete data set with unbiased values <span class="math inline">\(D\)</span> you consider in theory. The <em>data error</em> describes the difference between the learned model <span class="math inline">\(\hat{f}_D\)</span> based on the complete and accurate dataset <span class="math inline">\(D\)</span> and the learned model <span class="math inline">\(\hat{f}_{cl(\tilde{D})}\)</span> on the dataset <span class="math inline">\(\tilde{D}\)</span> that contains measurement errors and missing values that need to be cleaned up using operations <span class="math inline">\(cl\)</span>:</p>
+<p><span class="math display">\[
+\epsilon_{data}:= L(\hat{f}_D(X),\hat{f}_{cl(\tilde{D})}(X)).
+\]</span></p>
+</section>
+</section>
+<section id="quantifying-uncertainties" class="level2" data-number="12.6">
+<h2 data-number="12.6" class="anchored" data-anchor-id="quantifying-uncertainties"><span class="header-section-number">12.6</span> Quantifying uncertainties</h2>
+<p>Now we have fancy names for all kinds of sources of uncertainty and the errors they represent. But how can we quantify these uncertainties?</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"/>
+</div>
+<div class="callout-title-container flex-fill">
+Uncertainties are hard to disentangle in practice
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Above we tried to disentangle all kinds of uncertainties: What is the difference between the true target and its operationalization? What is the difference between the Bayes-optimal predictor and the class-optimal model? What is the difference between the class-optimal model and the model learned on an imperfect dataset? In practice, however, you do not have access to the true target, the Bayes-optimal predictor, or the class-optimal model. You always have to run the whole process. The different errors are theoretically well-defined and useful for thinking about minimizing uncertainties, but in practice, the uncertainties are mixed together.</p>
+</div>
+</div>
+<section id="frequentist-vs-bayesian-uncertainty-quantification" class="level3" data-number="12.6.1">
+<h3 data-number="12.6.1" class="anchored" data-anchor-id="frequentist-vs-bayesian-uncertainty-quantification"><span class="header-section-number">12.6.1</span> Frequentist vs Bayesian uncertainty quantification</h3>
+<p>Frequentists and Bayesians approach uncertainty quantification differently.</p>
+<p>Frequentists have a simple default recipe – they like repetition. Say you want to quantify the uncertainty in your estimate:</p>
+<ol type="1">
+<li>Assume, or better <em>prove</em> that your estimation is unbiased, i.e. in expectation it will measure the right target quantity.</li>
+<li>Run the estimation process of the target quantity (i.e., predictions, performance, or properties) multiple times under different plausible conditions (e.g., task conceptualization, modeling setup, or data).</li>
+<li>Because of the bias-variance decomposition and the unbiasedness from Step 1, the uncertainty comes exclusively from the variance of the estimates.</li>
+</ol>
+<p>This approach has limitations. For example, you cannot prove that your task conceptualization is unbiased. And it can be difficult to come up with multiple plausible conditions for estimation. For frequentist uncertainty quantification, you need confidence in your domain knowledge. But then it is a feasible approach that can be applied post-hoc to all kinds of tasks, models, and data settings. Note, however, that some methods, such as confidence intervals, require additional assumptions that the errors are IID, homoscedastic (i.e., remain the same across different data instances), or Gaussian.</p>
+<p>Like frequentists, Bayesians have a standard recipe – they just love their posteriors. Say you want to quantify the uncertainty in your estimate:</p>
+<ol type="1">
+<li>Model the source of uncertainty (e.g. distribution, model, or data) explicitly with a random variable and a prior distribution over that variable.</li>
+<li>Examine how the uncertainty propagates from the source to the target quantity (i.e., predictions, performance, or properties).</li>
+<li>Update the source of uncertainty, and consequently the uncertainty in the target, based on new evidence (e.g., data) using Bayes’ formula.</li>
+</ol>
+<p>In terms of uncertainty quantification strategies, we focus mainly on frequentist approaches. Bayesian uncertainty often needs to be baked in from the start, including a refinement of the optimization problem, while frequentist uncertainty is often an easy add-on. But honestly, another reason is that we are just more familiar with frequentist approaches. For a detailed overview of Bayesian uncertainty quantification strategies in machine learning, check out <span class="citation" data-cites="gal2016uncertainty"><a href="references.html#ref-gal2016uncertainty" role="doc-biblioref">[17]</a></span> or <span class="citation" data-cites="kendall2017uncertainties"><a href="references.html#ref-kendall2017uncertainties" role="doc-biblioref">[18]</a></span>.</p>
+</section>
+<section id="directly-optimize-for-uncertainty" class="level3" data-number="12.6.2">
+<h3 data-number="12.6.2" class="anchored" data-anchor-id="directly-optimize-for-uncertainty"><span class="header-section-number">12.6.2</span> Directly optimize for uncertainty</h3>
+<p>The simplest approach to uncertainty quantification is to predict uncertainties rather than labels. This is often done in classification tasks. Instead of simply predicting the model class with the highest output value, the output values are transformed with a softmax function. The softmax function transforms arbitrary positive and negative values into values that look like probabilities; they are non-negative and sum up to one. When predicting probabilities, you also need different loss functions – the default choices here are cross-entropy and Kullbach-Leibler divergence.</p>
+<p>For regression tasks, optimizing directly for uncertainty is less straightforward. Typically, the probability of any individual target value is zero. However, you can estimate the density function directly. This is usually done with Bayesian approaches such as Bayesian regression, Gaussian processes, and variational inference <span class="citation" data-cites="gal2016uncertainty"><a href="references.html#ref-gal2016uncertainty" role="doc-biblioref">[17]</a></span>. Here, you explicitly model the uncertainty about the optimal model, either via a Gaussian distribution over functions or parameters, and update the model in light of new data.</p>
+<p>More technically, this means that you define a prior distribution <span class="math inline">\(p(\hat{f})\)</span> over the set of models <span class="math inline">\(\hat{f}\in F\)</span>. Based on this, you can compute the posterior distribution of the models given your data <span class="math inline">\(p(\hat{f}\mid D)=p(D\mid \hat{f})p(\hat{f})/p(D)\)</span>. Finally, this allows us to estimate the target in a Bayesian manner by <span class="math display">\[
+p(y\mid x, D)=\int_{\hat{f}} p(y\mid \hat{f}) p(\hat{f}\mid x,D)\;d\hat{f}.
+\]</span> This integral has to be solved numerically again <span class="citation" data-cites="gal2016uncertainty"><a href="references.html#ref-gal2016uncertainty" role="doc-biblioref">[17]</a></span>.</p>
+<p>While you get numbers from direct estimation that look like probabilities, they are often difficult to interpret as such. Especially because they are not calibrated – i.e., they do not match the probabilities in the true outcomes. We discuss how to calibrate probabilities in <a href="#sec-calibration" class="quarto-xref"><span>Section 12.8</span></a>.</p>
+</section>
+<section id="task-uncertainty-is-hard-to-quantify" class="level3" data-number="12.6.3">
+<h3 data-number="12.6.3" class="anchored" data-anchor-id="task-uncertainty-is-hard-to-quantify"><span class="header-section-number">12.6.3</span> Task uncertainty is hard to quantify</h3>
+<p>As a reminder, operationalization error describes the difference between the true target (e.g., intelligence) and its operationalization (e.g., IQ test). Quantifying this difference is difficult. There are several challenges: First, the true target is sometimes not directly measurable. Second, even if you had access to the true target and the operationalization, they wouldn’t be on the same scale, making it hard to define a distance function.</p>
+<p>What can be done, however, is to look at the coherence or correlations between different operationalizations <span class="citation" data-cites="hoffmann2021multiplicity"><a href="references.html#ref-hoffmann2021multiplicity" role="doc-biblioref">[2]</a></span>. For example, in intelligence research, the correlation between different operationalizations of intelligence led to the so-called <em>G-factor</em>, which became the real target that researchers wanted to measure with intelligence tests <span class="citation" data-cites="gottfredson1998general"><a href="references.html#ref-gottfredson1998general" role="doc-biblioref">[19]</a></span>. Operationalizing the G-factor through multiple specific operationalizations and tests allowed researchers to quantify the operationalization error of specific intelligence tests.</p>
+<p>Remember that the feature selection error describes the difference between the operationalized target <span class="math inline">\(Y\)</span> (like water supply) and the Bayes-optimal predictor given a feature set <span class="math inline">\(X\)</span> (e.g., snow-water equivalent). It is more tangible to quantify than the operationalization error but it is still difficult. The best proxy for the expected overall feature selection error is the test performance of a well-trained model. For example, if you squeeze the highly engineered water supply prediction model down to a certain test error, the remaining error may arguably be the feature selection error. If you have squeezed out all the predictive value contained in the available features, techniques like cross-validation allow you to additionally estimate the variance in this error.</p>
+<p>Quantifying the expected feature selection error for individual instances <span class="math inline">\(x\)</span> (e.g., the snow-water equivalent and weather forecasts for a given day) is even more difficult. Even if the prediction model as a whole is close to the Bayes-optimal predictor, it may be far off for individual instances <span class="math inline">\(x\)</span>. To see how it might still be possible to quantify the error, check out our discussion of Rashomon sets below.</p>
+<p>The omitted feature error can be quantified using interpretability techniques such as <em>leave-one-covariate-out (LOCO)</em> <span class="citation" data-cites="lei2018distributionfree"><a href="references.html#ref-lei2018distributionfree" role="doc-biblioref">[20]</a></span> or <em>conditional feature importance</em> <span class="citation" data-cites="strobl2008conditional"><a href="references.html#ref-strobl2008conditional" role="doc-biblioref">[21]</a></span>. These techniques also allow to quantify uncertainty but always require labeled data of <span class="math inline">\((X,Z)\)</span>.</p>
+</section>
+<section id="no-distribution-uncertainty-without-deployment-data" class="level3" data-number="12.6.4">
+<h3 data-number="12.6.4" class="anchored" data-anchor-id="no-distribution-uncertainty-without-deployment-data"><span class="header-section-number">12.6.4</span> No distribution uncertainty without deployment data</h3>
+<p>To estimate distribution uncertainty, we need to know how the training distribution differs from the deployment distribution, or at least have some data from both distributions. If we have access to data, we can compute the respective errors directly. Say one researcher only has access to Beaver River data from 1970 to 1980 while the other has data from July 2014 to July 2024. Both use machine learning algorithms to get the best possible models. Then, they can compare their predictions, performance, or properties on the most recent data to assess the expected distribution error.</p>
+<p>Often, we are interested in deployment uncertainty but do not have deployment distribution data. Physical models can the be used to simulate data from different potential distribution shifts. A more detailed discussion on data simulation and augmentation can be found in <a href="robustness.html" class="quarto-xref"><span>Chapter 11</span></a>.</p>
+</section>
+<section id="rashomon-sets-many-models-are-better-than-one" class="level3" data-number="12.6.5">
+<h3 data-number="12.6.5" class="anchored" data-anchor-id="rashomon-sets-many-models-are-better-than-one"><span class="header-section-number">12.6.5</span> Rashomon sets – many models are better than one</h3>
+<p>Imagine meeting with ten water supply forecasting experts. Each knows the historical data and has insights into snow-water equivalent and weather forecasts. But they come from different modeling schools, there are physicists, statisticians, machine learners, and so on. Each of them gives you their honest estimate of the water supply in Beaver River for June – but their predictions differ. Not much, but enough to matter. What should you do? There is no good reason to think that any of the ten experts will stand out. The intuitive strategy would be to predict the average (or the median if there are outliers) and analyze the variance in the experts’ opinions to assess the uncertainty in your prediction.</p>
+<p>Why not just apply this reasoning to machine learning? Each of the ten experts can be thought of as a different learning algorithm, turning past data into models and current data into predictions. Say you have trained ten models from different model classes, using different hyperparameters and random seeds, all of which perform similarly well. Then this set of models is called a <em>Rashomon set</em>.</p>
+<p>Say there is a well-trained model <span class="math inline">\(\hat{f}_{ref}\)</span> as a reference point and you fix a certain admitted error <span class="math inline">\(\delta\)</span>. Then, <span class="math inline">\(S:=\lbrace \hat{f}_1,\dots,\hat{f}_k\rbrace\)</span> is a Rashomon set to <span class="math inline">\(\hat{f}_{ref}\)</span> if for all <span class="math inline">\(i\in\lbrace 1,\dots,k\rbrace\)</span> holds that the performance of <span class="math inline">\(\hat{f}_i\)</span> is no worse than <span class="math inline">\(\delta\)</span>, i.e. </p>
+<p><span class="math display">\[\mathbb{E}[L(\hat{f}_i(X),Y)] - \mathbb{E}[L(\hat{f}_{ref}(X),Y)] \leq \delta\]</span>.</p>
+<p>If you assume that your collection of models in the Rashomon set comes from an unbiased estimation process of the optimal model, you can estimate the expected model error by the variance of the predictions in the Rashomon set, i.e. </p>
+<p><span class="math display">\[\widehat{\mathbb{V}}_{f^*}[f^*(x)]=\frac{1}{k-1}\sum_{\hat{f}_i\in S}L(\overline{\hat{f}}(x),\hat{f}_i(x)).\]</span></p>
+<p>Assuming a certain distribution of errors (e.g., t-distribution) and IID errors in the Rashomon set, you can use the variance to define confidence intervals. For example, the <span class="math inline">\(\alpha\)</span> confidence interval for the predictions would be:</p>
+<p><span class="math display">\[
+CI_{\hat{Y}}=[\hat{f}_{ref}(x)\pm t_{1-\alpha/2}\sqrt{\widehat{\mathbb{V}}_{f^*}[f^*(x)]}]
+\]</span></p>
+<p>As with all strategies presented here, Rashomon sets can be used to quantify not only the uncertainty in predictions but also the uncertainty in estimated performance and properties. For example, Rashomon sets have been used to quantify the uncertainty in estimating feature importance <span class="citation" data-cites="fisher2019all"><a href="references.html#ref-fisher2019all" role="doc-biblioref">[22]</a></span> and feature effects <span class="citation" data-cites="molnar2023relating"><a href="references.html#ref-molnar2023relating" role="doc-biblioref">[23]</a></span>. Similarly, even if the predictions are already probabilities, as is common in classification models, Rashomon sets can be used to quantify higher-order uncertainties. For example, you can obtain imprecise probabilities in the form of intervals by taking the highest and lowest predicted probabilities in the Rashomon set as interval bounds.</p>
+<p>Interestingly, in a very Rashomon-set fashion, ensemble methods like random forests implicitly provide an uncertainty quantification of the model error <span class="citation" data-cites="mentch2016quantifying"><a href="references.html#ref-mentch2016quantifying" role="doc-biblioref">[24]</a></span>. Each decision tree in the forest can be seen as one prediction model. Similarly, dropout in neural networks can be described as an ensemble method with implicit uncertainty quantification <span class="citation" data-cites="gal2016dropout"><a href="references.html#ref-gal2016dropout" role="doc-biblioref">[25]</a></span>.</p>
+</section>
+<section id="the-key-to-data-uncertainty-sampling-resampling-repeated-imputation" class="level3" data-number="12.6.6">
+<h3 data-number="12.6.6" class="anchored" data-anchor-id="the-key-to-data-uncertainty-sampling-resampling-repeated-imputation"><span class="header-section-number">12.6.6</span> The key to data uncertainty: sampling, resampling, repeated imputation</h3>
+<p>The first error we mentioned in the context of data uncertainty is the sample error. In an ideal world, it would be easy to quantify: 1. Take many independent, unbiased samples of different sizes from the same distribution. 2. Quantify the variance in the resulting estimates (i.e., predictions, performance, or properties). This is nice in theory or in simulation studies. But in real life, data is usually both valuable and scarce. You want to use all available data to make your estimates as accurate as possible, not just waste 90% on uncertainty quantification.</p>
+<p><strong>Resampling can quantify sample uncertainty, but it can systematically underestimate it</strong></p>
+<p>Statisticians have therefore developed smart strategies to avoid wasting data under the umbrella term <em>resampling</em>. The idea: make your best estimate based on the entire dataset. To quantify the sampling uncertainty of that estimate, you study the variance when you repeatedly re-estimate the quantity of interest on different subsets of the full dataset.</p>
+<p>There are several approaches to resampling:</p>
+<ul>
+<li><em>Bootstrapping</em> involves repeatedly drawing samples with replacement.</li>
+<li>In <em>subsampling</em>, you repeatedly draw samples without replacement.</li>
+<li>With <em>cross-validation</em>, you split your data into k-junks of equal size. <em>Cross-validation</em> is particularly useful when you need separate data splits for training and estimation, as in performance estimation (see <a href="generalization.html" class="quarto-xref"><span>Chapter 7</span></a>).</li>
+</ul>
+<p>But be careful, with resampling approaches you run the danger of underestimating the variance and consequently the true uncertainty. The reason is that the samples you draw are not really independent. They come from the same overall dataset and share many instances. There are several strategies to deal with the underestimation, such as variance correction strategies like the <em>bias-corrected and accelerated bootstrap</em> <span class="citation" data-cites="diciccio1988review"><a href="references.html#ref-diciccio1988review" role="doc-biblioref">[26]</a></span>. For performance estimation, Nadeau and Bengio <span class="citation" data-cites="nadeau1999inference"><a href="references.html#ref-nadeau1999inference" role="doc-biblioref">[27]</a></span> suggest several correction factors to tackle underestimation.</p>
+<p><strong>Strategies for noisy or missing data</strong></p>
+<p>Measurement errors and missing data may look different from the outside, but when you think about it, they are similar. A very noisy feature value can just as well be seen as missing. And, a missing value that is imputed can also be considered noisy. This similarity is reflected in the shared data-cleaning strategies for dealing with them:</p>
+<ul>
+<li><strong>Remove the feature:</strong> If a feature is generally super noisy and often missing, we recommend removing it. This way, you can ignore the data error but potentially have a higher feature selection error. Therefore, removing features may be a bad idea if the feature is highly informative about the target. For example, removing the snow-water equivalent from your forecast model will decrease forecast performance.</li>
+<li><strong>Remove individual data points:</strong> If the values of a feature are missing <em>completely at random</em> in only a few cases, it may be fine to remove the affected data points. This way, no data uncertainty is introduced. Note that removing data reduces your data size and therefore increases the sampling error. Also, if the missingness or noise is not random, you may introduce selection bias into your dataset.</li>
+<li><strong>Impute missing values:</strong> If the missingness is random (MAR), we recommend using data imputation strategies. Ideally, the imputation process takes into account your domain knowledge and data dependencies. Note that imputing missing values based on domain knowledge is itself only a guess. The imputation will sometimes be incorrect.</li>
+<li><strong>Explicitly model uncertainty:</strong> If the values of a feature are moderately noisy and you have a guess about how the noise is distributed, we recommend that you model the noise explicitly. This way, the uncertainty can be quantified by propagating the noise forward to the target estimate.</li>
+<li><strong>Improve the measurement:</strong> If the missingness is not at random (MNAR), the only good strategy is to get rid of the reason for the missingness and collect new data.</li>
+</ul>
+</section>
+</section>
+<section id="minimizing-uncertainty" class="level2" data-number="12.7">
+<h2 data-number="12.7" class="anchored" data-anchor-id="minimizing-uncertainty"><span class="header-section-number">12.7</span> Minimizing uncertainty</h2>
+<p>Great, so now you have identified uncertainties and found ways to quantify them – but how do you minimize them? In most contexts, you want to reduce uncertainty: For example, when the water supply model tells you that it is uncertain whether there will be a drought or a flood in the Beaver River. How should you take precautions if the uncertainty is high?</p>
+<p>Most, if not all, uncertainties can, in principle, be minimized. Some are just harder to minimize than others. While the goal is to minimize that total uncertainty, the only strategy for doing so is to minimize the individual uncertainties that arise from different sources:</p>
+<ul>
+<li><strong>Task uncertainty</strong>
+<ul>
+<li>To minimize the expected operationalization error, put considerable effort into an appropriate operationalization. For example, placing only a single sensor in the river might be a bad idea if the water flows vary along the river.</li>
+<li>To minimize the expected feature selection error, select features that are highly predictive and contain little noise. Omit features that do not add new information to your model.</li>
+</ul></li>
+<li><strong>Distribution uncertainty</strong>
+<ul>
+<li>To minimize the expected distribution error, collect or simulate training data that is representative of the deployment distribution. For example, training your model only on data from the 1970s may be a bad idea given the changed distribution of extreme weather events.</li>
+</ul></li>
+<li><strong>Model uncertainty</strong>
+<ul>
+<li>To minimize model error, choose an appropriate inductive bias in modeling. Strongly constraining the model class and testing a few hyperparameters will result in a high bias. Choosing too broad a model class and unconstrained hyperparameter search will result in high variance. To minimize uncertainty, use your domain knowledge to constrain your model search to a minimal but sufficiently expressive model class to capture the dependency in the data and plausible hyperparameter settings <span class="citation" data-cites="semenova2024path"><a href="references.html#ref-semenova2024path" role="doc-biblioref">[28]</a></span>. In water supply forecasting, it is recommended to include physical constraints because they constrain the appropriate model class and consequently reduce model uncertainty <span class="citation" data-cites="fleming2021augmenting"><a href="references.html#ref-fleming2021augmenting" role="doc-biblioref">[29]</a></span>.</li>
+<li>To find an appropriate model class and hyperparameters, two strategies can be helpful: Either start with simple models and increase complexity until there is no performance gain or start with a complex model and sequentially decrease complexity until there is a performance drop.</li>
+</ul></li>
+<li><strong>Data uncertainty</strong>
+<ul>
+<li>To minimize the expected sample error, the best strategy is to collect more data. Active learning can help you select the data that will reduce uncertainty the most (see the active learning in <a href="robustness.html" class="quarto-xref"><span>Chapter 11</span></a>). However, active learning is impossible in domains like water supply forecasting, where control over the data-generating mechanism is limited.</li>
+<li>Collect multiple labels for an instance to minimize the expected data error in the face of label noise. If there is feature noise, either reduce the noise through improved measurement or replace the feature with an equally predictive but less noisy feature. For example, move a snow sensor from a mountain area with a lot of skiers to a quieter area.</li>
+<li>If the problem is missing data, investigate the cause of the missingness: in many cases, the missingness can be counteracted by a careful measurement, like replacing an unreliable sensor. If the missingness cannot be counteracted, consider removing the feature.</li>
+</ul></li>
+</ul>
+</section>
+<section id="sec-calibration" class="level2" data-number="12.8">
+<h2 data-number="12.8" class="anchored" data-anchor-id="sec-calibration"><span class="header-section-number">12.8</span> Calibrating uncertainty measures</h2>
+<p>Say you have studied the sources of uncertainty, quantified them, and perhaps even minimized them. Of course, you want to interpret the values in your uncertainty estimates as true probabilities. But there is often a problem with these “probabilities”. The fact that your uncertainty estimate has a 90% confidence does not necessarily mean that the actual probability is 90%. Probabilities can be miscalibrated – the estimated probabilities don’t match the true outcome probabilities.</p>
+<p>What does calibration mean in more formal terms? Say you are in a regression setting, such as the water supply forecasting problem. We denote the prediction by <span class="math inline">\(\hat{Y}\)</span> and the uncertainty estimate for <span class="math inline">\(\hat{Y}\)</span> with confidence <span class="math inline">\(c\)</span> by <span class="math inline">\(u_c(\hat{Y})\)</span>. We say that the uncertainties are perfectly calibrated if for all <span class="math inline">\(c\in[0,1]\)</span> holds:</p>
+<p><span class="math display">\[
+\mathbb{P}(Y\in u_c(\hat{Y}))=c.
+\]</span></p>
+<p>For example, the hydrologist’s certainty of 10% that the water supply in the Beaver River will be less than 6.3 thousand acre-feet is calibrated if the actual water supply in the Beaver River is less than 6.3 thousand acre-feet only 10% of the time. Calibration can be similarly defined for classification tasks.</p>
+<p><em>Calibration plots</em> allow you to assess whether probabilities of a classifier are calibrated or not. You compare the predicted and quantified uncertainty with the empirical frequency. For this you pick an outcome class and bin the data points by output score, for example into 0-10%, 10-20%, …, 90-100%. On the x-axes, you plot the confidence bins and on the y-axes the empirical frequencies with which the class matches the chosen class. <a href="#fig-calibration-plot" class="quarto-xref">Figure <span>12.4</span></a> shows an example of a calibration plot, where we compare the mean probabilities with the actual probabilities. If the plot shows a boring linear curve with a slope of 1, congratulations, your model is perfectly calibrated. Evaluating calibration using relative frequencies shows the close relationship between calibration and a frequentist interpretation of probability.</p>
+<!-- code to create calibration.png: scripts/calibration.py -->
+<div id="fig-calibration-plot" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-calibration-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../Images/8e4ecacdf175750c756c1e3a190333ba.png" class="img-fluid figure-img" style="width:70.0%" data-original-src="https://ml-science-book.com/images/calibration.jpg"/>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-calibration-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 12.4: Example of a calibration plot: The logistic regression model is not perfectly calibrated, especially for predicted probabilities between 0.5 and 0.7. But it could be worse.
+</figcaption>
+</figure>
+</div>
+<!-- other examples -->
+<p>Miscalibration is not just an occasional problem. It is a fair default assumption that any uncertainty estimate is miscalibrated:</p>
+<ul>
+<li><strong>Too short prediction intervals:</strong> For the water flow prediction example, we were interested in prediction intervals that cover 80% of the output. The interval was created by predicting the 10% and 90% quantiles. The interval width expresses uncertainty: The larger the interval, the more uncertain the water flow. However, quantile regression has the problem that quantiles are often drawn toward the median <span class="citation" data-cites="takeuchi2006nonparametric"><a href="references.html#ref-takeuchi2006nonparametric" role="doc-biblioref">[30]</a></span>, an effect that becomes stronger the closer the desired quantile levels are to 0% and 100%. As a result, intervals based on quantile regression tend to be too short and underestimate uncertainty.</li>
+<li><strong>Bootstrapping also undercovers:</strong> Remember that in bootstrapping you repeatedly sample data with replacement from the training data. Because the bootstrapped datasets are highly correlated, they underestimate the true uncertainty unless you correct for this bias.</li>
+<li><strong>Bayesian models rely on assumptions:</strong> In theory, Bayesian models propagate uncertainty perfectly. You could look at the predictive posterior distribution and, for example, output credible intervals. But they are calibrated (in the frequentist sense) only if your assumptions about likelihood, priors, and so on are correct. Hint: they are unlikely to be correct.</li>
+</ul>
+<p>For each miscalibrated uncertainty quantification method, there are several suggestions on how to fix it. For example, to fix miscalibrated probability outputs, you could use post-processing methods such as Platt’s logistic model <span class="citation" data-cites="platt1999probabilistic"><a href="references.html#ref-platt1999probabilistic" role="doc-biblioref">[31]</a></span> and Isotonic Calibration. A more general framework for dealing with all these problems is conformal prediction, which can make any uncertainty measure “conformal” – with coverage guarantees.</p>
+<p><strong>Conformal prediction, a set-based approach to uncertainty</strong></p>
+<p>Standard uncertainty quantification treats models and predictions as fixed and returns the uncertainties. Conformal prediction takes the opposite approach: The modeler must specify the desired confidence level (related to uncertainty), and a conformal prediction procedure changes the model output to conform to the confidence level. Consider water supply forecasting: Normally, you would simply predict a scalar value and provide the quantified uncertainty estimate in some form. With conformal prediction, you first set a confidence level and then modify your confidence interval to cover the true value with the desired confidence. Thus, conformal prediction comes with a <em>coverage guarantee</em> – at least for data that is exchangeable, the prediction set corresponds to the desired confidence level. But beware, the coverage guarantee is often marginal, i.e. it only applies to the average of the data.</p>
+<p>Conformal prediction is more than a simple algorithm, it is a whole framework that allows to conformalize different uncertainty scores:</p>
+<ul>
+<li>Turn a quantile interval into a conformalized quantile interval <span class="citation" data-cites="romano2019conformalized"><a href="references.html#ref-romano2019conformalized" role="doc-biblioref">[32]</a></span>).</li>
+<li>Turn a class probability vector into a set of classes <span class="citation" data-cites="romano2020classification"><a href="references.html#ref-romano2020classification" role="doc-biblioref">[33]</a></span>.</li>
+<li>Turn a probability score into a probability range (Venn-ABERS predictor) <span class="citation" data-cites="vovk2003self"><a href="references.html#ref-vovk2003self" role="doc-biblioref">[34]</a></span>.</li>
+</ul>
+<p>There is a simple recipe for conformal prediction – <em>training</em>, <em>calibration</em>, and <em>prediction</em>.</p>
+<ol type="1">
+<li><strong>Training:</strong>
+<ul>
+<li>You split the training data into training and calibration data.</li>
+<li>Train the model using the training data.</li>
+</ul></li>
+<li><strong>Calibration:</strong>
+<ul>
+<li>Compute uncertainty scores (also called nonconformity scores) for the calibration data.</li>
+<li>Sort the scores from certain to uncertain (low to high).</li>
+<li>Decide on a confidence level.</li>
+<li>Find the quantile where <span class="math inline">\(1-\alpha\)</span> of the nonconformity scores are smaller.</li>
+</ul></li>
+<li><strong>Prediction:</strong>
+<ul>
+<li>Compute nonconformity scores for the new data.</li>
+<li>Select all predictions that produce a score below <span class="math inline">\(\hat{q}\)</span>.</li>
+<li>These predictions form the prediction set/interval.</li>
+</ul></li>
+</ol>
+<p>Nothing comes for free and neither does conformal prediction. The “payment” is the additional calibration data you need, which can complicate the training process. Small calibration sets will lead to large prediction sets, possibly to the point where they are no longer useful. Furthermore, the calibration data must be interchangeable with the training data, which can be a problem with time series data, for example. However, there are also conformal procedures for time series that rely on a few more assumptions. Otherwise, conformal prediction is a very versatile approach.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"/>
+</div>
+<div class="callout-title-container flex-fill">
+Introduction to Conformal Prediction
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[35,65]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 35.0%;justify-content: center;">
+<p><img src="../Images/5e261fd75e8c61ad52e2a4b7b3fb8536.png" class="img-fluid" data-original-src="https://ml-science-book.com/images/cover-conformal-book.jpg"/></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 65.0%;justify-content: flex-start;">
+<p>To learn more about conformal prediction, check out the book <a href="https://christophmolnar.com/books/conformal-prediction/">Introduction to Conformal Prediction with Python</a>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="understand-uncertainty-to-gain-knowledge" class="level2" data-number="12.9">
+<h2 data-number="12.9" class="anchored" data-anchor-id="understand-uncertainty-to-gain-knowledge"><span class="header-section-number">12.9</span> Understand uncertainty to gain knowledge</h2>
+<p>In this chapter, you learned about the many different sources of error in machine learning pipelines and how they introduce uncertainty into your estimates. While uncertainty can be disentangled in theory, it is difficult to disentangle in practice – you can usually only quantify the overall uncertainty. Nevertheless, it is helpful to separate uncertainties conceptually, especially if you are looking for strategies to minimize uncertainty.</p>
+<p>Uncertainty should not be seen as just an add-on. Uncertainty quantification is essential, especially if you want to gain new knowledge with machine learning or act on machine learning predictions. To get a realistic picture of the true uncertainty, all sources of uncertainty should be considered</p>
+<p>When it comes to quantifying uncertainty, we recommend that scientists be pragmatists. You can use Bayesian techniques if you have domain knowledge that allows you to set a reasonable prior. Otherwise, frequentist approaches to uncertainty quantification can provide you with (calibrated) uncertainties under modest assumptions.</p>
+<p>Uncertainty is closely related to many chapters in this book:</p>
+<ul>
+<li>Theoretically, the roots of uncertainty quantification lie in our theory of generalization from <a href="generalization.html" class="quarto-xref"><span>Chapter 7</span></a>. Concepts such as generalization error, cross-validation, or biased sampling can be found in both chapters.</li>
+<li>Many approaches to minimizing uncertainty rely on domain knowledge (see <a href="domain.html" class="quarto-xref"><span>Chapter 8</span></a>). Reliable domain knowledge can significantly minimize task, distribution, model, and data uncertainty.</li>
+<li>The uncertainty framework presented here is quite general. It can be applied to interpretability techniques (see <a href="interpretability.html" class="quarto-xref"><span>Chapter 9</span></a>) and even to causal effect estimation (see <a href="causality.html" class="quarto-xref"><span>Chapter 10</span></a>).</li>
+<li>Uncertainty has close ties to the robustness in <a href="robustness.html" class="quarto-xref"><span>Chapter 11</span></a>, especially when it comes to distribution uncertainty and strategies to reduce data uncertainty like active learning. Conceptually, the link is that robustness gives guarantees for worst-case error, while uncertainty gives guarantees in expectation <span class="citation" data-cites="freiesleben2023beyond"><a href="references.html#ref-freiesleben2023beyond" role="doc-biblioref">[35]</a></span>.</li>
+</ul>
+<p>We hope we have minimized your uncertainty about uncertainty with this chapter…</p>
+
+
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-gruber2023sources" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">C. Gruber, P. O. Schenk, M. Schierholz, F. Kreuter, and G. Kauermann, <span>“Sources of <span>Uncertainty</span> in <span>Machine</span> <span>Learning</span> – <span>A</span> <span>Statisticians</span>’ <span>View</span>.”</span> arXiv, May 2023. doi: <a href="https://doi.org/10.48550/arXiv.2305.16703">10.48550/arXiv.2305.16703</a>.</div>
+</div>
+<div id="ref-hoffmann2021multiplicity" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">S. Hoffmann, F. Schönbrodt, R. Elsas, R. Wilson, U. Strasser, and A.-L. Boulesteix, <span>“The multiplicity of analysis strategies jeopardizes replicability: Lessons learned across disciplines,”</span> <em>Royal Society Open Science</em>, vol. 8, no. 4, p. 201925, 2021, doi: <a href="https://doi.org/10.1098/rsos.201925">10.1098/rsos.201925</a>.</div>
+</div>
+<div id="ref-begoli2019need" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">E. Begoli, T. Bhattacharya, and D. Kusnezov, <span>“The need for uncertainty quantification in machine-assisted medical decision making,”</span> <em>Nature Machine Intelligence</em>, vol. 1, no. 1, pp. 20–23, 2019, doi: <a href="https://doi.org/10.1038/s42256-018-0004-1">10.1038/s42256-018-0004-1</a>.</div>
+</div>
+<div id="ref-hullermeier2021aleatoric" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">E. Hüllermeier and W. Waegeman, <span>“Aleatoric and epistemic uncertainty in machine learning: An introduction to concepts and methods,”</span> <em>Machine Learning</em>, vol. 110, no. 3, pp. 457–506, Mar. 2021, doi: <a href="https://doi.org/10.1007/s10994-021-05946-3">10.1007/s10994-021-05946-3</a>.</div>
+</div>
+<div id="ref-list2019levels" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">C. List, <span>“Levels: Descriptive, explanatory, and ontological,”</span> <em>No<span>û</span>s</em>, vol. 53, no. 4, pp. 852–883, 2019.</div>
+</div>
+<div id="ref-van2011targeted" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">M. J. Van der Laan and S. Rose, <em>Targeted learning</em>, vol. 1. Springer, 2011. doi: <a href="https://doi.org/10.1007/978-1-4419-9782-1">10.1007/978-1-4419-9782-1</a>.</div>
+</div>
+<div id="ref-freiesleben2022scientific" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">T. Freiesleben, G. König, C. Molnar, and Á. Tejero-Cantero, <span>“Scientific inference with interpretable machine learning: Analyzing models to learn about real-world phenomena,”</span> <em>Minds and Machines</em>, vol. 34, no. 3, p. 32, 2024, doi: <a href="https://doi.org/10.1007/s11023-024-09691-z">10.1007/s11023-024-09691-z</a>.</div>
+</div>
+<div id="ref-domingos2000unified" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">P. Domingos, <span>“A unified bias-variance decomposition,”</span> in <em>Proceedings of 17th international conference on machine learning</em>, Morgan Kaufmann Stanford, 2000, pp. 231–238.</div>
+</div>
+<div id="ref-diamantopoulos2008advancing" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">A. Diamantopoulos, P. Riefler, and K. P. Roth, <span>“Advancing formative measurement models,”</span> <em>Journal of business research</em>, vol. 61, no. 12, pp. 1203–1218, 2008, doi: <a href="https://doi.org/10.1016/j.jbusres.2008.01.009">10.1016/j.jbusres.2008.01.009</a>.</div>
+</div>
+<div id="ref-carpentras2024we" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">D. Carpentras, <span>“We urgently need a culture of multi-operationalization in psychological research,”</span> <em>Communications Psychology</em>, vol. 2, no. 1, p. 32, 2024.</div>
+</div>
+<div id="ref-hastie2009elements" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[11] </div><div class="csl-right-inline">T. Hastie, R. Tibshirani, J. H. Friedman, and J. H. Friedman, <em>The elements of statistical learning: Data mining, inference, and prediction</em>, vol. 2. Springer, 2009.</div>
+</div>
+<div id="ref-cybenko1989approximation" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[12] </div><div class="csl-right-inline">G. Cybenko, <span>“Approximation by superpositions of a sigmoidal function,”</span> <em>Mathematics of control, signals and systems</em>, vol. 2, no. 4, pp. 303–314, 1989, doi: <a href="https://doi.org/10.1007/BF02551274">10.1007/BF02551274</a>.</div>
+</div>
+<div id="ref-hornik1991approximation" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[13] </div><div class="csl-right-inline">K. Hornik, <span>“Approximation capabilities of multilayer feedforward networks,”</span> <em>Neural networks</em>, vol. 4, no. 2, pp. 251–257, 1991, doi: <a href="https://doi.org/10.1016/0893-6080(91)90009-T">10.1016/0893-6080(91)90009-T</a>.</div>
+</div>
+<div id="ref-halmos2013measure" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[14] </div><div class="csl-right-inline">P. R. Halmos, <em>Measure theory</em>, vol. 18. Springer, 2013. doi: <a href="https://doi.org/10.1007/978-1-4684-9440-2">10.1007/978-1-4684-9440-2</a>.</div>
+</div>
+<div id="ref-hutter2019automated" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[15] </div><div class="csl-right-inline">F. Hutter, L. Kotthoff, and J. Vanschoren, <em>Automated machine learning: Methods, systems, challenges</em>. Springer Nature, 2019. doi: <a href="https://doi.org/10.1007/978-3-030-05318-5">10.1007/978-3-030-05318-5</a>.</div>
+</div>
+<div id="ref-jalaian2019uncertain" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[16] </div><div class="csl-right-inline">B. Jalaian, M. Lee, and S. Russell, <span>“Uncertain context: Uncertainty quantification in machine learning,”</span> <em>AI Magazine</em>, vol. 40, no. 4, pp. 40–49, 2019, doi: <a href="https://doi.org/10.1609/aimag.v40i4.4812 ">10.1609/aimag.v40i4.4812 </a>.</div>
+</div>
+<div id="ref-gal2016uncertainty" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[17] </div><div class="csl-right-inline">Y. Gal, <span>“Uncertainty in deep learning,”</span> 2016.</div>
+</div>
+<div id="ref-kendall2017uncertainties" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[18] </div><div class="csl-right-inline">A. Kendall and Y. Gal, <span>“What uncertainties do we need in bayesian deep learning for computer vision?”</span> <em>Advances in neural information processing systems</em>, vol. 30, 2017.</div>
+</div>
+<div id="ref-gottfredson1998general" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[19] </div><div class="csl-right-inline">L. S. Gottfredson, <span>“The general intelligence factor.”</span> Scientific American, Incorporated, 1998.</div>
+</div>
+<div id="ref-lei2018distributionfree" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[20] </div><div class="csl-right-inline">J. Lei, M. G’Sell, A. Rinaldo, R. J. Tibshirani, and L. Wasserman, <span>“Distribution-<span>Free Predictive Inference</span> for <span>Regression</span>,”</span> <em>Journal of the American Statistical Association</em>, vol. 113, no. 523, pp. 1094–1111, Jul. 2018, doi: <a href="https://doi.org/10.1080/01621459.2017.1307116">10.1080/01621459.2017.1307116</a>.</div>
+</div>
+<div id="ref-strobl2008conditional" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[21] </div><div class="csl-right-inline">C. Strobl, A.-L. Boulesteix, T. Kneib, T. Augustin, and A. Zeileis, <span>“Conditional variable importance for random forests,”</span> <em>BMC bioinformatics</em>, vol. 9, pp. 1–11, 2008.</div>
+</div>
+<div id="ref-fisher2019all" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[22] </div><div class="csl-right-inline">A. Fisher, C. Rudin, and F. Dominici, <span>“All <span>Models</span> are <span>Wrong</span>, but <span>Many</span> are <span>Useful</span>: <span>Learning</span> a <span>Variable</span>’s <span>Importance</span> by <span>Studying</span> an <span>Entire</span> <span>Class</span> of <span>Prediction</span> <span>Models</span> <span>Simultaneously</span>,”</span> <em>Journal of machine learning research : JMLR</em>, vol. 20, p. 177, 2019, Accessed: Jan. 16, 2024. [Online]. Available: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8323609/">https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8323609/</a></div>
+</div>
+<div id="ref-molnar2023relating" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[23] </div><div class="csl-right-inline">C. Molnar <em>et al.</em>, <span>“Relating the <span>Partial Dependence Plot</span> and <span>Permutation Feature Importance</span> to the <span>Data Generating Process</span>,”</span> in <em>Explainable <span>Artificial Intelligence</span></em>, L. Longo, Ed., in Communications in <span>Computer</span> and <span>Information Science</span>. <span>Cham</span>: <span>Springer Nature Switzerland</span>, 2023, pp. 456–479. doi: <a href="https://doi.org/10.1007/978-3-031-44064-9_24">10.1007/978-3-031-44064-9_24</a>.</div>
+</div>
+<div id="ref-mentch2016quantifying" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[24] </div><div class="csl-right-inline">L. Mentch and G. Hooker, <span>“Quantifying uncertainty in random forests via confidence intervals and hypothesis tests,”</span> <em>Journal of Machine Learning Research</em>, vol. 17, no. 26, pp. 1–41, 2016.</div>
+</div>
+<div id="ref-gal2016dropout" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[25] </div><div class="csl-right-inline">Y. Gal and Z. Ghahramani, <span>“Dropout as a bayesian approximation: Representing model uncertainty in deep learning,”</span> in <em>International conference on machine learning</em>, PMLR, 2016, pp. 1050–1059.</div>
+</div>
+<div id="ref-diciccio1988review" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[26] </div><div class="csl-right-inline">T. J. Diciccio and J. P. Romano, <span>“A review of bootstrap confidence intervals,”</span> <em>Journal of the Royal Statistical Society Series B: Statistical Methodology</em>, vol. 50, no. 3, pp. 338–354, 1988.</div>
+</div>
+<div id="ref-nadeau1999inference" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[27] </div><div class="csl-right-inline">C. Nadeau and Y. Bengio, <span>“Inference for the generalization error,”</span> <em>Advances in neural information processing systems</em>, vol. 12, 1999.</div>
+</div>
+<div id="ref-semenova2024path" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[28] </div><div class="csl-right-inline">L. Semenova, H. Chen, R. Parr, and C. Rudin, <span>“A path to simpler models starts with noise,”</span> <em>Advances in neural information processing systems</em>, vol. 36, 2024.</div>
+</div>
+<div id="ref-fleming2021augmenting" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[29] </div><div class="csl-right-inline">S. W. Fleming, V. V. Vesselinov, and A. G. Goodbody, <span>“Augmenting geophysical interpretation of data-driven operational water supply forecast modeling for a western US river using a hybrid machine learning approach,”</span> <em>Journal of Hydrology</em>, vol. 597, p. 126327, 2021.</div>
+</div>
+<div id="ref-takeuchi2006nonparametric" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[30] </div><div class="csl-right-inline">I. Takeuchi, Q. V. Le, T. D. Sears, A. J. Smola, and C. Williams, <span>“Nonparametric quantile estimation.”</span> <em>Journal of machine learning research</em>, vol. 7, no. 7, 2006.</div>
+</div>
+<div id="ref-platt1999probabilistic" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[31] </div><div class="csl-right-inline">J. Platt <em>et al.</em>, <span>“Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods,”</span> <em>Advances in large margin classifiers</em>, vol. 10, no. 3, pp. 61–74, 1999.</div>
+</div>
+<div id="ref-romano2019conformalized" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[32] </div><div class="csl-right-inline">Y. Romano, E. Patterson, and E. Candes, <span>“Conformalized quantile regression,”</span> <em>Advances in neural information processing systems</em>, vol. 32, 2019.</div>
+</div>
+<div id="ref-romano2020classification" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[33] </div><div class="csl-right-inline">Y. Romano, M. Sesia, and E. Candes, <span>“Classification with valid and adaptive coverage,”</span> <em>Advances in Neural Information Processing Systems</em>, vol. 33, pp. 3581–3591, 2020.</div>
+</div>
+<div id="ref-vovk2003self" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[34] </div><div class="csl-right-inline">V. Vovk, G. Shafer, and I. Nouretdinov, <span>“Self-calibrating probability forecasting,”</span> <em>Advances in neural information processing systems</em>, vol. 16, 2003.</div>
+</div>
+<div id="ref-freiesleben2023beyond" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[35] </div><div class="csl-right-inline">T. Freiesleben and T. Grote, <span>“Beyond generalization: A theory of robustness in machine learning,”</span> <em>Synthese</em>, vol. 202, no. 4, p. 109, 2023, doi: <a href="https://doi.org/10.1007/s11229-023-04334-9">10.1007/s11229-023-04334-9</a>.</div>
+</div>
+</div>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn1"><p>Bayes formula describes how to update your prior beliefs in light of new evidence. Namely, if <span class="math inline">\(\hat{f}\)</span> is your hypothesis and <span class="math inline">\(D\)</span> is your evidence, you should update your belief with: <span class="math inline">\(\mathbb{P}(\hat{f}\mid D)=\frac{\mathbb{P}(D\mid \hat{f})\mathbb{P}(\hat{f})}{\mathbb{P}(D)}.\)</span><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Technical detail: For <span class="math inline">\(X=x\)</span> with a probability of zero, the term on the right is undefined. Therefore, the Bayes-optimal predictor does not describe a unique function, but an equivalence class of functions that are aligned at <span class="math inline">\(x\)</span> with positive density.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Many of these measurements from gauges and snow stations are fully automated. But for the sake of illustration, let’s assume they are recorded by humans.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>We do not talk about whole entries missing here, because this typically leads to problems of representativeness and is covered in <a href="generalization.html" class="quarto-xref"><span>Chapter 7</span></a>.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    
+</body>
+</html>
