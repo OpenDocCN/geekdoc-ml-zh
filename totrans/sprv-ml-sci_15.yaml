@@ -1,26 +1,37 @@
 - en: 9  Interpretability
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 9 可解释性
 - en: 原文：[https://ml-science-book.com/interpretability.html](https://ml-science-book.com/interpretability.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://ml-science-book.com/interpretability.html](https://ml-science-book.com/interpretability.html)
 - en: '[Integrating Machine Learning Into Science](./part-two.html)'
+  id: totrans-2
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[将机器学习融入科学](./part-two.html)'
 - en: '[9  Interpretability](./interpretability.html)'
+  id: totrans-3
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[9 可解释性](./interpretability.html)'
 - en: 'What’s your biggest concern about using machine learning for science? A survey
     [[1]](references.html#ref-vannoordenAIScienceWhat2023) asked 1600 scientists this
     question. “Leads to more reliance on pattern recognition without understanding”
     was the top concern, which is well-founded: Supervised machine learning is foremost
     about prediction, not understanding (see [Chapter 2](supervised-ml.html)).'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 你对使用机器学习进行科学研究的最大担忧是什么？一项调查 [[1]](references.html#ref-vannoordenAIScienceWhat2023)
+    向1600名科学家提出了这个问题。“导致对模式识别的过度依赖而缺乏理解”是最大的担忧，这是有充分理由的：监督机器学习首先关注预测，而不是理解（参见[第2章](supervised-ml.html)）。
 - en: To solve that problem, interpretable machine learning was invented. Interpretable
     machine learning (or explainable AI[¹](#fn1)) offers a wide range of solutions
     to tackle the lack of understanding. Interpretability, in the widest sense, is
@@ -30,74 +41,101 @@
     But before we talk solutions let’s talk about the problem first. Interpretability
     isn’t a goal in itself. Interpretability is a tool that helps you achieve your
     actual goals. Goals that a prediction-focused approach alone can’t satisfy.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决这个问题，可解释机器学习被发明了。可解释机器学习（或可解释人工智能[¹](#fn1)）提供了一系列解决方案来解决理解不足的问题。在最广泛的意义上，可解释性是关于使模型对人类可理解
+    [[4]](references.html#ref-miller2019explanation)。为此任务有许多工具，从使用决策规则到应用博弈论（Shapley值）和分析神经网络中的神经元。但在我们谈论解决方案之前，让我们先谈谈问题。可解释性本身不是一个目标。可解释性是一个帮助你实现实际目标的工具。仅关注预测的方法无法满足的目标。
 - en: 'The integration of domain knowledge eliminated many childhood diseases of machine
     learning. The Ravens began building larger and larger models to study increasingly
     complex phenomena. Krarah approached Rattle with a question: “The models must
     have learned so many interesting relationships, is there any way to extract this
     knowledge?” Rattle nodded and winked at Krarah. Recently, Raven Krähstof wrote
     a book about interpretable machine learning.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 领域知识的整合消除了许多机器学习的童年疾病。乌鸦开始构建更大和更大的模型来研究越来越复杂的现象。Kراه向Rattle提出了一个问题：“模型必须已经学到了许多有趣的关系，有没有什么方法可以提取这些知识？”Rattle点头并向Kراه眨了眨眼。最近，Raven
+    Krähstof写了一本关于可解释机器学习的书。
 - en: '![](../Images/048d7003a2c6fc2ab939dda01b89b6d8.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/048d7003a2c6fc2ab939dda01b89b6d8.png)'
 - en: 9.1 Goals of interpretation
+  id: totrans-8
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 9.1 解释的目标
 - en: Imagine you model the yield of almond orchards. The prediction model predicts
     almond yield in a given year based on precipitation, fertilizer use, prior yield,
     and so on. You are satisfied with the predictive performance, but you have this
     nagging feeling of incompleteness that no benchmark can fill. And when you find
     a task can’t be solved by performance alone, you might need interpretability [[5]](references.html#ref-doshi-velezRigorousScienceInterpretable2017).
     For example, you might be interested in the effect of fertilizer on almond yield.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象一下你正在建模杏仁园的产量。预测模型基于降水量、肥料使用、先前产量等因素，预测特定年份的杏仁产量。你对预测性能感到满意，但总有这种感觉，即不完整性无法通过任何基准来填补。当你发现仅凭性能无法解决某个任务时，你可能需要可解释性
+    [[5]](references.html#ref-doshi-velezRigorousScienceInterpretable2017)。例如，你可能对肥料对杏仁产量的影响感兴趣。
 - en: 'We roughly distinguish three interpretability goals (inspired by [[6]](references.html#ref-adadiPeekingBlackBoxSurvey2018)):'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们大致区分了三个可解释性目标（受[[6]](references.html#ref-adadiPeekingBlackBoxSurvey2018)的启发）：
 - en: '**Discover**: The model may have learned something interesting about the studied
     phenomenon. In science, we can further distinguish between confirmatory (aka inference)
     and exploratory types of discovery. In the case of almond yield, the goal might
     be to study the effect of fertilizer.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**发现**：模型可能已经对研究现象有了有趣的了解。在科学中，我们可以进一步区分确认性（又称推理）和探索性类型的发现。在杏仁产量的情况下，目标可能是研究肥料的影响。'
 - en: '**Improve**: Interpretation of a model can help debug and improve the model.
     This can lead to better performance and higher robustness (see also [Chapter 11](robustness.html)).
     Studying feature importance you might find out that the prior yield variable is
     suspiciously important and detect that a coding error introduced a data leakage.'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**改进**：模型的可解释性可以帮助调试和改进模型。这可能导致更好的性能和更高的鲁棒性（参见[第11章](robustness.html)）。研究特征重要性时，你可能会发现先前的产量变量可疑地重要，并检测到引入数据泄露的编码错误。'
 - en: '**Justify**: Interpretation helps to justify a prediction, or also the model
     itself. Justification ranges from justifying a prediction towards an end-user
     touching upon ethics and fairness, to more formal model audits, but also building
     trust through, e.g. showing coherence with physics. For example, you are trying
     to convince an agency to adapt your model, but first, you have to convince them
     that your model aligns with common agricultural knowledge.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**证明**：解释有助于证明预测，或者模型本身。证明的范围从为最终用户证明预测涉及伦理和公平，到更正式的模型审计，但也可以通过例如展示与物理学的连贯性来建立信任。例如，你试图说服一个机构采用你的模型，但首先，你必须说服他们你的模型与常见的农业知识相一致。'
 - en: The goals interact with each other in the life cycle of a machine learning project.
     For example, to discover knowledge, your model should show good performance. However,
     building a performative model is an iterative process in which interpretability
     can immensely help by monitoring the importance of features.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标在机器学习项目的生命周期中相互作用。例如，为了发现知识，你的模型应该表现出良好的性能。然而，构建一个表现良好的模型是一个迭代过程，其中可解释性可以通过监控特征的重要性来极大地帮助。
 - en: 'But how do you achieve interpretability for complex machine learning models?
     To oversimplify, the field of interpretable machine learning knows two paths:
     interpretability-by-design and post-hoc interpretability. Interpretability-by-design
     is about only using interpretable, aka simple models. Post-hoc interpretation
     is the attempt to interpret potentially complex models after they were trained.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 但如何实现复杂机器学习模型的可解释性呢？为了简化，可解释机器学习领域知道两条路径：设计可解释性和事后可解释性。设计可解释性是关于只使用可解释的，即简单的模型。事后解释是在模型训练后尝试解释可能复杂的模型。
 - en: 9.2 Interpretability-by-design
+  id: totrans-16
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 9.2 设计可解释性
 - en: Interpretability by design is the status quo in many research fields. For example,
     quantitative medical research often relies on classical statistical models, with
     logistic regression being a commonly used model. These statistical models are
@@ -108,49 +146,71 @@
     However, models with very different motivations can also be interpretable by design,
     such as differential equations and physics-based simulations in fields such as
     physics, meteorology, and ecology.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 设计上的可解释性在许多研究领域是现状。例如，定量医学研究通常依赖于经典统计模型，逻辑回归是常用的模型。这些统计模型被认为是内在可解释的，因为它们通常以某种方式通过线性加权求和将特征与结果联系起来。统计模型在社会科学和许多其他领域也很流行。使用线性回归模型预测杏仁产量并不罕见
+    [[7]](references.html#ref-bassoSeasonalCropYield2019)。然而，具有不同动机的模型也可以通过设计实现可解释性，例如物理学、气象学和生态学等领域中的微分方程和基于物理的模拟。
 - en: If you value interpretability, you might decide that you only use machine learning
     algorithms that produce interpretable models. You would still approach the modeling
     task in a typical performance-first manner, but restrict our solutions to be only
     models that you deem interpretable. It would still be about optimization, but
     you strongly limit the hypothesis space, which is the pool of models that are
     deemed okay to be learned.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你重视可解释性，你可能会决定只使用产生可解释模型的机器学习算法。你仍然会以典型的性能优先的方式处理建模任务，但将我们的解决方案限制为只有你认为可解释的模型。这仍然关于优化，但你强烈限制了假设空间，即被认为是可学习的模型池。
 - en: '![](../Images/50cc5471aa90e1f79c678f1094e11e40.png)'
+  id: totrans-19
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/50cc5471aa90e1f79c678f1094e11e40.png)'
 - en: Some models are (supposedly) interpretable by design.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些模型（据称）是设计上可解释的。
 - en: 'Interpretable machine learning models may include:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 可解释的机器学习模型可能包括：
 - en: Anything with linearity. Essentially the entire pantheon of frequentist models.
     Linear regression, logistic regression, frameworks such as generalized linear
     models (GLMs) and generalized additive models (GAMs), …
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 任何具有线性性的东西。本质上，整个频率派模型体系。线性回归、逻辑回归、广义线性模型（GLMs）和广义加性模型（GAMs）等框架……
 - en: Decision trees. Structures that present the prediction in the form of typical
     but not necessarily binary trees that are split by features.
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 决策树。以典型但未必是二叉树的形式呈现预测，这些树通过特征进行分割。
 - en: Decision rule lists
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 决策规则列表
 - en: Combinations of linear models and decision rules such as RuleFit [[8]](references.html#ref-friedman2008predictive)
     and model-based trees [[9]](references.html#ref-zeileis2008modelbased)
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 线性模型和决策规则的组合，例如RuleFit [[8]](references.html#ref-friedman2008predictive) 和基于模型的树
+    [[9]](references.html#ref-zeileis2008modelbased)
 - en: Case-based reasoning
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基于案例的推理
 - en: 'Researchers continue to invent new machine-learning approaches that produce
     models that are interpretable by design [[10]](references.html#ref-rudin2022interpretable),
     but there’s also controversy as to what even constitutes an interpretable model
@@ -164,30 +224,41 @@
     input space of the model). And models that are interpretable by design, or at
     least structurally simpler, can help with goals such as discovery, improvement,
     and justification.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 研究人员继续发明新的机器学习方法，这些方法产生的模型在设计上是可解释的 [[10]](references.html#ref-rudin2022interpretable)，但关于什么构成一个可解释模型也存在争议
+    [[11]](references.html#ref-liptonMythosModelInterpretability2017)。可以说，即使你有许多特征，线性回归模型也可能不可解释。其他人认为，一个特定模型是否可解释取决于受众和上下文。但无论你如何定义解释：通过限制模型的函数形式，它变得在功能上更容易控制。即使你可以争论线性回归不容易解释，但仍然是真的，该模型不包含交互（至少在模型的输入空间上）。而且，设计上可解释的模型，或者至少结构上更简单，有助于实现发现、改进和证明等目标。
 - en: '**Discover:** A logistic regression model allows insights about the features
     that increase the probability of, e.g., diabetes.'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**发现**：逻辑回归模型可以揭示哪些特征会增加例如糖尿病的概率。'
 - en: '**Improve:** Regression coefficients with a wrong direction may signal that
     a feature was wrongly coded.'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**改进**：回归系数方向错误可能表明某个特征被错误编码。'
 - en: '**Justify:** A domain expert can manually check decision rules.'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**证明**：领域专家可以手动检查决策规则。'
 - en: 'Interpretability by design has a cost: Restricting the hypothesis may exclude
     many good models and you might end up with a model that is worse in performance.
     The winners in machine learning competitions are usually complex gradient-boosted
     trees (e.g. LightGBM, catboost, xgboost) for tabular data and neural networks
     (CNN, transformer) for image and text data. It is not the models that are interpretable
     by design that are cashing in the price money.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 设计上的可解释性有代价：限制假设可能会排除许多好的模型，最终可能导致性能更差的模型。机器学习竞赛的赢家通常是用于表格数据的复杂梯度提升树（例如LightGBM、catboost、xgboost）和用于图像和文本数据的神经网络（CNN、transformer）。真正从中获利的是那些设计上可解释的模型。
 - en: 'Besides lower performance, interpretability-by-design has a conceptual problem
     when it comes to discovery (inference). To extend the interpretation of the model
     to the real world, you have to establish a connection between your model and the
@@ -199,8 +270,10 @@
     certain parts of the simulation represent parts of the world. For interpretability
     by design, there is no such link. For example, there is no justification for saying
     that almond yield is produced by decision tree-like processes.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了性能较低之外，在设计上追求可解释性在发现（推理）方面也存在概念问题。为了将模型的解释扩展到现实世界，你必须在你模型和世界之间建立联系。例如，在经典统计建模中，你会对数据生成过程做出许多假设。目标变量的分布是什么？缺失值的处理过程是什么？你需要解释哪些相关结构？其他如基于物理的模拟等方法也建立了模型与世界的联系：假设模拟的某些部分代表了世界的某些部分。对于设计上的可解释性，没有这样的联系。例如，没有理由说杏仁产量是由类似决策树的进程产生的。
 - en: 'Another problem is performance: What do you do when you find models that have
     better predictive performance than your interpretable one? A model that represents
     the world well should also be able to predict it well. You would have to argue
@@ -208,8 +281,10 @@
     it less well. You might have just been oversimplifying the world for your convenience.
     This weakens any claims to link the model to reality. An even worse conceptual
     problem is the Rashomon effect [[12]](references.html#ref-breiman2001random).'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个问题在于性能：当你发现某些模型的预测性能优于你的可解释模型时，你会怎么做？一个能够很好地代表世界的模型也应该能够很好地预测它。你将不得不论证为什么你的可解释模型能更好地代表世界，即使它的预测性能并不那么好。你可能只是为了方便而过度简化了世界。这削弱了将模型与现实联系起来的任何主张。一个更糟糕的概念问题是“罗生门效应”[[12]](references.html#ref-breiman2001random)。
 - en: '*Origin of the name Rashomon* *Rashomon is a 1950 Japanese film. It tells the
     story of a murdered samurai from four different perspectives: a bandit, the samurai’s
     wife, the samurai’s spirit communicating through a psychic, and a commoner observing
@@ -225,15 +300,20 @@
     very different trees even if the performance might not suffer too much. If you
     use a decision tree for discovery, then the Rashomon effect makes it difficult
     to argue that this is the exact tree that you should even be interpreting.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '*“罗生门”名称的由来* “罗生门”是一部1950年的日本电影。它讲述了四位不同视角下一名被谋杀的武士的故事：一个强盗、武士的妻子、通过灵媒与武士的灵魂沟通的精神病患者，以及一个观察事件的普通人。虽然每个视角本身都是连贯的，但它们与其他三个故事不相容。这种所谓的“罗生门效应”已经成为法律、哲学，以及正如你所看到的，统计学和机器学习中的一个确立概念。*“罗生门效应”描述了多个模型可能具有大致相同的性能，但结构上却不同。一个令人挠头的解释问题：如果优化导致了一组具有相同性能但内部结构不同的模型，那么你不能仅仅基于性能的论点来选择其中一个。一个例子：决策树本质上是可解释的（至少如果树较短的话），但也是本质不稳定的——数据中的微小变化可能导致非常不同的树，即使性能可能不会受到太大影响。如果你使用决策树进行发现，那么“罗生门效应”会使你难以论证这就是你应该解释的确切树。'
 - en: 'The verdict: Inherently interpretable models are much easier to justify than
     their more complex counterparts. However, using them for insights (inference)
     has conceptual problems. Fortunately, there’s also the class of post-hoc interpretation
     methods, for which we have a theory of how their interpretation may be extended
     to the modeled phenomenon.*  *## 9.3 Model-specific post-hoc interpretability'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 结论：固有可解释的模型比其更复杂的对应物更容易证明其合理性。然而，使用它们进行洞察（推理）存在概念问题。幸运的是，还有一类后验解释方法，我们有一个理论，说明它们的解释如何扩展到建模现象。**  **##
+    9.3 模型特定后验可解释性
 - en: 'Instead of opposing model complexity, you can also embrace it and try to extract
     insights from the complex models. These interpretability methods are called post-hoc,
     which translates to “after the event”, the event being model training. Post-hoc
@@ -242,42 +322,58 @@
     the model as a black box and only work with the input-output data pairs. Model-specific
     methods are tied to a specific model type and require that you inspect the model,
     for example:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 你不仅可以反对模型复杂性，还可以接受它，并尝试从复杂的模型中提取洞察。这些可解释性方法被称为后验，这翻译为“事件之后”，事件是模型训练。后验方法可以是模型特定的或模型无关的：模型特定解释方法与模型的架构一起工作，而模型无关方法将模型视为黑盒，并且只处理输入-输出数据对。模型特定方法与特定模型类型相关联，需要检查模型，例如：
 - en: Gini importance leverages the splitting criterion in decision trees to assign
     importance values to features
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 吉尼重要性利用决策树中的分割标准来为特征分配重要性值
 - en: Transformers, a popular neural network architecture, has an attention layer
     that decides which part of the (processed) input to attend to for the prediction.
     Attention visualization is a model-specific post-hoc approach to interpret transformers.
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 变换器，一种流行的神经网络架构，有一个注意力层，它决定预测时应该关注（处理过的）输入的哪个部分。注意力可视化是一种针对变换器的模型特定后验解释方法。
 - en: 'Activation maximization approaches assign semantic meaning to individual neurons
     and layers: What concept maximally activates each neuron?'
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 激活最大化方法为单个神经元和层赋予语义意义：每个神经元最大激活的是哪个概念？
 - en: Gradient-based explanation methods like Grad-CAM or layer-wise relevance propagation
     (LRP) make use of neural network gradients to highlight the inputs that affected
     the predictions strongly
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基于梯度的解释方法，如Grad-CAM或层相关传播（LRP），利用神经网络梯度来突出影响预测强烈的相关输入
 - en: Model-specific methods occupy an odd spot in the interpretability space. The
     underlying models are usually more complex than the interpretability-by-design
     ones and the interpretations can only address subsets of the model. For most interpretation
     goals, model-specific post-hoc interpretation is worse than interpretability-by-design.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型特定方法在可解释性空间中占据一个奇特的位置。底层模型通常比按设计可解释的模型更复杂，而解释只能针对模型的部分子集。对于大多数解释目标，模型特定的后验解释不如按设计可解释。
 - en: '![](../Images/028921c2556c1f668687c1b8e95046a4.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/028921c2556c1f668687c1b8e95046a4.png)'
 - en: Model-specific post-hoc interpretation analyze parts of the model.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型特定后验解释分析模型的部分。
 - en: 'When it comes to inference, model-specific methods share the same conceptual
     problem with interpretability by design: If you want to interpret the model in
     place of the real world, you need a theory that connects your model with the world
@@ -287,8 +383,11 @@
     is representative of the world, which are probably invalid [[13]](references.html#ref-freiesleben2023artificial).
     However, they still may be useful in pointing out associations for forming causal
     hypotheses (see [Chapter 10](causality.html)).'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 当涉及到推理时，模型特定方法与按设计可解释性共享相同的概念问题：如果你想用模型代替现实世界进行解释，你需要一个理论来连接你的模型与世界，并允许解释的转移。模型特定方法，正如其名，依赖于他们正在构建的特定模型，而模型与现实的这种联系将需要做出关于为什么这个模型的结构代表世界的假设，这些假设可能是无效的
+    [[13]](references.html#ref-freiesleben2023artificial)。然而，它们仍然可能在指出关联以形成因果假设时有用（参见第10章[causality.html]）。
 - en: The line is blurred between interpretability by design and model-specific post-hoc
     interpretation. You might see a linear regression model as inherently interpretable
     because the coefficients are directly interpretable as feature effects. But what
@@ -297,17 +396,23 @@
     but you can add many modifications that make the model stray further from interpretability
     heaven. And for interpretation, you rely more and more on post-hoc computations,
     like transforming the coefficients, visualizing splines, etc.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 设计可解释性和特定模型事后解释之间的界限变得模糊。你可能认为线性回归模型天生就是可解释的，因为系数可以直接解释为特征效应。但如果你对目标进行对数变换呢？那么你也必须对系数进行变换以进行解释。你可以争辩说这仍然是设计可解释的，但你可以添加许多修改，使模型越来越远离可解释性天堂。而对于解释，你越来越依赖于事后计算，如变换系数、可视化样条等。
 - en: 'Now that we are done talking down on model-specific interpretation, let’s talk
     about our favorite methods: model-agnostic interpretation techniques. And yes,
     we make no secret out of this, but we are quite the fans of model-agnostic interpretation.'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然我们已经谈完了针对特定模型的解释方法，让我们谈谈我们最喜欢的方法：模型无关的解释技术。是的，我们并不隐瞒这一点，但我们确实是模型无关解释的粉丝。
 - en: 9.4 Model-agnostic post-hoc interpretation methods
+  id: totrans-47
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 9.4 模型无关事后解释方法
 - en: 'You are tasked to write a manual for the world’s weirdest vending machine.
     Nobody knows how it works. You tried to open it but decided against inspection
     for fear of breaking the machine. But you have an idea of how you could write
@@ -316,8 +421,10 @@
     they are past the due date. You feel no remorse throwing them away. The other
     good news is that you made the first step toward writing that manual. The secret:
     Just try things out systematically and find out what happens.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 你被要求编写一本关于世界上最奇怪的自动售货机的手册。没有人知道它是如何工作的。你试图打开它，但出于担心损坏机器而放弃了检查。但你有了一个编写手册的想法。你开始按一些按钮和杠杆，直到最后，机器掉落了一个物品：一包带有“凤尾鱼”风味的薯片。幸运的是，它们已经过了保质期。你扔掉它们时没有感到后悔。另一个好消息是你迈出了编写手册的第一步。秘诀：只是有系统地尝试，找出会发生什么。
 - en: 'The fictive almond yield model is just like the vending machine. By intervening
     in the input features, the output (aka the prediction) changes and you can gather
     information about the model behavior. The recipe is to sample data, intervene
@@ -325,31 +432,44 @@
     And that’s why model-agnostic interpretation methods are post-hoc – they don’t
     require you to access the model internals or change the model training process.
     Model-agnostic interpretation methods have many advantages:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 虚拟杏仁产量模型就像自动售货机。通过干预输入特征，输出（即预测）会发生变化，你可以收集关于模型行为的更多信息。方法就是采样数据，干预数据，预测，并汇总结果
+    [[14]](references.html#ref-scholbeck2020sampling)。这就是为什么模型无关的解释方法是事后分析——它们不需要你访问模型内部或改变模型训练过程。模型无关的解释方法具有许多优点：
 - en: You can use the same model-agnostic interpretation method for different models
     and compare the results.
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你可以使用相同的模型无关解释方法对不同模型进行比较结果。
 - en: You are free to include pre- and post-processing steps in the interpretation.
     For example, when the model uses principal components as inputs (dimensionality
     reduction), you can still produce the interpretations based on the original features.
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你可以在解释中自由地包含预处理和后处理步骤。例如，当模型使用主成分作为输入（降维）时，你仍然可以根据原始特征生成解释。
 - en: You can apply model-agnostic methods also to inherently interpretable models
     like using feature importance on decision trees.
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你也可以将模型无关方法应用于本质上可解释的模型，例如在决策树中使用特征重要性。
 - en: '![](../Images/e7ce6a0164b54623c5bd54d861783007.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/e7ce6a0164b54623c5bd54d861783007.png)'
 - en: Model-agnostic interpretation ignores the inner workings of the model and studies
     input-output pairs.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型无关的解释忽略了模型的内部运作，研究输入-输出对。
 - en: 'One of the simplest model-agnostic to explain is permutation feature importance:
     Imagine the almond yield researcher wants to know which features were most important
     for a prediction. First, they measure the performance of the model. Then they
@@ -361,161 +481,234 @@
     drop in performance, the more important the feature. [Figure 9.1](#fig-importance)
     shows an example of permutation feature importance from the almond yield paper
     [[15]](references.html#ref-zhang2019california).'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中一个最简单的模型无关解释方法是排列特征重要性：想象一下，杏仁产量研究人员想知道哪些特征对预测最重要。首先，他们测量模型的性能。然后他们取一个特征，比如说使用的肥料量，并将其打乱，这破坏了肥料特征与实际产量结果之间的关系。如果模型依赖于肥料特征，那么对于这个被操纵的数据集的预测将会改变。对于这些预测，研究人员再次测量性能。通常，打乱会使性能变差。性能下降得越多，特征就越重要。[图
+    9.1](#fig-importance) 展示了来自杏仁产量论文 [[15]](references.html#ref-zhang2019california)
+    的排列特征重要性的一个示例。
 - en: '![](../Images/1eefdfa0a0157e653f494476b366218a.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/1eefdfa0a0157e653f494476b366218a.png)'
 - en: 'Figure 9.1: Feature importances for almond yield. Figure by Zhang, Jin, Chen,
     and Brown (2019) [[15]](references.html#ref-zhang2019california), CC-BY (https://creativecommons.org/licenses/by/4.0).'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 9.1：杏仁产量的特征重要性。图由 Zhang, Jin, Chen 和 Brown (2019) [[15]](references.html#ref-zhang2019california)
+    提供，CC-BY (https://creativecommons.org/licenses/by/4.0)。
 - en: 'PFI is one of many model-agnostic explanation methods. This chapter won’t introduce
     all of them, because that’s already its own book called [Interpretable Machine
     Learning](https://christophm.github.io/interpretable-ml-book/) [[16]](references.html#ref-molnar2022)
     and you can read it for free! But still, we’ll provide a brief overview of the
     interpretability landscape of model-agnostic methods. The biggest differentiator
     is local versus global methods:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: PFI 是众多模型无关解释方法之一。本章不会介绍所有这些方法，因为那已经是一本名为 [可解释机器学习](https://christophm.github.io/interpretable-ml-book/)
+    [[16]](references.html#ref-molnar2022) 的书，你可以免费阅读！但仍然，我们将提供一个关于模型无关方法可解释性景观的简要概述。最大的区别是本地方法与全局方法：
 - en: Local methods explain individual predictions
+  id: totrans-59
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 本地方法解释个别预测
 - en: Global methods interpret the average model behavior.
+  id: totrans-60
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 全局方法解释平均模型行为。
 - en: '9.4.1 Local: Explaining individual predictions'
+  id: totrans-61
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.4.1 本地：解释个别预测
 - en: The almond researchers might want to explain the yield prediction for a particular
     field and year. Why did the model make this particular prediction? Explaining
     individual predictions is one of the holy grails of interpretability. Tons of
     methods are available. Explanations of predictions attribute, in one way or another,
     the prediction to the individual features.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 杏仁研究人员可能想要解释特定地块和年份的产量预测。为什么模型做出了这个特定的预测？解释个别预测是可解释性领域的一个圣杯。有大量的方法可用。预测的解释，以某种方式或另一种方式，将预测归因于个别特征。
 - en: 'Here are some examples of local model-agnostic interpretation methods:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一些本地模型无关解释方法的例子：
 - en: Local surrogate models (LIME) [[17]](references.html#ref-ribeiroWhyShouldTrust2016)
     explain predictions by approximating the complex model locally with a neighborhood-based
     interpretable model.
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 本地代理模型（LIME） [[17]](references.html#ref-ribeiroWhyShouldTrust2016) 通过在局部使用基于邻域的可解释模型来近似复杂模型，从而解释预测。
 - en: Scoped rules (anchors) [[18]](references.html#ref-ribeiroAnchorsHighPrecisionModelAgnostic2018)
     describe which feature values “anchor” a prediction, meaning that within this
     range, the prediction can’t be changed beyond a chosen threshold.
+  id: totrans-65
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 范围规则（锚点） [[18]](references.html#ref-ribeiroAnchorsHighPrecisionModelAgnostic2018)
+    描述哪些特征值“锚定”预测，意味着在这个范围内，预测不能超过选择的阈值。
 - en: Counterfactual explanations [[19]](references.html#ref-wachterCounterfactualExplanationsOpening2017)
     explain a prediction by examining which features to change to achieve a desired
     counterfactual prediction.
+  id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 反事实解释 [[19]](references.html#ref-wachterCounterfactualExplanationsOpening2017)
+    通过检查哪些特征需要改变以实现期望的反事实预测来解释预测。
 - en: Shapley values [[20]](references.html#ref-strumbeljExplainingPredictionModels2014)
     and SHAP [[21]](references.html#ref-lundbergUnifiedApproachInterpreting2017) are
     attribution methods that assign the prediction to individual features based on
     game theory.
+  id: totrans-67
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Shapley值 [[20]](references.html#ref-strumbeljExplainingPredictionModels2014)
+    和 SHAP [[21]](references.html#ref-lundbergUnifiedApproachInterpreting2017) 是基于博弈论将预测分配给单个特征的归因方法。
 - en: Individual conditional expectation curves [[22]](references.html#ref-goldsteinPeekingBlackBox2015)
     describe how changing individual features changes the prediction.
+  id: totrans-68
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 单个条件期望曲线 [[22]](references.html#ref-goldsteinPeekingBlackBox2015) 描述了改变单个特征如何改变预测。
 - en: '9.4.2 Global: Interpreting average model behavior'
+  id: totrans-69
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.4.2 全局：解释平均模型行为
 - en: 'While local explanations are about data points, global explanations are about
     datasets: they describe how the model behaves, on average, for a given dataset,
     and, by extension, the distribution that the dataset represents.'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 当地解释是关于数据点的，而全局解释是关于数据集的：它们描述了模型在给定数据集上的平均行为，以及由此扩展的数据集代表的分布。
 - en: 'We can further separate global interpretability:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以进一步区分全局可解释性：
 - en: '**Feature importance methods** [[23]](references.html#ref-fisher2019all) rank
     features by how much they influence the predictions. Examples:'
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**特征重要性方法** [[23]](references.html#ref-fisher2019all) 通过特征对预测的影响程度来排名。例如：'
 - en: Permutation feature importance ranks features by how much permuting the feature
     destroys the information.
+  id: totrans-73
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 重新排列特征重要性按特征重新排列的程度来排名，即特征重新排列破坏信息量的程度。
 - en: SAGE [[24]](references.html#ref-covert2020understanding) ranks features based
     on predictive performance when the model is retrained.
+  id: totrans-74
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: SAGE [[24]](references.html#ref-covert2020understanding) 根据模型重新训练时的预测性能对特征进行排名。
 - en: SHAP importance [[21]](references.html#ref-lundbergUnifiedApproachInterpreting2017)
     ranks features based on the average absolute SHAP values.
+  id: totrans-75
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: SHAP重要性 [[21]](references.html#ref-lundbergUnifiedApproachInterpreting2017)
+    根据平均绝对SHAP值对特征进行排名。
 - en: '**Feature effect methods** describe how features influence the prediction.
     We can further divide feature effect methods into main and interaction effects:
     Main feature effects describe how an isolated feature changes the prediction,
     as shown in [Figure 9.2](#fig-effect-almond). Interaction effects describe how
     features interact with each other to influence the predictions. Examples:'
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**特征效应方法**描述特征如何影响预测。我们可以进一步将特征效应方法分为主要效应和交互效应：主要特征效应描述了孤立特征如何改变预测，如图[图9.2](#fig-effect-almond)所示。交互效应描述了特征如何相互作用以影响预测。例如：'
 - en: Partial dependence plots [[25]](references.html#ref-friedman2001greedy)
+  id: totrans-77
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 部分依赖性图 [[25]](references.html#ref-friedman2001greedy)
 - en: Accumulated local effect plots [[26]](references.html#ref-apley2020visualizingeffects)
+  id: totrans-78
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 累积局部效应图 [[26]](references.html#ref-apley2020visualizingeffects)
 - en: SHAP dependence plots [[21]](references.html#ref-lundbergUnifiedApproachInterpreting2017)
+  id: totrans-79
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: SHAP依赖性图 [[21]](references.html#ref-lundbergUnifiedApproachInterpreting2017)
 - en: '![](../Images/db76844776ea949f0f07480f9133fbb5.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/db76844776ea949f0f07480f9133fbb5.png)'
 - en: 'Figure 9.2: Feature effect using PDPs for “age of orchard” on almond yield.
     Figure by Zhang, Jin, Chen, and Brown (2019) [[15]](references.html#ref-zhang2019california),
     CC-BY (https://creativecommons.org/licenses/by/4.0).'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9.2：使用PDPs对“果园年龄”对杏仁产量的特征影响。图由张、金、陈和布朗（2019）绘制 [[15]](references.html#ref-zhang2019california)，CC-BY
+    (https://creativecommons.org/licenses/by/4.0)。
 - en: We see global interpretation methods as central, especially for discovery.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们认为全局解释方法是核心的，尤其是在发现方面。
 - en: 9.4.3 Interpretation for scientific discovery
+  id: totrans-83
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 9.4.3 科学发现的解释
 - en: 'How useful is model-agnostic interpretation for scientific insights? Let’s
     start with two observations:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型无关的解释对科学洞察力有多有用？让我们从两个观察开始：
 - en: Interpretation is first and foremost about the model.
+  id: totrans-85
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 解释首先和最重要的是关于模型。
 - en: If you want to extend the model interpretation to the world, you need a theoretical
     link.
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果你想将模型解释扩展到现实世界，你需要一个理论联系。
 - en: Let’s say you model the almond yield with a linear regression model. The coefficients
     of the linear equation tell you how the features linearly affect the yield. Without
     further assumption, this interpretation concerns only the model. In classical
@@ -524,102 +717,146 @@
     that the data are representative, and so on, and only then carefully make a statement
     about the real world. Such results in turn may have real-world consequences, such
     as deciding the fertilizer usage.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设你用线性回归模型来模拟杏仁产量。线性方程的系数告诉你特征如何线性影响产量。在没有进一步假设的情况下，这种解释只涉及模型。在经典统计建模中，统计学家可能会假设给定特征的产量条件分布是高斯分布，误差是同方差性的，数据是代表性的，等等，然后才谨慎地对现实世界做出陈述。这样的结果反过来可能对现实世界产生实际影响，例如决定肥料的使用。
 - en: 'In machine learning, you don’t make these assumptions about the data-generating
     process but let predictive performance guide modeling decisions. But can we establish
     a theoretical link between the model interpretation and the world maybe differently?
     We’ve discussed that establishing this link isn’t easy when it comes to model-specific
     interpretation:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 在机器学习中，你不会对数据生成过程做出这些假设，而是让预测性能指导建模决策。但我们可以建立模型解释与世界的理论联系吗？也许是以不同的方式？我们已经讨论过，当涉及到特定模型的解释时，建立这种联系并不容易：
 - en: 'You would have to justify whether the specific model structures represent the
     phenomenon you study. That’s unreasonable for most model classes: What reason
     do you have to believe that phenomena in the world are structured like a decision
     rule list or a transformer model?'
+  id: totrans-89
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你必须证明特定的模型结构是否代表了你所研究的现象。对于大多数模型类别来说，这是不合理的：你有什么理由相信世界中的现象是以决策规则列表或转换器模型的结构组织的？
 - en: 'The Rashomon effect presents you with an unresolvable conflict: If different
     models have similar predictive performance, how can you justify that the structure
     of one model represents the world, but the others don’t?'
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 柏拉图效应给你带来了一个无法解决的冲突：如果不同的模型具有相似的预测性能，你怎么能证明一个模型的结构代表了世界，而其他模型则没有？
 - en: But there’s a way to link model and reality via model-agnostic interpretation.
     With model-agnostic interpretation, you don’t have to link model components to
     variables of reality. Instead, you interpret the model’s **behavior** and link
     these interpretations to the phenomenon [[27]](references.html#ref-freiesleben2022scientific).
     This, of course, also doesn’t come for free.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，有一种方法可以通过模型无关的解释将模型与现实联系起来。使用模型无关的解释，你不需要将模型组件与现实的变量相联系。相反，你解释模型的行为，并将这些解释与现象联系起来
+    [[27]](references.html#ref-freiesleben2022scientific)。当然，这也不是免费的。
 - en: You have to assume there is a true function \(f\) that describes the relation
     between the underlying features and the prediction target (see [Section 12.5.2](uncertainty.html#sec-Bayes)
     for theoretical background on this true function).
+  id: totrans-92
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你必须假设存在一个真实的函数 \(f\)，它描述了底层特征与预测目标之间的关系（参见[第12.5.2节](uncertainty.html#sec-Bayes)中关于这个真实函数的理论背景）。
 - en: The model needs to be a good representation of function \(f\) or at least you
     should be able to quantify uncertainties.
+  id: totrans-93
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模型需要是函数 \(f\) 的良好表示，或者至少你应该能够量化不确定性。
 - en: 'Let’s make it more concrete: The almond researcher has visualized a partial
     dependence plot that shows how fertilizer use influences the predicted yield.
     Now they want to extend the interpretation of this effect curve to the real world.
     First, they assume that there is some true \(f\) that their model \(\hat{f}\)
     tries to approximate, a standard assumption in statistical learning theory [[28]](references.html#ref-vapnik1999overview).'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们使其更具体：杏仁研究人员已经可视化了一个部分依赖图，显示了肥料使用如何影响预测产量。现在他们希望将这种效应曲线的解释扩展到现实世界。首先，他们假设存在某种真实的
+    \(f\)，他们的模型 \(\hat{f}\) 尝试逼近它，这是统计学习理论中的一个标准假设 [[28]](references.html#ref-vapnik1999overview)。
 - en: 'The partial dependence plot is defined as:'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 部分依赖图定义为：
 - en: \[PDP(x) = \mathbb{E}[\hat{f}(x_j, X_{-j})]\]
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: \[PDP(x) = \mathbb{E}[\hat{f}(x_j, X_{-j})]\]
 - en: 'and estimated with:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 并用以下方式估计：
 - en: \[\frac{1}{n} \sum_{i=1}^n \hat{f}(x_j, x_{-j}^{(i)})\]
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: \[\frac{1}{n} \sum_{i=1}^n \hat{f}(x_j, x_{-j}^{(i)})\]
 - en: 'The index indicates the feature of interest, and \(-j\) indicates all the other
     features. You can’t estimate the true PDP because \(f\) is unknown, but you can
     define a theoretical partial dependence plot on the true function by replacing
     the model \(\hat{f}\) for the real \(f\): \(PDP_{true}(x) = \mathbb{E}[f(x_j,
     X_{-j})]\).'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 指数表示感兴趣的特征，而 \(-j\) 表示所有其他特征。由于 \(f\) 是未知的，因此你不能估计真实的PDP，但你可以通过用真实函数 \(f\) 替换模型
+    \(\hat{f}\) 来定义一个理论上的部分依赖图：\(PDP_{true}(x) = \mathbb{E}[f(x_j, X_{-j})]\)。
 - en: That allows you, at least in theory and simulation, to compare true PDP with
     estimated PDP, as visualized in [Figure 9.3](#fig-true-pdp).
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 这至少在理论和模拟中允许你比较真实的PDP与估计的PDP，如图[图9.3](#fig-true-pdp)所示。
 - en: '![](../Images/d814b17a1155ea3a13ab9694daa94ac0.png)'
+  id: totrans-101
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/d814b17a1155ea3a13ab9694daa94ac0.png)'
 - en: 'Figure 9.3: Assumption: there is a “true” PDP of the data-generating process.'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9.3：假设：存在数据生成过程的“真实”PDP。
 - en: 'That’s what we have done in [[29]](references.html#ref-molnar2023relating)
     and discussed more philosophically in [[27]](references.html#ref-freiesleben2022scientific).[²](#fn2)
     We’ll give an abbreviated sketch of our ideas here. The error between the true
     and the model PDP consists of 3 parts:'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是我们[[29]](references.html#ref-molnar2023relating)所做的工作，并在[[27]](references.html#ref-freiesleben2022scientific)中进行了更哲学性的讨论。[²](#fn2)
+    我们在这里将简要概述我们的想法。真实PDP与模型PDP之间的误差由3部分组成：
 - en: The *model bias* describes the bias of your learning algorithm.
+  id: totrans-104
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*模型偏差*描述了你的学习算法的偏差。'
 - en: The *model variance* describes the algorithm’s variance over datasets from the
     same distribution.
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*模型方差*描述了算法在来自同一分布的数据集上的方差。'
 - en: The *estimation error* describes the variance that arises from estimating the
     PDP empirically.
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*估计误差*描述了从经验上估计PDP时产生的方差。'
 - en: 'Ideally, you can either reduce or remove each source of uncertainty or at least
     quantify them. The model bias is the toughest part: You can’t easily quantify
     it because it would require you to know the true function \(f\). A way to reduce
@@ -629,8 +866,10 @@
     may introduce a bias to reduce variance. An example of model bias: If you use
     a linear model to model non-linear data, then the PDP will be biased since it
     can only model a linear relation.'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 理想情况下，你可以减少或消除每个不确定性来源，或者至少量化它们。模型偏差是最困难的部分：你很难量化它，因为这需要你了解真实的函数 \(f\)。减少偏差的一种方法是将模型训练和调整得很好，然后假设模型的偏差可以忽略不计，这当然是一个强烈的假设。特别是考虑到许多机器学习算法依赖于正则化，这可能会引入偏差以减少方差。模型偏差的一个例子是：如果你使用线性模型来模拟非线性数据，那么PDP将会偏差，因为它只能模拟线性关系。
 - en: The model variance is a source of uncertainty that stems from the model itself
     being a random variable since the model is a function of the training data, which
     is merely a sample of the distribution. If you would sample a different dataset
@@ -638,14 +877,19 @@
     If you retrain the model multiple times with different data (but from the same
     distribution), you get an idea of the model’s variance. This makes model variance
     at least quantifiable.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型方差是不确定性来源，源于模型本身是一个随机变量，因为模型是训练数据的函数，而训练数据仅仅是分布的一个样本。如果你从同一分布中采样不同的数据集，那么训练的模型可能会有所不同。如果你用不同的数据（但来自同一分布）多次重新训练模型，你就可以得到模型方差的一个概念。这使得模型方差至少是可量化的。
 - en: 'The third uncertainty source is the estimation error: The PDP, like other interpretation
     methods, is estimated with data, so it is subject to variance. The estimation
     error is the simplest to quantify since the PDP at a given position \(x\) is an
     average for which you know the variance.'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 第三种不确定性来源是估计误差：PDP（部分依赖图），就像其他解释方法一样，是用数据估计的，因此它受到方差的影响。估计误差是最容易量化的，因为给定位置 \(x\)
+    的PDP是一个平均值，你知道其方差。
 - en: In our paper, we showed that permutation feature importance also has these 3
     sources of uncertainty when comparing model PFI with the “true” PFI. We have conceptually
     generalized this approach to arbitrary interpretation methods in [[27]](references.html#ref-freiesleben2022scientific).
@@ -655,80 +899,111 @@
     + post-hoc interpretation as an inference about the real world this alone might
     be too thin. But then again, many researchers already use machine learning for
     insights, so having **some** theoretical justification is great to have.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的论文中，我们展示了置换特征重要性在比较模型PFI与“真实”PFI时也有这3种不确定性来源。我们将这种方法概念性地推广到任意解释方法，如[[27]](references.html#ref-freiesleben2022scientific)。虽然我们尚未在实践中对所有解释方法进行测试，但我们的直觉告诉我们，它应该与PDP和PFI相似。这一研究方向相当新颖，我们得看看它将引向何方。为了证明使用机器学习+事后解释作为对现实世界的推理，这本身可能过于薄弱。但另一方面，许多研究人员已经使用机器学习进行洞察力研究，所以有一些理论上的依据是非常好的。
 - en: 'There’s one challenge to interpretability that gives us bad dreams, specifically
     for the goal of insights: correlated features.'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于解释性来说，有一个挑战会让我们做噩梦，特别是对于洞察力的目标：相关特征。
 - en: 9.5 Correlation may destroy interpretability
+  id: totrans-112
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 9.5 相关性可能破坏可解释性
 - en: 'When features correlate with each other, model-agnostic interpretation may
     run into issues. To understand why, let’s revisit how most model-agnostic methods
     work: Sample data, intervene in the data, get model predictions, and aggregate
     the results. During the intervention steps, new data points are created, often
     treating features as independent.'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 当特征相互关联时，模型无关的解释可能会遇到问题。为了理解为什么，让我们回顾一下大多数模型无关方法的工作方式：采样数据，干预数据，获取模型预测，并汇总结果。在干预步骤中，会创建新的数据点，通常将特征视为独立的。
 - en: 'For example, to compute the permutation importance of the feature “absolute
     humidity” for the almond yield model, the feature gets shuffled (permuted) independently
     of the other features such as temperature. This can result in unrealistic data
     points of high humidity but low temperatures. These unrealistic new data points
     are fed into the model and the predictions are used to interpret the model. This
     may produce misleading interpretations:'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，为了计算“绝对湿度”特征对于杏仁产量模型的置换重要性，该特征独立于其他特征（如温度）进行打乱（置换）。这可能导致不切实际的高湿度但低温度的数据点。这些不切实际的新数据点被输入到模型中，并使用预测来解释模型。这可能会导致误导性的解释：
 - en: The model is probed with data points from regions of the feature space where
     the model doesn’t work well (because it was never trained with data from this
     region) or even makes extreme predictions.
+  id: totrans-115
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 该模型被数据点探测，这些数据点来自模型表现不佳的特征空间区域（因为它从未用该区域的数据进行过训练）或甚至做出极端预测。
 - en: Unrealistic data points shouldn’t be used for the interpretation, as they aren’t
     representative of the studied reality.
+  id: totrans-116
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不切实际的数据点不应用于解释，因为它们不代表所研究现实。
 - en: Features don’t independently change in the real world
+  id: totrans-117
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在现实世界中，特征不会独立改变。
 - en: 'Given these issues, why do many still use so-called “marginal” methods for
     interpretation that treat features as independent? Two reasons: 1) It is technically
     much easier to, for example, shuffle a feature independently compared to shuffling
     the feature in a way that preserves the correlation. 2) In an ideal world, you
     want a disentangled interpretation where you can study each feature in isolation.'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于这些问题，为什么许多人仍然使用所谓的“边际”方法进行解释，将这些特征视为独立的？两个原因：1) 与以保留相关性的方式打乱特征相比，例如独立地打乱特征在技术上要容易得多。2)
+    在理想的世界里，你希望有一个解耦的解释，这样你可以单独研究每个特征。
 - en: 'In practice, you can avoid or at least reduce the problem of correlated features
     with these approaches:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实践中，你可以通过以下方法避免或至少减少相关特征的问题：
 - en: Study correlations between features. If they are low, you can proceed with the
     usual marginal version of the interpretation methods.
+  id: totrans-120
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 研究特征之间的相关性。如果它们很低，你可以继续使用解释方法的常规边际版本。
 - en: Interpret feature groups instead of individual features. For most interpretation
     methods you can also compute the importance or effect for an entire group of features.
     For example, you can compute the combined PFI for humidity and precipitation by
     shuffling them together.
+  id: totrans-121
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 解释特征组而不是单个特征。对于大多数解释方法，你也可以计算整个特征组的综合重要性或效应。例如，你可以通过将它们一起打乱来计算湿度和降水的综合PFI。
 - en: Use conditional versions of the interpretation methods. For example, conditional
     feature importance [[30]](references.html#ref-watson2021testing), conditional
     SHAP [[31]](references.html#ref-aas2021explaining), M-Plot and ALE [[26]](references.html#ref-apley2020visualizingeffects)
     and subgroup-wise PDP and PFI [[32]](references.html#ref-molnar2023modelagnostic),
     Leave-one-covariate out (LOCO) [[33]](references.html#ref-lei2018distributionfree).
+  id: totrans-122
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用解释方法的条件版本。例如，条件特征重要性 [[30]](references.html#ref-watson2021testing)，条件SHAP
+    [[31]](references.html#ref-aas2021explaining)，M-Plot和ALE [[26]](references.html#ref-apley2020visualizingeffects)以及按子组划分的PDP和PFI
+    [[32]](references.html#ref-molnar2023modelagnostic)，留一协变量法（LOCO） [[33]](references.html#ref-lei2018distributionfree)。
 - en: The third option, conditional interpretation, is more than a technical fix.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 第三种选择，条件解释，不仅仅是技术上的修复。
 - en: Let’s say you want to shuffle the humidity feature to get its importance for
     almond yield. It is correlated with temperature, so you have to ensure that new
     data points respect the correlation structure. Instead of shuffling humidity independently,
@@ -736,8 +1011,10 @@
     absolute humidity, you draw the temperature feature based on this high humidity.
     This leads to the “permuted” humidity feature to respect the correlation with
     precipitation, while breaking the relation with the yield target.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设你想要打乱湿度特征以获取其与杏仁产量的重要性。它与温度相关，因此你必须确保新的数据点尊重相关性结构。而不是独立地打乱湿度，你根据温度的值来采样它。第一个数据点具有高绝对湿度，你根据这个高湿度抽取温度特征。这导致“排列”的湿度特征尊重与降水的相关性，同时打破与产量目标的联系。
 - en: 'Conditional intervention changes the interpretation. For example, for permutation
     feature importance, the interpretation changes to: Given that the model has access
     to temperature, how important is it to know the humidity in addition? The more
@@ -748,34 +1025,46 @@
     for the goal of insights. Not only because it fixes the extrapolation problem,
     but also because for insights you are interested in how the features are related
     to the target regardless of the model.'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 条件干预会改变解释。例如，对于排列特征重要性，解释变为：鉴于模型可以访问温度，知道湿度是否很重要？特征之间的依赖结构越复杂，(条件)解释就越复杂。要使用条件解释，你必须理解与边缘版本相比解释是如何变化的。但另一方面，我们认为条件解释是可行的途径，尤其是对于洞察力的目标。这不仅因为它解决了外推问题，而且因为对于你感兴趣的洞察力，你关心的是特征与目标之间的关系，而不考虑模型。
 - en: 9.6 Interpretability is just one part
+  id: totrans-126
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 9.6 可解释性只是其中一部分
 - en: Model interpretability alone might not solve your problems. Rather, it is strongly
     interlinked with the other topics covered in this book.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 单独的模型可解释性可能无法解决你的问题。相反，它与本书中涵盖的其他主题紧密相连。
 - en: Interpretability for scientific insights is tightly linked to generalization
     (see [Chapter 7](generalization.html)). If you aren’t aware of how the data were
     collected and which population the dataset represents, it is unclear what to do
     with the conclusions from model interpretation.
+  id: totrans-128
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 科学洞察力的可解释性与泛化（见第7章[generalization.html]）紧密相连。如果你不清楚数据是如何收集的以及数据集代表的是哪个群体，那么从模型解释中得出的结论将不清楚如何处理。
 - en: When you justify the model for your boss, your colleague, or your peers, it
     is by showing the model coheres with domain knowledge (see [Chapter 8](domain.html)).
+  id: totrans-129
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当你向你的老板、同事或同行证明模型时，是通过展示模型与领域知识一致（见第8章[domain.html]）。
 - en: Understanding causality (see [Chapter 10](causality.html)) is crucial for interpretation.
     For example, a feature effect may be rather misleading if confounders are missing
     from the model.
+  id: totrans-130
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 理解因果关系（见第10章[causality.html]）对于解释至关重要。例如，如果模型中缺少混杂因素，特征效应可能相当误导。
 - en: '[1]R. Van Noorden and J. M. Perkel, “AI and science: What 1,600 researchers
     think,” *Nature*, vol. 621, no. 7980, pp. 672–675, Sep. 2023, doi: [10.1038/d41586-023-02980-0](https://doi.org/10.1038/d41586-023-02980-0).[2]M.
     Flora, C. Potvin, A. McGovern, and S. Handler, “Comparing Explanation Methods
@@ -870,11 +1159,14 @@
     Lei, M. G’Sell, A. Rinaldo, R. J. Tibshirani, and L. Wasserman, “Distribution-Free
     Predictive Inference for Regression,” *Journal of the American Statistical Association*,
     vol. 113, no. 523, pp. 1094–1111, Jul. 2018, doi: [10.1080/01621459.2017.1307116](https://doi.org/10.1080/01621459.2017.1307116).'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
 - en: '* * *'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'What do interpretability and explainability exactly mean? Even researchers
     in this field can’t decide on a definition [[2]](references.html#ref-flora2022comparing).
     From an application-oriented perspective, it is most useful to treat these terms
@@ -884,11 +1176,16 @@
     is about mapping an abstract concept from the models to an understandable form.
     Explainability is a stronger term that requires interpretability and additional
     context.[↩︎](#fnref1)'
+  id: totrans-133
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 解释性和可解释性究竟是什么意思？即使是这个领域的学者也无法就定义达成一致 [[2]](references.html#ref-flora2022comparing)。从应用导向的角度来看，将这些术语互换使用最为有用。在这些关键词下，你可以找到允许你从模型中提取关于其预测方式的信息的方法。我们采用了
+    [[3]](references.html#ref-roscherExplainableMachineLearning2020) 中的定义：解释性是指将模型中的抽象概念映射到可理解的形式。可解释性是一个更强的术语，它要求具有解释性以及额外的上下文。[↩︎](#fnref1)
 - en: Our work on extending interpretation for insights is what motivated us to write
     the book you are reading.[↩︎](#fnref2)*
+  id: totrans-134
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们关于扩展解释以获取洞察力的工作激励了我们撰写你现在阅读的这本书。[↩︎](#fnref2)*
