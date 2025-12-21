@@ -1,0 +1,271 @@
+- en: 2  Bare-Bones Supervised Machine Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://ml-science-book.com/supervised-ml.html](https://ml-science-book.com/supervised-ml.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This chapter looks at supervised machine learning, stripping it to its bare-bones.
+    Why supervised machine learning? Of course, the applications of unsupervised learning
+    and reinforcement learning in science are no less interesting. However, after
+    looking at many scientific applications, we realized that the primary goal was
+    often to solve a supervised learning problem. Unsupervised and reinforcement learning
+    techniques have often been used to support this goal, e.g. by providing powerful
+    representations or fine-tuning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is supervised machine learning about? Think back to the tornado prediction
+    example from the introduction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Supervised machine learning produces models that provide *output predictions*,
+    for example, concerning the occurrence of a tornado in the next hour. To obtain
+    these predictions, models must be fed with so-called *input feature values*, e.g. storm-centered
+    radar images and short-range soundings. The *search for models* is done via a
+    *learning algorithm* and a *labeled dataset*, consisting of *input-output pairs*,
+    also called training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A young Raven called Rattle was the first to adopt supervised machine learning.
+    At first, the other Raven scientists were skeptical. Too new. Unproven. Risky.
+    Not the way of Raven Science. Nevertheless, Rattle began to explain to the first
+    interested Ravens what machine learning was all about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2871cf0d19e22bd49260fcc1f5670a1c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2.1 Describe the prediction task
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To use supervised machine learning, you first have to translate your problem
+    into a prediction task with the following ingredients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pick a target variable \(Y\) to predict.** For example, the occurrence of
+    tornadoes in a 1-hour time window, coded as 0 (no tornado) and 1 (tornado).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Define the task.** The task is related to the target and can range from classification
+    and regression to survival analysis and recommendation. Depending on how you frame
+    the tornado prediction problem, you end up with different task types:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Will a tornado occur within the next hour? \(\Rightarrow\) classification (Tornado
+    Y/N)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How many tornadoes will occur this year? \(\Rightarrow\) regression (0, 1, 2,
+    …)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How long until the next tornado occurs? \(\Rightarrow\) survival analysis (e.g. 2h)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Decide on the evaluation metric.** This metric defines what counts as a good
+    or bad prediction. To classify tornadoes in 1-hour windows, you could use metrics
+    such as F1 score[¹](#fn1) or accuracy.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Choose features \(X\) from which to predict the target.** Features could
+    be hourly measurements from radar stations, like wind speeds and precipitation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Once the task is defined, you need data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2 Get the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Machine learning requires data. Data points are represented as pairs of feature
+    and target values \((x^{(i)}, y^{(i)})_{i=1, \ldots, n}\). In the tornado case,
+    \(x^{(145)}\) might be radar measurements from 10 AM to 11 AM on May 25th, 2021,
+    in a specific 3km by 3km patch in the United States. Accordingly, \(y^{(145)}\)
+    would indicate whether a tornado occurred in this time and place.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After cleaning and pre-processing the data, it is typically randomly split
+    into three subsets for machine learning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A training dataset, \(D_{train}\), used to train the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A validation dataset, \(D_{val}\), used to validate modeling choices and selection.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A testing dataset, \(D_{test}\), used for final performance evaluation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The simplest way is to randomly split your dataset into these three buckets.
+    In reality, you have to adapt the splitting mechanism based on data and tasks.
+    For example, time series and clustered data require splitting schemes that respect
+    the data structure. For classification with imbalanced data, you might want to
+    use mechanisms that ensure that the minority class occurs often enough in each
+    split. Anyways, in a completely random 3-way split, our data point \((x^{(145)},
+    y^{(145)})\) would fall into one of these buckets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.3 Train the model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Training a machine learning model means running an algorithm that takes as input
+    the training data and outputs the model. The model describes a function that outputs
+    predictions based on input features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The training requires making some choices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select a class of models \(F\). For example, decision trees or neural networks.
+    Usually, you have to specify this class further, e.g., by choosing the maximal
+    depth of a tree or the specific architecture of the neural network. Radar readings
+    might be on a spatial level, so you might pick a convolutional neural network
+    such as ResNet for the tornado prediction task.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Choose a training algorithm \(I\). The training algorithm takes the training
+    data and produces a prediction model \(\hat{f}\). For example, neural networks
+    typically use stochastic gradient descent with backpropagation as the training
+    algorithm. But you could also train a neural network using genetic algorithms.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set hyperparameters. Hyperparameters control the training algorithm \(I\) and
+    affect the models that the training produces. Some hyperparameters are related
+    to the model class, like the number of layers in your neural net or the number
+    of neighbors in the k-nearest-neighbors algorithm. Others are connected to the
+    training algorithm, such as the learning rate or the batch size in stochastic
+    gradient descent.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For example, when you train a convolutional neural network to predict tornadoes,
+    you use stochastic gradient descent (\(I\)) with the training data \(D_{train}\).
+    To do this, you have to set the hyperparameters. After the training process, you
+    get a trained CNN \(\hat{f}\) from the model class of CNNs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The training process seeks to produce a model \(\hat{f}\) that makes a minimal
+    error on the training data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[\epsilon_{train}(\hat{f}):= \frac{1}{|D_{train}|} \sum_{x,y \,\in D_{train}}
+    L(\hat{f}(x), y),\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(L\) is the loss function the model optimizes for. Some training algorithms
+    can optimize arbitrary (well, some constraints remain) loss functions directly,
+    like neural networks using gradient descent, while other training algorithms have
+    built-in and sometimes less explicit losses they optimize for, like greedy splits
+    in CART decision trees [[1]](references.html#ref-breiman2017classification).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.4 Validate modeling choices
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Training doesn’t guarantee that it will produce the best-performing model. For
+    example, you might not have picked the best model class, because you have used
+    linear regression but the best model for that task might be a tree ensemble. And
+    even if you picked the best model class, you might have set the hyperparameters
+    non-optimally. You need a procedure to both pick a model class and the hyperparameters.
+    A naive approach would be to compute the evaluation metric for the training data,
+    but this would be a bad idea since some models may overfit the training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Overfitting* *We say a model *overfits* when it has good performance on the
+    training data but performs poorly with new unseen data from the same distribution.
+    A model that overfits is good at reproducing the random errors in training data
+    but fails to capture the general patterns.*  *You typically compute the evaluation
+    metric using a separate validation dataset \(D_{val}\). Since the model wasn’t
+    trained using the validation data, you get a fair assessment of its performance.
+    With the validation data, you can compare multiple models and hyperparameter configurations
+    and pick the best-performing one. This allows you to detect underfitting and overfitting
+    and to guard against these problems by properly regularizing and tuning the model.*  *##
+    2.5 Evaluate the model on test data'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How well would your final model perform? Unfortunately, you can’t use the evaluation
+    metrics you have computed from training and validation data. Both will be too
+    optimistic since you already used the training data to train the model and the
+    validation data to make modeling choices. Instead, you have to evaluate the model
+    performance on test data \(D_{test}\). This gives you a realistic estimate of
+    the model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2.6 And repeat: the role of resampling data'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Having just one split into training, validation, and testing is not very data
+    efficient. Typically, the data is split multiple times. A common technique is
+    cross-validation, which splits the data into k different parts. Let’s say you
+    use \(k=10\). Nine out of ten folds might be used for training and validation,
+    and the tenth for test data. You cycle through the folds so that each fold is
+    used as test data once. This way, you always use “fresh” data for evaluating the
+    model. Other sampling methods such as bootstrapping and subsampling can be used
+    here as well. But even having multiple folds may not give stable results – would
+    you generate the fold splitting again, you may get different estimates. So another
+    established method is to repeat the sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You have another choice to make, and that is how to split training and validation
+    data into nine parts. You could either do a single split or do cross-validation
+    again. Like in the movie *Inception*, which is about dreams within dreams, you
+    go one level deeper and do cross-validation within cross-validation, a procedure
+    called nested cross-validation [[2]](references.html#ref-bates2023cross). The
+    advantage of (nested) cross-validation is better estimates of the model performance,
+    and better models since you use the data more efficiently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.7 Bare-bones machine learning can be automated
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once you have defined the prediction task and your data, the entire training
+    process can be completely automated. The subfield of machine learning called AutoML
+    aims to completely automate the machine learning training process and make machine
+    learning engineers redundant [[3]](references.html#ref-hutter2019automated). Upload
+    your data, pick a column as your target, and pick an evaluation metric. Click
+    a button. And the machine does everything for you. Data splitting, hyperparameter
+    tuning, model selection, model evaluation. We call this automatable practice of
+    machine learning “bare-bones machine learning”. The big question is: How does
+    such an optimization-focused approach mix with a complex practice like science?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1]L. Breiman, *Classification and Regression Trees*. New York: Routledge,
+    2017\. doi: [10.1201/9781315139470](https://doi.org/10.1201/9781315139470).[2]S.
+    Bates, T. Hastie, and R. Tibshirani, “Cross-validation: What does it estimate
+    and how well does it do it?” *Journal of the American Statistical Association*,
+    pp. 1–12, 2023, doi: [10.1080/01621459.2023.2197686](https://doi.org/10.1080/01621459.2023.2197686).[3]F.
+    Hutter, L. Kotthoff, and J. Vanschoren, *Automated machine learning: Methods,
+    systems, challenges*. Springer Nature, 2019\. doi: [10.1007/978-3-030-05318-5](https://doi.org/10.1007/978-3-030-05318-5).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The F1 score is a metric that balances precision and recall, particularly useful
+    for evaluating performance on imbalanced datasets.[↩︎](#fnref1)*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

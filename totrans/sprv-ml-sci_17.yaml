@@ -1,0 +1,1355 @@
+- en: 11  Robustness
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://ml-science-book.com/robustness.html](https://ml-science-book.com/robustness.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[Integrating Machine Learning Into Science](./part-two.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[11  Robustness](./robustness.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Machine learning systems should not only work under laboratory conditions –
+    they should work in the wild! And yes, we mean that in the true sense of the word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine you are an animal ecologist studying the diversity and conservation
+    of species in the Serengeti. You know that machine learning systems allow you
+    to identify, count, and even describe animals from images alone, as illustrated
+    in [Figure 11.1](#fig-robustness-intro-example). There are tons of motion sensor
+    cameras throughout the Serengeti. Together with the predictions by the machine
+    learning model of Norouzzadeh et al. [[1]](references.html#ref-norouzzadeh2018automatically),
+    you’ll soon have an amazing dataset to tackle your research questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b6eeabd840fafe8550cb7483f7d5f2d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 11.1: The image was taken by motion sensor cameras in the Serengeti
+    and shows wildlife animals. The machine learning model by [[1]](references.html#ref-norouzzadeh2018automatically)
+    correctly identifies, counts, and describes the animals in the image. Used with
+    permission from [[1]](references.html#ref-norouzzadeh2018automatically).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Norouzzadeh et al. [[1]](references.html#ref-norouzzadeh2018automatically)
+    have indeed done an impressive job with their machine learning model: Their ensemble
+    of trained convolutional neural networks (CNN) achieves 94.9% accuracy on the
+    Snapshot Serengeti dataset [[2]](references.html#ref-swanson2015snapshot) – that
+    is a comparable performance to human labelers. Sounds like a reliable tool to
+    build your research on, right?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e695aa72e1eff8dd242f83347bf5a1bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 11.2: The image looks the same as in [Figure 11.1](#fig-robustness-intro-example),
+    but now the model is completely wrong in all aspects. Figure modified with permission
+    from [[1]](references.html#ref-norouzzadeh2018automatically).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To human eyes, [Figure 11.2](#fig-robustness-adversarial) is the same image
+    as [Figure 11.1](#fig-robustness-intro-example), but for the model, it is not.
+    The model gets it all wrong now: the species, the count, and even the description.
+    What has happened? The image is a so-called *adversarial example*. All current
+    machine learning models, especially image classifiers, are susceptible to such
+    well-engineered variations in the input that are imperceptible to the human eye
+    but lead the prediction model astray. But Norouzzadeh et al. [[1]](references.html#ref-norouzzadeh2018automatically)
+    didn’t do anything wrong. Quite the contrary! The paper is a role model for machine
+    learning in science:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: They explain in detail how they deal with class imbalances in the data and target
+    leaks (see [Chapter 7](generalization.html)), which can occur because the camera
+    sensors take three photos in succession.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: They take into account label noise and conduct confidence thresholding (see
+    [Chapter 12](uncertainty.html)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: They report overall performance and class performance (see [Chapter 14](reporting.html))
+    and provide usable open-source code (see [Chapter 13](reproducibility.html)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Still, what should we make of the fact that machine learning models are not
+    robust to adversarial examples?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adversarial examples have kicked off the robustness debate in machine learning
+    [[3]](references.html#ref-szegedy2013intriguing), and we will explore their occurrence
+    in some detail at the end of this chapter [Section 11.7](#sec-adversarials). But
+    not any image would fool the animal classifier, the model performs quite well
+    on real images taken in the wild.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We believe that scientists should not get sleepless nights from deceiving artificial
+    input data that never occurs in practice. In science, there is usually no adversary
+    that deceives your model – except perhaps Reviewer 2\. As you will see in this
+    chapter, there are many more profound robustness issues in machine learning that
+    should worry you!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine learning not only found its way into science, but its products became
+    global bestsellers. Krarah’s former Ph.D. students wanted to get their piece of
+    the pie and turn the tornado prediction idea into a startup. But there was a problem.
+    While the original model worked perfectly in their home territory, it was useless
+    in other countries. They asked Rattle for a workshop to teach them about robust
+    machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/64baa97d2bd638bb96a8409a8b05c841.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 11.1 What does robustness mean?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In everyday language, robustness is a property of a single entity. A washing
+    machine can be robust if it works for many years without trouble. A person can
+    be robust if she can handle many situations competently. However, this leaves
+    open what robustness is really about except for functioning well in general.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To detect robustness problems and solve them systematically, you need a language
+    that allows you to operationalize *robustness* [[4]](references.html#ref-freiesleben2023beyond):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Robustness target** is the thing that should be robust. For example, you
+    may be interested in how robust the performance of the animal classifier is.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Robustness modifier** is the thing with respect to which the robustness target
+    should be robust. For example, this could be the images on which you apply your
+    animal classifier.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Modifier domain** specifies the relevant changes in the modifier to which
+    the target should be robust. For example, this could be changes in the background
+    lighting of the images.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Target tolerance** specifies how much the target is allowed to change if
+    the modifier changes within the modifier domain. For example, you might be fine
+    if the model performance decreases a bit for images with a darker background as
+    long as the performance does not drop drastically.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So what does robustness mean?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Definition:** A robustness target is robust with respect to a modifier if
+    relevant interventions to the modifier within the domain do not lead to greater
+    changes than specified by the target tolerance.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We can now talk in a more nuanced way about robustness. For example, the wildlife
+    image classifier performance (robustness target) is relatively robust to changes
+    in the lighting conditions when taking the images (relevant interventions). However,
+    it is less robust to targeted modifications (irrelevant interventions) on the
+    input pixels. Ultimately, to judge whether your model is suitable for a specific
+    application, you have to check if it is robust to relevant interventions on modifiers.
+    This forces you to think about the changes you expect to occur in deployment!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.2 Auditing and robustifying strategies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Broadly speaking, robustness researchers have to adopt two different perspectives:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Auditing:** Is your model performance robust to relevant modifier changes?
+    For example, you can check how the animal classifier performs when you darken
+    the background of the test data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Robustifying strategies:** What can you change in data collection and model
+    selection to make your model more robust to relevant modifier changes? For example,
+    if you train your model with more images taken at night, your model will generally
+    perform better in this environment.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Both aspects are interacting. You may audit the model and detect potential robustness
+    weaknesses. To mitigate these weaknesses, you apply robustifying strategies. But
+    what should you audit for?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.3 Understand data distribution shifts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In practice, the most crucial modifier is the data. Your training data may
+    stem from one source, but when you now deploy your model, the data may look entirely
+    different. There are different *sources* of data distribution shifts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Natural shifts** occur because the natural conditions change. If you think
+    of the animal classifier, you have to deal with:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: varying weather or lighting conditions,
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: changes in the flora and fauna over time, or
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: new camera sensors placed at novel locations.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Performative shifts** are induced by the model itself and its effects on
+    the data. Imagine a model that predicts which diseases a person will develop based
+    on their behavior. Provided with these predictions, the person may change her
+    behavior and thus invalidate the prediction.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Adversarial shifts** occur due to attackers who modify the data. An example
+    is given in [Figure 11.2](#fig-robustness-adversarial).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For natural scientists, the most important distribution shifts are natural distribution
+    shifts, whereas social scientists must care just as much about performative shifts.
+    Adversarial shifts are more of a problem in business or industry applications
+    but less so in science.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d6665fe6a243bcff7ebaab917cd3d1c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 11.3: The example shows different natural conditions under which the
+    model is expected to perform well, such as pictures taken from afar, close, or
+    at night. Used with permission from [[1]](references.html#ref-norouzzadeh2018automatically).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can also distinguish different *types* of data distribution shifts. Data
+    in supervised machine learning is described as pairs \((x^{(i)}, y^{(i)})_{i=1,
+    \ldots, n}\) sampled from an underlying distribution \(\mathbb{P}(X,Y)\), where
+    \(X:=(X_1,\dots,X_p)\) describes the input features and \(Y\) the target variable.
+    We can express the different types of data distribution shifts directly through
+    the distributions of \(X\) and \(Y\):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Covariate shift** describes a case where the distribution \(\mathbb{P}(X)\)
+    has changed. In the example above, a covariate shift can occur if a camera was
+    previously in the open sun but is now in the shade of a plant.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Label shift** describes a case where the distribution \(\mathbb{P}(Y)\) has
+    changed. The installation of a new camera in the previously ignored riverine forests
+    in the Serengeti, for example, will lead to many more hippos being observed.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Concept shift** describes a case where the conditional distribution \(\mathbb{P}(Y\mid
+    X)\) has changed. In the example of wildlife, this can happen when there is a
+    new categorization of species; previously there is only the gazelle category,
+    but afterward it is subdivided into Grant’s gazelle, Thomson’s gazelle, and so
+    on.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Again, understanding what type of distribution shift you face can be vital for
+    robustifying your model. But before we come to robustifying strategies, let’s
+    first look into robustness audits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.4 Strategies to audit for robustness
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Has the distribution shift already occurred? Or are you only anticipating a
+    distribution shift? This determines which audit you can perform:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Post-hoc audit:** The distribution shift has occurred already. You have collected
+    new data after the shift and can evaluate the quality of your model on this data.
+    In the wildlife example, you may have only trained your model with data from the
+    dry season, and now, in the middle of the wet season, you want to evaluate the
+    model’s performance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Anticipatory audit:** The distribution shift has not yet occurred. So you
+    have no data about the expected changes. For example, if you are in the dry season
+    and want to predict how your model will work in the wet season.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 11.4.1 Post-hoc audit
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: A post-hoc audit is comparably simple – just analyze your model performance
+    on your data. For example, you might want to compare the model performance between
+    dry (pre-shift) and wet season data (post-shift).[¹](#fn1)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Understand whether and how the data differs**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how can you even recognize that the distribution has shifted? You need to
+    constantly monitor your data and check the data properties. For tabular data,
+    there are a variety of summary statistics like the mean values, standard deviations,
+    ranges, or correlation coefficients. The situation is similar for text, where
+    you have word frequencies, word lengths, similarity of word embeddings, cosine
+    similarity, or text sentiment. When these statistics start to vary, your distribution
+    shift alarm bells should ring. For image data, we lack good summary statistics.
+    Instead, eyeballing data samples through time taking into account domain knowledge
+    can be more effective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are also modality-independent automated strategies for detecting data
+    distribution shifts – called *out-of-distribution (OOD) detection* [[5]](references.html#ref-yang2021generalized).
+    We discuss them below in [Section 11.5.2](#sec-OOD).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Analyze the different errors**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just as important as understanding the distribution shift itself is understanding
+    how it affects model performance. Comparing performance before and after the shift
+    is only the tip of the iceberg of a proper audit. False positive or false negative
+    rates may also differ, and you could have contextual preferences for either bounding
+    false positives or false negatives. Similarly, we recommend to group and compare
+    errors across output classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Interpretation methods can point to the sources of errors**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpretation methods (see [Chapter 9](interpretability.html)) give you insight
+    into the features on which the model relies upon and how these features impact
+    model performance. Feature attribution techniques, for example, allow you to analyze
+    the attention of image classifiers for specific predictions. You should be alerted
+    if the model classifies Grant Gazelles by looking at the background rather than
+    the animals [[6]](references.html#ref-ribeiroWhyShouldTrust2016). If you deal
+    with tabular data, you may compare global feature importances based on data before
+    against after the distribution shift.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.4.2 Anticipatory audit
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: An anticipatory robustness audit is more demanding than a post-hoc audit. The
+    shift has not occurred yet – so you have no data from after the shift. You need
+    to specify the shift qualitatively based on the sources and types of shifts above.
+    To also quantify the effect of an anticipated shift on model performance, you
+    additionally have to generate synthetic data that reflects the shift.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Specify the shift qualitatively**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What shift do you expect, a natural or a performative shift? Is it a shift
+    in covariates, in labels, or even in concepts? Be careful to specify the shift
+    correctly. For example, auditing your model for adversarial robustness in a non-adversarial
+    setting is pointless. Consult your domain knowledge! What aspects of your domain
+    do you expect to vary and to which of the above types of shifts do they belong?
+    Think back to our wildlife example: researchers are aware that there are relevant
+    seasonal effects on the Serengeti environment and its wild inhabitants.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Generate (semi-)synthetic data and systematically test your model on it**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To perform a quantitative audit, you need data that reflects the distribution
+    shift. But because you don’t observe but only anticipate the shift, you have to
+    generate data synthetically. You have to translate your qualitative knowledge
+    about the shift into a way to generate data. We discuss various strategies to
+    generate data below in [Section 11.5.3](#sec-dataAugmentation), for example, image
+    filters allow you to turn day data into night data (see [Figure 11.4](#fig-robustness-transformations)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Suppose you have created a synthetic dataset, does this mean you finally reached
+    the point you start at in a post-hoc audit? Yes and no, there remain two big differences:
+    1\. You already have a profound understanding of the data because you generated
+    it. 2\. The insights your synthetic data offer depend on your assumptions about
+    the shift.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Interpretation methods allow you to anticipate shifts**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpretation methods allow you to perform an audit without specifying the
+    expected distribution shift or synthetic data. Instead, you simply analyze your
+    pre-distribution shift data in a more explorative way, e.g. if feature attribution
+    methods indicate that the model relies on background features like trees to classify
+    an animal, this could mean that the model performs worse under varying background
+    conditions. This alerts you to both the potentially dangerous distribution shift
+    (changes in background) and the reason why your model is failing (reliance on
+    background). Similarly, if a spurious feature has a large feature importance,
+    your model may fail in settings where this feature varies; A COVID risk predictor
+    trained in Munich that relies on street names is likely to fail in Paris. Finally,
+    feature effect methods such as individual conditional effect curves (ICE) and
+    counterfactual explanations describe model behavior in relevant counterfactual
+    scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Context matters in robustness audits* *What you need to audit your model for,
+    depends heavily on the application context. The wildlife model, which acts as
+    a labeling tool, requires less extensive auditing than machine learning-based
+    medical diagnosis. What audits are needed depends on the risks of errors, the
+    instability of the environment, and other domain characteristics. For high-risk
+    applications like in medicine, there are often additional legal requirements,
+    such as those set out in European AI legislation and in medical device regulations.*  *##
+    11.5 Strategies to robustify your model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Say your audit has shown that your model is not robust to relevant distribution
+    shifts. How can you robustify it? This is a list of common robustifying strategies,
+    ordered by their position in the machine learning pipeline. Each of the strategies
+    is discussed in more detail below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Control the source:** Some shifts are under the control of the model authority.
+    For example, the purchase of a new brand of camera sensor can lead to greater
+    distribution shifts than sticking with the old brand.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Filter out-of-distribution data:** You could train a second model to filter
+    out data that significantly differs from the training data. For example, the machine
+    learning model should not provide predictions for animals that are not included
+    in the training set, leaving these cases for human labelers.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Gather data representative of the shift:** You may gather additional (real
+    or synthetic) data that accounts for the shift. For instance, one could use image
+    filters to augment wet season data using dry season data.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Carefully select and construct features:** The lack of robustness in your
+    model may be due to its reliance on incorrect features or improper feature encoding.
+    For instance, by removing the image background, shifts in the background will
+    no longer affect the model’s performance.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Choose inductive biases wisely:** Some shifts can be accounted for by adjusting
+    your modeling assumptions (see [Chapter 8](domain.html)). For counting animals,
+    you may choose an architecture that generalizes to high animal counts like sequential
+    subtizing [[7]](references.html#ref-chattopadhyay2017counting).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Transfer learning to obtain robust representations:** Often, your model is
+    sensitive to distribution shifts because its learned representations overfit the
+    training data. In such cases, *transfer learning* – reusing representations learned
+    by other models trained on the same data modality – can help. Norouzzadeh et al.
+    [[1]](references.html#ref-norouzzadeh2018automatically) demonstrate that transferring
+    representations from common image classifiers increases the data efficiency of
+    the wildlife classifier.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The strategies you should choose to robustify your model should be informed
+    by your audit. If you caused the distribution shift yourself, you might be able
+    to control the shift. When your model performs poorly only on rare anomalies,
+    filtering out these cases might be the best approach. If the distribution shift
+    is unavoidable and causes a significant performance drop, the most common strategy
+    is to augment your data and retrain the model. If the distribution shift is unavoidable
+    but data augmentation is difficult, you may need to engineer features, adjust
+    the modeling assumptions, or use transfer learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.5.1 Control the source
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: It is usually not like distribution shifts are just happening and there is nothing
+    you can do about them. You often have an active role – you caused the distribution
+    shift by an action. You installed a camera sensor from a different brand and suddenly
+    the performance drops? You put food next to the camera to spot more animals and
+    suddenly your animal count bound reaches its limits? In some cases, rather than
+    adapting the data or the model, it can be smarter to tackle the very source of
+    the shift. You must enact control to guarantee a stable environment, e.g. by using
+    only cameras from the same brand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But not all distribution shifts are within your control. You cannot keep the
+    Serengeti in the wet season all year. Other sources you can control but not without
+    unwanted side effects: You can create stable lighting conditions around the camera,
+    but this can attract or repel certain animals.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.5.2 Filter out-of-distribution data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: There will always be data that presents a challenge for your model. Especially
+    data that is very different from the training data. Out-of-distribution (OOD)
+    detectors enable you to filter out data on which your model would perform substantially
+    worse. These data can then be handled separately, e.g. by a human labeler. Thereby,
+    OOD detection robustifies overall performance in deployment. However, OOD detectors
+    only act as filters; they do not help with substantial distribution shifts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How to find out if a data point is OOD? With OOD detectors! Sometimes people
+    further differentiate between methods designed to detect *anomalies* (rare data
+    from different distributions), *novelties* (data from a shifting distribution),
+    or *outliers* (rare data within training distribution) [[5]](references.html#ref-yang2021generalized),
+    [[8]](references.html#ref-ruff2021unifying). Here, we focus on OOD detection more
+    generally. There are four different approaches [[5]](references.html#ref-yang2021generalized):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Classification-based methods** phrase OOD detection as a classification problem.
+    Some classification-based methods require data labeled as within and outside of
+    the distribution. Others leverage uncertainty-aware classifiers and label data
+    with high classification uncertainty as OOD.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Density-based methods** model explicitly the probability density of the training
+    data. Data whose density lies below a certain threshold is labeled as OOD.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Distance-based methods** calculate the difference of a given data point to
+    the centroid or prototypes in a dataset. Data whose distance surpasses a certain
+    threshold is labeled OOD.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Reconstruction-based methods** use autoencoder methods to detect OOD data.
+    Data with higher reconstruction error are labeled as OOD.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To get an overview of all the different types of OOD detectors check out the
+    review papers by [[8]](references.html#ref-ruff2021unifying), [[5]](references.html#ref-yang2021generalized),
+    and [[9]](references.html#ref-chalapathy2019deep).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Reconstruction-based techniques have advantages over the other approaches:
+    Unlike classification-based methods, you do not need to label data as (non) OOD;
+    Unlike density-based methods, you do not need to specify a model of the probability
+    density; And unlike distance-based methods, you do not need to construct complex
+    reference points such as centroids or prototypes. Let’s therefore take a deeper
+    look into reconstruction-based OOD detectors.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Autoencoders* *Autoencoders describe a neural-network-based method to project
+    high-dimensional inputs into a low-dimensional feature space (often called *latent
+    space*) with a minimal loss of information. This is achieved through a two-stage
+    architecture:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Encoder:** Projects the high-dimensional input into a prespecified low-dimensional
+    latent space.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Decoder:** Maps the projected inputs from the latent space back to the original
+    space.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The encoder and decoder mappings are optimized to minimize the reconstruction
+    error of the training data. The reconstruction error of a given input describes
+    the difference (according to some metric) between this input and the output we
+    obtain after sequentially encoding and decoding the input. In our example, this
+    would mean calculating the mean squared error between the initial Impala image
+    and its reconstructed version that runs through the encoder and decoder network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/da0e25f5416912eefc3fd9ae45688129.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Structure of an autoencoder. Figure created by combining elements from [[10]](references.html#ref-neupert2021introduction)
+    and [[1]](references.html#ref-norouzzadeh2018automatically) (used with permission).
+    All rights reserved.*  ***Out-of-distribution detection with autoencoders**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Say \(x\) is the data point you want to classify as within or outside of the
+    training distribution. Then the encoder network can be described as a mapping
+    \(E:\mathbb{R}^h\rightarrow \mathbb{R}^l\) from a high-dimensional feature space
+    \(\mathbb{R}^h\) to a low dimensional latent space \(\mathbb{R}^l\). Similarly,
+    the decoder network is a mapping \(D:\mathbb{R}^l\rightarrow \mathbb{R}^h\) and
+    \(L\) is a distance function on the input space \(\mathbb{R}^h\) (e.g. mean squared
+    error). Then, the *reconstruction error* of \(x\) is defined as: \[\text{RE}(x):=L(x,E(D(x))).\]
+    This allows us to define a simple OOD detector: \[\text{OOD}(x):=\begin{cases}
+    \text{OOD}\quad\quad \text{if RE}(x)>\tau \\ \text{not OOD}\quad \text{else} \end{cases}\]
+    Intuitively, any data with a reconstruction error above a certain threshold \(\tau\)
+    counts as OOD. This primitive approach faces clear limitations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also OOD data can have low reconstruction error. By extending the reconstruction
+    error with the Mahalanobis Distance on the latent space, this problem can be tackled
+    [[11]](references.html#ref-denouden2018improving).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training autoencoders is hard, you have to make architectural choices based
+    on domain knowledge (e.g. CNN for images), define an appropriate latent space
+    (i.e. just the right size to capture the training distribution without information
+    loss), and choose an appropriate loss function [[8]](references.html#ref-ruff2021unifying).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training autoencoders requires representative training data [[9]](references.html#ref-chalapathy2019deep),
+    but in practice, the data is often unbalanced.*  *### 11.5.3 Gather data representative
+    of the shift
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why are distribution shifts a problem for machine learning models? In the case
+    of a covariate shift (i.e. shift of \(\mathbb{P}(X)\)) or a label shift (i.e. shift
+    of \(\mathbb{P}(Y)\)), your model fails because it has never seen this kind of
+    data and is unable to extrapolate. In the case of a concept shift (i.e. shift
+    in \(\mathbb{P}(Y\mid X)\)), your model may have faced similar inputs but the
+    learned dependencies became unreliable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In any case, the most prominent solution in the research literature for how
+    to robustify your model to such shifts is the same – gather more data that reflects
+    the distribution shift! There are two strategies to obtain such data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Gather real labeled data with active learning:** You may want real labeled
+    data. Active learning concerns the systematic search for data worth labeling.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Augment your data:** Gathering real data comes with high costs and you have
+    limited control over which kind of data you get. Data augmentation is concerned
+    with generating synthetic instances using domain knowledge.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Active learning**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which data should you label to robustify your model? Labeling all data is often
+    too expensive and time-consuming. The literature differentiates three active learning
+    setups, based on how the labeler receives the data [[12]](references.html#ref-settles.tr09):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In *membership query synthesis* any input in the input space is a potential
+    candidate for labeling, even completely unrealistic inputs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In *stream-based sampling* you receive data sequentially and have to decide
+    whether to label this data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In *pool-based sampling* you receive a big data sample and have to choose a
+    subsample that you want to label.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/760cffebbce0f279d3e14b0555311595.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The three main active learning setups. Based on concepts presented in [[12]](references.html#ref-settles.tr09).
+    CC-BY(https://creativecommons.org/licenses/by/4.0/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Active learning is largely concerned with the automation of the selection process
+    for labeling [[12]](references.html#ref-settles.tr09), [[13]](references.html#ref-ren2021survey).
+    The data selection process can be based on high prediction uncertainty, proximity
+    to the decision boundary, randomness, expected model error, expected training
+    effect, or data representativeness. In the example, Norouzzadeh et al. [[1]](references.html#ref-norouzzadeh2018automatically)
+    suggest labeling those wildlife images with the highest prediction uncertainty.
+    Note that all these different active learning strategies are readily available
+    in recent Python packages like modAL [[14]](references.html#ref-danka2018modal)
+    and ALiPy [[15]](references.html#ref-tang2019alipy).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may also have intuitions about what data to track and label. Incorporating
+    such knowledge [[16]](references.html#ref-ciravegna2023knowledge) and interacting
+    with the model through interpretability techniques [[17]](references.html#ref-ghai2021explainable)
+    can significantly improve active learning strategies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Data augmentation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data augmentation is about creating synthetic data. Wait, don’t you also need
+    active learning to label these data? In some cases yes, namely if you want to
+    find the label for an arbitrary input. However, when we talk about data augmentation,
+    we usually create data for which we know the label. Data augmentation has been
+    particularly the focus in computer vision [[18]](references.html#ref-mumuni2022data),
+    [[19]](references.html#ref-shorten2019survey), but recently there is growing literature
+    on data augmentation in the context of natural language processing [[20]](references.html#ref-feng2021survey).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two general strategies to augment your data [[18]](references.html#ref-mumuni2022data):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Data transformation:** Transformations applied to labeled data that are known
+    not to change the label. Selecting the right transformations is an excellent way
+    to incorporate domain knowledge. Focus on transformations you expect to occur
+    in practice.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Data synthesis:** Creation of entirely new data with known labels. Data synthesis
+    may be based on generative models or Computer Aided Design (CAD) models. The aim
+    is to generate synthetic data that shares important properties with your training
+    data but varies from it in relevant aspects.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In computer vision, there are geometric transformations (changing the angle,
+    position, direction, or size of an image) and photometric transformations (changing
+    attributes like coloring, saturation, contrast, or camera artifacts). Some transformations
+    concern the overall image, while others only concern one region. Transformations
+    may delete, replace, swap, or recombine regions of the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/38e96c92a85f90cbf15ed10fb97341c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 11.4: Impala image (left) with different relevant transformations applied:
+    simple rotation, background from day to night, and artsy filter. Simple rotations
+    can be implemented by hand, whereas complex filters often rely on generative models.
+    Figure modified with permission from [[1]](references.html#ref-norouzzadeh2018automatically).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In natural language tasks, it is common to randomly insert, delete, or swap
+    words in a sentence or to substitute words in sentences with their synonyms. If
+    you have a trained language model, also more sophisticated transformations can
+    be performed, such as: back translation, where sentences are translated back and
+    forth between two languages; text paraphrasing, where the same content is rephrased
+    without changing the meaning; and style transformations, where the same content
+    is described in different styles (e.g. more formal vs less formal language).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data synthesis is more challenging. Computer-aided design (CAD) allows you to
+    model physical objects by hand and perform various geometric and photometric transformations
+    in a physically adequate way. Neural rendering learns 3D scene representations
+    from 2D images and thereby avoids hand-crafted CAD modeling. The most common approach
+    to data synthesis in computer vision is using generative models like generative
+    adversarial networks (GANs) or variational autoencoders (VAEs). The models generate
+    realistic images that can be sampled conditionally on a desired target class.
+    In natural language processing, the best generator models are large language models
+    like ChatGPT or LLaMA, which can be prompted to generate data with a certain content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Generative adversarial network (GAN)* *A GAN is a generative model that allows
+    the generation of highly realistic data [[21]](references.html#ref-goodfellow2014generative).
+    It is trained using two sub-models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Generator:** This neural network model is designed to generate data. It takes
+    random noise from a (Gaussian) distribution as inputs and ideally transforms the
+    noise into realistic data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Discriminator:** This network is designed to distinguish real from artificial
+    data. It takes inputs and decides whether they are real data or synthetic data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The two sub-models are trained iteratively in a zero-sum game against each other.
+    The generator aims to generate data that the discriminator mistakes for real data.
+    The discriminator aims at perfectly separating real from synthetic data. In the
+    course of the training, both models get better and better at their tasks, which
+    ultimately leads to a well-performing generator model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a48598fc40a4dfb34451ab6bf5fcb962.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Structure of a GAN. Figure from [Google](https://developers.google.com/machine-learning/gan/gan_structure?hl=de),
+    CC-BY (https://creativecommons.org/licenses/by/4.0/)*  *The divide between data
+    transformations and synthesis is less straightforward than what we suggested above.
+    Relevant transformations often go beyond simple geometric or photometric transformations.
+    Think of changing the entire background or adding other animals to the Serengeti
+    images. Complex transformations often demand data synthesis methods. For example,
+    data augmentation GANs [[22]](references.html#ref-antoniou2017data) and conditional
+    GANs [[23]](references.html#ref-isola2017image) allow the generation of new instances
+    conditioned on a given data instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Common packages to perform data augmentation in Python are the Augmentor package
+    for computer vision [[24]](references.html#ref-bloice2017augmentor), ImageDataGenerator
+    in Keras, and the natural language toolkit (NLTK) for natural language processing
+    [[25]](references.html#ref-bird2006nltk).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What happens after you obtain the data?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s say you have gathered the required data. What should you do? You could
+    *retrain* the entire model: merge the newly collected data with your training
+    data and run again your machine learning algorithm. Another strategy is to *fine-tune*
+    your existing machine learning model by training it on the new data you collected.
+    Indeed, fine-tuning sounds like less work than retraining but dependent on the
+    fine-tuning specifics it often introduces a bias either towards the training data
+    or the new data. Instead of retraining and fine-tuning, you may decide to train
+    a new *separate model* exclusively on the newly collected data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you face a covariate or a label shift, retraining and fine-tuning are both
+    reasonable strategies. Old and new data can be merged in one model as the predictive
+    pattern between the two stays intact. Fine-tuning is particularly advisable if
+    you gain a few high-quality data with active learning and you want to emphasize
+    this data in training. In a concept shift, on the other hand, the predictive pattern
+    between old and new data differs – training a separate model is the only option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Does data augmentation really improve robustness?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This question is difficult to assess in general as it depends on the domain
+    and the data augmentation approach. It is a mantra in machine learning that more
+    data is always better. But what if the data is synthetic? In many settings, data
+    augmentation indeed effectively improves robustness [[18]](references.html#ref-mumuni2022data),
+    [[26]](references.html#ref-hendrycks2021many). However, in some cases, (adversarial)
+    robustness conflicts with predictive performance on the original dataset [[27]](references.html#ref-tsipras2018robustness).
+    This is unsurprising: robustness means insensitivity to certain features, and
+    insensitivity to predictive features leads to a performance drop. Whether you
+    have to trade off (adversarial) robustness and performance depends on the data
+    augmentation approach [[28]](references.html#ref-rebuffi2021data). Interestingly,
+    training your model exclusively on synthetic data may turn your model mad [[29]](references.html#ref-alemohammad2023self).*  *###
+    11.5.4 Carefully select and construct features'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we discussed in [Chapter 2](supervised-ml.html), the input features and the
+    target feature are key modeling choices that every modeler faces. Achieving a
+    robust model with unreliable features can be impossible. Imagine having to predict
+    an animal’s species only on the background against which it was sighted. The slightest
+    distribution shift will diminish model performance. Similarly, if you are forced
+    to predict a specific species but 75% of the data contains no animals [[1]](references.html#ref-norouzzadeh2018automatically),
+    your model is doomed to fail from the start!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Choosing reasonable input and target features is challenging and requires (causal)
+    domain knowledge (see [Chapter 8](domain.html) and [Chapter 10](causality.html)).
+    There exist various approaches to obtain better input features to robustify your
+    models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Feature selection** describes approaches to select an optimal subset of features
+    from a feature set [[30]](references.html#ref-chandrashekar2014survey). The subset
+    is chosen based on criteria like the (conditional) mutual information between
+    input and target, or the performance of a trained classifier on the subset of
+    input features (see e.g. conditional feature importance in [Chapter 9](interpretability.html)).
+    Feature selection reduces the dimensionality of the data and filters unreliable
+    or noisy features, thereby improving robustness. Feature selection algorithms
+    are often tailored to tabular data but are less useful for image, text, or speech
+    data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Feature engineering** describes approaches that transform the input features.
+    One option is to apply hand-crafted transformations, which:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: describe statistical properties, e.g. interaction terms,
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: encode domain knowledge, e.g. graph structure in graph neural networks,
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: have physical meaning, e.g. edge detectors,
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reduce dimensionality, e.g. linear regression with L1 loss,
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: provide useful encodings, e.g. bucketing or one-hot-encoding, or
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: emphasize particularly important features, e.g. time.Alternatively one can *learn*
+    transformations that lead to features with desired properties, for example, smoothness,
+    sparsity, or task generality. These so-called *representation learning* approaches
+    often lead to increased robustness under distribution shifts [[31]](references.html#ref-bengio2013representation).
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Also, the target encoding can be improved. Norouzzadeh et al. [[1]](references.html#ref-norouzzadeh2018automatically),
+    for example, dissect their prediction target into two parts: In Task 1, a model
+    discriminates between inputs with and without animals; In Task 2, a second model
+    classifies the images that contain animals into different species. This dissection
+    in two tasks substantially improves the classifier’s robustness. Similarly, target
+    features often come in a hierarchical form [[32]](references.html#ref-vens2008decision):
+    the Thompson Gazelle and the Grant Gazelle are different subspecies of Gazelles.
+    Such additional structure can be encoded into hierarchical multi-label encodings
+    like decision trees and thereby improve the robustness of the classifier.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.5.5 Choose inductive biases wisely
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The relationship between modeling choices and predictive performance has already
+    been discussed extensively in [Chapter 7](generalization.html) and [Chapter 8](domain.html).
+    The key insight was – the better suited the inductive bias (e.g. model class,
+    architecture, hyperparameters, loss, etc.), the faster you will learn a high-performing
+    model. Data distribution shifts are nothing but learning environments. Modeling
+    choices, therefore, provide another robustifying strategy. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CNNs are translational invariant. The position of the animal in the image does
+    not affect model performance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dropout improves the robustness to adversarial attacks by switching off certain
+    neurons in training [[33]](references.html#ref-wang2018defensive). The reason
+    is that dropout enforces smoother representations in the latent space.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Improving robustness to distribution shifts with data augmentation and with
+    inductive modeling biases are two sides of the same coin. The former turns knowledge
+    about (anticipated) distribution shifts into data instances; The latter turns
+    knowledge about (anticipated) distribution shifts into modeling assumptions. CNNs
+    are only one example where this parallelism is evident, many similar architectural
+    solutions encode rotation and scaling invariance [[34]](references.html#ref-mumuni2021cnn).
+    Similarly, graph neural networks allow encoding all forms of domain knowledge
+    into the graph structure and node/edge properties [[35]](references.html#ref-corso2024graph),
+    [[36]](references.html#ref-wu2020comprehensive), [[37]](references.html#ref-battaglia2018relational).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Is it better to apply data transformations or to encode invariances into the
+    inductive modeling assumptions? On the one hand side, some data transformations
+    are difficult to encode as inductive biases into the model. Think about dry versus
+    wet season data, there is no easy way to encode an invariance to seasonal changes.
+    On the other hand, if it is possible to encode invariances as inductive biases,
+    you should. Your model is guaranteed to obey them, whereas data augmentation only
+    makes it more likely that the model learns invariances. Furthermore, there is
+    a computational trade-off: more data requires more compute, whereas better inductive
+    biases usually improve computational efficiency.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.5.6 Transfer learning to obtain robust representations
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Transfer learning is about transferring knowledge from one task to another.
+    So learning a task does not have to be done from scratch but can build upon existing
+    knowledge. While tasks often differ substantially, they share certain aspects.
+    For example, classifying pets and wildlife animals both require learning higher-order
+    representations that allow us to differentiate animals, even though the animals,
+    their actions, and image backgrounds differ. By inducing more domain-general knowledge,
+    transfer learning makes the model more robust to common distribution shifts. We
+    distinguish different kinds of transfer learning according to the knowledge they
+    transfer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Feature extraction** builds on the representations learned in one task to
+    reuse them in another task. For example, say you have a general image classifier
+    like ResNet or Inception V3 that has been trained on a huge dataset like ImageNET.
+    Then, there are representations stored in the neural network’s weights, activations,
+    and nodes, which can be reused to make the wildlife classifier robust against
+    common image permutations. Commonly used feature extraction methods focus on the
+    penultimate layer before the final prediction. Feature extraction is the most
+    popular transfer learning technique and has also been used by Norouzzadeh et al.
+    [[1]](references.html#ref-norouzzadeh2018automatically) leading to better data
+    efficiency.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Fine-tuning** uses the learned specifics of a model trained for one task
+    as the starting point for another task. One may, for example, take the trained
+    ResNet classifier, substitute the output layer, and train the model on the wildlife
+    images. Unlike in feature extraction, the model can adapt the representations
+    learned by ResNet on ImageNet and tailor them for the wildlife case. This was
+    again performed by [[1]](references.html#ref-norouzzadeh2018automatically), however,
+    without improving overall performance significantly.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Multi-task learning** concerns training a single core model that is used
+    to perform multiple related tasks simultaneously. The idea is to enforce the core
+    model to learn representations that are useful across different tasks, leading
+    to improved representations and better robustness to common changes. One could,
+    for example, use the same core model to classify trees, and wildlife animals,
+    and predict daytime. By optimizing for such a diverse set of tasks, the core model
+    has to learn representations that work on all of them.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Self-supervised learning** can be seen as one specific approach to learning
+    a core model that is useful across a variety of tasks. It masks certain parts
+    of the data and tries to infer them from the rest of the data. Thereby, self-supervision
+    learns generalizing pattern. One could, for example, mask the animal’s heads to
+    learn interdependencies between animal heads and their bodies.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Transfer learning can be key if data is scarce for the specific task at hand
+    but widely available for related tasks. More and more there are core models for
+    all data modalities like ChatGPT for text data or ResNet for image data. Based
+    on vast amounts of data, these core models have learned such powerful representations
+    that they make the models robust to a wide range of standard distribution shifts.
+    We believe that in future scientific applications, transfer learning from core
+    models may play an essential role. The amount of data and knowledge that entered
+    these models should not go unused.**  **## 11.6 Generalization and causality are
+    linked to robustness
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Remember the three different kinds of generalization that we discussed in [Chapter
+    7](generalization.html)? Generalization to predict in theory, generalization to
+    predict in practice, and generalization to the phenomenon. Generalization to predict
+    in theory concerns prediction for a static data distribution, indeed a natural
+    requirement on machine learning models. Robustness usually goes one step further:
+    the machine learning model should perform well in all practically relevant scenarios.
+    That means the performance of the model should be robust under expected data distribution
+    shifts. Generalization to predict in practice and robustness therefore often means
+    the same thing – the model should work under natural conditions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Causality is about generalization to the phenomenon at hand. You want an accurate
+    representation of the data-generating process. This constitutes a link between
+    robustness to causality. Why? If you have an accurate representation of the phenomenon,
+    then you can simulate all kinds of alternative scenarios and provide predictions
+    under all kinds of distribution shifts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**You know what led to the distribution shift?** Then you can simulate the
+    shift using your causal model and still provide optimal predictions with your
+    causal model [[38]](references.html#ref-arjovsky2019invariant), [[39]](references.html#ref-kamath2021does).
+    Even your initial machine learning prediction model may perform robustly under
+    certain shifts [[40]](references.html#ref-konig2023improvement).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**You do not know what led to the distribution shift?** Say you only receive
+    data indicative of the shift. Then, causal models allow to generate data for various
+    possible shifts and compare them to the observed data [[41]](references.html#ref-cranmer2020frontier).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Even beyond these cases, causal models have an essential property that makes
+    them appealing for machine learning robustness research – causal models are modular.
+    Say you train a machine learning model to learn the joint distribution of two
+    variables \(A\) and \(B\), namely \(\mathbb{P}(A,B)\). Then, as soon as your distribution
+    of \(A\) or of \(B\) changes, you have to learn an entirely new model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead, assume you know that \(A\) causes \(B\). Then you can split your learning
+    task into two components, namely \(\mathbb{P}(B\mid A)\) and \(\mathbb{P}(A)\).
+    This provides you again with the joint distribution because \[\mathbb{P}(A,B)=\mathbb{P}(A)\mathbb{P}(B\mid
+    A).\] But now if \(\mathbb{P}(A)\) shifts, all you need to update is your model
+    of \(\mathbb{P}(A)\), whereas \(\mathbb{P}(B\mid A)\) must remain stable because
+    it is a causal mechanistic relationship (see [Chapter 10](causality.html)). This
+    modularity makes causal relations worth learning!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.7 The riddle of adversarial examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Why does a model that is as good as in [[1]](references.html#ref-norouzzadeh2018automatically)
+    make mistakes like in [Figure 11.2](#fig-robustness-adversarial)? Behind this
+    question lies the riddle of adversarial examples. Adversarial examples are inputs
+    that are modified in a way that makes them humanly indistinguishable from the
+    original input but entirely shifts the model’s prediction, leading to misclassification.
+    The reasons for this behavior are still only partially understood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first hypothesis was that adversarial examples describe unlikely instances
+    that are not well represented in the original training data [[3]](references.html#ref-szegedy2013intriguing).
+    However, if this were true, adding adversarials to the training data should get
+    rid of the problem – but it didn’t [[42]](references.html#ref-zhang2019limitations).
+    Even if you train your model on a wide variety of adversarial examples there will
+    still be new adversarial examples in the direct vicinity. Famously, Goodfellow
+    et al. [[43]](references.html#ref-goodfellow2014explaining) came up with a new
+    proposal. They suggest that adversarials arise in machine learning models because
+    the models are too linear. Most machine learning models are still based on relatively
+    linear activation functions like Rectified Linear Units (ReLUs). Thus, changing
+    the input up to a certain norm leads (due to linearity) to a significant change
+    in the prediction. This insight led to a new efficient algorithm to compute adversarial
+    examples, the Fast Gradient Sign Method [[43]](references.html#ref-goodfellow2014explaining).
+    Having linear activation functions turned out to be neither necessary nor sufficient
+    for adversarials [[44]](references.html#ref-tanay2016boundary). New adversarial
+    examples showed up not only for ReLU-based neural network models but for all kinds
+    of machine learning models [[45]](references.html#ref-han2023interpreting). Moreover,
+    these examples transfer between different models trained on the same dataset –
+    you could generate an adversarial example for a ResNet model and apply it successfully
+    to another model with an entirely different architecture [[46]](references.html#ref-papernot2016transferability).
+    Linearity couldn’t explain this strange behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Adversarial examples are not bugs, they are features**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ilyas et al. [[47]](references.html#ref-ilyas2019adversarial) gave a novel explanation
+    of adversarial examples – adversarial examples arise because human perception
+    and machine learning perception operate differently. Machine learning models learn
+    patterns that are stable across the dataset including patterns on which humans
+    don’t rely. Like classifying an elephant based on the texture of its skin rather
+    than its shape or its trunk. Slight changes in the elephant’s skin will not change
+    a human’s classification but it changes the one by the machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ilyas et al. [[47]](references.html#ref-ilyas2019adversarial) came to this
+    conclusion based on the following experiment: Say you have a trained model and
+    then generate a set of adversarial examples for this model. Now, train a new model
+    from scratch exclusively on these adversarial data (with the wrong labels). Surprisingly,
+    this model performs strongly on the original data with correct labels. The only
+    explanation for this behavior is that the adversarial examples are strange in
+    a meaningful way, adversarials differ in features that allow to classify ordinary
+    data points. This also explains why adversarial examples can transfer between
+    different models trained on the same data because they differ from real data in
+    ways that are usually indicative of a different class. Unfortunately, this explanation
+    of adversarials (which seems plausible) does not come with easy fixes. It implies
+    that adversarials can only be evaded by relying on the very same features as humans.
+    However, doing so would limit the space of possible solutions and thereby the
+    predictive performance. In science, new predictive patterns undiscovered by humans
+    might be what you are ultimately after.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another factor leading to adversarial examples is that machine learning models
+    cannot distinguish causes from effects or spurious correlations. Thus, changing
+    a feature associated with a different target class can flip the prediction without
+    changing the underlying target [[48]](references.html#ref-freiesleben2022intriguing).
+    Like changing the elephant’s skin texture similar to a hippo’s without touching
+    causal features like their shape or their trunk. Adding causal assumptions may
+    therefore protect against certain adversarial examples [[49]](references.html#ref-scholkopf2022causality).
+    But again, this is not an easy fix to use in practice. Adversarial examples remain
+    a phenomenon that you have to live with and it is unclear if getting rid of the
+    phenomenon is always desirable. In science, you might even strive for the weird
+    predictive features invisible to humans.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 11.8 Robustness is a constant challenge
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Robustness in machine learning is not something you achieve. Robustness is like
+    the boulder that Sisyphus[²](#fn2) keeps pushing to the top of the hill just to
+    see it rolling down again. But if you want a reliable machine learning model,
+    the only way is to keep on pushing! Your environment will change making your model
+    performance drop eventually. It’s important to stay on your watch and constantly
+    adapt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The chapter should have made clear that robustifying models is multifaceted.
+    Each step in your pipeline can contribute and each step should be kept dynamic
+    to be able to react quickly to changes. Each chapter in this book is an ally on
+    your neverending machine learning robustness journey, you need models that generalize
+    ([Chapter 7](generalization.html)), you have to incorporate domain knowledge ([Chapter
+    8](domain.html)), you must audit your model with interpretability techniques ([Chapter
+    9](interpretability.html)), you should be aware of prediction uncertainties ([Chapter
+    12](uncertainty.html)), and ultimately you should incorporate causality ([Chapter
+    10](causality.html)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Many problems remain challenging in robustness research:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Translating a lack of robustness into a robustifying strategy is difficult.
+    Data augmentation can provide a first heuristic solution but there are no guarantees.
+    Also, different shifts require different robustifying strategies.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Adversarial examples remain relatively mysterious. Can they be avoided and if
+    yes, should they be?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Synthetic data is often the least costly approach to robustify your model. But,
+    if the data does not resemble the characteristics of real data, training your
+    model on it will be pointless.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Being a machine learning robustness engineer is like being a scientist – it
+    is a constant struggle with nature. Nevertheless, paraphrasing Camus[³](#fn3),
+    we must imagine machine learning robustness engineers as happy people.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1]M. S. Norouzzadeh *et al.*, “Automatically identifying, counting, and describing
+    wild animals in camera-trap images with deep learning,” *Proceedings of the National
+    Academy of Sciences*, vol. 115, no. 25, pp. E5716–E5725, 2018, doi: [10.1073/pnas.1719367115](https://doi.org/10.1073/pnas.1719367115).[2]A.
+    Swanson, M. Kosmala, C. Lintott, R. Simpson, A. Smith, and C. Packer, “Snapshot
+    serengeti, high-frequency annotated camera trap images of 40 mammalian species
+    in an african savanna,” *Scientific data*, vol. 2, no. 1, pp. 1–14, 2015, doi:
+    [10.1038/sdata.2015.26](https://doi.org/10.1038/sdata.2015.26).[3]C. Szegedy *et
+    al.*, “Intriguing properties of neural networks,” *arXiv preprint arXiv:1312.6199*,
+    2013, doi: [10.48550/arXiv.1312.6199](https://doi.org/10.48550/arXiv.1312.6199).[4]T.
+    Freiesleben and T. Grote, “Beyond generalization: A theory of robustness in machine
+    learning,” *Synthese*, vol. 202, no. 4, p. 109, 2023, doi: [10.1007/s11229-023-04334-9](https://doi.org/10.1007/s11229-023-04334-9).[5]J.
+    Yang, K. Zhou, Y. Li, and Z. Liu, “Generalized Out-of-Distribution Detection:
+    A Survey,” *International Journal of Computer Vision*, Jun. 2024, doi: [10.1007/s11263-024-02117-4](https://doi.org/10.1007/s11263-024-02117-4).[6]M.
+    T. Ribeiro, S. Singh, and C. Guestrin, “"Why Should I Trust You?": Explaining
+    the Predictions of Any Classifier,” in *Proceedings of the 22nd ACM SIGKDD International
+    Conference on Knowledge Discovery and Data Mining*, in KDD ’16\. New York, NY,
+    USA: Association for Computing Machinery, Aug. 2016, pp. 1135–1144\. doi: [10.1145/2939672.2939778](https://doi.org/10.1145/2939672.2939778).[7]P.
+    Chattopadhyay, R. Vedantam, R. R. Selvaraju, D. Batra, and D. Parikh, “Counting
+    everyday objects in everyday scenes,” in *Proceedings of the IEEE conference on
+    computer vision and pattern recognition*, 2017, pp. 1135–1144\. doi: [10.1109/cvpr.2017.471](https://doi.org/10.1109/cvpr.2017.471).[8]L.
+    Ruff *et al.*, “A unifying review of deep and shallow anomaly detection,” *Proceedings
+    of the IEEE*, vol. 109, no. 5, pp. 756–795, 2021, doi: [10.1109/JPROC.2021.3052449](https://doi.org/10.1109/JPROC.2021.3052449).[9]R.
+    Chalapathy and S. Chawla, “Deep learning for anomaly detection: A survey,” *arXiv
+    preprint arXiv:1901.03407*, 2019.[10]T. Neupert, M. H. Fischer, E. Greplova, K.
+    Choo, and M. M. Denner, “Introduction to machine learning for the sciences,” *arXiv
+    preprint arXiv:2102.04883*, 2021, doi: [10.48550/arXiv.2102.04883](https://doi.org/10.48550/arXiv.2102.04883).[11]T.
+    Denouden, R. Salay, K. Czarnecki, V. Abdelzad, B. Phan, and S. Vernekar, “Improving
+    reconstruction autoencoder out-of-distribution detection with mahalanobis distance,”
+    *arXiv preprint arXiv:1812.02765*, 2018.[12]B. Settles, “Active learning literature
+    survey,” University of Wisconsin–Madison, Computer Sciences Technical Report 1648,
+    2009.[13]P. Ren *et al.*, “A survey of deep active learning,” *ACM computing surveys
+    (CSUR)*, vol. 54, no. 9, pp. 1–40, 2021, doi: [10.1145/3472291](https://doi.org/10.1145/3472291).[14]T.
+    Danka and P. Horvath, “modAL: A modular active learning framework for python,”
+    *arXiv preprint arXiv:1805.00979*, 2018.[15]Y.-P. Tang, G.-X. Li, and S.-J. Huang,
+    “ALiPy: Active learning in python,” *arXiv preprint arXiv:1901.03802*, 2019, doi:
+    [10.48550/arXiv.1901.03802](https://doi.org/10.48550/arXiv.1901.03802).[16]G.
+    Ciravegna, F. Precioso, A. Betti, K. Mottin, and M. Gori, “Knowledge-driven active
+    learning,” in *Joint european conference on machine learning and knowledge discovery
+    in databases*, Springer, 2023, pp. 38–54\. doi: [10.1007/978-3-031-43412-9_3](https://doi.org/10.1007/978-3-031-43412-9_3).[17]B.
+    Ghai, Q. V. Liao, Y. Zhang, R. Bellamy, and K. Mueller, “Explainable active learning
+    (xal) toward ai explanations as interfaces for machine teachers,” *Proceedings
+    of the ACM on Human-Computer Interaction*, vol. 4, no. CSCW3, pp. 1–28, 2021,
+    doi: [10.1145/3432934](https://doi.org/10.1145/3432934).[18]A. Mumuni and F. Mumuni,
+    “Data augmentation: A comprehensive survey of modern approaches,” *Array*, vol.
+    16, p. 100258, 2022, doi: [10.1016/j.array.2022.100258](https://doi.org/10.1016/j.array.2022.100258).[19]C.
+    Shorten and T. M. Khoshgoftaar, “A survey on image data augmentation for deep
+    learning,” *Journal of big data*, vol. 6, no. 1, pp. 1–48, 2019, doi: [10.1186/s40537-019-0197-0](https://doi.org/10.1186/s40537-019-0197-0).[20]S.
+    Feng *et al.*, “A survey of data augmentation approaches for NLP,” in *Findings
+    of the association for computational linguistics: ACL-IJCNLP 2021*, Association
+    for Computational Linguistics, 2021\. doi: [10.18653/v1/2021.findings-acl.84](https://doi.org/10.18653/v1/2021.findings-acl.84).[21]I.
+    Goodfellow *et al.*, “Generative adversarial nets,” *Advances in neural information
+    processing systems*, vol. 27, 2014.[22]A. Antoniou, A. Storkey, and H. Edwards,
+    “Data augmentation generative adversarial networks,” *arXiv preprint arXiv:1711.04340*,
+    2017.[23]P. Isola, J.-Y. Zhu, T. Zhou, and A. A. Efros, “Image-to-image translation
+    with conditional adversarial networks,” in *Proceedings of the IEEE conference
+    on computer vision and pattern recognition*, 2017, pp. 1125–1134\. doi: [10.1109/CVPR.2017.632](https://doi.org/10.1109/CVPR.2017.632).[24]M.
+    D. Bloice, C. Stocker, and A. Holzinger, “Augmentor: An image augmentation library
+    for machine learning,” *Journal of Open Source Software*, vol. 2, no. 19, p. 432,
+    2017, doi: [10.21105/joss.00432](https://doi.org/10.21105/joss.00432).[25]S. Bird,
+    “NLTK: The natural language toolkit,” in *Proceedings of the COLING/ACL 2006 interactive
+    presentation sessions*, 2006, pp. 69–72\. doi: [10.3115/1225403.1225421](https://doi.org/10.3115/1225403.1225421).[26]D.
+    Hendrycks *et al.*, “The many faces of robustness: A critical analysis of out-of-distribution
+    generalization,” in *Proceedings of the IEEE/CVF international conference on computer
+    vision*, 2021, pp. 8340–8349\. doi: [10.1109/ICCV48922.2021.00823](https://doi.org/10.1109/ICCV48922.2021.00823).[27]D.
+    Tsipras, S. Santurkar, L. Engstrom, A. Turner, and A. Madry, “Robustness may be
+    at odds with accuracy,” *arXiv preprint arXiv:1805.12152*, 2018, doi: [10.48550/arXiv.1805.12152](https://doi.org/10.48550/arXiv.1805.12152).[28]S.-A.
+    Rebuffi, S. Gowal, D. A. Calian, F. Stimberg, O. Wiles, and T. A. Mann, “Data
+    augmentation can improve robustness,” *Advances in Neural Information Processing
+    Systems*, vol. 34, pp. 29935–29948, 2021, doi: [10.48550/arXiv.2111.05328](https://doi.org/10.48550/arXiv.2111.05328).[29]S.
+    Alemohammad *et al.*, “Self-consuming generative models go mad,” *arXiv preprint
+    arXiv:2307.01850*, 2023.[30]G. Chandrashekar and F. Sahin, “A survey on feature
+    selection methods,” *Computers & electrical engineering*, vol. 40, no. 1, pp.
+    16–28, 2014, doi: [10.1016/j.compeleceng.2013.11.024](https://doi.org/10.1016/j.compeleceng.2013.11.024).[31]Y.
+    Bengio, A. Courville, and P. Vincent, “Representation learning: A review and new
+    perspectives,” *IEEE Transactions on Pattern Analysis and Machine Intelligence*,
+    vol. 35, no. 8, pp. 1798–1828, 2013, doi: [10.1109/TPAMI.2013.50](https://doi.org/10.1109/TPAMI.2013.50).[32]C.
+    Vens, J. Struyf, L. Schietgat, S. Džeroski, and H. Blockeel, “Decision trees for
+    hierarchical multi-label classification,” *Machine learning*, vol. 73, pp. 185–214,
+    2008, doi: [10.1007/s10994-008-5077-3](https://doi.org/10.1007/s10994-008-5077-3).[33]S.
+    Wang *et al.*, “Defensive dropout for hardening deep neural networks under adversarial
+    attacks,” in *2018 IEEE/ACM international conference on computer-aided design
+    (ICCAD)*, IEEE, 2018, pp. 1–8\. doi: [10.1145/3240765.3264699](https://doi.org/10.1145/3240765.3264699).[34]A.
+    Mumuni and F. Mumuni, “CNN architectures for geometric transformation-invariant
+    feature representation in computer vision: A review,” *SN Computer Science*, vol.
+    2, no. 5, p. 340, 2021, doi: [10.1007/s42979-021-00735-0](https://doi.org/10.1007/s42979-021-00735-0).[35]G.
+    Corso, H. Stark, S. Jegelka, T. Jaakkola, and R. Barzilay, “Graph neural networks,”
+    *Nature Reviews Methods Primers*, vol. 4, no. 1, p. 17, 2024.[36]Z. Wu, S. Pan,
+    F. Chen, G. Long, C. Zhang, and S. Y. Philip, “A comprehensive survey on graph
+    neural networks,” *IEEE transactions on neural networks and learning systems*,
+    vol. 32, no. 1, pp. 4–24, 2020, doi: [10.1109/TNNLS.2020.2978386](https://doi.org/10.1109/TNNLS.2020.2978386).[37]P.
+    W. Battaglia *et al.*, “Relational inductive biases, deep learning, and graph
+    networks,” *arXiv preprint arXiv:1806.01261*, 2018.[38]M. Arjovsky, L. Bottou,
+    I. Gulrajani, and D. Lopez-Paz, “Invariant risk minimization,” *arXiv preprint
+    arXiv:1907.02893*, 2019.[39]P. Kamath, A. Tangella, D. Sutherland, and N. Srebro,
+    “Does invariant risk minimization capture invariance?” in *International conference
+    on artificial intelligence and statistics*, PMLR, 2021, pp. 4069–4077.[40]G. König,
+    T. Freiesleben, and M. Grosse-Wentrup, “Improvement-focused causal recourse (ICR),”
+    in *Proceedings of the AAAI conference on artificial intelligence*, 2023, pp.
+    11847–11855\. doi: [10.1609/aaai.v37i10.26398](https://doi.org/10.1609/aaai.v37i10.26398).[41]K.
+    Cranmer, J. Brehmer, and G. Louppe, “The frontier of simulation-based inference,”
+    *Proceedings of the National Academy of Sciences*, vol. 117, no. 48, pp. 30055–30062,
+    2020, doi: [10.1073/pnas.1912789117](https://doi.org/10.1073/pnas.1912789117).[42]H.
+    Zhang, H. Chen, Z. Song, D. Boning, I. S. Dhillon, and C.-J. Hsieh, “The limitations
+    of adversarial training and the blind-spot attack,” *arXiv preprint arXiv:1901.04684*,
+    2019, doi: [10.48550/arXiv.1901.04684](https://doi.org/10.48550/arXiv.1901.04684).[43]I.
+    J. Goodfellow, J. Shlens, and C. Szegedy, “Explaining and harnessing adversarial
+    examples,” *arXiv preprint arXiv:1412.6572*, 2014, doi: [10.48550/arXiv.1412.6572](https://doi.org/10.48550/arXiv.1412.6572).[44]T.
+    Tanay and L. Griffin, “A boundary tilting persepective on the phenomenon of adversarial
+    examples,” *arXiv preprint arXiv:1608.07690*, 2016, doi: [10.48550/arXiv.1608.07690](https://doi.org/10.48550/arXiv.1608.07690).[45]S.
+    Han, C. Lin, C. Shen, Q. Wang, and X. Guan, “Interpreting adversarial examples
+    in deep learning: A review,” *ACM Computing Surveys*, vol. 55, no. 14s, pp. 1–38,
+    2023, doi: [10.1145/3594869](https://doi.org/10.1145/3594869).[46]N. Papernot,
+    P. McDaniel, and I. Goodfellow, “Transferability in machine learning: From phenomena
+    to black-box attacks using adversarial samples,” *arXiv preprint arXiv:1605.07277*,
+    2016, doi: [10.48550/arXiv.1605.07277](https://doi.org/10.48550/arXiv.1605.07277).[47]A.
+    Ilyas, S. Santurkar, D. Tsipras, L. Engstrom, B. Tran, and A. Madry, “Adversarial
+    examples are not bugs, they are features,” *Advances in neural information processing
+    systems*, vol. 32, 2019.[48]T. Freiesleben, “The intriguing relation between counterfactual
+    explanations and adversarial examples,” *Minds and Machines*, vol. 32, no. 1,
+    pp. 77–109, 2022, doi: [10.1007/s11023-021-09580-9](https://doi.org/10.1007/s11023-021-09580-9).[49]B.
+    Schölkopf, “Causality for machine learning,” in *Probabilistic and causal inference:
+    The works of judea pearl*, 2022, pp. 765–804.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To evaluate your model performance on the new data it must be labeled. We discuss
+    in [Section 11.5.3](#sec-dataAugmentation) how to label data systematically using
+    active learning.[↩︎](#fnref1)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sisyphus was a figure in Greek mythology, known for his cunning and deceitful
+    nature. He was the King of Corinth and was infamous for his trickery, which often
+    got him into trouble with the gods. One of the most famous stories involving Sisyphus
+    is his punishment in the afterlife. According to Greek mythology, after his death,
+    Sisyphus was condemned by the gods to roll a boulder uphill for eternity, only
+    for it to roll back down every time he neared the top. This endless and futile
+    task became known as *Sisyphean* and is often used as a metaphor for a task that
+    is never-ending and ultimately feels pointless.[↩︎](#fnref2)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Albert Camus was a French philosopher, author, and journalist who is best known
+    for his existentialist works. In his philosophical essay *The Myth of Sisyphus*
+    (1942), Camus explores the philosophical concept of the absurd – the inherent
+    conflict between the human desire to find meaning in life and the universe’s indifference
+    to human concerns. Camus argues that despite the apparent pointlessness of Sisyphus’s
+    task, he can still find happiness and meaning in his existence by embracing the
+    absurdity of life and finding fulfillment in the act of rebellion against it.
+    He therefore famously stated that “we must imagine Sisyphus happy”. Indeed, connecting
+    these deep thoughts to machine learning robustness is a bit far-fetched…[↩︎](#fnref3)***
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

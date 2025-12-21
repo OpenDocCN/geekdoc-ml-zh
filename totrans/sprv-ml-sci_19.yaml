@@ -1,0 +1,309 @@
+- en: 13  Reproducibility
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://ml-science-book.com/reproducibility.html](https://ml-science-book.com/reproducibility.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[Integrating Machine Learning Into Science](./part-two.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[13  Reproducibility](./reproducibility.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The beauty of code: Once written, you can use it as often as you like. If set
+    up correctly, the same code applied to the same data will produce the same results.
+    Ideally, training your machine learning model works the same: at the click of
+    a button, you can run your code again and get the exact same machine learning
+    model. This is known as computational reproducibility, and it [comes with many
+    advantages](https://book.the-turing-way.org/reproducible-research/overview/overview-benefit).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reproducibility makes it easier to track changes in your project.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can reproduce your work. Comes in handy when reviewer 2 asks you to retrain
+    your model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: People will enjoy working with you and your beautiful code base.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Other researchers can build on your work.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reproducibility allows you to put a model into production later.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But making your code reproducible is much harder than it seems. Computational
+    reproducibility is inherently unstable due to ever-changing computing environments
+    and the unique challenges of machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Reproducibility versus replicability* *You may have heard about the replicability
+    crisis in the social sciences [[1]](references.html#ref-open2015estimating): Many
+    research findings couldn’t be replicated. Reproducibility focuses on a narrower
+    goal: getting the same results (e.g. the same model) using the same code on the
+    same data. For an overview of definitions, see the [Turing Way Book](https://book.the-turing-way.org/reproducible-research/overview/overview-definitions)
+    [[2]](references.html#ref-arnold2019turing).*  *Reproducibility is not binary,
+    but it is a spectrum. This chapter will help you move up that spectrum by highlighting
+    the unique challenges that machine learning poses to reproducibility. Let’s dive
+    in.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The tornado prediction model worked like a charm for many years. Until it didn’t.
+    One hot summer day, the server had a meltdown and the model was gone. Rattle went
+    into early retirement with a wealth of money, but her original learning algorithm
+    was still sitting on an old laptop. Well, should be a simple retraining task.
+    Or so they thought. They were confronted with a strange folder structure, mysterious
+    file names, and unclear instructions. Other Ravens’ code can be such a pain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bab47648c997b411e3835973c0ac5751.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 13.1 Making any coding project reproducible
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Reproducibility is a challenge for any coding project even without machine
+    learning. This chapter focuses more on the machine learning-specific challenges,
+    but it wouldn’t be complete if we didn’t mention some general tips and tricks
+    for reproducibility [[3]](references.html#ref-seibold_2024_12744715):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a clear folder structure.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use good names for files, folders, and functions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Document your project, including a README, metadata, and code documentation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use version control software such as git to track changes to code and text.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Stabilize the computing environment and software using environment management
+    tools such as Conda and virtualization tools such as Docker.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Automate computations, e.g. Makefile, workflow stuff, and have all steps reproducible
+    with code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Publish your work.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The more of these tips you follow, the more reproducible and satisfying your
+    project will be. However, it may require learning new tools like git and adopting
+    new habits like documenting your code – this is an initial investment of time
+    and effort, but it will pay off in the long run. Your future self will thank you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s move on to the machine learning-specific challenges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 13.2 Handling non-deterministic code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Running the same code twice can produce different results due to randomness.
+    Machine learning involves a lot of randomness: random weight initialization, stochastic
+    gradient descent, random forests, and random data splitting. It is not a bug,
+    it is a feature: Randomness is an inherent driver of learning. For example, randomly
+    splitting data into training and testing simulates “drawing from the same distribution”
+    which is a crucial element of generalization (see [Chapter 7](generalization.html))
+    and stochastic gradient descent implicitly regularizes the model through its random
+    nature [[4]](references.html#ref-bottou2010largescale).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To introduce randomness into the deterministic world of programming logic, machine
+    learning software relies on “random number generators”. These generators are not
+    truly random – they are based on pseudorandom processes that can be controlled
+    by setting an initial random seed. A random seed initializes the random number
+    generator, and all subsequent “random” numbers are deterministic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This random seed is also your key to reproducibility for code with randomness.
+    Without a random seed, training a machine learning model will produce different
+    models every time. At least it is unlikely to get the same results twice. But
+    by setting a random seed, you make the random number generation reproducible.
+    There are some exceptions: When running multiple processes in parallel, setting
+    a random seed may still not guarantee deterministic results if the order of execution
+    is inconsistent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Besides your computer’s random number generator, there are other reasons why
+    running the same code twice may produce different results, even if you have followed
+    all the tips, like making sure you are using the same software:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Operations on GPUs can be non-deterministic, even simple ones like a sum (see
+    [this StackOverflow question](https://stackoverflow.com/questions/50744565/how-to-handle-non-determinism-when-training-on-a-gpu)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: External systems can change over time (e.g. API calls).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Floating point arithmetic can vary between different hardware and software platforms.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 13.3 Jupyter Notebooks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Jupyter Notebooks are a blessing and a course to research.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Jupyter Notebook* *The term refers to both the software and the document,
+    just as “Excel” can refer to both the program and a single spreadsheet. Jupyter
+    Notebooks – the software – is essentially an HTML application where you can manage
+    multiple notebooks (the documents), create new ones, delete, edit, and run them.
+    A notebook – the document – is a collection of “cells”. A cell can contain markdown,
+    code, or plain text. Markdown cells are rendered so that you can structure your
+    notebook like a document, with titles, bold text, and other formatting. You can
+    execute code cells, and the results are embedded in the document, whether it is
+    a plot, code warnings, or a printout.*  *Notebooks let you experiment, quickly
+    prototype ideas, and explore data; they encourage documentation; they are great
+    for reporting results. But they make reproducibility difficult. In his provocative
+    talk [“I Don’t Like Notebooks”](https://docs.google.com/presentation/d/1n2RlMdmv1p25Xy5thJUhkKGvjtV-dkAIsUXP-AL4ffI),
+    Joel Grus specifically criticized “hidden states” that make reproducibility difficult:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can run the cells in any order.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can delete cells, but the variables that were created remain in the workspace.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can change a cell’s content while only running the old version.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Imagine you’re working on a machine learning project in a Jupyter Notebook.
+    You decide to standardize features before training but forget to run the updated
+    cell. You save the model, but now the code doesn’t match the model, and re-running
+    the notebook produces a different model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In another scenario, you accidentally delete the cell that generates a weight
+    vector shortly after writing the code. But because you executed the cell, the
+    vector is in memory. You finish the project, check your latest changes into version
+    control, and call it a day. The next person to work on the project gets an error
+    about the missing weight vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are even more problems with notebooks: While you can put them under version
+    control, they are quite verbose because they store all HTML output, and actually
+    comparing code changes is no fun like this.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is possible to make a research project reproducible, even if it relies on
+    notebooks. But you have to be very strict about running them *linearly* from the
+    first cell to the last, and always with a fresh Python session.*  *## 13.4 APIs
+    and proprietary software
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Training a machine learning algorithm on someone else’s hardware can make your
+    life a lot easier: You don’t have to worry about hardware and software installations.
+    Hundreds of machine-learning-as-a-service platforms allow you to upload your data
+    and train a model. The problem: lack of reproducibility. The company behind the
+    machine learning software can change its software without informing you. And even
+    if they don’t: You may not have enough control over the workflow to make it fully
+    reproducible for others. It may not be transparent what algorithms, settings,
+    and software versions the platform uses. Or the company may simply go out of business
+    and you lose access to your training setup.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This problem has gotten much worse with generative AI, especially with large
+    language models like ChatGPT. Whether you are studying ChatGPT for bias or using
+    it to label data: The company behind it is constantly updating the models, and
+    once a model is retired, no one can reproduce your research.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 13.5 Hardware-specific challenges
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Even if you control the server or use your laptop and have followed all the
+    reproducibility recommendations, your project may still not be at 100% reproducible.
+    At least when it comes to running your code on different hardware. The problem
+    is that we can’t completely abstract the training and so on from the hardware.
+    Increasingly, machine learning, especially deep learning, relies on more specific
+    hardware, such as NVIDIA GPUs and Google TPUs. The more hardware-specific your
+    setup, the harder it is for others to reproduce your models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 13.6 Inaccessible data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Data can be inaccessible for a number of reasons: it may be too large to share,
+    there may be privacy concerns (such as patient data), or it may be proprietary.
+    This makes reproducibility difficult. But even making it reproducible within the
+    project itself can be difficult, especially with large datasets. A possible “incremental”
+    solution would be to share a subset of the data or simulated data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Reproducible versus reusable* *Reproducibility and reusability are not the
+    same thing: A research result can be reproducible without being reusable. You
+    may be able to reproduce someone else’s project but if, for example, many things
+    are hard-coded, it will take a lot of effort to adapt it to your use case.*  *##
+    13.7 Reproducibility and other issues'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Reproducibility is about more than just making sure that others, including
+    your future self, can reproduce your work. It relates to many other aspects we
+    cover in this book:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can think of reproducibility as a form of robustness (see [Chapter 11](robustness.html)):
+    A reproducible model is robust to the computing environment and to the random
+    number generation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A lack of reproducibility introduces uncertainty (see [Chapter 12](uncertainty.html)).
+    Let’s say you forgot to set a random seed. This means that the next time the model
+    is trained, it will be subject to uncertainty due to random splitting of the data
+    and other operations based on a random number generator.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Publication (see [Chapter 14](reporting.html)) and reproducibility both rely
+    on documentation and go well together: If you have good reporting, you have also
+    made your project more reproducible.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[1]O. S. Collaboration, “Estimating the reproducibility of psychological science,”
+    *Science*, vol. 349, no. 6251, p. aac4716, 2015, doi: [10.1126/science.aac4716](https://doi.org/10.1126/science.aac4716).[2]B.
+    Arnold *et al.*, “The turing way: A handbook for reproducible data science,” *Zenodo*,
+    2019.[3]H. Seibold, *6 steps towards reproducible research*. Zenodo, 2024\. doi:
+    [10.5281/zenodo.12744715](https://doi.org/10.5281/zenodo.12744715).[4]L. Bottou,
+    “Large-Scale Machine Learning with Stochastic Gradient Descent,” in *Proceedings
+    of COMPSTAT’2010*, Y. Lechevallier and G. Saporta, Eds., Heidelberg: Physica-Verlag
+    HD, 2010, pp. 177–186\. doi: [10.1007/978-3-7908-2604-3_16](https://doi.org/10.1007/978-3-7908-2604-3_16).***'
+  prefs: []
+  type: TYPE_NORMAL
