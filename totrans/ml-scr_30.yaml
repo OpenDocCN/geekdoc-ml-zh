@@ -1,0 +1,277 @@
+- en: Construction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://dafriedman97.github.io/mlbook/content/c7/construction.html](https://dafriedman97.github.io/mlbook/content/c7/construction.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In this section, we construct two classes to implement a basic feed-forward
+    neural network. For simplicity, both are limited to one hidden layer, though the
+    number of neurons in the input, hidden, and output layers is flexible. The two
+    differ in how they combine results across observations. The first loops through
+    observations and adds the individual gradients while the second calculates the
+    entire gradient across observatinos in one fell swoop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start by importing `numpy`, some visualization packages, and two datasets:
+    the [Boston](../appendix/data.html) housing and [breast cancer](../appendix/data.html)
+    datasets from `scikit-learn`. We will use the former for regression and the latter
+    for classification. We also split each dataset into a train and test set. This
+    is done with the hidden code cell below'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before constructing classes for our network, let’s build our activation functions.
+    Below we implement the ReLU function, sigmoid function, and the linear function
+    (which simply returns its input). Let’s also combine these functions into a dictionary
+    so we can identify them with a string argument.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 1\. The Loop Approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, we construct a class for fitting feed-forward networks by looping through
+    observations. This class conducts gradient descent by calculating the gradients
+    based on one observation at a time, looping through all observations, and summing
+    the gradients before adjusting the weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once instantiated, we fit a network with the `fit()` method. This method requires
+    training data, the number of nodes for the hidden layer, an activation function
+    for the first and second layers’ outputs, a loss function, and some parameters
+    for gradient descent. After storing those values, the method randomly instantiates
+    the network’s weights: `W1`, `c1`, `W2`, and `c2`. It then passes the data through
+    this network to instantiate the output values: `h1`, `z1`, `h2`, and `yhat` (equivalent
+    to `z2`).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then begin conducting gradient descent. Within each iteration of the gradient
+    descent process, we also iterate through the observations. For each observation,
+    we calculate the derivative of the loss for that observation with respect to the
+    network’s weights. We then sum these individual derivatives and adjust the weights
+    accordingly, as is typical in gradient descent. The derivatives we calculate are
+    covered in the [concept section](concept.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the network is fit, we can form predictions with the `predict()` method.
+    This simply consists of running test observations through the network and returning
+    their outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s try building a network with this class using the `boston` housing data.
+    This network contains 8 neurons in its hidden layer and uses the ReLU and linear
+    activation functions after the first and second layers, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![../../_images/construction_9_0.png](../Images/2492385af54895a3b9a8a2072b140cca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can also build a network for binary classification. The model below attempts
+    to predict whether an individual’s cancer is malignant or benign. We use the log
+    loss, the sigmoid activation function after the second layer, and the ReLU function
+    after the first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. The Matrix Approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Below is a second class for fitting neural networks that runs *much* faster
+    by simultaneously calculating the gradients across observations. The math behind
+    these calculations is outlined in the [concept section](concept.html). This class’s
+    fitting algorithm is identical to that of the one above with one big exception:
+    we don’t have to iterate over observations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Most of the following gradient calculations are straightforward. A few require
+    a tensor dot product, which is easily done using numpy. Consider the following
+    gradient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}_{i, j}} = \sum_{n =
+    1}^N (\nabla \mathbf{H}^{(L)})_{i, n}\cdot \mathbf{Z}^{(L-1)}_{j, n}. \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: In words, \(\partial\mathcal{L}/\partial \mathbf{W}^{(L)}\) is a matrix whose
+    \((i, j)^\text{th}\) entry equals the sum across the \(i^\text{th}\) row of \(\nabla
+    \mathbf{H}^{(L)}\) multiplied element-wise with the \(j^\text{th}\) row of \(\mathbf{Z}^{(L-1)}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This calculation can be accomplished with `np.tensordot(A, B, (1,1))`, where
+    `A` is \(\nabla \mathbf{H}^{(L)}\) and `B` is \(\mathbf{Z}^{(L-1)}\). `np.tensordot()`
+    sums the element-wise product of the entries in `A` and the entries in `B` along
+    a specified index. Here we specify the index with `(1,1)`, saying we want to sum
+    across the columns for each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similarly, we will use the following gradient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{(L-1)}_{i, n}} = \sum_{d
+    = 1}^{D_y} (\nabla \mathbf{H}^{(L)})_{d, n}\cdot \mathbf{W}^{(L)}_{d, i}. \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Letting `C` represent \(\mathbf{W}^{(L)}\), we can calculate this gradient in
+    numpy with `np.tensordot(C, A, (0,0))`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We fit networks of this class in the same way as before. Examples of regression
+    with the `boston` housing data and classification with the `breast_cancer` data
+    are shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![../../_images/construction_16_01.png](../Images/9f92d774402963e0f912347f00822100.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 1\. The Loop Approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, we construct a class for fitting feed-forward networks by looping through
+    observations. This class conducts gradient descent by calculating the gradients
+    based on one observation at a time, looping through all observations, and summing
+    the gradients before adjusting the weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once instantiated, we fit a network with the `fit()` method. This method requires
+    training data, the number of nodes for the hidden layer, an activation function
+    for the first and second layers’ outputs, a loss function, and some parameters
+    for gradient descent. After storing those values, the method randomly instantiates
+    the network’s weights: `W1`, `c1`, `W2`, and `c2`. It then passes the data through
+    this network to instantiate the output values: `h1`, `z1`, `h2`, and `yhat` (equivalent
+    to `z2`).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then begin conducting gradient descent. Within each iteration of the gradient
+    descent process, we also iterate through the observations. For each observation,
+    we calculate the derivative of the loss for that observation with respect to the
+    network’s weights. We then sum these individual derivatives and adjust the weights
+    accordingly, as is typical in gradient descent. The derivatives we calculate are
+    covered in the [concept section](concept.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the network is fit, we can form predictions with the `predict()` method.
+    This simply consists of running test observations through the network and returning
+    their outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s try building a network with this class using the `boston` housing data.
+    This network contains 8 neurons in its hidden layer and uses the ReLU and linear
+    activation functions after the first and second layers, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![../../_images/construction_9_0.png](../Images/2492385af54895a3b9a8a2072b140cca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can also build a network for binary classification. The model below attempts
+    to predict whether an individual’s cancer is malignant or benign. We use the log
+    loss, the sigmoid activation function after the second layer, and the ReLU function
+    after the first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. The Matrix Approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Below is a second class for fitting neural networks that runs *much* faster
+    by simultaneously calculating the gradients across observations. The math behind
+    these calculations is outlined in the [concept section](concept.html). This class’s
+    fitting algorithm is identical to that of the one above with one big exception:
+    we don’t have to iterate over observations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Most of the following gradient calculations are straightforward. A few require
+    a tensor dot product, which is easily done using numpy. Consider the following
+    gradient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}_{i, j}} = \sum_{n =
+    1}^N (\nabla \mathbf{H}^{(L)})_{i, n}\cdot \mathbf{Z}^{(L-1)}_{j, n}. \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: In words, \(\partial\mathcal{L}/\partial \mathbf{W}^{(L)}\) is a matrix whose
+    \((i, j)^\text{th}\) entry equals the sum across the \(i^\text{th}\) row of \(\nabla
+    \mathbf{H}^{(L)}\) multiplied element-wise with the \(j^\text{th}\) row of \(\mathbf{Z}^{(L-1)}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This calculation can be accomplished with `np.tensordot(A, B, (1,1))`, where
+    `A` is \(\nabla \mathbf{H}^{(L)}\) and `B` is \(\mathbf{Z}^{(L-1)}\). `np.tensordot()`
+    sums the element-wise product of the entries in `A` and the entries in `B` along
+    a specified index. Here we specify the index with `(1,1)`, saying we want to sum
+    across the columns for each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similarly, we will use the following gradient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{(L-1)}_{i, n}} = \sum_{d
+    = 1}^{D_y} (\nabla \mathbf{H}^{(L)})_{d, n}\cdot \mathbf{W}^{(L)}_{d, i}. \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Letting `C` represent \(\mathbf{W}^{(L)}\), we can calculate this gradient in
+    numpy with `np.tensordot(C, A, (0,0))`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We fit networks of this class in the same way as before. Examples of regression
+    with the `boston` housing data and classification with the `breast_cancer` data
+    are shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![../../_images/construction_16_01.png](../Images/9f92d774402963e0f912347f00822100.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE

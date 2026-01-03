@@ -1,0 +1,259 @@
+- en: Construction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://dafriedman97.github.io/mlbook/content/c4/construction.html](https://dafriedman97.github.io/mlbook/content/c4/construction.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In this section, we build LDA, QDA, and Naive Bayes classifiers. We will demo
+    these classes on the [wine](../appendix/data.html) dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: LDA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An implementation of linear discriminant analysis (LDA) is given below. The
+    main method is `.fit()`. This method makes three important estimates. For each
+    \(k\), we estimate \(\pi_k\), the class prior probability. For each class we also
+    estimate the mean of the data in that class, \(\bmu_k\). Finally, we estimate
+    the overall covariance matrix across classes, \(\bSigma\). The formulas for these
+    estimates are detailed in the [concept section](concept.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second two methods, `.mvn_density()` and `.classify()` are for classifying
+    new observations. `.mvn_density()` just calculates the density (up to a multiplicative
+    constant) of a Multivariate Normal sample provided the mean vector and covariance
+    matrix. `.classify()` actually makes the classifications for each test observation.
+    It calculates the density for each class, \(p(\bx_n|Y_n = k)\), and multiplies
+    this by the prior class probability, \(p(Y_n = k) = \pi_k\), to get a posterior
+    class probability, \(p(Y_n = k|\bx_n)\). It then predicts the class with the highest
+    posterior probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We fit the LDA model below and classify the training observations. As the output
+    shows, we have 100% training accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function below visualizes class predictions based on the input values for
+    a model with \(\bx_n \in \mathbb{R}^2\). To apply this function, we build a model
+    with only two columns from the `wine` dataset. We see that the decision boundaries
+    are linear, as we expect from LDA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![../../_images/construction_10_01.png](../Images/1b9a79d08f7ecd7c4c1585a85c6f1451.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: QDA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The QDA model is implemented below. It is nearly identical to LDA except the
+    covariance matrices \(\bSigma_k\) are estimated separately. Again see the [concept
+    section](concept.html) for details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The below plot shows predictions based on the input variables for the QDA model.
+    As expected, the decision boundaries are quadratic, rather than linear. We also
+    see that the area corresponding to class 2 is much smaller than the other areas.
+    This suggests that either there were fewer observations in class 2 or the estimated
+    variance of the input variables for observations in class 2 was smaller than the
+    variance for observations in other classes .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![../../_images/construction_16_0.png](../Images/63bf0542bf9b24c488c87783a168325e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Naive Bayes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, we implement a Naive Bayes model below. This model allows us to assign
+    each variable in our dataset a distribution, though by default they are all assumed
+    to be Normal. Since each variable has its own distribution, estimating the model’s
+    parameters is more involved. For each variable and each class, we estimate the
+    parameters separately through the `_estimate_class_parameters`. The structure
+    below allows for Normal, Bernoulli, and Poisson distributions, though any distribution
+    could be implemented.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, we make predictions by calculating \(p(Y_n = k|\bx_n)\) for \(k = 1,
+    \dots, K\) through Bayes’ rule and predicting the class with the highest posterior
+    probability. Since each variable can have its own distribution, this problem is
+    also more involved. The `_get_class_probability` method calculates the probability
+    density of a test observation’s input variables. By the conditional independence
+    assumption, this is just the product of the individual densities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive Bayes performs worse than LDA or QDA on the training data, suggesting
+    the conditional independence assumption might be inappropriate for this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![../../_images/construction_21_0.png](../Images/da28caee5bf852f6f58e41ce46c77e22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: LDA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An implementation of linear discriminant analysis (LDA) is given below. The
+    main method is `.fit()`. This method makes three important estimates. For each
+    \(k\), we estimate \(\pi_k\), the class prior probability. For each class we also
+    estimate the mean of the data in that class, \(\bmu_k\). Finally, we estimate
+    the overall covariance matrix across classes, \(\bSigma\). The formulas for these
+    estimates are detailed in the [concept section](concept.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second two methods, `.mvn_density()` and `.classify()` are for classifying
+    new observations. `.mvn_density()` just calculates the density (up to a multiplicative
+    constant) of a Multivariate Normal sample provided the mean vector and covariance
+    matrix. `.classify()` actually makes the classifications for each test observation.
+    It calculates the density for each class, \(p(\bx_n|Y_n = k)\), and multiplies
+    this by the prior class probability, \(p(Y_n = k) = \pi_k\), to get a posterior
+    class probability, \(p(Y_n = k|\bx_n)\). It then predicts the class with the highest
+    posterior probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We fit the LDA model below and classify the training observations. As the output
+    shows, we have 100% training accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function below visualizes class predictions based on the input values for
+    a model with \(\bx_n \in \mathbb{R}^2\). To apply this function, we build a model
+    with only two columns from the `wine` dataset. We see that the decision boundaries
+    are linear, as we expect from LDA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![../../_images/construction_10_01.png](../Images/1b9a79d08f7ecd7c4c1585a85c6f1451.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: QDA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The QDA model is implemented below. It is nearly identical to LDA except the
+    covariance matrices \(\bSigma_k\) are estimated separately. Again see the [concept
+    section](concept.html) for details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: The below plot shows predictions based on the input variables for the QDA model.
+    As expected, the decision boundaries are quadratic, rather than linear. We also
+    see that the area corresponding to class 2 is much smaller than the other areas.
+    This suggests that either there were fewer observations in class 2 or the estimated
+    variance of the input variables for observations in class 2 was smaller than the
+    variance for observations in other classes .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![../../_images/construction_16_0.png](../Images/63bf0542bf9b24c488c87783a168325e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Naive Bayes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, we implement a Naive Bayes model below. This model allows us to assign
+    each variable in our dataset a distribution, though by default they are all assumed
+    to be Normal. Since each variable has its own distribution, estimating the model’s
+    parameters is more involved. For each variable and each class, we estimate the
+    parameters separately through the `_estimate_class_parameters`. The structure
+    below allows for Normal, Bernoulli, and Poisson distributions, though any distribution
+    could be implemented.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, we make predictions by calculating \(p(Y_n = k|\bx_n)\) for \(k = 1,
+    \dots, K\) through Bayes’ rule and predicting the class with the highest posterior
+    probability. Since each variable can have its own distribution, this problem is
+    also more involved. The `_get_class_probability` method calculates the probability
+    density of a test observation’s input variables. By the conditional independence
+    assumption, this is just the product of the individual densities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive Bayes performs worse than LDA or QDA on the training data, suggesting
+    the conditional independence assumption might be inappropriate for this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![../../_images/construction_21_0.png](../Images/da28caee5bf852f6f58e41ce46c77e22.png)'
+  prefs: []
+  type: TYPE_IMG
