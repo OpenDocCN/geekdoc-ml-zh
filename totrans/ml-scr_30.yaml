@@ -1,48 +1,66 @@
 - en: Construction
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 构建过程
 - en: 原文：[https://dafriedman97.github.io/mlbook/content/c7/construction.html](https://dafriedman97.github.io/mlbook/content/c7/construction.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://dafriedman97.github.io/mlbook/content/c7/construction.html](https://dafriedman97.github.io/mlbook/content/c7/construction.html)
 - en: In this section, we construct two classes to implement a basic feed-forward
     neural network. For simplicity, both are limited to one hidden layer, though the
     number of neurons in the input, hidden, and output layers is flexible. The two
     differ in how they combine results across observations. The first loops through
     observations and adds the individual gradients while the second calculates the
     entire gradient across observatinos in one fell swoop.
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本节中，我们构建了两个类来实现一个基本的前馈神经网络。为了简化，这两个类都限制为只有一个隐藏层，尽管输入层、隐藏层和输出层中的神经元数量是灵活的。这两个类的不同之处在于它们如何组合观测值的结果。第一个类通过遍历观测值并累加单个梯度，而第二个类则一次性计算观测值之间的整个梯度。
 - en: 'Let’s start by importing `numpy`, some visualization packages, and two datasets:
     the [Boston](../appendix/data.html) housing and [breast cancer](../appendix/data.html)
     datasets from `scikit-learn`. We will use the former for regression and the latter
     for classification. We also split each dataset into a train and test set. This
     is done with the hidden code cell below'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从导入`numpy`、一些可视化包和两个数据集开始：来自`scikit-learn`的[Boston](../appendix/data.html)住宅数据和[乳腺癌](../appendix/data.html)数据集。我们将使用前者进行回归，后者进行分类。我们还使用下面的隐藏代码单元格将每个数据集分成训练集和测试集。
 - en: '[PRE0]'
+  id: totrans-4
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Before constructing classes for our network, let’s build our activation functions.
     Below we implement the ReLU function, sigmoid function, and the linear function
     (which simply returns its input). Let’s also combine these functions into a dictionary
     so we can identify them with a string argument.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 在为我们的网络构建类之前，让我们构建我们的激活函数。以下我们实现了ReLU函数、sigmoid函数和线性函数（它简单地返回其输入）。我们还把这些函数组合成一个字典，以便我们可以用字符串参数来识别它们。
 - en: '[PRE1]'
+  id: totrans-6
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 1\. The Loop Approach
+  id: totrans-7
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1. 循环方法
 - en: Next, we construct a class for fitting feed-forward networks by looping through
     observations. This class conducts gradient descent by calculating the gradients
     based on one observation at a time, looping through all observations, and summing
     the gradients before adjusting the weights.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们通过遍历观测值来构建一个用于拟合前馈网络的类。这个类通过逐个计算基于一次观测值的梯度，遍历所有观测值，并在调整权重之前对梯度进行求和来执行梯度下降。
 - en: 'Once instantiated, we fit a network with the `fit()` method. This method requires
     training data, the number of nodes for the hidden layer, an activation function
     for the first and second layers’ outputs, a loss function, and some parameters
@@ -50,120 +68,181 @@
     the network’s weights: `W1`, `c1`, `W2`, and `c2`. It then passes the data through
     this network to instantiate the output values: `h1`, `z1`, `h2`, and `yhat` (equivalent
     to `z2`).'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦实例化，我们使用`fit()`方法拟合一个网络。此方法需要训练数据、隐藏层的节点数、第一和第二层输出的激活函数、损失函数以及梯度下降的一些参数。存储这些值后，该方法随机实例化网络的权重：`W1`、`c1`、`W2`和`c2`。然后，它通过这个网络传递数据以实例化输出值：`h1`、`z1`、`h2`和`yhat`（相当于`z2`）。
 - en: We then begin conducting gradient descent. Within each iteration of the gradient
     descent process, we also iterate through the observations. For each observation,
     we calculate the derivative of the loss for that observation with respect to the
     network’s weights. We then sum these individual derivatives and adjust the weights
     accordingly, as is typical in gradient descent. The derivatives we calculate are
     covered in the [concept section](concept.html).
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们开始执行梯度下降。在梯度下降过程的每一次迭代中，我们也会遍历观测值。对于每个观测值，我们计算该观测值损失相对于网络权重的导数。然后，我们将这些单独的导数相加，并相应地调整权重，这与梯度下降中的典型做法一致。我们计算的导数在[概念部分](concept.html)中有详细说明。
 - en: Once the network is fit, we can form predictions with the `predict()` method.
     This simply consists of running test observations through the network and returning
     their outputs.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 网络拟合完成后，我们可以使用`predict()`方法进行预测。这仅仅是将测试观测值通过网络并返回它们的输出。
 - en: '[PRE2]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Let’s try building a network with this class using the `boston` housing data.
     This network contains 8 neurons in its hidden layer and uses the ReLU and linear
     activation functions after the first and second layers, respectively.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试使用这个类和`boston`住宅数据构建一个网络。这个网络在其隐藏层中有8个神经元，并在第一层和第二层之后分别使用ReLU和线性激活函数。
 - en: '[PRE3]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '![../../_images/construction_9_0.png](../Images/2492385af54895a3b9a8a2072b140cca.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/construction_9_0.png](../Images/2492385af54895a3b9a8a2072b140cca.png)'
 - en: We can also build a network for binary classification. The model below attempts
     to predict whether an individual’s cancer is malignant or benign. We use the log
     loss, the sigmoid activation function after the second layer, and the ReLU function
     after the first.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以构建一个用于二元分类的网络。下面的模型试图预测个体的癌症是恶性还是良性。我们使用对数损失、第二层的 sigmoid 激活函数以及第一层的 ReLU
+    函数。
 - en: '[PRE4]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '[PRE5]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 2\. The Matrix Approach
+  id: totrans-19
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2\. 矩阵方法
 - en: 'Below is a second class for fitting neural networks that runs *much* faster
     by simultaneously calculating the gradients across observations. The math behind
     these calculations is outlined in the [concept section](concept.html). This class’s
     fitting algorithm is identical to that of the one above with one big exception:
     we don’t have to iterate over observations.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是另一个用于拟合神经网络的类，它通过同时计算观测值间的梯度而运行得更快。这些计算背后的数学原理在 [概念部分](concept.html) 中概述。这个类的拟合算法与上面的算法相同，只有一个重大例外：我们不需要遍历观测值。
 - en: 'Most of the following gradient calculations are straightforward. A few require
     a tensor dot product, which is easily done using numpy. Consider the following
     gradient:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的梯度计算大多数都很直接。少数需要张量点积，这可以使用 numpy 很容易地完成。考虑以下梯度：
 - en: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}_{i, j}} = \sum_{n =
     1}^N (\nabla \mathbf{H}^{(L)})_{i, n}\cdot \mathbf{Z}^{(L-1)}_{j, n}. \]
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}_{i, j}} = \sum_{n =
+    1}^N (\nabla \mathbf{H}^{(L)})_{i, n}\cdot \mathbf{Z}^{(L-1)}_{j, n}. \]
 - en: In words, \(\partial\mathcal{L}/\partial \mathbf{W}^{(L)}\) is a matrix whose
     \((i, j)^\text{th}\) entry equals the sum across the \(i^\text{th}\) row of \(\nabla
     \mathbf{H}^{(L)}\) multiplied element-wise with the \(j^\text{th}\) row of \(\mathbf{Z}^{(L-1)}\).
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 用语言来说，\(\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}}\) 是一个矩阵，其 \((i,
+    j)^\text{th}\) 个元素等于 \(\nabla \mathbf{H}^{(L)}\) 的第 \(i\) 行元素与 \(\mathbf{Z}^{(L-1)}\)
+    的第 \(j\) 行元素逐元素相乘后的总和。
 - en: This calculation can be accomplished with `np.tensordot(A, B, (1,1))`, where
     `A` is \(\nabla \mathbf{H}^{(L)}\) and `B` is \(\mathbf{Z}^{(L-1)}\). `np.tensordot()`
     sums the element-wise product of the entries in `A` and the entries in `B` along
     a specified index. Here we specify the index with `(1,1)`, saying we want to sum
     across the columns for each.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个计算可以用 `np.tensordot(A, B, (1,1))` 来完成，其中 `A` 是 \(\nabla \mathbf{H}^{(L)}\)，而
+    `B` 是 \(\mathbf{Z}^{(L-1)}\)。`np.tensordot()` 沿指定索引求和 `A` 和 `B` 的元素逐元素乘积。在这里，我们指定索引为
+    `(1,1)`，表示我们想要对每一列进行求和。
 - en: 'Similarly, we will use the following gradient:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似地，我们将使用以下梯度：
 - en: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{(L-1)}_{i, n}} = \sum_{d
     = 1}^{D_y} (\nabla \mathbf{H}^{(L)})_{d, n}\cdot \mathbf{W}^{(L)}_{d, i}. \]
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{(L-1)}_{i, n}} = \sum_{d
+    = 1}^{D_y} (\nabla \mathbf{H}^{(L)})_{d, n}\cdot \mathbf{W}^{(L)}_{d, i}. \]
 - en: Letting `C` represent \(\mathbf{W}^{(L)}\), we can calculate this gradient in
     numpy with `np.tensordot(C, A, (0,0))`.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 用 `C` 表示 \(\mathbf{W}^{(L)}\)，我们可以在 numpy 中使用 `np.tensordot(C, A, (0,0))` 来计算这个梯度。
 - en: '[PRE6]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: We fit networks of this class in the same way as before. Examples of regression
     with the `boston` housing data and classification with the `breast_cancer` data
     are shown below.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们以与之前相同的方式拟合这个类的网络。下面展示了使用 `boston` 房屋数据进行的回归示例和 `breast_cancer` 数据进行的分类示例。
 - en: '[PRE7]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '![../../_images/construction_16_01.png](../Images/9f92d774402963e0f912347f00822100.png)'
+  id: totrans-31
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/construction_16_01.png](../Images/9f92d774402963e0f912347f00822100.png)'
 - en: '[PRE8]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '[PRE9]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 1\. The Loop Approach
+  id: totrans-34
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1\. 循环方法
 - en: Next, we construct a class for fitting feed-forward networks by looping through
     observations. This class conducts gradient descent by calculating the gradients
     based on one observation at a time, looping through all observations, and summing
     the gradients before adjusting the weights.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们通过遍历观测值来构建一个用于拟合前馈网络的类。这个类通过逐个计算基于一次观测值的梯度，遍历所有观测值，并在调整权重之前求和梯度来进行梯度下降。
 - en: 'Once instantiated, we fit a network with the `fit()` method. This method requires
     training data, the number of nodes for the hidden layer, an activation function
     for the first and second layers’ outputs, a loss function, and some parameters
@@ -171,107 +250,167 @@
     the network’s weights: `W1`, `c1`, `W2`, and `c2`. It then passes the data through
     this network to instantiate the output values: `h1`, `z1`, `h2`, and `yhat` (equivalent
     to `z2`).'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦实例化，我们使用 `fit()` 方法来调整网络。此方法需要训练数据、隐藏层的节点数、第一和第二层输出的激活函数、损失函数以及用于梯度下降的一些参数。存储这些值后，该方法随机实例化网络的权重：`W1`、`c1`、`W2`
+    和 `c2`。然后它通过这个网络传递数据以实例化输出值：`h1`、`z1`、`h2` 和 `yhat`（相当于 `z2`）。
 - en: We then begin conducting gradient descent. Within each iteration of the gradient
     descent process, we also iterate through the observations. For each observation,
     we calculate the derivative of the loss for that observation with respect to the
     network’s weights. We then sum these individual derivatives and adjust the weights
     accordingly, as is typical in gradient descent. The derivatives we calculate are
     covered in the [concept section](concept.html).
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们开始进行梯度下降。在梯度下降过程的每次迭代中，我们也会遍历观察值。对于每个观察值，我们计算该观察值的损失相对于网络权重的导数。然后我们累加这些单独的导数，并相应地调整权重，就像在梯度下降中典型的那样。我们计算的导数在
+    [概念部分](concept.html) 中介绍。
 - en: Once the network is fit, we can form predictions with the `predict()` method.
     This simply consists of running test observations through the network and returning
     their outputs.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦网络调整完毕，我们就可以使用 `predict()` 方法形成预测。这仅仅是通过将测试观察值通过网络并返回它们的输出。
 - en: '[PRE10]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: Let’s try building a network with this class using the `boston` housing data.
     This network contains 8 neurons in its hidden layer and uses the ReLU and linear
     activation functions after the first and second layers, respectively.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试使用 `boston` 房屋数据构建一个具有此类功能的网络。这个网络在其隐藏层中有 8 个神经元，并在第一层和第二层后分别使用 ReLU 和线性激活函数。
 - en: '[PRE11]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '![../../_images/construction_9_0.png](../Images/2492385af54895a3b9a8a2072b140cca.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/construction_9_0.png](../Images/2492385af54895a3b9a8a2072b140cca.png)'
 - en: We can also build a network for binary classification. The model below attempts
     to predict whether an individual’s cancer is malignant or benign. We use the log
     loss, the sigmoid activation function after the second layer, and the ReLU function
     after the first.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以构建一个用于二元分类的网络。下面的模型试图预测一个人的癌症是恶性还是良性。我们使用对数损失、第二层后的 sigmoid 激活函数以及第一层后的
+    ReLU 函数。
 - en: '[PRE12]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '[PRE13]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 2\. The Matrix Approach
+  id: totrans-46
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2\. 矩阵方法
 - en: 'Below is a second class for fitting neural networks that runs *much* faster
     by simultaneously calculating the gradients across observations. The math behind
     these calculations is outlined in the [concept section](concept.html). This class’s
     fitting algorithm is identical to that of the one above with one big exception:
     we don’t have to iterate over observations.'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是一个用于调整神经网络的第二个类，它通过同时计算观察值之间的梯度而运行得 *非常快*。这些计算的数学原理在 [概念部分](concept.html)
+    中概述。此类的调整算法与上面的相同，只有一个重大例外：我们不必遍历观察值。
 - en: 'Most of the following gradient calculations are straightforward. A few require
     a tensor dot product, which is easily done using numpy. Consider the following
     gradient:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下的大部分梯度计算都很直接。其中一些需要张量点积，这可以通过 numpy 很容易地完成。考虑以下梯度：
 - en: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}_{i, j}} = \sum_{n =
     1}^N (\nabla \mathbf{H}^{(L)})_{i, n}\cdot \mathbf{Z}^{(L-1)}_{j, n}. \]
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}_{i, j}} = \sum_{n =
+    1}^N (\nabla \mathbf{H}^{(L)})_{i, n}\cdot \mathbf{Z}^{(L-1)}_{j, n}. \]
 - en: In words, \(\partial\mathcal{L}/\partial \mathbf{W}^{(L)}\) is a matrix whose
     \((i, j)^\text{th}\) entry equals the sum across the \(i^\text{th}\) row of \(\nabla
     \mathbf{H}^{(L)}\) multiplied element-wise with the \(j^\text{th}\) row of \(\mathbf{Z}^{(L-1)}\).
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 用文字来说，\(\partial\mathcal{L}/\partial \mathbf{W}^{(L)}\) 是一个矩阵，其 \((i, j)^\text{th}\)
+    个条目等于 \(\nabla \mathbf{H}^{(L)}\) 的第 \(i\) 行与 \(\mathbf{Z}^{(L-1)}\) 的第 \(j\)
+    行逐元素相乘后的总和。
 - en: This calculation can be accomplished with `np.tensordot(A, B, (1,1))`, where
     `A` is \(\nabla \mathbf{H}^{(L)}\) and `B` is \(\mathbf{Z}^{(L-1)}\). `np.tensordot()`
     sums the element-wise product of the entries in `A` and the entries in `B` along
     a specified index. Here we specify the index with `(1,1)`, saying we want to sum
     across the columns for each.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个计算可以通过 `np.tensordot(A, B, (1,1))` 完成，其中 `A` 是 \(\nabla \mathbf{H}^{(L)}\)，而
+    `B` 是 \(\mathbf{Z}^{(L-1)}\)。`np.tensordot()` 沿指定索引求 `A` 和 `B` 的元素级乘积之和。在这里，我们指定索引为
+    `(1,1)`，表示我们想要对每一列进行求和。
 - en: 'Similarly, we will use the following gradient:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，我们将使用以下梯度：
 - en: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{(L-1)}_{i, n}} = \sum_{d
     = 1}^{D_y} (\nabla \mathbf{H}^{(L)})_{d, n}\cdot \mathbf{W}^{(L)}_{d, i}. \]
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{(L-1)}_{i, n}} = \sum_{d
+    = 1}^{D_y} (\nabla \mathbf{H}^{(L)})_{d, n}\cdot \mathbf{W}^{(L)}_{d, i}. \]
 - en: Letting `C` represent \(\mathbf{W}^{(L)}\), we can calculate this gradient in
     numpy with `np.tensordot(C, A, (0,0))`.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 令 `C` 代表 \(\mathbf{W}^{(L)}\)，我们可以使用 `np.tensordot(C, A, (0,0))` 在 numpy 中计算这个梯度。
 - en: '[PRE14]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: We fit networks of this class in the same way as before. Examples of regression
     with the `boston` housing data and classification with the `breast_cancer` data
     are shown below.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们以与之前相同的方式拟合此类网络。以下展示了使用 `boston` 房屋数据进行的回归示例和 `breast_cancer` 数据进行的分类示例。
 - en: '[PRE15]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: '![../../_images/construction_16_01.png](../Images/9f92d774402963e0f912347f00822100.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/construction_16_01.png](../Images/9f92d774402963e0f912347f00822100.png)'
 - en: '[PRE16]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: '[PRE17]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'

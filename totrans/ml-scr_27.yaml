@@ -1,371 +1,556 @@
 - en: Implementation
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实现
 - en: 原文：[https://dafriedman97.github.io/mlbook/content/c6/code.html](https://dafriedman97.github.io/mlbook/content/c6/code.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://dafriedman97.github.io/mlbook/content/c6/code.html](https://dafriedman97.github.io/mlbook/content/c6/code.html)
 - en: This section demonstrates how to fit bagging, random forest, and boosting models
     using `scikit-learn`. We will again use the [penguins](../appendix/data.html)
     dataset for classification and the [tips](../appendix/data.html) dataset for regression.
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节演示了如何使用 `scikit-learn` 拟合 bagging、随机森林和提升模型。我们再次使用 [penguins](../appendix/data.html)
+    数据集进行分类，以及 [tips](../appendix/data.html) 数据集进行回归。
 - en: '[PRE0]'
+  id: totrans-3
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 1\. Bagging and Random Forests
+  id: totrans-4
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1. Bagging 和 Random Forests
 - en: Recall that bagging and random forests can handle both classification and regression
     tasks. For this example we will do classification on the `penguins` dataset. Recall
     that `scikit-learn` trees do not currently support categorical predictors, so
     we must first convert those to dummy variables
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住，bagging 和随机森林可以处理分类和回归任务。在这个例子中，我们将对 `penguins` 数据集进行分类。记住，`scikit-learn`
+    的树目前不支持分类预测器，因此我们必须首先将这些转换为虚拟变量
 - en: '[PRE1]'
+  id: totrans-6
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Bagging
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Bagging
 - en: A simple bagging classifier is fit below. The most important arguments are `n_estimators`
     and `base_estimator`, which determine the number and type of weak learners the
     bagging model should use. The default `base_estimator` is a decision tree, though
     this can be changed as in the second example below, which uses Naive Bayes estimators.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是一个简单的 bagging 分类器的拟合示例。最重要的参数是 `n_estimators` 和 `base_estimator`，它们决定了 bagging
+    模型应该使用的弱学习者的数量和类型。默认的 `base_estimator` 是决策树，尽管这可以在下面的第二个示例中更改，该示例使用朴素贝叶斯估计器。
 - en: '[PRE2]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '[PRE3]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Random Forests
+  id: totrans-11
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Random Forests
 - en: An example of a random forest in `scikit-learn` is given below. The most important
     arguments to the random forest are the number of estimators (decision trees),
     `max_features` (the number of predictors to consider at each split), and any chosen
     parameters for the decision trees (such as the maximum depth). Guidelines for
     setting each of these parameters are given below.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面给出了 `scikit-learn` 中随机森林的一个示例。随机森林最重要的参数是估计器的数量（决策树），`max_features`（每个分割时考虑的预测因子数量），以及为决策树选择的任何参数（如最大深度）。下面给出了设置每个这些参数的指南。
 - en: '`n_estimators`: In general, the more base estimators the better, though there
     are diminishing marginal returns. While increasing the number of base estimators
     does not risk overfitting, it eventually provides no benefit.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`n_estimators`: 通常情况下，基础估计器的数量越多越好，尽管边际收益递减。虽然增加基础估计器的数量不会导致过拟合，但最终也不会带来任何好处。'
 - en: '`max_features`: This argument is set by default to the square root of the number
     of total features (which is made explicit in the example below). If this value
     equals the number of total features, we are left with a bagging model. Lowering
     this value lowers the amount of correlation between trees but also prevents the
     base estimators from learning potentially valuable information.'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`max_features`: 此参数默认设置为总特征数的平方根（在下面的示例中明确指出）。如果此值等于总特征数，我们就会得到一个 bagging 模型。降低此值会降低树之间的相关性，但也会阻止基础估计器学习可能有价值的信息。'
 - en: 'Decision tree parameters: These parameters are generally left untouched. This
     allows the individual decision trees to grow deep, increasing variance but decreasing
     bias. The variance is then decreased by the ensemble of individual trees.'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 决策树参数：这些参数通常保持不变。这允许单个决策树生长得较深，增加方差但减少偏差。然后通过单个树的集成来减少方差。
 - en: '[PRE4]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '[PRE5]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 2\. Boosting
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2. Boosting
 - en: Note
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意
 - en: 'Note that the `AdaBoostClassifier` from `scikit-learn` uses a slightly different
     algorithm than the one introduced in the [concept section](s1/boosting.html) though
     results should be similar. The `AdaBoostRegressor` class in `scikit-learn` uses
     the same algorithm we introduced: *AdaBoost.R2*'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，`scikit-learn` 中的 `AdaBoostClassifier` 使用了一个与在 [概念部分](s1/boosting.html) 中介绍的不同算法，尽管结果应该是相似的。`scikit-learn`
+    中的 `AdaBoostRegressor` 类使用我们介绍的相同算法：*AdaBoost.R2*
 - en: AdaBoost Classification
+  id: totrans-21
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: AdaBoost 分类
 - en: 'The `AdaBoostClassifier` in `scikit-learn` is actually able to handle multiclass
     target variables, but for consistency, let’s use the same binary target we did
     in our AdaBoost construction: whether the penguin’s species is *Adelie*.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '`scikit-learn` 中的 `AdaBoostClassifier` 实际上能够处理多类目标变量，但为了保持一致性，让我们使用我们在 AdaBoost
+    构造中使用的相同二进制目标：企鹅的物种是否为 *Adelie*。'
 - en: '[PRE6]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: We can then fit the classifier with the `AdaBoostClassifier` class as below.
     Again, we first convert categorical predictors to dummy variables. The classifier
     will by default use 50 decision trees, each with a max depth of 1, for the weak
     learners.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们可以使用 `AdaBoostClassifier` 类拟合分类器，如下所示。同样，我们首先将分类预测器转换为虚拟变量。默认情况下，分类器将使用
+    50 个决策树，每个树的最大深度为 1，作为弱学习者。
 - en: '[PRE7]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '[PRE8]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: A different weak learner can easily be used in place of a decision tree. The
     below shows an example using logistic regression.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以轻松地使用不同的弱学习者在决策树的位置。下面是一个使用逻辑回归的示例。
 - en: '[PRE9]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: AdaBoost Regression
+  id: totrans-29
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: AdaBoost 回归
 - en: AdaBoost regression is implemented almost identically in `scikit-learn`. An
     example with the `tips` dataset is shown below.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: AdaBoost 回归在 `scikit-learn` 中几乎以相同的方式实现。以下是一个使用 `tips` 数据集的示例。
 - en: '[PRE10]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '[PRE11]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '![../../_images/code_24_0.png](../Images/ef429046407aca3429fd95a23b95bab9.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/code_24_0.png](../Images/ef429046407aca3429fd95a23b95bab9.png)'
 - en: 1\. Bagging and Random Forests
+  id: totrans-34
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1. Bagging 和 Random Forests
 - en: Recall that bagging and random forests can handle both classification and regression
     tasks. For this example we will do classification on the `penguins` dataset. Recall
     that `scikit-learn` trees do not currently support categorical predictors, so
     we must first convert those to dummy variables
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住，bagging 和随机森林可以处理分类和回归任务。在这个例子中，我们将对 `penguins` 数据集进行分类。记住，`scikit-learn`
+    的树目前不支持分类预测器，因此我们必须首先将这些转换为虚拟变量。
 - en: '[PRE12]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: Bagging
+  id: totrans-37
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Bagging
 - en: A simple bagging classifier is fit below. The most important arguments are `n_estimators`
     and `base_estimator`, which determine the number and type of weak learners the
     bagging model should use. The default `base_estimator` is a decision tree, though
     this can be changed as in the second example below, which uses Naive Bayes estimators.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面拟合了一个简单的 bagging 分类器。最重要的参数是 `n_estimators` 和 `base_estimator`，它们决定了 bagging
+    模型应该使用的弱学习者的数量和类型。默认的 `base_estimator` 是决策树，尽管这可以在下面的第二个示例中更改，该示例使用朴素贝叶斯估计器。
 - en: '[PRE13]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: '[PRE14]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: Random Forests
+  id: totrans-41
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 随机森林
 - en: An example of a random forest in `scikit-learn` is given below. The most important
     arguments to the random forest are the number of estimators (decision trees),
     `max_features` (the number of predictors to consider at each split), and any chosen
     parameters for the decision trees (such as the maximum depth). Guidelines for
     setting each of these parameters are given below.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面给出了 `scikit-learn` 中随机森林的示例。随机森林最重要的参数是估计器的数量（决策树），`max_features`（每个分割时考虑的预测因子数量），以及为决策树选择的任何参数（如最大深度）。下面给出了设置每个这些参数的指南。
 - en: '`n_estimators`: In general, the more base estimators the better, though there
     are diminishing marginal returns. While increasing the number of base estimators
     does not risk overfitting, it eventually provides no benefit.'
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`n_estimators`：一般来说，基础估计器的数量越多越好，尽管边际收益递减。虽然增加基础估计器的数量不会导致过拟合，但最终它不会提供任何好处。'
 - en: '`max_features`: This argument is set by default to the square root of the number
     of total features (which is made explicit in the example below). If this value
     equals the number of total features, we are left with a bagging model. Lowering
     this value lowers the amount of correlation between trees but also prevents the
     base estimators from learning potentially valuable information.'
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`max_features`：此参数默认设置为总特征数的平方根（在下面的示例中明确说明）。如果此值等于总特征数，我们将得到一个 bagging 模型。降低此值会降低树之间的相关性，但也会防止基础估计器学习可能有价值的信息。'
 - en: 'Decision tree parameters: These parameters are generally left untouched. This
     allows the individual decision trees to grow deep, increasing variance but decreasing
     bias. The variance is then decreased by the ensemble of individual trees.'
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 决策树参数：这些参数通常保持不变。这允许单个决策树生长得较深，增加方差但减少偏差。然后，通过单个树的集成来减少方差。
 - en: '[PRE15]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: '[PRE16]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: Bagging
+  id: totrans-48
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Bagging
 - en: A simple bagging classifier is fit below. The most important arguments are `n_estimators`
     and `base_estimator`, which determine the number and type of weak learners the
     bagging model should use. The default `base_estimator` is a decision tree, though
     this can be changed as in the second example below, which uses Naive Bayes estimators.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面拟合了一个简单的 bagging 分类器。最重要的参数是 `n_estimators` 和 `base_estimator`，它们决定了 bagging
+    模型应该使用的弱学习者的数量和类型。默认的 `base_estimator` 是决策树，尽管这可以在下面的第二个示例中更改，该示例使用朴素贝叶斯估计器。
 - en: '[PRE17]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: '[PRE18]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: Random Forests
+  id: totrans-52
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 随机森林
 - en: An example of a random forest in `scikit-learn` is given below. The most important
     arguments to the random forest are the number of estimators (decision trees),
     `max_features` (the number of predictors to consider at each split), and any chosen
     parameters for the decision trees (such as the maximum depth). Guidelines for
     setting each of these parameters are given below.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是一个`scikit-learn`中随机森林的示例。随机森林最重要的参数是估计器的数量（决策树）、`max_features`（每个分割要考虑的预测器数量）以及为决策树选择的任何参数（如最大深度）。以下给出设置每个这些参数的指南。
 - en: '`n_estimators`: In general, the more base estimators the better, though there
     are diminishing marginal returns. While increasing the number of base estimators
     does not risk overfitting, it eventually provides no benefit.'
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`n_estimators`: 通常情况下，基础估计器的数量越多越好，尽管边际收益递减。虽然增加基础估计器的数量不会导致过拟合，但最终它不会带来任何好处。'
 - en: '`max_features`: This argument is set by default to the square root of the number
     of total features (which is made explicit in the example below). If this value
     equals the number of total features, we are left with a bagging model. Lowering
     this value lowers the amount of correlation between trees but also prevents the
     base estimators from learning potentially valuable information.'
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`max_features`: 此参数默认设置为总特征数的平方根（以下示例中已明确说明）。如果此值等于总特征数，我们将得到一个袋装模型。降低此值会降低树之间的相关性，但也会阻止基础估计器学习可能有价值的信息。'
 - en: 'Decision tree parameters: These parameters are generally left untouched. This
     allows the individual decision trees to grow deep, increasing variance but decreasing
     bias. The variance is then decreased by the ensemble of individual trees.'
+  id: totrans-56
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 决策树参数：这些参数通常保持不变。这允许单个决策树生长得较深，增加方差但减少偏差。然后，通过单个树的集成来减少方差。
 - en: '[PRE19]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: '[PRE20]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: 2\. Boosting
+  id: totrans-59
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2. 提升法
 - en: Note
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意
 - en: 'Note that the `AdaBoostClassifier` from `scikit-learn` uses a slightly different
     algorithm than the one introduced in the [concept section](s1/boosting.html) though
     results should be similar. The `AdaBoostRegressor` class in `scikit-learn` uses
     the same algorithm we introduced: *AdaBoost.R2*'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，`scikit-learn`中的`AdaBoostClassifier`使用的算法与[概念部分](s1/boosting.html)中介绍的不同，尽管结果应该相似。`scikit-learn`中的`AdaBoostRegressor`类使用我们介绍的相同算法：*AdaBoost.R2*
 - en: AdaBoost Classification
+  id: totrans-62
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: AdaBoost 分类
 - en: 'The `AdaBoostClassifier` in `scikit-learn` is actually able to handle multiclass
     target variables, but for consistency, let’s use the same binary target we did
     in our AdaBoost construction: whether the penguin’s species is *Adelie*.'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '`scikit-learn`中的`AdaBoostClassifier`实际上能够处理多类目标变量，但为了保持一致性，让我们使用我们在AdaBoost构建中使用的相同二进制目标：企鹅的物种是否为*阿德利*。'
 - en: '[PRE21]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: We can then fit the classifier with the `AdaBoostClassifier` class as below.
     Again, we first convert categorical predictors to dummy variables. The classifier
     will by default use 50 decision trees, each with a max depth of 1, for the weak
     learners.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们可以使用`AdaBoostClassifier`类来拟合分类器，如下所示。同样，我们首先将分类预测器转换为虚拟变量。默认情况下，分类器将使用50个决策树，每个树的最大深度为1，作为弱学习器。
 - en: '[PRE22]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: '[PRE23]'
+  id: totrans-67
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: A different weak learner can easily be used in place of a decision tree. The
     below shows an example using logistic regression.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以很容易地使用不同的弱学习器代替决策树。以下是一个使用逻辑回归的示例。
 - en: '[PRE24]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: AdaBoost Regression
+  id: totrans-70
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: AdaBoost 回归
 - en: AdaBoost regression is implemented almost identically in `scikit-learn`. An
     example with the `tips` dataset is shown below.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: AdaBoost 回归在`scikit-learn`中的实现几乎相同。以下是一个使用`tips`数据集的示例。
 - en: '[PRE25]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: '[PRE26]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: '![../../_images/code_24_0.png](../Images/ef429046407aca3429fd95a23b95bab9.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/code_24_0.png](../Images/ef429046407aca3429fd95a23b95bab9.png)'
 - en: AdaBoost Classification
+  id: totrans-75
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: AdaBoost 分类
 - en: 'The `AdaBoostClassifier` in `scikit-learn` is actually able to handle multiclass
     target variables, but for consistency, let’s use the same binary target we did
     in our AdaBoost construction: whether the penguin’s species is *Adelie*.'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: '`scikit-learn`中的`AdaBoostClassifier`实际上能够处理多类目标变量，但为了保持一致性，让我们使用我们在AdaBoost构建中使用的相同二进制目标：企鹅的物种是否为*阿德利*。'
 - en: '[PRE27]'
+  id: totrans-77
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: We can then fit the classifier with the `AdaBoostClassifier` class as below.
     Again, we first convert categorical predictors to dummy variables. The classifier
     will by default use 50 decision trees, each with a max depth of 1, for the weak
     learners.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们可以使用`AdaBoostClassifier`类来拟合分类器，如下所示。同样，我们首先将分类预测器转换为虚拟变量。默认情况下，分类器将使用50个决策树，每个树的最大深度为1，作为弱学习器。
 - en: '[PRE28]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: '[PRE29]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: A different weak learner can easily be used in place of a decision tree. The
     below shows an example using logistic regression.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以轻松地使用不同的弱学习器来代替决策树。下面展示了使用逻辑回归的示例。
 - en: '[PRE30]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE30]'
 - en: AdaBoost Regression
+  id: totrans-83
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: AdaBoost 回归
 - en: AdaBoost regression is implemented almost identically in `scikit-learn`. An
     example with the `tips` dataset is shown below.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: AdaBoost 回归在 `scikit-learn` 中几乎以相同的方式实现。下面展示了使用 `tips` 数据集的示例。
 - en: '[PRE31]'
+  id: totrans-85
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE31]'
 - en: '[PRE32]'
+  id: totrans-86
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE32]'
 - en: '![../../_images/code_24_0.png](../Images/ef429046407aca3429fd95a23b95bab9.png)'
+  id: totrans-87
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/code_24_0.png](../Images/ef429046407aca3429fd95a23b95bab9.png)'

@@ -1,54 +1,78 @@
 - en: Implementation
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实现
 - en: 原文：[https://dafriedman97.github.io/mlbook/content/c7/code.html](https://dafriedman97.github.io/mlbook/content/c7/code.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '[https://dafriedman97.github.io/mlbook/content/c7/code.html](https://dafriedman97.github.io/mlbook/content/c7/code.html)'
 - en: Several Python libraries allow for easy and efficient implementation of neural
     networks. Here, we’ll show examples with the very popular `tf.keras` submodule.
     This submodule integrates Keras, a user-friendly high-level API, into Tensorflow,
     a lower-level backend. Let’s start by loading Tensorflow, our visualization packages,
     and the [Boston](../appendix/data.html) housing dataset from `scikit-learn`.
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 几个Python库允许轻松高效地实现神经网络。在这里，我们将使用非常流行的`tf.keras`子模块来展示示例。此子模块将用户友好的高级API Keras集成到较低级别的后端Tensorflow中。让我们首先加载Tensorflow、我们的可视化包以及从`scikit-learn`加载的[Boston](../appendix/data.html)住房数据集。
 - en: '[PRE0]'
+  id: totrans-3
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Neural networks in Keras can be fit through one of two APIs: the *sequential*
     or the *functional* API. For the type of models discussed in this chapter, either
     approach works.'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: Keras中的神经网络可以通过两种API之一进行拟合：*顺序*或*功能*API。对于本章讨论的模型类型，两种方法都适用。
 - en: 1\. The Sequential API
+  id: totrans-5
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1. 顺序API
 - en: 'Fitting a network with the Keras sequential API can be broken down into four
     steps:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用Keras顺序API拟合网络可以分为四个步骤：
 - en: Instantiate model
+  id: totrans-7
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 实例化模型
 - en: Add layers
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 添加层
 - en: Compile model (and summarize)
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 编译模型（并总结）
 - en: Fit model
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 拟合模型
 - en: An example of the code for these four steps is shown below. We first instantiate
     the network using `tf.keras.models.Sequential()`.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面展示了这些四个步骤的代码示例。我们首先使用`tf.keras.models.Sequential()`实例化网络。
 - en: Next, we add layers to the network. Specifically, we have to add any hidden
     layers we like followed by a single output layer. The type of networks covered
     in this chapter use only `Dense` layers. A “dense” layer is one in which each
@@ -58,117 +82,176 @@
     only, we must also identify the `input_shape`, or the number of neurons in the
     input layer. If our predictors are of length `D`, the input shape will be `(D,
     )` (which is the shape of a single observation, as we can see with `X[0].shape`).
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们向网络中添加层。具体来说，我们必须添加我们喜欢的任何隐藏层，然后是一个单独的输出层。本章涵盖的网络类型仅使用`Dense`层。一个“密集”层是指每个神经元都是前一层中所有其他神经元的函数。我们使用`units`参数标识层中的神经元数量，使用`activation`参数标识应用于层的激活函数。对于第一层，我们还必须标识`input_shape`，即输入层中的神经元数量。如果我们的预测变量长度为`D`，则输入形状将为`(D,
+    )`（这是单个观察值的形状，正如我们通过`X[0].shape`可以看到的）。
 - en: The next step is to compile the model. Compiling determines the configuration
     of the model; we specify the optimizer and loss function to be used as well as
     any metrics we would like to monitor. After compiling, we can also preview our
     model with `model.summary()`.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 下一步是编译模型。编译确定了模型的配置；我们指定要使用的优化器和损失函数以及我们想要监控的任何指标。编译后，我们还可以使用`model.summary()`预览我们的模型。
 - en: Finally, we fit the model. Here is where we actually provide our training data.
     Two other important arguments are `epochs` and `batch_size`. Models in Keras are
     fit with *mini-batch gradient descent*, in which samples of the training data
     are looped through and individually used to calculate and update gradients. `batch_size`
     determines the size of these samples, and `epochs` determines how many times the
     gradient is calculated for each sample.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们拟合模型。在这里，我们实际上提供了我们的训练数据。另外两个重要的参数是`epochs`和`batch_size`。Keras中的模型使用*小批量梯度下降*进行拟合，其中训练数据的样本被循环遍历，并单独用于计算和更新梯度。`batch_size`确定这些样本的大小，而`epochs`确定每个样本计算梯度的次数。
 - en: '[PRE1]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '[PRE2]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Predictions with the model built above are shown below.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用上述构建的模型进行的预测如下所示。
 - en: '[PRE3]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '![../../_images/code_8_01.png](../Images/92958b9a2375bcdb5723ba8fd688db7a.png)'
+  id: totrans-19
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/code_8_01.png](../Images/92958b9a2375bcdb5723ba8fd688db7a.png)'
 - en: 2\. The Functional API
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2. 功能API
 - en: Fitting models with the Functional API can again be broken into four steps,
     listed below.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用功能API拟合模型也可以再次分解为四个步骤，如下所示。
 - en: Define layers
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 定义层
 - en: Define model
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 定义模型
 - en: Compile model (and summarize)
+  id: totrans-24
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 编译模型（并总结）
 - en: Fit model
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 拟合模型
 - en: While the sequential approach first defines the model and then adds layers,
     the functional approach does the opposite. We start by adding an input layer using
     `tf.keras.Input()`. Next, we add one or more hidden layers using `tf.keras.layers.Dense()`.
     Note that in this approach, we link layers directly. For instance, we indicate
     that the `hidden` layer below follows the `inputs` layer by adding `(inputs)`
     to the end of its definition.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然顺序方法首先定义模型然后添加层，但功能方法则相反。我们首先使用 `tf.keras.Input()` 添加一个输入层。接下来，我们使用 `tf.keras.layers.Dense()`
+    添加一个或多个隐藏层。请注意，在这个方法中，我们直接链接层。例如，我们通过在其定义末尾添加 `(inputs)` 来指示下面的 `hidden` 层跟随 `inputs`
+    层。
 - en: After creating the layers, we can define our model. We do this by using `tf.keras.Model()`
     and identifying the input and output layers. Finally, we compile and fit our model
     as in the sequential API.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 在创建层之后，我们可以定义我们的模型。我们通过使用 `tf.keras.Model()` 并标识输入和输出层来实现这一点。最后，我们像在顺序API中一样编译和拟合我们的模型。
 - en: '[PRE4]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '[PRE5]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Predictions formed with this model are shown below.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用此模型形成的预测如下。
 - en: '[PRE6]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '![../../_images/code_13_0.png](../Images/780d61e9d6ddfcc0c879e00f897defa6.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/code_13_0.png](../Images/780d61e9d6ddfcc0c879e00f897defa6.png)'
 - en: 1\. The Sequential API
+  id: totrans-33
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1. 顺序API
 - en: 'Fitting a network with the Keras sequential API can be broken down into four
     steps:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用Keras顺序API拟合网络可以分为四个步骤：
 - en: Instantiate model
+  id: totrans-35
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 实例化模型
 - en: Add layers
+  id: totrans-36
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 添加层
 - en: Compile model (and summarize)
+  id: totrans-37
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 编译模型（并总结）
 - en: Fit model
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 拟合模型
 - en: An example of the code for these four steps is shown below. We first instantiate
     the network using `tf.keras.models.Sequential()`.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 这四个步骤的代码示例如下。我们首先使用 `tf.keras.models.Sequential()` 实例化网络。
 - en: Next, we add layers to the network. Specifically, we have to add any hidden
     layers we like followed by a single output layer. The type of networks covered
     in this chapter use only `Dense` layers. A “dense” layer is one in which each
@@ -178,86 +261,134 @@
     only, we must also identify the `input_shape`, or the number of neurons in the
     input layer. If our predictors are of length `D`, the input shape will be `(D,
     )` (which is the shape of a single observation, as we can see with `X[0].shape`).
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们将层添加到网络中。具体来说，我们必须添加我们喜欢的任何隐藏层，然后是一个单独的输出层。本章涵盖的网络类型仅使用 `Dense` 层。一个“密集”层是其中每个神经元都是前一层中所有其他神经元的函数。我们使用
+    `units` 参数标识层的神经元数量，并使用 `activation` 参数标识应用于层的激活函数。对于第一层，我们还必须标识 `input_shape`，即输入层的神经元数量。如果我们的预测变量长度为
+    `D`，则输入形状将是 `(D, )`（这是单个观察值的形状，正如我们通过 `X[0].shape` 所见）。
 - en: The next step is to compile the model. Compiling determines the configuration
     of the model; we specify the optimizer and loss function to be used as well as
     any metrics we would like to monitor. After compiling, we can also preview our
     model with `model.summary()`.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 下一步是编译模型。编译确定了模型的配置；我们指定要使用的优化器和损失函数，以及我们想要监控的任何指标。编译后，我们还可以使用 `model.summary()`
+    预览我们的模型。
 - en: Finally, we fit the model. Here is where we actually provide our training data.
     Two other important arguments are `epochs` and `batch_size`. Models in Keras are
     fit with *mini-batch gradient descent*, in which samples of the training data
     are looped through and individually used to calculate and update gradients. `batch_size`
     determines the size of these samples, and `epochs` determines how many times the
     gradient is calculated for each sample.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们拟合模型。在这里，我们实际上提供了我们的训练数据。另外两个重要的参数是 `epochs` 和 `batch_size`。在Keras中，模型通过
+    *小批量梯度下降* 来拟合，其中训练数据的样本被循环遍历，并单独用于计算和更新梯度。`batch_size` 决定了这些样本的大小，而 `epochs` 决定了每个样本计算梯度的次数。
 - en: '[PRE7]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '[PRE8]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Predictions with the model built above are shown below.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下展示了使用上述构建的模型进行的预测。
 - en: '[PRE9]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: '![../../_images/code_8_01.png](../Images/92958b9a2375bcdb5723ba8fd688db7a.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/code_8_01.png](../Images/92958b9a2375bcdb5723ba8fd688db7a.png)'
 - en: 2\. The Functional API
+  id: totrans-48
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2. 功能API
 - en: Fitting models with the Functional API can again be broken into four steps,
     listed below.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用功能API拟合模型又可以分解为四个步骤，如下所示。
 - en: Define layers
+  id: totrans-50
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 定义层
 - en: Define model
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 定义模型
 - en: Compile model (and summarize)
+  id: totrans-52
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 编译模型（并总结）
 - en: Fit model
+  id: totrans-53
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 拟合模型
 - en: While the sequential approach first defines the model and then adds layers,
     the functional approach does the opposite. We start by adding an input layer using
     `tf.keras.Input()`. Next, we add one or more hidden layers using `tf.keras.layers.Dense()`.
     Note that in this approach, we link layers directly. For instance, we indicate
     that the `hidden` layer below follows the `inputs` layer by adding `(inputs)`
     to the end of its definition.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然顺序方法首先定义模型然后添加层，而函数式方法则相反。我们首先使用 `tf.keras.Input()` 添加一个输入层。接下来，我们使用 `tf.keras.layers.Dense()`
+    添加一个或多个隐藏层。注意，在这个方法中，我们直接链接层。例如，我们通过在其定义的末尾添加 `(inputs)` 来表明下面的 `hidden` 层跟随 `inputs`
+    层。
 - en: After creating the layers, we can define our model. We do this by using `tf.keras.Model()`
     and identifying the input and output layers. Finally, we compile and fit our model
     as in the sequential API.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 在创建层之后，我们可以定义我们的模型。这是通过使用 `tf.keras.Model()` 并标识输入和输出层来完成的。最后，我们像在顺序API中一样编译和调整我们的模型。
 - en: '[PRE10]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '[PRE11]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Predictions formed with this model are shown below.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用此模型形成的预测结果如下。
 - en: '[PRE12]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '![../../_images/code_13_0.png](../Images/780d61e9d6ddfcc0c879e00f897defa6.png)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![../../_images/code_13_0.png](../Images/780d61e9d6ddfcc0c879e00f897defa6.png)'

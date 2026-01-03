@@ -1,11 +1,15 @@
 - en: Common Methods
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 常见方法
 - en: 原文：[https://dafriedman97.github.io/mlbook/content/appendix/methods.html](https://dafriedman97.github.io/mlbook/content/appendix/methods.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://dafriedman97.github.io/mlbook/content/appendix/methods.html](https://dafriedman97.github.io/mlbook/content/appendix/methods.html)
 - en: '\[ \newcommand{\sumN}{\sum_{n = 1}^N} \newcommand{\sumn}{\sum_n} \newcommand{\prodN}{\prod_{n
     = 1}^N} \newcommand{\by}{\mathbf{y}} \newcommand{\bX}{\mathbf{X}} \newcommand{\bx}{\mathbf{x}}
     \newcommand{\bbeta}{\boldsymbol{\beta}} \newcommand{\btheta}{\boldsymbol{\theta}}
@@ -13,29 +17,45 @@
     \newcommand{\bSigma}{\boldsymbol{\Sigma}} \newcommand{\bphi}{\boldsymbol{\phi}}
     \newcommand{\bPhi}{\boldsymbol{\Phi}} \newcommand{\bT}{\mathbf{T}} \newcommand{\dadb}[2]{\frac{\partial
     #1}{\partial #2}} \newcommand{\iid}{\overset{\small{\text{i.i.d.}}}{\sim}} \]'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '\[ \newcommand{\sumN}{\sum_{n = 1}^N} \newcommand{\sumn}{\sum_n} \newcommand{\prodN}{\prod_{n
+    = 1}^N} \newcommand{\by}{\mathbf{y}} \newcommand{\bX}{\mathbf{X}} \newcommand{\bx}{\mathbf{x}}
+    \newcommand{\bbeta}{\boldsymbol{\beta}} \newcommand{\btheta}{\boldsymbol{\theta}}
+    \newcommand{\bbetahat}{\boldsymbol{\hat{\beta}}} \newcommand{\bthetahat}{\boldsymbol{\hat{\theta}}}
+    \newcommand{\bSigma}{\boldsymbol{\Sigma}} \newcommand{\bphi}{\boldsymbol{\phi}}
+    \newcommand{\bPhi}{\boldsymbol{\Phi}} \newcommand{\bT}{\mathbf{T}} \newcommand{\dadb}[2]{\frac{\partial
+    #1}{\partial #2}} \newcommand{\iid}{\overset{\small{\text{i.i.d.}}}{\sim}} \]'
 - en: 'This section will review two methods that are used to fit a variety of machine
     learning models: *gradient descent* and *cross validation*. These methods will
     be used repeatedly throughout this book.'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节将回顾两种用于拟合各种机器学习模型的方法：*梯度下降*和*交叉验证*。这些方法将在本书的整个过程中反复使用。
 - en: 1\. Gradient Descent
+  id: totrans-4
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1. 梯度下降
 - en: Almost all the models discussed in this book aim to find a set of parameters
     that minimize a chosen loss function. Sometimes we can find the optimal parameters
     by taking the derivative of the loss function, setting it equal to 0, and solving.
     In situations for which no closed-form solution is available, however, we might
     turn to gradient descent. **Gradient descent** is an iterative approach to approximating
     the parameters that minimize a differentiable loss function.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 几乎本书中讨论的所有模型都旨在找到一组参数，以最小化所选的损失函数。有时我们可以通过对损失函数求导，将其设为0并求解来找到最优参数。然而，在无法得到封闭形式解的情况下，我们可能会转向梯度下降。**梯度下降**是一种迭代方法，用于逼近最小化可微损失函数的参数。
 - en: The Set-Up
+  id: totrans-6
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 设置
 - en: Let’s first introduce a typical set-up for gradient descent. Suppose we have
     \(N\) observations where each observation has predictors \(\bx_n\) and target
     variable \(y_n\). We decide to approximate \(y_n\) with \(\hat{y}_n = f(\bx_n,
@@ -43,37 +63,58 @@
     is a set of parameter estimates. Next, we introduce a differentiable loss function
     \(\mathcal{L}\). For simplicity, let’s assume we can write the model’s entire
     loss as the sum of the individual losses across observations. That is,
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先介绍梯度下降的一个典型设置。假设我们有 \(N\) 个观测值，其中每个观测值都有预测变量 \(\bx_n\) 和目标变量 \(y_n\)。我们决定用
+    \(\hat{y}_n = f(\bx_n, \bbetahat)\) 来近似 \(y_n\)，其中 \(f()\) 是某个可微函数，\(\bbetahat\)
+    是一组参数估计。接下来，我们引入一个可微损失函数 \(\mathcal{L}\)。为了简单起见，我们假设我们可以将模型的整个损失写成观测值之间个别损失的加和。也就是说，
 - en: \[ \mathcal{L} = \sumN g(y_n, \hat{y}_n), \]
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \mathcal{L} = \sumN g(y_n, \hat{y}_n), \]
 - en: where \(g()\) is some differentiable function representing an observation’s
     individual loss.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 \(g()\) 是表示观测值个别损失的某个可微函数。
 - en: 'To fit this generic model, we want to find the values of \(\bbetahat\) that
     minimize \(\mathcal{L}\). We will likely start with the following derivative:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了拟合这个通用模型，我们希望找到使 \(\mathcal{L}\) 最小的 \(\bbetahat\) 的值。我们可能会从以下导数开始：
 - en: \[\begin{split} \begin{align} \dadb{\mathcal{L}}{\bbetahat} &= \sumN\dadb{g(y_n,
     \hat{y}_n)}{\bbetahat} \\ &= \sumN\dadb{g(y_n, \hat{y}_n)}{\hat{y}_n}\cdot\dadb{\hat{y}_n}{\bbetahat}.
     \\ \end{align} \end{split}\]
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: \[\begin{split} \begin{align} \dadb{\mathcal{L}}{\bbetahat} &= \sumN\dadb{g(y_n,
+    \hat{y}_n)}{\bbetahat} \\ &= \sumN\dadb{g(y_n, \hat{y}_n)}{\hat{y}_n}\cdot\dadb{\hat{y}_n}{\bbetahat}.
+    \\ \end{align} \end{split}\]
 - en: Ideally, we can set the above derivative equal to 0 and solve for \(\bbetahat\),
     giving our optimal solution. If this isn’t possible, we can iteratively search
     for the values of \(\bbetahat\) that minimize \(\mathcal{L}\). This is the process
     of gradient descent.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 理想情况下，我们可以将上述导数设为0并求解 \(\bbetahat\)，从而得到最优解。如果这不可能，我们可以迭代地寻找使 \(\mathcal{L}\)
+    最小的 \(\bbetahat\) 的值。这就是梯度下降的过程。
 - en: An Intuitive Introduction
+  id: totrans-13
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 直观介绍
 - en: '![gd](../Images/4e6b365fc23689963cccc975a25ccc23.png)'
+  id: totrans-14
   prefs: []
   type: TYPE_IMG
+  zh: '![gd](../Images/4e6b365fc23689963cccc975a25ccc23.png)'
 - en: To understand this process intuitively, consider the image above showing a model’s
     loss as a function of one parameter, \(\beta\). We start our search for the optimal
     \(\beta\) by randomly picking a value. Suppose we start with \(\beta\) at point
@@ -82,21 +123,32 @@
     of \(\mathcal{L}\) with respect to \(\beta\) evaluated at \(\beta = A\). Since
     this derivative is negative, we know that increasing \(\beta\) some small amount
     will decrease the loss.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了直观地理解这个过程，考虑上面的图像，它显示了模型损失作为单个参数 \(\beta\) 的函数。我们通过随机选择一个值来开始寻找最优的 \(\beta\)。假设我们从点
+    \(A\) 开始 \(\beta\)。从点 \(A\) 我们问“如果增加或减少 \(\beta\)，损失函数会减少吗？”为了回答这个问题，我们计算 \(\beta
+    = A\) 时 \(\mathcal{L}\) 对 \(\beta\) 的导数。由于这个导数是负的，我们知道增加 \(\beta\) 一些小量将减少损失。
 - en: Now we know we want to increase \(\beta\), but how much? Intuitively, the more
     negative the derivative, the more the loss will decrease with an increase in \(\beta\).
     So, let’s increase \(\beta\) by an amount proportional to the negative of the
     derivative. Letting \(\delta\) be the derivative and \(\eta\) be a small constant
     learning rate, we might increase \(\beta\) with
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们知道我们想要增加 \(\beta\)，但增加多少呢？直观上，导数越负，随着 \(\beta\) 的增加，损失将减少得越多。所以，让我们以与导数负值成比例的量增加
+    \(\beta\)。让 \(\delta\) 为导数，\(\eta\) 为一个小常数学习率，我们可能会用以下方式增加 \(\beta\)：
 - en: \[ \beta \gets \beta - \eta\delta. \]
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \beta \gets \beta - \eta\delta. \]
 - en: The more negative \(\delta\) is, the more we increase \(\beta\).
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: \(\delta\) 越负，我们增加 \(\beta\) 的幅度就越大。
 - en: 'Now suppose we make the increase and wind up with \(\beta = B\). Calculating
     the derivative again, we get a slightly positive number. This tells us that we
     went too far: increasing \(\beta\) will increase \(\mathcal{L}\). However, since
@@ -105,162 +157,240 @@
     \(\delta\) is now slightly positive, \(\beta\) will now decrease slightly. We
     will repeat this same process a fixed number of times or until \(\beta\) barely
     changes. And that is gradient descent!'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在假设我们进行了增加，最终得到 \(\beta = B\)。再次计算导数，我们得到一个略微正的数。这告诉我们我们走得太远了：增加 \(\beta\)
+    将会增加 \(\mathcal{L}\)。然而，由于导数只是 *略微* 正的，我们只想进行轻微的修正。让我们再次使用相同的调整，\(\beta \gets
+    \beta - \eta\delta\)。由于 \(\delta\) 现在略微为正，\(\beta\) 将略微减少。我们将重复这个过程固定次数或直到 \(\beta\)
+    几乎没有变化。这就是梯度下降！
 - en: The Steps
+  id: totrans-20
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 步骤
 - en: We can describe gradient descent more concretely with the following steps. Note
     here that \(\bbetahat\) can be a vector, rather than just a single parameter.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以用以下步骤更具体地描述梯度下降。注意，这里 \(\bbetahat\) 可以是一个向量，而不仅仅是单个参数。
 - en: Choose a small learning rate \(\eta\)
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择一个小的学习率 \(\eta\)
 - en: Randomly instantiate \(\bbetahat\)
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机实例化 \(\bbetahat\)
 - en: 'For a fixed number of iterations or until some stopping rule is reached:'
+  id: totrans-24
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于固定的迭代次数或直到达到某个停止规则：
 - en: Calculate \(\boldsymbol{\delta} = \partial \mathcal{L}/\partial \bbetahat\)
+  id: totrans-25
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算 \(\boldsymbol{\delta} = \partial \mathcal{L}/\partial \bbetahat\)
 - en: Adjust \(\bbetahat\) with
+  id: totrans-26
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 用以下方式调整 \(\bbetahat\)
 - en: \[ \bbetahat \gets \bbetahat - \eta \boldsymbol{\delta}. \]
+  id: totrans-27
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: \[ \bbetahat \gets \bbetahat - \eta \boldsymbol{\delta}. \]
 - en: A potential stopping rule might be a minimum change in the magnitude of \(\bbetahat\)
     or a minimum decrease in the loss function \(\mathcal{L}\).
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个潜在的停止规则可能是一个 \(\bbetahat\) 大小变化的最小值或损失函数 \(\mathcal{L}\) 的最小减少。
 - en: An Example
+  id: totrans-29
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 一个例子
 - en: As a simple example of gradient descent in action, let’s derive the ordinary
     least squares (OLS) regression estimates. (This problem does have a closed-form
     solution, but we’ll use gradient descent to demonstrate the approach). As discussed
     in [Chapter 1](../c1/concept.html), linear regression models \(\hat{y}_n\) with
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为梯度下降作用的一个简单例子，让我们推导普通最小二乘法（OLS）回归估计。（这个问题确实有一个闭式解，但我们将使用梯度下降来展示这种方法）。如[第1章](../c1/concept.html)中所述，线性回归模型
+    \(\hat{y}_n\) 与
 - en: \[ \hat{y}_n = \bx_n^\top \bbetahat, \]
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \hat{y}_n = \bx_n^\top \bbetahat, \]
 - en: where \(\bx_n\) is a vector of predictors appended with a leading 1 and \(\bbetahat\)
     is a vector of coefficients. The OLS loss function is defined with
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 \(\bx_n\) 是一个带有前导 1 的预测变量向量，\(\bbetahat\) 是一个系数向量。OLS 损失函数定义为
 - en: \[ \mathcal{L}(\bbetahat) = \frac{1}{2}\sumN(y_n - \hat{y}_n)^2 = \frac{1}{2}\sumN
     (y_n - \bx^\top_n \bbetahat)^2. \]
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \mathcal{L}(\bbetahat) = \frac{1}{2}\sumN(y_n - \hat{y}_n)^2 = \frac{1}{2}\sumN
+    (y_n - \bx^\top_n \bbetahat)^2. \]
 - en: 'After choosing \(\eta\) and randomly instantiating \(\bbetahat\), we iteratively
     calculate the loss function’s gradient:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 在选择 \(\eta\) 并随机实例化 \(\bbetahat\) 后，我们迭代地计算损失函数的梯度：
 - en: \[ \boldsymbol{\delta} = \dadb{\mathcal{L}(\bbetahat)}{\bbetahat} = -\sumN(y_n
     - \bx^\top_n \bbetahat)\cdot\bphi_n^\top, \]
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \boldsymbol{\delta} = \dadb{\mathcal{L}(\bbetahat)}{\bbetahat} = -\sumN(y_n
+    - \bx^\top_n \bbetahat)\cdot\bphi_n^\top, \]
 - en: and adjust with
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: and adjust with
 - en: \[ \bbetahat \gets \bbetahat - \eta\boldsymbol{\delta}. \]
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \bbetahat \gets \bbetahat - \eta\boldsymbol{\delta}. \]
 - en: This is accomplished with the following code. Note that we can also calculate
     \(\boldsymbol{\delta} = -\bX^\top(\by - \hat{\by})\), where \(\bX\) is the [feature
     matrix](../conventions_notation.html), \(\by\) is the vector of targets, and \(\hat{\by}\)
     is the vector of fitted values.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以通过以下代码实现。注意，我们还可以计算 \(\boldsymbol{\delta} = -\bX^\top(\by - \hat{\by})\)，其中
+    \(\bX\) 是 [特征矩阵](../conventions_notation.html)，\(\by\) 是目标向量，\(\hat{\by}\) 是拟合值向量。
 - en: '[PRE0]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 2\. Cross Validation
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2\. 交叉验证
 - en: Several of the models covered in this book require *hyperparameters* to be chosen
     exogenously (i.e. before the model is fit). The value of these hyperparameters
     affects the quality of the model’s fit. So how can we choose these values without
     fitting a model? The most common answer is cross validation.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 本书讨论的几个模型需要选择*超参数*（即在模型拟合之前）。这些超参数的值会影响模型拟合的质量。那么我们如何在不拟合模型的情况下选择这些值呢？最常见的答案是交叉验证。
 - en: Suppose we are deciding between several values of a hyperparameter, resulting
     in multiple competing models. One way to choose our model would be to split our
     data into a *training* set and a *validation* set, build each model on the training
     set, and see which performs better on the validation set. By splitting the data
     into training and validation, we avoid evaluating a model based on its in-sample
     performance.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们在几个超参数值之间进行选择，从而产生多个竞争模型。选择我们模型的一种方法是将我们的数据分为一个*训练集*和一个*验证集*，在每个训练集上构建每个模型，并查看哪个在验证集上的表现更好。通过将数据分为训练集和验证集，我们避免了基于模型在样本内表现来评估模型。
 - en: The obvious problem with this set-up is that we are comparing the performance
     of models on just *one* dataset. Instead, we might choose between competing models
     with **K-fold cross validation**, outlined below.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种设置的明显问题是，我们只是在*一个*数据集上比较模型的性能。相反，我们可能会选择使用**K折交叉验证**来比较竞争模型，如下所述。
 - en: Split the original dataset into \(K\) *folds* or subsets.
+  id: totrans-44
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将原始数据集分为\(K\)个*折*或子集。
 - en: For \(k = 1, \dots, K\), treat fold \(k\) as the validation set. Train each
     competing model on the data from the other \(K-1\) folds and evaluate it on the
     data from the \(k^\text{th}\).
+  id: totrans-45
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于 \(k = 1, \dots, K\)，将折\(k\)作为验证集。在每个其他\(K-1\)折的数据上训练每个竞争模型，并在第\(k^\text{th}\)的数据上评估它。
 - en: Select the model with the best average validation performance.
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择平均验证性能最佳的模型。
 - en: As an example, let’s use cross validation to choose a penalty value for a [Ridge
     regression](../c2/s1/regularized.html) model, discussed in chapter 2\. This model
     constrains the magnitude of the regression coefficients; the higher the penalty
     term, the more the coefficients are constrained.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，让我们使用交叉验证来选择第2章中讨论的 [岭回归](../c2/s1/regularized.html) 模型的惩罚值。该模型限制了回归系数的大小；惩罚项越高，系数的约束就越大。
 - en: The example below uses the `Ridge` class from `scikit-learn`, which defines
     the penalty term with the `alpha` argument. We will use the [Boston housing](data.html)
     dataset.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的示例使用来自`scikit-learn`的`Ridge`类，该类使用`alpha`参数定义惩罚项。我们将使用 [波士顿住房](data.html)
+    数据集。
 - en: '[PRE1]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We can then check `error_by_alpha` and choose the `alpha` corresponding to the
     lowest average error!
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们可以检查`error_by_alpha`并选择对应于最低平均错误的`alpha`！
 - en: 1\. Gradient Descent
+  id: totrans-51
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1\. 梯度下降
 - en: Almost all the models discussed in this book aim to find a set of parameters
     that minimize a chosen loss function. Sometimes we can find the optimal parameters
     by taking the derivative of the loss function, setting it equal to 0, and solving.
     In situations for which no closed-form solution is available, however, we might
     turn to gradient descent. **Gradient descent** is an iterative approach to approximating
     the parameters that minimize a differentiable loss function.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 本书讨论的大多数模型旨在找到一组参数，这些参数可以最小化所选的损失函数。有时我们可以通过对损失函数求导，将其设置为0，并求解来找到最优参数。然而，在无法获得闭式解的情况下，我们可能会转向梯度下降。**梯度下降**是一种迭代方法，用于逼近最小化可微损失函数的参数。
 - en: The Set-Up
+  id: totrans-53
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 设置
 - en: Let’s first introduce a typical set-up for gradient descent. Suppose we have
     \(N\) observations where each observation has predictors \(\bx_n\) and target
     variable \(y_n\). We decide to approximate \(y_n\) with \(\hat{y}_n = f(\bx_n,
@@ -268,37 +398,58 @@
     is a set of parameter estimates. Next, we introduce a differentiable loss function
     \(\mathcal{L}\). For simplicity, let’s assume we can write the model’s entire
     loss as the sum of the individual losses across observations. That is,
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们先介绍梯度下降的一个典型设置。假设我们有 \(N\) 个观察值，其中每个观察值都有预测变量 \(\bx_n\) 和目标变量 \(y_n\)。我们决定用
+    \(\hat{y}_n = f(\bx_n, \bbetahat)\) 来近似 \(y_n\)，其中 \(f()\) 是某个可微函数，\(\bbetahat\)
+    是一组参数估计。接下来，我们引入一个可微损失函数 \(\mathcal{L}\)。为了简单起见，让我们假设我们可以将模型的整个损失写成观察到的单个损失的加权和。也就是说，
 - en: \[ \mathcal{L} = \sumN g(y_n, \hat{y}_n), \]
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \mathcal{L} = \sumN g(y_n, \hat{y}_n), \]
 - en: where \(g()\) is some differentiable function representing an observation’s
     individual loss.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 \(g()\) 是表示观察到的单个损失的某个可微函数。
 - en: 'To fit this generic model, we want to find the values of \(\bbetahat\) that
     minimize \(\mathcal{L}\). We will likely start with the following derivative:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了拟合这个通用模型，我们想要找到使 \(\mathcal{L}\) 最小的 \(\bbetahat\) 的值。我们可能会从以下导数开始：
 - en: \[\begin{split} \begin{align} \dadb{\mathcal{L}}{\bbetahat} &= \sumN\dadb{g(y_n,
     \hat{y}_n)}{\bbetahat} \\ &= \sumN\dadb{g(y_n, \hat{y}_n)}{\hat{y}_n}\cdot\dadb{\hat{y}_n}{\bbetahat}.
     \\ \end{align} \end{split}\]
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: \[\begin{split} \begin{align} \dadb{\mathcal{L}}{\bbetahat} &= \sumN\dadb{g(y_n,
+    \hat{y}_n)}{\bbetahat} \\ &= \sumN\dadb{g(y_n, \hat{y}_n)}{\hat{y}_n}\cdot\dadb{\hat{y}_n}{\bbetahat}.
+    \\ \end{align} \end{split}\]
 - en: Ideally, we can set the above derivative equal to 0 and solve for \(\bbetahat\),
     giving our optimal solution. If this isn’t possible, we can iteratively search
     for the values of \(\bbetahat\) that minimize \(\mathcal{L}\). This is the process
     of gradient descent.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 理想情况下，我们可以将上述导数设为0并求解 \(\bbetahat\)，从而得到最优解。如果这不可能，我们可以迭代搜索使 \(\mathcal{L}\)
+    最小的 \(\bbetahat\) 的值。这就是梯度下降的过程。
 - en: An Intuitive Introduction
+  id: totrans-60
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 直观介绍
 - en: '![gd](../Images/4e6b365fc23689963cccc975a25ccc23.png)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
+  zh: '![gd](../Images/4e6b365fc23689963cccc975a25ccc23.png)'
 - en: To understand this process intuitively, consider the image above showing a model’s
     loss as a function of one parameter, \(\beta\). We start our search for the optimal
     \(\beta\) by randomly picking a value. Suppose we start with \(\beta\) at point
@@ -307,21 +458,32 @@
     of \(\mathcal{L}\) with respect to \(\beta\) evaluated at \(\beta = A\). Since
     this derivative is negative, we know that increasing \(\beta\) some small amount
     will decrease the loss.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了直观理解这个过程，考虑上面的图像，它显示了模型损失作为单个参数 \(\beta\) 的函数。我们通过随机选择一个值来开始寻找最优的 \(\beta\)。假设我们从点
+    \(A\) 的 \(\beta\) 开始。从点 \(A\) 我们会问：“如果增加或减少 \(\beta\)，损失函数会减少吗？”为了回答这个问题，我们计算
+    \(\beta = A\) 时 \(\mathcal{L}\) 对 \(\beta\) 的导数。由于这个导数是负的，我们知道增加 \(\beta\) 一些小的量会减少损失。
 - en: Now we know we want to increase \(\beta\), but how much? Intuitively, the more
     negative the derivative, the more the loss will decrease with an increase in \(\beta\).
     So, let’s increase \(\beta\) by an amount proportional to the negative of the
     derivative. Letting \(\delta\) be the derivative and \(\eta\) be a small constant
     learning rate, we might increase \(\beta\) with
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们知道我们想要增加 \(\beta\)，但增加多少呢？直观上，导数越负，随着 \(\beta\) 的增加，损失会减少得越多。所以，让我们以与导数的负值成比例的量增加
+    \(\beta\)。设 \(\delta\) 为导数，\(\eta\) 为一个小常数学习率，我们可能会用以下方式增加 \(\beta\)：
 - en: \[ \beta \gets \beta - \eta\delta. \]
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \beta \gets \beta - \eta\delta. \]
 - en: The more negative \(\delta\) is, the more we increase \(\beta\).
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 负的 \(\delta\) 越大，我们增加 \(\beta\) 的幅度就越大。
 - en: 'Now suppose we make the increase and wind up with \(\beta = B\). Calculating
     the derivative again, we get a slightly positive number. This tells us that we
     went too far: increasing \(\beta\) will increase \(\mathcal{L}\). However, since
@@ -330,95 +492,146 @@
     \(\delta\) is now slightly positive, \(\beta\) will now decrease slightly. We
     will repeat this same process a fixed number of times or until \(\beta\) barely
     changes. And that is gradient descent!'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在假设我们增加 \(\beta\) 并最终得到 \(\beta = B\)。再次计算导数，我们得到一个略微正的数。这告诉我们我们走得太远了：增加 \(\beta\)
+    将会增加 \(\mathcal{L}\)。然而，由于导数只是*略微*正的，我们只想进行轻微的修正。让我们再次使用相同的调整，\(\beta \gets \beta
+    - \eta\delta\)。由于 \(\delta\) 现在略微正，\(\beta\) 将略微减少。我们将重复这个过程固定次数或直到 \(\beta\)
+    几乎没有变化。这就是梯度下降！
 - en: The Steps
+  id: totrans-67
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 步骤
 - en: We can describe gradient descent more concretely with the following steps. Note
     here that \(\bbetahat\) can be a vector, rather than just a single parameter.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以用以下步骤更具体地描述梯度下降。注意，这里 \(\hat{\beta}\) 可以是一个向量，而不仅仅是单个参数。
 - en: Choose a small learning rate \(\eta\)
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择一个小的学习率 \(\eta\)
 - en: Randomly instantiate \(\bbetahat\)
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机实例化 \(\hat{\beta}\)
 - en: 'For a fixed number of iterations or until some stopping rule is reached:'
+  id: totrans-71
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于固定次数的迭代或直到达到某个停止规则：
 - en: Calculate \(\boldsymbol{\delta} = \partial \mathcal{L}/\partial \bbetahat\)
+  id: totrans-72
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算 \(\boldsymbol{\delta} = \frac{\partial \mathcal{L}}{\partial \hat{\beta}}\)
 - en: Adjust \(\bbetahat\) with
+  id: totrans-73
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 用以下方式调整 \(\hat{\beta}\)
 - en: \[ \bbetahat \gets \bbetahat - \eta \boldsymbol{\delta}. \]
+  id: totrans-74
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: \[ \hat{\beta} \gets \hat{\beta} - \eta \boldsymbol{\delta}. \]
 - en: A potential stopping rule might be a minimum change in the magnitude of \(\bbetahat\)
     or a minimum decrease in the loss function \(\mathcal{L}\).
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种可能的停止规则可能是 \(\hat{\beta}\) 的幅度变化的最小值或损失函数 \(\mathcal{L}\) 的最小减少。
 - en: An Example
+  id: totrans-76
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 示例
 - en: As a simple example of gradient descent in action, let’s derive the ordinary
     least squares (OLS) regression estimates. (This problem does have a closed-form
     solution, but we’ll use gradient descent to demonstrate the approach). As discussed
     in [Chapter 1](../c1/concept.html), linear regression models \(\hat{y}_n\) with
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为梯度下降的一个简单示例，让我们推导普通最小二乘法（OLS）回归估计。（这个问题确实有一个闭式解，但我们将使用梯度下降来展示方法）。如[第1章](../c1/concept.html)中讨论的，线性回归模型
+    \(\hat{y}_n\) 与
 - en: \[ \hat{y}_n = \bx_n^\top \bbetahat, \]
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \hat{y}_n = \bx_n^\top \hat{\beta}, \]
 - en: where \(\bx_n\) is a vector of predictors appended with a leading 1 and \(\bbetahat\)
     is a vector of coefficients. The OLS loss function is defined with
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 \(\bx_n\) 是一个向量，它以一个前置的 1 结尾，而 \(\hat{\beta}\) 是一个系数向量。最小二乘法损失函数定义为
 - en: \[ \mathcal{L}(\bbetahat) = \frac{1}{2}\sumN(y_n - \hat{y}_n)^2 = \frac{1}{2}\sumN
     (y_n - \bx^\top_n \bbetahat)^2. \]
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \mathcal{L}(\hat{\beta}) = \frac{1}{2}\sum_{n=1}^{N}(y_n - \hat{y}_n)^2 =
+    \frac{1}{2}\sum_{n=1}^{N} (y_n - \bx_n^\top \hat{\beta})^2. \]
 - en: 'After choosing \(\eta\) and randomly instantiating \(\bbetahat\), we iteratively
     calculate the loss function’s gradient:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 在选择 \(\eta\) 和随机实例化 \(\hat{\beta}\) 之后，我们迭代地计算损失函数的梯度：
 - en: \[ \boldsymbol{\delta} = \dadb{\mathcal{L}(\bbetahat)}{\bbetahat} = -\sumN(y_n
     - \bx^\top_n \bbetahat)\cdot\bphi_n^\top, \]
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \boldsymbol{\delta} = \frac{\partial \mathcal{L}(\hat{\beta})}{\partial \hat{\beta}}
+    = -\sum_{n=1}^{N}(y_n - \bx_n^\top \hat{\beta})\cdot\bphi_n^\top, \]
 - en: and adjust with
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 并调整
 - en: \[ \bbetahat \gets \bbetahat - \eta\boldsymbol{\delta}. \]
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \hat{\beta} \gets \hat{\beta} - \eta\boldsymbol{\delta}. \]
 - en: This is accomplished with the following code. Note that we can also calculate
     \(\boldsymbol{\delta} = -\bX^\top(\by - \hat{\by})\), where \(\bX\) is the [feature
     matrix](../conventions_notation.html), \(\by\) is the vector of targets, and \(\hat{\by}\)
     is the vector of fitted values.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以通过以下代码实现。注意，我们还可以计算 \(\boldsymbol{\delta} = -\bX^\top(\by - \hat{\by})\)，其中
+    \(\bX\) 是[特征矩阵](../conventions_notation.html)，\(\by\) 是目标向量，\(\hat{\by}\) 是拟合值向量。
 - en: '[PRE2]'
+  id: totrans-86
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The Set-Up
+  id: totrans-87
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 设置
 - en: Let’s first introduce a typical set-up for gradient descent. Suppose we have
     \(N\) observations where each observation has predictors \(\bx_n\) and target
     variable \(y_n\). We decide to approximate \(y_n\) with \(\hat{y}_n = f(\bx_n,
@@ -426,37 +639,58 @@
     is a set of parameter estimates. Next, we introduce a differentiable loss function
     \(\mathcal{L}\). For simplicity, let’s assume we can write the model’s entire
     loss as the sum of the individual losses across observations. That is,
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们先介绍梯度下降的一个典型设置。假设我们有 \(N\) 个观察值，其中每个观察值都有预测变量 \(\bx_n\) 和目标变量 \(y_n\)。我们决定用
+    \(\hat{y}_n = f(\bx_n, \bbetahat)\) 来近似 \(y_n\)，其中 \(f()\) 是某个可微函数，\(\bbetahat\)
+    是一组参数估计。接下来，我们引入一个可微损失函数 \(\mathcal{L}\)。为了简单起见，让我们假设我们可以将模型的整个损失写成观察到的单个损失的总和。也就是说，
 - en: \[ \mathcal{L} = \sumN g(y_n, \hat{y}_n), \]
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \mathcal{L} = \sumN g(y_n, \hat{y}_n), \]
 - en: where \(g()\) is some differentiable function representing an observation’s
     individual loss.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 \(g()\) 是表示观察到的单个损失的某个可微函数。
 - en: 'To fit this generic model, we want to find the values of \(\bbetahat\) that
     minimize \(\mathcal{L}\). We will likely start with the following derivative:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了拟合这个通用模型，我们想要找到使 \(\mathcal{L}\) 最小的 \(\bbetahat\) 的值。我们可能会从以下导数开始：
 - en: \[\begin{split} \begin{align} \dadb{\mathcal{L}}{\bbetahat} &= \sumN\dadb{g(y_n,
     \hat{y}_n)}{\bbetahat} \\ &= \sumN\dadb{g(y_n, \hat{y}_n)}{\hat{y}_n}\cdot\dadb{\hat{y}_n}{\bbetahat}.
     \\ \end{align} \end{split}\]
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: \[\begin{split} \begin{align} \dadb{\mathcal{L}}{\bbetahat} &= \sumN\dadb{g(y_n,
+    \hat{y}_n)}{\bbetahat} \\ &= \sumN\dadb{g(y_n, \hat{y}_n)}{\hat{y}_n}\cdot\dadb{\hat{y}_n}{\bbetahat}.
+    \\ \end{align} \end{split}\]
 - en: Ideally, we can set the above derivative equal to 0 and solve for \(\bbetahat\),
     giving our optimal solution. If this isn’t possible, we can iteratively search
     for the values of \(\bbetahat\) that minimize \(\mathcal{L}\). This is the process
     of gradient descent.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 理想情况下，我们可以将上述导数设为 0 并解出 \(\bbetahat\)，得到我们的最优解。如果这不可能，我们可以迭代地寻找使 \(\mathcal{L}\)
+    最小的 \(\bbetahat\) 的值。这就是梯度下降的过程。
 - en: An Intuitive Introduction
+  id: totrans-94
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 直观介绍
 - en: '![gd](../Images/4e6b365fc23689963cccc975a25ccc23.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![gd](../Images/4e6b365fc23689963cccc975a25ccc23.png)'
 - en: To understand this process intuitively, consider the image above showing a model’s
     loss as a function of one parameter, \(\beta\). We start our search for the optimal
     \(\beta\) by randomly picking a value. Suppose we start with \(\beta\) at point
@@ -465,21 +699,32 @@
     of \(\mathcal{L}\) with respect to \(\beta\) evaluated at \(\beta = A\). Since
     this derivative is negative, we know that increasing \(\beta\) some small amount
     will decrease the loss.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了直观地理解这个过程，考虑上面显示的模型损失作为单个参数 \(\beta\) 的函数的图像。我们开始寻找最优 \(\beta\) 的值，通过随机选择一个值。假设我们从点
+    \(A\) 的 \(\beta\) 开始。从点 \(A\) 我们会问：“如果增加或减少 \(\beta\)，损失函数会减少吗？”为了回答这个问题，我们计算在
+    \(\beta = A\) 时 \(\mathcal{L}\) 对 \(\beta\) 的导数。由于这个导数是负的，我们知道增加 \(\beta\) 一些小的量会减少损失。
 - en: Now we know we want to increase \(\beta\), but how much? Intuitively, the more
     negative the derivative, the more the loss will decrease with an increase in \(\beta\).
     So, let’s increase \(\beta\) by an amount proportional to the negative of the
     derivative. Letting \(\delta\) be the derivative and \(\eta\) be a small constant
     learning rate, we might increase \(\beta\) with
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们知道我们想要增加 \(\beta\)，但增加多少呢？直观上，导数越负，随着 \(\beta\) 的增加，损失会减少得越多。所以，让我们以与导数的负值成比例的量增加
+    \(\beta\)。让 \(\delta\) 表示导数，\(\eta\) 表示一个小的常数学习率，我们可能会用以下方式增加 \(\beta\)：
 - en: \[ \beta \gets \beta - \eta\delta. \]
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \beta \gets \beta - \eta\delta. \]
 - en: The more negative \(\delta\) is, the more we increase \(\beta\).
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: \(\delta\) 越负，我们增加 \(\beta\) 的量就越大。
 - en: 'Now suppose we make the increase and wind up with \(\beta = B\). Calculating
     the derivative again, we get a slightly positive number. This tells us that we
     went too far: increasing \(\beta\) will increase \(\mathcal{L}\). However, since
@@ -488,143 +733,216 @@
     \(\delta\) is now slightly positive, \(\beta\) will now decrease slightly. We
     will repeat this same process a fixed number of times or until \(\beta\) barely
     changes. And that is gradient descent!'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在假设我们增加（beta）并最终得到 \(\beta = B\)。再次计算导数，我们得到一个略微正数。这告诉我们我们做得太过了：增加 \(\beta\)
+    将会增加 \(\mathcal{L}\)。然而，由于导数只是 *略微* 正的，我们只想进行轻微的修正。让我们再次使用相同的调整，\(\beta \gets
+    \beta - \eta\delta\)。由于 \(\delta\) 现在略微为正，\(\beta\) 将会略微减少。我们将重复这个过程固定次数或直到 \(\beta\)
+    几乎没有变化。这就是梯度下降！
 - en: The Steps
+  id: totrans-101
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 步骤
 - en: We can describe gradient descent more concretely with the following steps. Note
     here that \(\bbetahat\) can be a vector, rather than just a single parameter.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以用以下步骤更具体地描述梯度下降。注意，\(\bbetahat\) 可以是一个向量，而不仅仅是单个参数。
 - en: Choose a small learning rate \(\eta\)
+  id: totrans-103
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择一个小的学习率 \(\eta\)
 - en: Randomly instantiate \(\bbetahat\)
+  id: totrans-104
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机实例化 \(\bbetahat\)
 - en: 'For a fixed number of iterations or until some stopping rule is reached:'
+  id: totrans-105
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于固定次数的迭代或直到达到某个停止规则：
 - en: Calculate \(\boldsymbol{\delta} = \partial \mathcal{L}/\partial \bbetahat\)
+  id: totrans-106
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算 \(\boldsymbol{\delta} = \partial \mathcal{L}/\partial \bbetahat\)
 - en: Adjust \(\bbetahat\) with
+  id: totrans-107
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用以下方式调整 \(\bbetahat\)
 - en: \[ \bbetahat \gets \bbetahat - \eta \boldsymbol{\delta}. \]
+  id: totrans-108
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: \[ \bbetahat \gets \bbetahat - \eta \boldsymbol{\delta}. \]
 - en: A potential stopping rule might be a minimum change in the magnitude of \(\bbetahat\)
     or a minimum decrease in the loss function \(\mathcal{L}\).
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个可能的停止规则可能是 \(\bbetahat\) 的幅度变化的最小值或损失函数 \(\mathcal{L}\) 的最小减少。
 - en: An Example
+  id: totrans-110
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 示例
 - en: As a simple example of gradient descent in action, let’s derive the ordinary
     least squares (OLS) regression estimates. (This problem does have a closed-form
     solution, but we’ll use gradient descent to demonstrate the approach). As discussed
     in [Chapter 1](../c1/concept.html), linear regression models \(\hat{y}_n\) with
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为梯度下降实际应用的简单例子，让我们推导普通最小二乘法（OLS）回归估计。（这个问题确实有一个闭式解，但我们将使用梯度下降来展示方法）。如[第1章](../c1/concept.html)中所述，线性回归模型
+    \(\hat{y}_n\) 使用
 - en: \[ \hat{y}_n = \bx_n^\top \bbetahat, \]
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \hat{y}_n = \bx_n^\top \bbetahat, \]
 - en: where \(\bx_n\) is a vector of predictors appended with a leading 1 and \(\bbetahat\)
     is a vector of coefficients. The OLS loss function is defined with
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 \(\bx_n\) 是一个向量，包含预测变量并附加一个前导的1，\(\bbetahat\) 是一个系数向量。OLS损失函数定义为
 - en: \[ \mathcal{L}(\bbetahat) = \frac{1}{2}\sumN(y_n - \hat{y}_n)^2 = \frac{1}{2}\sumN
     (y_n - \bx^\top_n \bbetahat)^2. \]
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \mathcal{L}(\bbetahat) = \frac{1}{2}\sumN(y_n - \hat{y}_n)^2 = \frac{1}{2}\sumN
+    (y_n - \bx^\top_n \bbetahat)^2. \]
 - en: 'After choosing \(\eta\) and randomly instantiating \(\bbetahat\), we iteratively
     calculate the loss function’s gradient:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 在选择 \(\eta\) 并随机实例化 \(\bbetahat\) 后，我们迭代地计算损失函数的梯度：
 - en: \[ \boldsymbol{\delta} = \dadb{\mathcal{L}(\bbetahat)}{\bbetahat} = -\sumN(y_n
     - \bx^\top_n \bbetahat)\cdot\bphi_n^\top, \]
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \boldsymbol{\delta} = \dadb{\mathcal{L}(\bbetahat)}{\bbetahat} = -\sumN(y_n
+    - \bx^\top_n \bbetahat)\cdot\bphi_n^\top, \]
 - en: and adjust with
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 并进行调整
 - en: \[ \bbetahat \gets \bbetahat - \eta\boldsymbol{\delta}. \]
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \bbetahat \gets \bbetahat - \eta\boldsymbol{\delta}. \]
 - en: This is accomplished with the following code. Note that we can also calculate
     \(\boldsymbol{\delta} = -\bX^\top(\by - \hat{\by})\), where \(\bX\) is the [feature
     matrix](../conventions_notation.html), \(\by\) is the vector of targets, and \(\hat{\by}\)
     is the vector of fitted values.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以通过以下代码实现。注意，我们也可以计算 \(\boldsymbol{\delta} = -\bX^\top(\by - \hat{\by})\)，其中
+    \(\bX\) 是 [特征矩阵](../conventions_notation.html)，\(\by\) 是目标向量，\(\hat{\by}\) 是拟合值向量。
 - en: '[PRE3]'
+  id: totrans-120
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 2\. Cross Validation
+  id: totrans-121
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2\. 交叉验证
 - en: Several of the models covered in this book require *hyperparameters* to be chosen
     exogenously (i.e. before the model is fit). The value of these hyperparameters
     affects the quality of the model’s fit. So how can we choose these values without
     fitting a model? The most common answer is cross validation.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 本书涵盖的几个模型需要选择 *超参数*，这些超参数在模型拟合之前外生选择（即，在模型拟合之前）。这些超参数的值会影响模型拟合的质量。那么我们如何在不拟合模型的情况下选择这些值呢？最常见的答案是交叉验证。
 - en: Suppose we are deciding between several values of a hyperparameter, resulting
     in multiple competing models. One way to choose our model would be to split our
     data into a *training* set and a *validation* set, build each model on the training
     set, and see which performs better on the validation set. By splitting the data
     into training and validation, we avoid evaluating a model based on its in-sample
     performance.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们正在决定几个超参数值，从而产生多个竞争模型。选择我们的模型的一种方法是将我们的数据分为一个**训练集**和一个**验证集**，在每个训练集上构建每个模型，并查看哪个在验证集上表现更好。通过将数据分为训练集和验证集，我们避免了基于模型在样本内性能来评估模型。
 - en: The obvious problem with this set-up is that we are comparing the performance
     of models on just *one* dataset. Instead, we might choose between competing models
     with **K-fold cross validation**, outlined below.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种设置的一个明显问题是，我们只是在比较模型在一个数据集上的性能。相反，我们可能会选择使用**K折交叉验证**来比较竞争模型，如下所述。
 - en: Split the original dataset into \(K\) *folds* or subsets.
+  id: totrans-125
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将原始数据集分为 \(K\) 个**折叠**或子集。
 - en: For \(k = 1, \dots, K\), treat fold \(k\) as the validation set. Train each
     competing model on the data from the other \(K-1\) folds and evaluate it on the
     data from the \(k^\text{th}\).
+  id: totrans-126
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于 \(k = 1, \dots, K\)，将折叠 \(k\) 作为验证集。在每个其他 \(K-1\) 折叠的数据上训练每个竞争模型，并在第 \(k\)
+    个折叠的数据上评估它。
 - en: Select the model with the best average validation performance.
+  id: totrans-127
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择平均验证性能最好的模型。
 - en: As an example, let’s use cross validation to choose a penalty value for a [Ridge
     regression](../c2/s1/regularized.html) model, discussed in chapter 2\. This model
     constrains the magnitude of the regression coefficients; the higher the penalty
     term, the more the coefficients are constrained.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，让我们使用交叉验证来为第2章中讨论的 [岭回归](../c2/s1/regularized.html) 模型选择一个惩罚值。该模型限制了回归系数的大小；惩罚项越高，系数的约束就越大。
 - en: The example below uses the `Ridge` class from `scikit-learn`, which defines
     the penalty term with the `alpha` argument. We will use the [Boston housing](data.html)
     dataset.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的示例使用来自 `scikit-learn` 的 `Ridge` 类，该类使用 `alpha` 参数定义惩罚项。我们将使用 [波士顿住房](data.html)
+    数据集。
 - en: '[PRE4]'
+  id: totrans-130
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: We can then check `error_by_alpha` and choose the `alpha` corresponding to the
     lowest average error!
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们可以检查 `error_by_alpha` 并选择对应于最低平均错误的 `alpha`！
