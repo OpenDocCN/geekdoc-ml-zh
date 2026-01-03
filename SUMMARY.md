@@ -1,3 +1,4 @@
++   [Python 中的应用机器学习](docs/app-ml-py/README.md)
 +   [可解释的机器学习](docs/interpretable-ml-book/README.md)
 +   [机器学习的机制](docs/mech-ml/README.md)
 +   [百页机器学习小书](docs/ml-book-100-zh/README.md)
