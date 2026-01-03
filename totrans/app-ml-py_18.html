@@ -1,0 +1,1022 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Predictive Machine Learning with scikit-learn</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Predictive Machine Learning with scikit-learn</h1>
+<blockquote>原文：<a href="https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_predictive.html">https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_predictive.html</a></blockquote>
+
+<p>Michael J. Pyrcz, Professor, The University of Texas at Austin</p>
+<p><a class="reference external" href="https://twitter.com/geostatsguy">Twitter</a> | <a class="reference external" href="https://github.com/GeostatsGuy">GitHub</a> | <a class="reference external" href="http://michaelpyrcz.com">Website</a> | <a class="reference external" href="https://scholar.google.com/citations?user=QVZ20eQAAAAJ&amp;hl=en&amp;oi=ao">GoogleScholar</a> | <a class="reference external" href="https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446">Geostatistics Book</a> | <a class="reference external" href="https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig">YouTube</a>  | <a class="reference external" href="https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html">Applied Geostats in Python e-book</a> | <a class="reference external" href="https://geostatsguy.github.io/MachineLearningDemos_Book/">Applied Machine Learning in Python e-book</a> | <a class="reference external" href="https://www.linkedin.com/in/michael-pyrcz-61a648a1">LinkedIn</a></p>
+<p>Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with Code”.</p>
+<div class="remove-from-content-only admonition">
+<p class="admonition-title">Cite this e-Book as:</p>
+<p>Pyrcz, M.J., 2024, <em>Applied Machine Learning in Python: A Hands-on Guide with Code</em> [e-book]. Zenodo. doi:10.5281/zenodo.15169138 <a class="reference external" href="https://doi.org/10.5281/zenodo.15169138"><img alt="DOI" src="../Images/7e4ea662f44af1eae87e87ecbb962ff4.png" data-original-src="https://zenodo.org/badge/863274676.svg"/></a></p>
+</div>
+<p>The workflows in this book and more are available here:</p>
+<div class="remove-from-content-only admonition">
+<p class="admonition-title">Cite the MachineLearningDemos GitHub Repository as:</p>
+<p>Pyrcz, M.J., 2024, <em>MachineLearningDemos: Python Machine Learning Demonstration Workflows Repository</em> (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312. GitHub repository: <a class="github reference external" href="https://github.com/GeostatsGuy/MachineLearningDemos">GeostatsGuy/MachineLearningDemos</a> <a class="reference external" href="https://zenodo.org/doi/10.5281/zenodo.13835312"><img alt="DOI" src="../Images/4e3a59c17d684b06a170c4af84e0f631.png" data-original-src="https://zenodo.org/badge/862519860.svg"/></a></p>
+</div>
+<p>By Michael J. Pyrcz <br/>
+© Copyright 2025.</p>
+<p>This chapter is a tutorial for / demonstration of <strong>Predictive Machine Learning with scikit-learn</strong>.</p>
+<p><strong>YouTube Lecture</strong>: check out my lectures on:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl">Introduction to Machine Learning</a></p></li>
+<li><p><a class="reference external" href="https://youtu.be/EbYePnjWB5o?si=dd7SpbQlQgMhFGZ5">Predictive Machine Learning in Python with sckit-learn</a></p></li>
+<li><p><a class="reference external" href="https://youtu.be/tYrPs8s1l9U?si=5OMrFm7rlK6koR6g">Machine Learning in Python with Pipelines</a></p></li>
+</ul>
+<p>These lectures are all part of my <a class="reference external" href="https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&amp;si=XonjO2wHdXffMpeI">Machine Learning Course</a> on YouTube with linked well-documented Python workflows and interactive dashboards. My goal is to share accessible, actionable, and repeatable educational content. If you want to know about my motivation, check out <a class="reference external" href="https://michaelpyrcz.com/my-story">Michael’s Story</a>.</p>
+<section id="motivation-for-predictive-machine-learning-with-scikit-learn">
+<h2>Motivation for Predictive Machine Learning with scikit-learn</h2>
+<p>This chapter is unusual for me. As a professor, I avoid lectures that focus on the specific tools, as I would rather teach the principles and then introduce the examples with the common tools. It is my opinion that,</p>
+<ul class="simple">
+<li><p>theory will outlast any available software tools</p></li>
+<li><p>without a theory focus I may encourage black-box model use</p></li>
+<li><p>with a strong understanding of the theory, one could pick up any software as needed</p></li>
+</ul>
+<p>But in this case,</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://scikit-learn.org/">scikit-learn</a> is such a common machine learning package for machine learning that is very widely used</p></li>
+<li><p>throughout this e-book I use scikit-learn</p></li>
+<li><p>scikit-learn uses a nuts and bolts approach to build machine learning workflows that maximizes flexibility</p></li>
+<li><p>scikit-learn provides the theory in the docs or links to original publications</p></li>
+</ul>
+<p>In summary, scikit-learn get me and I see the package as a partner in education! Thank you!</p>
+<p>So I have decided to add this chapter focused on the methods for machine learning modeling with scikit-learn.</p>
+</section>
+<section id="machine-learning-based-prediction">
+<h2>Machine Learning-based Prediction</h2>
+<p>Here’s a simple workflow, demonstration of scikit-learn training and tuning a machine learning model with a simple dataset.</p>
+<ul class="simple">
+<li><p>I provide this as the most basic, minimum Python workflow to assist those learning predictive machine learning</p></li>
+<li><p>I demonstration model training and tuning (by-hand and automatically), including the pipeline approach</p></li>
+<li><p>Given the 1 predictor feature and 1 response for ease of data and model visualization</p></li>
+</ul>
+<p>This provides an opportunity to run and visualize a variety of machine learning models for experiential learning.</p>
+</section>
+<section id="id1">
+<h2>Machine Learning-based Prediction</h2>
+<p>We build a decision tree-based predictive machine learning models with supervised learning:</p>
+<p><strong>Prediction</strong></p>
+<ul class="simple">
+<li><p>non-parametric method for regression (continuous response) and classification (categorical response)</p></li>
+<li><p>a function <span class="math notranslate nohighlight">\(\hat{f}\)</span> of the nearest <span class="math notranslate nohighlight">\(k\)</span> training data in predictor feature space such that we predict a response feature <span class="math notranslate nohighlight">\(Y\)</span> from a set of predictor features <span class="math notranslate nohighlight">\(X_1,\ldots,X_m\)</span>.</p></li>
+<li><p>the prediction is of the form:</p></li>
+</ul>
+<p>\begin{equation}
+\hat{Y} = \hat{f}(X_1,\ldots,X_m) + \epsilon
+\end{equation}</p>
+<p>where <span class="math notranslate nohighlight">\(\epsilon\)</span> is an error term.</p>
+<p><strong>Supervised Learning</strong></p>
+<ul class="simple">
+<li><p>the response feature, <span class="math notranslate nohighlight">\(Y\)</span>, is available over the training and testing data</p></li>
+</ul>
+</section>
+<section id="load-the-required-libraries">
+<h2>Load the Required Libraries</h2>
+<p>The following code loads the required libraries. These should have been installed with Anaconda 3.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">ignore_warnings</span> <span class="o">=</span> <span class="kc">True</span>                                        <span class="c1"># ignore warnings?</span>
+<span class="kn">import</span> <span class="nn">os</span>                                                     <span class="c1"># to set current working directory </span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>                                           <span class="c1"># DataFrames and plotting</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>                                            <span class="c1"># arrays and matrix math</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>                               <span class="c1"># plotting</span>
+<span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="p">(</span><span class="n">MultipleLocator</span><span class="p">,</span> <span class="n">AutoMinorLocator</span><span class="p">)</span> <span class="c1"># control of axes ticks</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">metrics</span>                                   <span class="c1"># measures to check our models</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>          <span class="c1"># random train and test data split</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">tree</span>                                      <span class="c1"># tree program from scikit learn (package for machine learning)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">'axes'</span><span class="p">,</span> <span class="n">axisbelow</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>                                <span class="c1"># plot all grids below the plot elements</span>
+<span class="k">if</span> <span class="n">ignore_warnings</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>                                   
+    <span class="kn">import</span> <span class="nn">warnings</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">'ignore'</span><span class="p">)</span>
+<span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">inferno</span>                                         <span class="c1"># color map</span>
+<span class="n">seed</span> <span class="o">=</span> <span class="mi">42</span>                                                     <span class="c1"># random number seed</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>If you get a package import error, you may have to first install some of these packages. This can usually be accomplished by opening up a command window on Windows and then typing ‘python -m pip install [package-name]’. More assistance is available with the respective package docs.</p>
+</section>
+<section id="set-the-random-number-seed">
+<h2>Set the Random Number Seed</h2>
+<p>These workflows and models may use random processes, e.g.:</p>
+<ul class="simple">
+<li><p>random train and test split with cross validation and k-fold cross validation</p></li>
+<li><p>random selection of a subset of features to consider for the next split</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>                                        <span class="c1"># scikit-learn uses the NumPy seed</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="declare-functions">
+<h2>Declare functions</h2>
+<p>Let’s define a function for plotting gridlines.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="k">def</span> <span class="nf">add_grid</span><span class="p">():</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">'major'</span><span class="p">,</span><span class="n">linewidth</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">'minor'</span><span class="p">,</span><span class="n">linewidth</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span> <span class="c1"># add y grids</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">which</span><span class="o">=</span><span class="s1">'major'</span><span class="p">,</span><span class="n">length</span><span class="o">=</span><span class="mi">7</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">which</span><span class="o">=</span><span class="s1">'minor'</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">AutoMinorLocator</span><span class="p">());</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">AutoMinorLocator</span><span class="p">())</span> <span class="c1"># turn on minor ticks   </span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="set-the-working-directory">
+<h2>Set the working directory</h2>
+<p>I always like to do this so I don’t lose files and to simplify subsequent read and writes (avoid including the full address each time).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="c1"># not needed currently</span>
+<span class="c1">#os.chdir("c:/PGE383")                                       # set the working directory</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>You will have to update the part in quotes with your own working directory and the format is different on a Mac (e.g. “~/PGE”).</p>
+</section>
+<section id="read-the-data-table">
+<h2>Read the data table</h2>
+<p>We use a data “1D_Porosity.csv” comma delimited file from my GitHub <a class="reference external" href="https://github.com/GeostatsGuy/GeoDataSets">GeoDataSets Respository</a>.</p>
+<ul class="simple">
+<li><p>this code loads the data directly from my GitHub repository.</p></li>
+<li><p>if you have the data file available locally (i.e. you are not connected to the internet) set the working directory to the location with the data file and use the second line below</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">my_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/1D_Porosity.csv"</span><span class="p">)</span> <span class="c1"># load the comma delimited data file</span>
+<span class="c1">#my_data = pd.read_csv("1D_Porosity.csv")                     # load the comma delimited data file locally</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">my_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">'Depth'</span><span class="p">])</span>               <span class="c1"># ensure X and y features are DataFrames</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">my_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">'Nporosity'</span><span class="p">])</span>
+<span class="n">X</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">);</span> <span class="n">y</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>                                      <span class="c1"># preview the predictor feature</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Loaded '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">my_data</span><span class="p">))</span> <span class="o">+</span> <span class="s1">' samples, with features = '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">my_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'.'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span/>Loaded 40 samples, with features = ['Depth' 'Nporosity'].
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-the-available-data">
+<h2>Plot the Available Data</h2>
+<p>Let’s do a simple scatter plot to check the data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'All Data'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c8f68d96b92a64e674753dd321abb3376a788853f792000775c676b02927aec1.png" src="../Images/1185159d2aa42c7833a49ebd954a9aca.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/c8f68d96b92a64e674753dd321abb3376a788853f792000775c676b02927aec1.png"/>
+</div>
+</div>
+</section>
+<section id="optional-add-random-error-to-the-response-feature-y">
+<h2>Optional: Add Random Error to the Response Feature, <span class="math notranslate nohighlight">\(y\)</span></h2>
+<p>For more experiential learning consider repeating this workflow with different amounts of additional error</p>
+<ul class="simple">
+<li><p>to observe issues of model overfit consider adding some additional error,</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span/><span class="n">error_stdev</span> <span class="o">=</span> <span class="mf">0.0</span>                                           <span class="c1"># standard deviation of additional random error</span>
+</pre></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">error_stdev</span> <span class="o">=</span> <span class="mf">0.0</span>                                             <span class="c1"># standard deviation of additional random error</span>
+<span class="n">y_orig</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>                                  <span class="c1"># make a deep copy of original dataset</span>
+<span class="n">y</span><span class="p">[</span><span class="s1">'Nporosity'</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="s1">'Nporosity'</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">error_stdev</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'blue'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'with added noise'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'All Data, Original and with Added Noise'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y_orig</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'original data'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper left'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/db6bdae8f03df1faab8e473a6c4ac4068bec1a1c0601e89ed59590368330bf1c.png" src="../Images/a4f6a9c8841781db06c62d6cdf546dde.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/db6bdae8f03df1faab8e473a6c4ac4068bec1a1c0601e89ed59590368330bf1c.png"/>
+</div>
+</div>
+</section>
+<section id="fast-forward-through-data-analytics">
+<h2>Fast Forward Through Data Analytics</h2>
+<p>This workflow is focussed on building predictive machine learning models</p>
+<ul class="simple">
+<li><p>for brevity we skip data checking, data analytics, statistical analysis, feature transformations etc.</p></li>
+<li><p>we skip all the way to model building</p></li>
+<li><p>we don’t even discuss model selection, feature selection, nor robust hyperparameter tuning</p></li>
+</ul>
+<p>This is the most simple predictive machine learning workflow possible!</p>
+<ul class="simple">
+<li><p>basics for machine learning with scikit-learn in Python. Nothing more.</p></li>
+</ul>
+</section>
+<section id="let-s-build-a-predictive-machine-learning-model">
+<h2>Let’s Build a Predictive Machine Learning Model</h2>
+<p>We use the following steps to build our model</p>
+<ol class="arabic simple">
+<li><p><strong>instantiate</strong> the machine learning model with hyperparameters</p></li>
+<li><p><strong>fit</strong>, train the machine learing model to the training data</p></li>
+<li><p><strong>predict</strong>, check the trained machine learning models to predict at withheld testing data</p></li>
+<li><p><strong>select</strong> the optimum hyperparameters, hyperparameter tuning</p></li>
+<li><p><strong>refit</strong> the model by training with all data given the tuned hyperparmaeters</p></li>
+</ol>
+<p>We will use the train - test approach, an alternative is the train, validate and test approach.</p>
+<ul class="simple">
+<li><p>we will start simple and cover k-fold cross validation and scikit-learn pipeline class later</p></li>
+</ul>
+</section>
+<section id="split-train-and-test">
+<h2>Split Train and Test</h2>
+<p>We will demonstrate the following hyperparameter tuning methods:</p>
+<ul class="simple">
+<li><p><strong>cross validation</strong> - split 25% of data as withheld testing data, only 25% of data are tested</p></li>
+<li><p><strong>k-fold cross validation</strong> - calculate average error over k folds, all data are tested</p></li>
+</ul>
+<p>Let’s start with cross validation and then demonstrate k-fold cross validation.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span> <span class="c1"># train and test split</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'green'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Train and Test Data'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'test'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/8301051d675ae545cbd9a77b7b63baad14810e3e9f3dfd6e299fd5ce3e5cdd5c.png" src="../Images/9d97f00b8d0b32eb2d7d97ab07abb605.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/8301051d675ae545cbd9a77b7b63baad14810e3e9f3dfd6e299fd5ce3e5cdd5c.png"/>
+</div>
+</div>
+</section>
+<section id="build-a-decision-tree-model">
+<h2>Build a Decision Tree Model</h2>
+<p>Let’s instantiate (set the hyperparameter(s)) and fit (train with training data) a decision tree regression model to our data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="mi">6</span>                                            <span class="c1"># set the hyperparameter</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">max_leaf_nodes</span><span class="p">)</span> <span class="c1"># instantiate the model</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>                     <span class="c1"># fit the model to the trainin data</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="predict-with-a-decision-tree-model">
+<h2>Predict With a Decision Tree Model</h2>
+<p>Now let’s make a prediction with our trained decision tree model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">itest</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span> <span class="n">depth</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">[</span><span class="s1">'Depth'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">itest</span><span class="p">]</span>            <span class="c1"># set the predictor value for our prediction</span>
+<span class="n">spor</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="n">depth</span><span class="p">]])</span>                          <span class="c1"># predict with our trained model</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'green'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Train and Test Data and Model Prediction'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'test'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span><span class="n">spor</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="s1">'s'</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'predict'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span> <span class="n">add_grid</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c8659b494469d1cf1349fd8143fe016473544dea1159f62300489b493236734c.png" src="../Images/93fe563da105e7191b40024dad8586f5.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/c8659b494469d1cf1349fd8143fe016473544dea1159f62300489b493236734c.png"/>
+</div>
+</div>
+</section>
+<section id="predict-over-a-range-of-predictor-feature-values-with-a-decision-tree-model">
+<h2>Predict Over a Range of Predictor Feature Values with a Decision Tree Model</h2>
+<p>Now, let’s make predictions over a range of predictor feature values so we can visualize the model.</p>
+<ul class="simple">
+<li><p>this is easy to do since we have just 1 predictor feature</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">depths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span>                          <span class="c1"># set the predictor values for our prediction</span>
+<span class="n">spors</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">depths</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>             <span class="c1"># predict with our trained model</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'green'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Train and Test Data and Model Predictions'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'test'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">depths</span><span class="p">,</span><span class="n">spors</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'predict'</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">zorder</span><span class="o">=-</span><span class="mi">1</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/3a5c6ea1ec85203a0f15c3d46ae86783757808f467cadc500454f9c887228fe0.png" src="../Images/29e1a12c1961942e61997bd3ac0110ca.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/3a5c6ea1ec85203a0f15c3d46ae86783757808f467cadc500454f9c887228fe0.png"/>
+</div>
+</div>
+</section>
+<section id="changing-the-model-hyperparameter-s">
+<h2>Changing the Model Hyperparameter(s)</h2>
+<p>Let’s try changing the model complexity and refitting the model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="mi">10</span>                                         <span class="c1"># set the hyperparameter</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">max_leaf_nodes</span><span class="p">)</span> <span class="c1"># instantiate the model</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>                   <span class="c1"># fit the model to the trainin data</span>
+<span class="n">spors</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">depths</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>             <span class="c1"># predict with our trained model</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'green'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'test'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">depths</span><span class="p">,</span><span class="n">spors</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'predict'</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/d3b73736375ae3ab790c7b21e2c4c20d28ebdffc2556a99912efb733b3fd7d82.png" src="../Images/32ce25273cb95be1bc73a931d2300783.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/d3b73736375ae3ab790c7b21e2c4c20d28ebdffc2556a99912efb733b3fd7d82.png"/>
+</div>
+</div>
+</section>
+<section id="tuning-the-model-hyperparameter-s">
+<h2>Tuning the Model Hyperparameter(s)</h2>
+<p>To tune the model hyperparameters we need a metric to summarize model error over the withheld testing data</p>
+<ul class="simple">
+<li><p>let’s predict at the testing data and calculate our metric, testing mean square error.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">leaf_nodes</span> <span class="o">=</span> <span class="mi">7</span>                                              <span class="c1"># set the hyperparameter</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">leaf_nodes</span><span class="p">)</span> <span class="c1"># instantiate the model</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>                   <span class="c1"># fit the model to the trainin data</span>
+<span class="n">y_predict</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>                        <span class="c1"># predict at the testing data locations</span>
+<span class="n">mse</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span><span class="n">y_predict</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Testing MSE is '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">mse</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'.'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span/>Testing MSE is 0.67.
+</pre></div>
+</div>
+</div>
+</div>
+<p>and we need to rebuild the model with a variable level of complexity</p>
+<ul class="simple">
+<li><p>let’s loop over the number of leaf nodes and plot the performance over the withheld testing data</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">nodes</span> <span class="o">=</span> <span class="p">[];</span> <span class="n">scores</span> <span class="o">=</span> <span class="p">[];</span> <span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">nnode</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">,</span><span class="mi">1</span><span class="p">)):</span>
+    <span class="n">our_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">nnode</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span> <span class="c1"># instantiate / fit</span>
+    <span class="n">y_predict</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>                    <span class="c1"># predict at the testing data locations</span>
+    <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nnode</span><span class="p">);</span> <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span><span class="n">y_predict</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span><span class="n">scores</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span><span class="n">scores</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span><span class="n">zorder</span><span class="o">=-</span><span class="mi">1</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Number of Leaf Nodes'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Testing Mean Square Error'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/d93257b45568bdd5ca8115c16b6ffab50c3eeae024f20178c1f5b9fc272cb45f.png" src="../Images/e07a293a3a9e2bf5b198ec8e220f17b1.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/d93257b45568bdd5ca8115c16b6ffab50c3eeae024f20178c1f5b9fc272cb45f.png"/>
+</div>
+</div>
+<p>For a more robust assessment of performance let’s use scikit-learns k-fold cross validation.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">cross_val_score</span> <span class="k">as</span> <span class="n">kfold</span>       <span class="c1"># cross validation methods</span>
+<span class="n">nodes</span> <span class="o">=</span> <span class="p">[];</span> <span class="n">scores</span> <span class="o">=</span> <span class="p">[];</span> <span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">nnode</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)):</span>
+    <span class="n">our_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">nnode</span><span class="p">)</span> <span class="c1"># instantiate / fit</span>
+    <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nnode</span><span class="p">);</span> 
+    <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">kfold</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">our_tree</span><span class="p">,</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span><span class="n">cv</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">scoring</span> <span class="o">=</span> <span class="s2">"neg_mean_squared_error"</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span><span class="n">scores</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span><span class="n">scores</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Number of Leaf Nodes'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Testing Mean Square Error'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c0edb899e876f1ebd639ac3d6c4eb5b5a9fe13138c12076aa8086978cb7789bc.png" src="../Images/93663d34dc6ae7a4b909718efe41cf18.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/c0edb899e876f1ebd639ac3d6c4eb5b5a9fe13138c12076aa8086978cb7789bc.png"/>
+</div>
+</div>
+<p>The main product from all of the previous work is the tuned hyperparameter, the optimum model complexity.</p>
+<ul class="simple">
+<li><p>now we refit the tuned model, train the model on all the data and our tuned model is ready for real-world use</p></li>
+<li><p>once again we are assuming a train and test workflow, not a train, validate and test workflow</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">tuned_nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">scores</span><span class="p">)]</span>
+<span class="n">our_tuned_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">tuned_nodes</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="c1"># instantiate / fit</span>
+<span class="n">tuned_spors</span> <span class="o">=</span> <span class="n">our_tuned_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">depths</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>             <span class="c1"># predict with our trained model</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'green'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Train and Test Data and Tuned Model with '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">tuned_nodes</span><span class="p">)</span> <span class="o">+</span> <span class="s1">' Leaf Nodes'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'test'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">depths</span><span class="p">,</span><span class="n">tuned_spors</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'tuned model'</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">zorder</span><span class="o">=-</span><span class="mi">1</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/a69faa8f42377a8d0bc8f93c7f2b21baf60c67eb5e475c3ade5d40904f40b23c.png" src="../Images/7f70bf1f19953f869e52080eed2cf1f7.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/a69faa8f42377a8d0bc8f93c7f2b21baf60c67eb5e475c3ade5d40904f40b23c.png"/>
+</div>
+</div>
+</section>
+<section id="complete-workflow-with-pipelines">
+<h2>Complete Workflow with Pipelines</h2>
+<p>Let’s repeat the above workflow with a pipline from scikit-learn. Here some general comments:</p>
+<ul class="simple">
+<li><p><strong>pipeline workflow steps</strong> - list of steps, custom labels and the associated scikit-learn classes</p></li>
+<li><p><strong>choices and hyperparameters</strong> - as a dictionary with combined step custom labels and hyperparameter names</p></li>
+<li><p><strong>workflow scenarios</strong> - we can specify lists of choices and hyperparameters</p></li>
+<li><p><strong>consistent iteration</strong> - the entire workflow is repeated for the full combinatorial</p></li>
+<li><p><strong>best model selected</strong> - best combination of model hyperparameters and choices are refit with all data</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>                       <span class="c1"># machine learning modeling pipeline</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>                                           <span class="c1"># the machine learning workflow as a pipeline object</span>
+    <span class="p">(</span><span class="s1">'tree'</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">())</span>
+<span class="p">])</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>                                                  <span class="c1"># the machine learning workflow method's parameters</span>
+    <span class="s1">'tree__max_leaf_nodes'</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>            <span class="c1"># model hyperparameter grid search</span>
+<span class="n">grid_cv_tuned</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">scoring</span> <span class="o">=</span> <span class="s1">'neg_mean_squared_error'</span><span class="p">,</span> <span class="c1"># grid search cross validation </span>
+                             <span class="n">cv</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">refit</span> <span class="o">=</span> <span class="kc">True</span><span class="p">);</span>
+
+<span class="n">grid_cv_tuned</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">);</span>                                      <span class="c1"># fit model with tuned hyperparameters</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Tuned maximum number of leaf nodes = '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">grid_cv_tuned</span><span class="o">.</span><span class="n">best_params_</span><span class="p">[</span><span class="s1">'tree__max_leaf_nodes'</span><span class="p">])</span> <span class="o">+</span> <span class="s1">'.'</span><span class="p">)</span>
+<span class="n">depth</span> <span class="o">=</span> <span class="mf">2.5</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Prediction at depth = '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">depth</span><span class="p">)</span> <span class="o">+</span> <span class="s1">' m is '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">grid_cv_tuned</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="n">depth</span><span class="p">]]),</span><span class="mi">2</span><span class="p">)))</span> <span class="c1"># predict with our trained model) + '.')</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span/>Tuned maximum number of leaf nodes = 14.
+Prediction at depth = 2.5 m is [-0.97]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="comments">
+<h2>Comments</h2>
+<p>This was a very simple demonstration of predictive machine learning model building with Python’s scikit-learn.</p>
+<ul class="simple">
+<li><p>this is a basic introduction, much more could be done</p></li>
+</ul>
+<p>I hope this was helpful,</p>
+<p><em>Michael</em></p>
+<p>Michael Pyrcz, Ph.D., P.Eng. Professor, The Hildebrand Department of Petroleum and Geosystems Engineering, Bureau of Economic Geology, The Jackson School of Geosciences, The University of Texas at Austin
+On twitter I’m the @GeostatsGuy.</p>
+</section>
+<section id="about-the-author">
+<h2>About the Author</h2>
+<figure style="text-align: center;">
+  <img src="../Images/eb709b2c0a0c715da01ae0165efdf3b2.png" style="display: block; margin: 0 auto; width: 70%;" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_static/intro/michael_pyrcz_officeshot_jacket.jpg"/>
+  <figcaption style="text-align: center;"> Professor Michael Pyrcz in his office on the 40 acres, campus of The University of Texas at Austin.
+</figcaption>
+</figure>
+<p>Michael Pyrcz is a professor in the <a class="reference external" href="https://cockrell.utexas.edu/faculty-directory/alphabetical/p">Cockrell School of Engineering</a>, and the <a class="reference external" href="https://www.jsg.utexas.edu/researcher/michael_pyrcz/">Jackson School of Geosciences</a>, at <a class="reference external" href="https://www.utexas.edu/">The University of Texas at Austin</a>, where he researches and teaches subsurface, spatial data analytics, geostatistics, and machine learning. Michael is also,</p>
+<ul class="simple">
+<li><p>the principal investigator of the <a class="reference external" href="https://fri.cns.utexas.edu/energy-analytics">Energy Analytics</a> freshmen research initiative and a core faculty in the Machine Learn Laboratory in the College of Natural Sciences, The University of Texas at Austin</p></li>
+<li><p>an associate editor for <a class="reference external" href="https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board">Computers and Geosciences</a>, and a board member for <a class="reference external" href="https://link.springer.com/journal/11004/editorial-board">Mathematical Geosciences</a>, the International Association for Mathematical Geosciences.</p></li>
+</ul>
+<p>Michael has written over 70 <a class="reference external" href="https://scholar.google.com/citations?user=QVZ20eQAAAAJ&amp;hl=en">peer-reviewed publications</a>, a <a class="reference external" href="https://pypi.org/project/geostatspy/">Python package</a> for spatial data analytics, co-authored a textbook on spatial data analytics, <a class="reference external" href="https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446">Geostatistical Reservoir Modeling</a> and author of two recently released e-books, <a class="reference external" href="https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html">Applied Geostatistics in Python: a Hands-on Guide with GeostatsPy</a> and <a class="reference external" href="https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html">Applied Machine Learning in Python: a Hands-on Guide with Code</a>.</p>
+<p>All of Michael’s university lectures are available on his <a class="reference external" href="https://www.youtube.com/@GeostatsGuyLectures">YouTube Channel</a> with links to 100s of Python interactive dashboards and well-documented workflows in over 40 repositories on his <a class="reference external" href="https://github.com/GeostatsGuy">GitHub account</a>, to support any interested students and working professionals with evergreen content. To find out more about Michael’s work and shared educational resources visit his <span class="xref myst">Website</span>.</p>
+</section>
+<section id="want-to-work-together">
+<h2>Want to Work Together?</h2>
+<p>I hope this content is helpful to those that want to learn more about subsurface modeling, data analytics and machine learning. Students and working professionals are welcome to participate.</p>
+<ul class="simple">
+<li><p>Want to invite me to visit your company for training, mentoring, project review, workflow design and / or consulting? I’d be happy to drop by and work with you!</p></li>
+<li><p>Interested in partnering, supporting my graduate student research or my Subsurface Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)? My research combines data analytics, stochastic modeling and machine learning theory with practice to develop novel methods and workflows to add value. We are solving challenging subsurface problems!</p></li>
+<li><p>I can be reached at <a class="reference external" href="mailto:mpyrcz%40austin.utexas.edu">mpyrcz<span>@</span>austin<span>.</span>utexas<span>.</span>edu</a>.</p></li>
+</ul>
+<p>I’m always happy to discuss,</p>
+<p><em>Michael</em></p>
+<p>Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The Jackson School of Geosciences, The University of Texas at Austin</p>
+<p>More Resources Available at: <a class="reference external" href="https://twitter.com/geostatsguy">Twitter</a> | <a class="reference external" href="https://github.com/GeostatsGuy">GitHub</a> | <a class="reference external" href="http://michaelpyrcz.com">Website</a> | <a class="reference external" href="https://scholar.google.com/citations?user=QVZ20eQAAAAJ&amp;hl=en&amp;oi=ao">GoogleScholar</a> | <a class="reference external" href="https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446">Book</a> | <a class="reference external" href="https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig">YouTube</a>  | <a class="reference external" href="https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html">Applied Geostats in Python e-book</a> | <a class="reference external" href="https://www.linkedin.com/in/michael-pyrcz-61a648a1">LinkedIn</a></p>
+</section>
+&#13;
+
+<h2>Motivation for Predictive Machine Learning with scikit-learn</h2>
+<p>This chapter is unusual for me. As a professor, I avoid lectures that focus on the specific tools, as I would rather teach the principles and then introduce the examples with the common tools. It is my opinion that,</p>
+<ul class="simple">
+<li><p>theory will outlast any available software tools</p></li>
+<li><p>without a theory focus I may encourage black-box model use</p></li>
+<li><p>with a strong understanding of the theory, one could pick up any software as needed</p></li>
+</ul>
+<p>But in this case,</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://scikit-learn.org/">scikit-learn</a> is such a common machine learning package for machine learning that is very widely used</p></li>
+<li><p>throughout this e-book I use scikit-learn</p></li>
+<li><p>scikit-learn uses a nuts and bolts approach to build machine learning workflows that maximizes flexibility</p></li>
+<li><p>scikit-learn provides the theory in the docs or links to original publications</p></li>
+</ul>
+<p>In summary, scikit-learn get me and I see the package as a partner in education! Thank you!</p>
+<p>So I have decided to add this chapter focused on the methods for machine learning modeling with scikit-learn.</p>
+&#13;
+
+<h2>Machine Learning-based Prediction</h2>
+<p>Here’s a simple workflow, demonstration of scikit-learn training and tuning a machine learning model with a simple dataset.</p>
+<ul class="simple">
+<li><p>I provide this as the most basic, minimum Python workflow to assist those learning predictive machine learning</p></li>
+<li><p>I demonstration model training and tuning (by-hand and automatically), including the pipeline approach</p></li>
+<li><p>Given the 1 predictor feature and 1 response for ease of data and model visualization</p></li>
+</ul>
+<p>This provides an opportunity to run and visualize a variety of machine learning models for experiential learning.</p>
+&#13;
+
+<h2>Machine Learning-based Prediction</h2>
+<p>We build a decision tree-based predictive machine learning models with supervised learning:</p>
+<p><strong>Prediction</strong></p>
+<ul class="simple">
+<li><p>non-parametric method for regression (continuous response) and classification (categorical response)</p></li>
+<li><p>a function <span class="math notranslate nohighlight">\(\hat{f}\)</span> of the nearest <span class="math notranslate nohighlight">\(k\)</span> training data in predictor feature space such that we predict a response feature <span class="math notranslate nohighlight">\(Y\)</span> from a set of predictor features <span class="math notranslate nohighlight">\(X_1,\ldots,X_m\)</span>.</p></li>
+<li><p>the prediction is of the form:</p></li>
+</ul>
+<p>\begin{equation}
+\hat{Y} = \hat{f}(X_1,\ldots,X_m) + \epsilon
+\end{equation}</p>
+<p>where <span class="math notranslate nohighlight">\(\epsilon\)</span> is an error term.</p>
+<p><strong>Supervised Learning</strong></p>
+<ul class="simple">
+<li><p>the response feature, <span class="math notranslate nohighlight">\(Y\)</span>, is available over the training and testing data</p></li>
+</ul>
+&#13;
+
+<h2>Load the Required Libraries</h2>
+<p>The following code loads the required libraries. These should have been installed with Anaconda 3.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">ignore_warnings</span> <span class="o">=</span> <span class="kc">True</span>                                        <span class="c1"># ignore warnings?</span>
+<span class="kn">import</span> <span class="nn">os</span>                                                     <span class="c1"># to set current working directory </span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>                                           <span class="c1"># DataFrames and plotting</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>                                            <span class="c1"># arrays and matrix math</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>                               <span class="c1"># plotting</span>
+<span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="p">(</span><span class="n">MultipleLocator</span><span class="p">,</span> <span class="n">AutoMinorLocator</span><span class="p">)</span> <span class="c1"># control of axes ticks</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">metrics</span>                                   <span class="c1"># measures to check our models</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>          <span class="c1"># random train and test data split</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">tree</span>                                      <span class="c1"># tree program from scikit learn (package for machine learning)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">'axes'</span><span class="p">,</span> <span class="n">axisbelow</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>                                <span class="c1"># plot all grids below the plot elements</span>
+<span class="k">if</span> <span class="n">ignore_warnings</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>                                   
+    <span class="kn">import</span> <span class="nn">warnings</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">'ignore'</span><span class="p">)</span>
+<span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">inferno</span>                                         <span class="c1"># color map</span>
+<span class="n">seed</span> <span class="o">=</span> <span class="mi">42</span>                                                     <span class="c1"># random number seed</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>If you get a package import error, you may have to first install some of these packages. This can usually be accomplished by opening up a command window on Windows and then typing ‘python -m pip install [package-name]’. More assistance is available with the respective package docs.</p>
+&#13;
+
+<h2>Set the Random Number Seed</h2>
+<p>These workflows and models may use random processes, e.g.:</p>
+<ul class="simple">
+<li><p>random train and test split with cross validation and k-fold cross validation</p></li>
+<li><p>random selection of a subset of features to consider for the next split</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>                                        <span class="c1"># scikit-learn uses the NumPy seed</span>
+</pre></div>
+</div>
+</div>
+</div>
+&#13;
+
+<h2>Declare functions</h2>
+<p>Let’s define a function for plotting gridlines.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="k">def</span> <span class="nf">add_grid</span><span class="p">():</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">'major'</span><span class="p">,</span><span class="n">linewidth</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">'minor'</span><span class="p">,</span><span class="n">linewidth</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span> <span class="c1"># add y grids</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">which</span><span class="o">=</span><span class="s1">'major'</span><span class="p">,</span><span class="n">length</span><span class="o">=</span><span class="mi">7</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">which</span><span class="o">=</span><span class="s1">'minor'</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">AutoMinorLocator</span><span class="p">());</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">AutoMinorLocator</span><span class="p">())</span> <span class="c1"># turn on minor ticks   </span>
+</pre></div>
+</div>
+</div>
+</div>
+&#13;
+
+<h2>Set the working directory</h2>
+<p>I always like to do this so I don’t lose files and to simplify subsequent read and writes (avoid including the full address each time).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="c1"># not needed currently</span>
+<span class="c1">#os.chdir("c:/PGE383")                                       # set the working directory</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>You will have to update the part in quotes with your own working directory and the format is different on a Mac (e.g. “~/PGE”).</p>
+&#13;
+
+<h2>Read the data table</h2>
+<p>We use a data “1D_Porosity.csv” comma delimited file from my GitHub <a class="reference external" href="https://github.com/GeostatsGuy/GeoDataSets">GeoDataSets Respository</a>.</p>
+<ul class="simple">
+<li><p>this code loads the data directly from my GitHub repository.</p></li>
+<li><p>if you have the data file available locally (i.e. you are not connected to the internet) set the working directory to the location with the data file and use the second line below</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">my_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/1D_Porosity.csv"</span><span class="p">)</span> <span class="c1"># load the comma delimited data file</span>
+<span class="c1">#my_data = pd.read_csv("1D_Porosity.csv")                     # load the comma delimited data file locally</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">my_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">'Depth'</span><span class="p">])</span>               <span class="c1"># ensure X and y features are DataFrames</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">my_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">'Nporosity'</span><span class="p">])</span>
+<span class="n">X</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">);</span> <span class="n">y</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>                                      <span class="c1"># preview the predictor feature</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Loaded '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">my_data</span><span class="p">))</span> <span class="o">+</span> <span class="s1">' samples, with features = '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">my_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'.'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span/>Loaded 40 samples, with features = ['Depth' 'Nporosity'].
+</pre></div>
+</div>
+</div>
+</div>
+&#13;
+
+<h2>Plot the Available Data</h2>
+<p>Let’s do a simple scatter plot to check the data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'All Data'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c8f68d96b92a64e674753dd321abb3376a788853f792000775c676b02927aec1.png" src="../Images/1185159d2aa42c7833a49ebd954a9aca.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/c8f68d96b92a64e674753dd321abb3376a788853f792000775c676b02927aec1.png"/>
+</div>
+</div>
+&#13;
+
+<h2>Optional: Add Random Error to the Response Feature, <span class="math notranslate nohighlight">\(y\)</span></h2>
+<p>For more experiential learning consider repeating this workflow with different amounts of additional error</p>
+<ul class="simple">
+<li><p>to observe issues of model overfit consider adding some additional error,</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span/><span class="n">error_stdev</span> <span class="o">=</span> <span class="mf">0.0</span>                                           <span class="c1"># standard deviation of additional random error</span>
+</pre></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">error_stdev</span> <span class="o">=</span> <span class="mf">0.0</span>                                             <span class="c1"># standard deviation of additional random error</span>
+<span class="n">y_orig</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>                                  <span class="c1"># make a deep copy of original dataset</span>
+<span class="n">y</span><span class="p">[</span><span class="s1">'Nporosity'</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="s1">'Nporosity'</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">error_stdev</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'blue'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'with added noise'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'All Data, Original and with Added Noise'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y_orig</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'original data'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper left'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/db6bdae8f03df1faab8e473a6c4ac4068bec1a1c0601e89ed59590368330bf1c.png" src="../Images/a4f6a9c8841781db06c62d6cdf546dde.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/db6bdae8f03df1faab8e473a6c4ac4068bec1a1c0601e89ed59590368330bf1c.png"/>
+</div>
+</div>
+&#13;
+
+<h2>Fast Forward Through Data Analytics</h2>
+<p>This workflow is focussed on building predictive machine learning models</p>
+<ul class="simple">
+<li><p>for brevity we skip data checking, data analytics, statistical analysis, feature transformations etc.</p></li>
+<li><p>we skip all the way to model building</p></li>
+<li><p>we don’t even discuss model selection, feature selection, nor robust hyperparameter tuning</p></li>
+</ul>
+<p>This is the most simple predictive machine learning workflow possible!</p>
+<ul class="simple">
+<li><p>basics for machine learning with scikit-learn in Python. Nothing more.</p></li>
+</ul>
+&#13;
+
+<h2>Let’s Build a Predictive Machine Learning Model</h2>
+<p>We use the following steps to build our model</p>
+<ol class="arabic simple">
+<li><p><strong>instantiate</strong> the machine learning model with hyperparameters</p></li>
+<li><p><strong>fit</strong>, train the machine learing model to the training data</p></li>
+<li><p><strong>predict</strong>, check the trained machine learning models to predict at withheld testing data</p></li>
+<li><p><strong>select</strong> the optimum hyperparameters, hyperparameter tuning</p></li>
+<li><p><strong>refit</strong> the model by training with all data given the tuned hyperparmaeters</p></li>
+</ol>
+<p>We will use the train - test approach, an alternative is the train, validate and test approach.</p>
+<ul class="simple">
+<li><p>we will start simple and cover k-fold cross validation and scikit-learn pipeline class later</p></li>
+</ul>
+&#13;
+
+<h2>Split Train and Test</h2>
+<p>We will demonstrate the following hyperparameter tuning methods:</p>
+<ul class="simple">
+<li><p><strong>cross validation</strong> - split 25% of data as withheld testing data, only 25% of data are tested</p></li>
+<li><p><strong>k-fold cross validation</strong> - calculate average error over k folds, all data are tested</p></li>
+</ul>
+<p>Let’s start with cross validation and then demonstrate k-fold cross validation.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span> <span class="c1"># train and test split</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'green'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Train and Test Data'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'test'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/8301051d675ae545cbd9a77b7b63baad14810e3e9f3dfd6e299fd5ce3e5cdd5c.png" src="../Images/9d97f00b8d0b32eb2d7d97ab07abb605.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/8301051d675ae545cbd9a77b7b63baad14810e3e9f3dfd6e299fd5ce3e5cdd5c.png"/>
+</div>
+</div>
+&#13;
+
+<h2>Build a Decision Tree Model</h2>
+<p>Let’s instantiate (set the hyperparameter(s)) and fit (train with training data) a decision tree regression model to our data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="mi">6</span>                                            <span class="c1"># set the hyperparameter</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">max_leaf_nodes</span><span class="p">)</span> <span class="c1"># instantiate the model</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>                     <span class="c1"># fit the model to the trainin data</span>
+</pre></div>
+</div>
+</div>
+</div>
+&#13;
+
+<h2>Predict With a Decision Tree Model</h2>
+<p>Now let’s make a prediction with our trained decision tree model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">itest</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span> <span class="n">depth</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">[</span><span class="s1">'Depth'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">itest</span><span class="p">]</span>            <span class="c1"># set the predictor value for our prediction</span>
+<span class="n">spor</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="n">depth</span><span class="p">]])</span>                          <span class="c1"># predict with our trained model</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'green'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Train and Test Data and Model Prediction'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'test'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span><span class="n">spor</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="s1">'s'</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'predict'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span> <span class="n">add_grid</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c8659b494469d1cf1349fd8143fe016473544dea1159f62300489b493236734c.png" src="../Images/93fe563da105e7191b40024dad8586f5.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/c8659b494469d1cf1349fd8143fe016473544dea1159f62300489b493236734c.png"/>
+</div>
+</div>
+&#13;
+
+<h2>Predict Over a Range of Predictor Feature Values with a Decision Tree Model</h2>
+<p>Now, let’s make predictions over a range of predictor feature values so we can visualize the model.</p>
+<ul class="simple">
+<li><p>this is easy to do since we have just 1 predictor feature</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">depths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span>                          <span class="c1"># set the predictor values for our prediction</span>
+<span class="n">spors</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">depths</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>             <span class="c1"># predict with our trained model</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'green'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Train and Test Data and Model Predictions'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'test'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">depths</span><span class="p">,</span><span class="n">spors</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'predict'</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">zorder</span><span class="o">=-</span><span class="mi">1</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/3a5c6ea1ec85203a0f15c3d46ae86783757808f467cadc500454f9c887228fe0.png" src="../Images/29e1a12c1961942e61997bd3ac0110ca.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/3a5c6ea1ec85203a0f15c3d46ae86783757808f467cadc500454f9c887228fe0.png"/>
+</div>
+</div>
+&#13;
+
+<h2>Changing the Model Hyperparameter(s)</h2>
+<p>Let’s try changing the model complexity and refitting the model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="mi">10</span>                                         <span class="c1"># set the hyperparameter</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">max_leaf_nodes</span><span class="p">)</span> <span class="c1"># instantiate the model</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>                   <span class="c1"># fit the model to the trainin data</span>
+<span class="n">spors</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">depths</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>             <span class="c1"># predict with our trained model</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'green'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'test'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">depths</span><span class="p">,</span><span class="n">spors</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'predict'</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/d3b73736375ae3ab790c7b21e2c4c20d28ebdffc2556a99912efb733b3fd7d82.png" src="../Images/32ce25273cb95be1bc73a931d2300783.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/d3b73736375ae3ab790c7b21e2c4c20d28ebdffc2556a99912efb733b3fd7d82.png"/>
+</div>
+</div>
+&#13;
+
+<h2>Tuning the Model Hyperparameter(s)</h2>
+<p>To tune the model hyperparameters we need a metric to summarize model error over the withheld testing data</p>
+<ul class="simple">
+<li><p>let’s predict at the testing data and calculate our metric, testing mean square error.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">leaf_nodes</span> <span class="o">=</span> <span class="mi">7</span>                                              <span class="c1"># set the hyperparameter</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">leaf_nodes</span><span class="p">)</span> <span class="c1"># instantiate the model</span>
+<span class="n">our_tree</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>                   <span class="c1"># fit the model to the trainin data</span>
+<span class="n">y_predict</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>                        <span class="c1"># predict at the testing data locations</span>
+<span class="n">mse</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span><span class="n">y_predict</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Testing MSE is '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">mse</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'.'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span/>Testing MSE is 0.67.
+</pre></div>
+</div>
+</div>
+</div>
+<p>and we need to rebuild the model with a variable level of complexity</p>
+<ul class="simple">
+<li><p>let’s loop over the number of leaf nodes and plot the performance over the withheld testing data</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">nodes</span> <span class="o">=</span> <span class="p">[];</span> <span class="n">scores</span> <span class="o">=</span> <span class="p">[];</span> <span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">nnode</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">,</span><span class="mi">1</span><span class="p">)):</span>
+    <span class="n">our_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">nnode</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span> <span class="c1"># instantiate / fit</span>
+    <span class="n">y_predict</span> <span class="o">=</span> <span class="n">our_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>                    <span class="c1"># predict at the testing data locations</span>
+    <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nnode</span><span class="p">);</span> <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span><span class="n">y_predict</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span><span class="n">scores</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span><span class="n">scores</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span><span class="n">zorder</span><span class="o">=-</span><span class="mi">1</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Number of Leaf Nodes'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Testing Mean Square Error'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/d93257b45568bdd5ca8115c16b6ffab50c3eeae024f20178c1f5b9fc272cb45f.png" src="../Images/e07a293a3a9e2bf5b198ec8e220f17b1.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/d93257b45568bdd5ca8115c16b6ffab50c3eeae024f20178c1f5b9fc272cb45f.png"/>
+</div>
+</div>
+<p>For a more robust assessment of performance let’s use scikit-learns k-fold cross validation.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">cross_val_score</span> <span class="k">as</span> <span class="n">kfold</span>       <span class="c1"># cross validation methods</span>
+<span class="n">nodes</span> <span class="o">=</span> <span class="p">[];</span> <span class="n">scores</span> <span class="o">=</span> <span class="p">[];</span> <span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">nnode</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)):</span>
+    <span class="n">our_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">nnode</span><span class="p">)</span> <span class="c1"># instantiate / fit</span>
+    <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nnode</span><span class="p">);</span> 
+    <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">kfold</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">our_tree</span><span class="p">,</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span><span class="n">cv</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">scoring</span> <span class="o">=</span> <span class="s2">"neg_mean_squared_error"</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span><span class="n">scores</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span><span class="n">scores</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Number of Leaf Nodes'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Testing Mean Square Error'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">]);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c0edb899e876f1ebd639ac3d6c4eb5b5a9fe13138c12076aa8086978cb7789bc.png" src="../Images/93663d34dc6ae7a4b909718efe41cf18.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/c0edb899e876f1ebd639ac3d6c4eb5b5a9fe13138c12076aa8086978cb7789bc.png"/>
+</div>
+</div>
+<p>The main product from all of the previous work is the tuned hyperparameter, the optimum model complexity.</p>
+<ul class="simple">
+<li><p>now we refit the tuned model, train the model on all the data and our tuned model is ready for real-world use</p></li>
+<li><p>once again we are assuming a train and test workflow, not a train, validate and test workflow</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="n">tuned_nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">scores</span><span class="p">)]</span>
+<span class="n">our_tuned_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_leaf_nodes</span> <span class="o">=</span> <span class="n">tuned_nodes</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="c1"># instantiate / fit</span>
+<span class="n">tuned_spors</span> <span class="o">=</span> <span class="n">our_tuned_tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">depths</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>             <span class="c1"># predict with our trained model</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'green'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'train'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Train and Test Data and Tuned Model with '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">tuned_nodes</span><span class="p">)</span> <span class="o">+</span> <span class="s1">' Leaf Nodes'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">10.25</span><span class="p">]);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">2.5</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'test'</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">depths</span><span class="p">,</span><span class="n">tuned_spors</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'tuned model'</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">zorder</span><span class="o">=-</span><span class="mi">1</span><span class="p">);</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Depth (m)'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Standardized Porosity'</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">);</span> <span class="n">add_grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/a69faa8f42377a8d0bc8f93c7f2b21baf60c67eb5e475c3ade5d40904f40b23c.png" src="../Images/7f70bf1f19953f869e52080eed2cf1f7.png" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_images/a69faa8f42377a8d0bc8f93c7f2b21baf60c67eb5e475c3ade5d40904f40b23c.png"/>
+</div>
+</div>
+&#13;
+
+<h2>Complete Workflow with Pipelines</h2>
+<p>Let’s repeat the above workflow with a pipline from scikit-learn. Here some general comments:</p>
+<ul class="simple">
+<li><p><strong>pipeline workflow steps</strong> - list of steps, custom labels and the associated scikit-learn classes</p></li>
+<li><p><strong>choices and hyperparameters</strong> - as a dictionary with combined step custom labels and hyperparameter names</p></li>
+<li><p><strong>workflow scenarios</strong> - we can specify lists of choices and hyperparameters</p></li>
+<li><p><strong>consistent iteration</strong> - the entire workflow is repeated for the full combinatorial</p></li>
+<li><p><strong>best model selected</strong> - best combination of model hyperparameters and choices are refit with all data</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span/><span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>                       <span class="c1"># machine learning modeling pipeline</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>                                           <span class="c1"># the machine learning workflow as a pipeline object</span>
+    <span class="p">(</span><span class="s1">'tree'</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeRegressor</span><span class="p">())</span>
+<span class="p">])</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>                                                  <span class="c1"># the machine learning workflow method's parameters</span>
+    <span class="s1">'tree__max_leaf_nodes'</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">max_leaf_nodes</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>            <span class="c1"># model hyperparameter grid search</span>
+<span class="n">grid_cv_tuned</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">scoring</span> <span class="o">=</span> <span class="s1">'neg_mean_squared_error'</span><span class="p">,</span> <span class="c1"># grid search cross validation </span>
+                             <span class="n">cv</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">refit</span> <span class="o">=</span> <span class="kc">True</span><span class="p">);</span>
+
+<span class="n">grid_cv_tuned</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">);</span>                                      <span class="c1"># fit model with tuned hyperparameters</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Tuned maximum number of leaf nodes = '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">grid_cv_tuned</span><span class="o">.</span><span class="n">best_params_</span><span class="p">[</span><span class="s1">'tree__max_leaf_nodes'</span><span class="p">])</span> <span class="o">+</span> <span class="s1">'.'</span><span class="p">)</span>
+<span class="n">depth</span> <span class="o">=</span> <span class="mf">2.5</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Prediction at depth = '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">depth</span><span class="p">)</span> <span class="o">+</span> <span class="s1">' m is '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">grid_cv_tuned</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="n">depth</span><span class="p">]]),</span><span class="mi">2</span><span class="p">)))</span> <span class="c1"># predict with our trained model) + '.')</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span/>Tuned maximum number of leaf nodes = 14.
+Prediction at depth = 2.5 m is [-0.97]
+</pre></div>
+</div>
+</div>
+</div>
+&#13;
+
+<h2>Comments</h2>
+<p>This was a very simple demonstration of predictive machine learning model building with Python’s scikit-learn.</p>
+<ul class="simple">
+<li><p>this is a basic introduction, much more could be done</p></li>
+</ul>
+<p>I hope this was helpful,</p>
+<p><em>Michael</em></p>
+<p>Michael Pyrcz, Ph.D., P.Eng. Professor, The Hildebrand Department of Petroleum and Geosystems Engineering, Bureau of Economic Geology, The Jackson School of Geosciences, The University of Texas at Austin
+On twitter I’m the @GeostatsGuy.</p>
+&#13;
+
+<h2>About the Author</h2>
+<figure style="text-align: center;">
+  <img src="../Images/eb709b2c0a0c715da01ae0165efdf3b2.png" style="display: block; margin: 0 auto; width: 70%;" data-original-src="https://geostatsguy.github.io/MachineLearningDemos_Book/_static/intro/michael_pyrcz_officeshot_jacket.jpg"/>
+  <figcaption style="text-align: center;"> Professor Michael Pyrcz in his office on the 40 acres, campus of The University of Texas at Austin.
+</figcaption>
+</figure>
+<p>Michael Pyrcz is a professor in the <a class="reference external" href="https://cockrell.utexas.edu/faculty-directory/alphabetical/p">Cockrell School of Engineering</a>, and the <a class="reference external" href="https://www.jsg.utexas.edu/researcher/michael_pyrcz/">Jackson School of Geosciences</a>, at <a class="reference external" href="https://www.utexas.edu/">The University of Texas at Austin</a>, where he researches and teaches subsurface, spatial data analytics, geostatistics, and machine learning. Michael is also,</p>
+<ul class="simple">
+<li><p>the principal investigator of the <a class="reference external" href="https://fri.cns.utexas.edu/energy-analytics">Energy Analytics</a> freshmen research initiative and a core faculty in the Machine Learn Laboratory in the College of Natural Sciences, The University of Texas at Austin</p></li>
+<li><p>an associate editor for <a class="reference external" href="https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board">Computers and Geosciences</a>, and a board member for <a class="reference external" href="https://link.springer.com/journal/11004/editorial-board">Mathematical Geosciences</a>, the International Association for Mathematical Geosciences.</p></li>
+</ul>
+<p>Michael has written over 70 <a class="reference external" href="https://scholar.google.com/citations?user=QVZ20eQAAAAJ&amp;hl=en">peer-reviewed publications</a>, a <a class="reference external" href="https://pypi.org/project/geostatspy/">Python package</a> for spatial data analytics, co-authored a textbook on spatial data analytics, <a class="reference external" href="https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446">Geostatistical Reservoir Modeling</a> and author of two recently released e-books, <a class="reference external" href="https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html">Applied Geostatistics in Python: a Hands-on Guide with GeostatsPy</a> and <a class="reference external" href="https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html">Applied Machine Learning in Python: a Hands-on Guide with Code</a>.</p>
+<p>All of Michael’s university lectures are available on his <a class="reference external" href="https://www.youtube.com/@GeostatsGuyLectures">YouTube Channel</a> with links to 100s of Python interactive dashboards and well-documented workflows in over 40 repositories on his <a class="reference external" href="https://github.com/GeostatsGuy">GitHub account</a>, to support any interested students and working professionals with evergreen content. To find out more about Michael’s work and shared educational resources visit his <span class="xref myst">Website</span>.</p>
+&#13;
+
+<h2>Want to Work Together?</h2>
+<p>I hope this content is helpful to those that want to learn more about subsurface modeling, data analytics and machine learning. Students and working professionals are welcome to participate.</p>
+<ul class="simple">
+<li><p>Want to invite me to visit your company for training, mentoring, project review, workflow design and / or consulting? I’d be happy to drop by and work with you!</p></li>
+<li><p>Interested in partnering, supporting my graduate student research or my Subsurface Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)? My research combines data analytics, stochastic modeling and machine learning theory with practice to develop novel methods and workflows to add value. We are solving challenging subsurface problems!</p></li>
+<li><p>I can be reached at <a class="reference external" href="mailto:mpyrcz%40austin.utexas.edu">mpyrcz<span>@</span>austin<span>.</span>utexas<span>.</span>edu</a>.</p></li>
+</ul>
+<p>I’m always happy to discuss,</p>
+<p><em>Michael</em></p>
+<p>Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The Jackson School of Geosciences, The University of Texas at Austin</p>
+<p>More Resources Available at: <a class="reference external" href="https://twitter.com/geostatsguy">Twitter</a> | <a class="reference external" href="https://github.com/GeostatsGuy">GitHub</a> | <a class="reference external" href="http://michaelpyrcz.com">Website</a> | <a class="reference external" href="https://scholar.google.com/citations?user=QVZ20eQAAAAJ&amp;hl=en&amp;oi=ao">GoogleScholar</a> | <a class="reference external" href="https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446">Book</a> | <a class="reference external" href="https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig">YouTube</a>  | <a class="reference external" href="https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html">Applied Geostats in Python e-book</a> | <a class="reference external" href="https://www.linkedin.com/in/michael-pyrcz-61a648a1">LinkedIn</a></p>
+    
+</body>
+</html>
