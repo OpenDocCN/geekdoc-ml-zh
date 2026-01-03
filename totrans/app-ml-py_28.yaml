@@ -1,2476 +1,3814 @@
 - en: Gradient Boosting Trees
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 梯度提升树
 - en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_gradient_boosting.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_gradient_boosting.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_gradient_boosting.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_gradient_boosting.html)
 - en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: Michael J. Pyrcz，教授，德克萨斯大学奥斯汀分校
 - en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
     | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
     | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
     | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
     Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
     | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [网站](http://michaelpyrcz.com) | [Google Scholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [书籍](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Python应用地质统计学电子书](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
 - en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
     Code”.'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 电子书“Python应用机器学习：带代码的手册”的一章。
 - en: 'Cite this e-Book as:'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用此电子书如下：
 - en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
     Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: Pyrcz, M.J., 2024, *Python应用机器学习：带代码的手册* [电子书]. Zenodo. doi:10.5281/zenodo.15169138
+    [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)
 - en: 'The workflows in this book and more are available here:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 本书中的工作流程以及更多内容可在以下链接找到：
 - en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用 MachineLearningDemos GitHub 仓库如下：
 - en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
     Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
     GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
     [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python机器学习演示工作流程仓库* (0.0.3) [软件].
+    Zenodo. DOI: 10.5281/zenodo.13835312\. GitHub 仓库：[GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
 - en: By Michael J. Pyrcz
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者：Michael J. Pyrcz
 - en: © Copyright 2024.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: © 版权所有 2024。
 - en: This chapter is a tutorial for / demonstration of **Gradient Boosting Trees**.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章是关于 **梯度提升树** 的教程和演示。
 - en: '**YouTube Lecture**: check out my lectures on:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '**YouTube 讲座**：请查看我在以下主题上的讲座：'
 - en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[机器学习简介](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
 - en: '[Decision Tree](https://youtu.be/JUGo1Pu3QT4?si=ebQXv6Yglar0mYWp)'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[决策树](https://youtu.be/JUGo1Pu3QT4?si=ebQXv6Yglar0mYWp)'
 - en: '[Random Forest](https://youtu.be/m5_wk310fho?si=up-mzVPHvniXsYE6)'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[随机森林](https://youtu.be/m5_wk310fho?si=up-mzVPHvniXsYE6)'
 - en: '[Gradient Boosting](https://youtu.be/___T8_ixIwc?si=ozHR_eIuMF3SPTxJ)'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[梯度提升](https://youtu.be/___T8_ixIwc?si=ozHR_eIuMF3SPTxJ)'
 - en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
     on YouTube with linked well-documented Python workflows and interactive dashboards.
     My goal is to share accessible, actionable, and repeatable educational content.
     If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些讲座都是我 YouTube 上的 [机器学习课程](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    的一部分，其中包含有良好文档记录的 Python 工作流程和交互式仪表板。我的目标是分享易于理解、可操作和可重复的教育内容。如果您想了解我的动机，请查看 [Michael的故事](https://michaelpyrcz.com/my-story)。
 - en: Motivations for Gradient Boosting Trees
+  id: totrans-19
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 梯度提升树的动力
 - en: Before we can understand gradient boosting trees we first need to cover decision
     trees. Here’s the critical concepts for decision trees.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们能够理解梯度提升树之前，我们首先需要了解决策树。以下是决策树的关键概念。
 - en: Decision Tree
+  id: totrans-21
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 决策树
 - en: '**Prediction**'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '**预测**'
 - en: estimate a function \(\hat{f}\) such that we predict a response feature \(Y\)
     from a set of predictor features \(X_1,\ldots,X_m\).
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 估计一个函数 \(\hat{f}\)，以便我们从一组预测特征 \(X_1,\ldots,X_m\) 中预测响应特征 \(Y\)。
 - en: the prediction is of the form \(\hat{Y} = \hat{f}(X_1,\ldots,X_m)\)
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 预测形式为 \(\hat{Y} = \hat{f}(X_1,\ldots,X_m)\)
 - en: '**Supervised Learning**'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '**监督学习**'
 - en: the response feature label, \(Y\), is available over the training and testing
     data
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 响应特征标签，\(Y\)，在训练和测试数据中都是可用的
 - en: '**Based on an Ensemble of Decision Trees**'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '**基于决策树集成**'
 - en: These are the concepts related to decision tree.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些是与决策树相关的概念。
 - en: '**Hierarchical, Binary Segmentation of the Feature Space**'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '**特征空间的分层、二分分割**'
 - en: The fundamental idea is to divide the predictor space, \(𝑋_1,\ldots,X_m\), into
     \(J\) mutually exclusive, exhaustive regions
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 基本思想是将预测空间，\(𝑋_1,\ldots,X_m\)，划分为 \(J\) 个互斥、穷尽的区域
 - en: '**mutually exclusive** – any combination of predictors only belongs to a single
     region, \(R_j\)'
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**互斥性** – 任何预测因子的组合只属于一个单一的区域，\(R_j\)'
 - en: '**exhaustive** – all combinations of predictors belong a region, \(R_j\), regions
     cover entire feature space (range of the variables being considered)'
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**穷尽性** – 所有预测因子的组合都属于一个区域，\(R_j\)，这些区域覆盖整个特征空间（考虑的变量的范围）'
 - en: For every observation in a region, \(R_j\), we use the same prediction, \(\hat{Y}(R_j)\)
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于区域 \(R_j\) 中的每个观测值，我们使用相同的预测，\(\hat{Y}(R_j)\)
 - en: For example predict production, \(\hat{Y}\), from porosity, \({X_1}\)
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，从孔隙率，\({X_1}\) 预测生产，\(\hat{Y}\)
 - en: given the data within a mD feature space, \(X_1,\ldots,X_m\), find that boundary
     maximizes the gap between the two categories
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 给定一个 mD 特征空间内的数据，\(X_1,\ldots,X_m\)，找到边界最大化两个类别之间的差距
 - en: new cases are classified based on where they fall relative to this boundary
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 新案例根据它们相对于这个边界的相对位置进行分类
 - en: '**Procedure for Tree Construction**'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '**树构建的步骤**'
 - en: The tree is constructed from the top down. We begin with a single region that
     covers the entire feature space and then proceed with a sequence of splits.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 树是从上往下构建的。我们从一个覆盖整个特征空间的单一区域开始，然后进行一系列的分割。
 - en: '**Scan All Possible Splits** over all regions and over all features.'
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**扫描所有可能的分割**覆盖所有区域和所有特征。'
 - en: '**Greedy Optimization** The method proceeds by finding the first segmentation
     (split) in any feature that minimizes the residual sum of squares of errors over
     all the training data \(y_i\) over all of the regions \(j = 1,\ldots,J\).'
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**贪婪优化**该方法通过找到任何特征中的第一个分割（分割）来最小化所有训练数据 \(y_i\) 在所有区域 \(j = 1,\ldots,J\) 上的残差平方和。'
 - en: \[ RSS = \sum^{J}_{j=1} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ RSS = \sum^{J}_{j=1} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
 - en: '**Stopping Criteria** is typically based on minimum number of training data
     in each region for a robust estimation and / or minimum reduction in RSS for the
     next split'
+  id: totrans-42
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**停止标准**通常是每个区域中训练数据的最小数量，以进行稳健估计，以及/或下一个分割的最小 RSS 减少量'
 - en: Now we can cover gradient boosting trees that build on the concept of decision
     trees.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以介绍基于决策树概念的梯度提升树。
 - en: Boosting Models
+  id: totrans-44
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 增强模型
 - en: Boosting additively applies multiple week learners to build a stronger learner.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 增强通过添加多个弱学习器来构建一个更强的学习器。
 - en: a weak learner is one that offers predictions just marginally better than random
     selection
+  id: totrans-46
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 弱学习器是指提供预测结果仅略好于随机选择的模型
 - en: I’ll explain the method with words and then with equations.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 我会用文字和方程式来解释这个方法。
 - en: build a simple model with a high error rate, the model can be quite inaccurate,
     but moves in the correct direction
+  id: totrans-48
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 构建一个误差率高的简单模型，模型可能非常不准确，但方向是正确的
 - en: calculate the error from the model
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算模型的误差
 - en: fit another model to the error
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将另一个模型拟合到误差上
 - en: calculate the error from this addition of the first and second model
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算第一个和第二个模型添加后的误差
 - en: repeat until the desired accuracy is obtained or some other stopping criteria
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 重复直到达到所需的准确度或满足其他停止标准
 - en: 'The general workflow for predicting \(Y\) from \(X_1,\ldots,X_m\) is:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 从 \(X_1,\ldots,X_m\) 预测 \(Y\) 的一般工作流程是：
 - en: build a week learner to predict \(Y\) from \(X_1,\ldots,X_m\), \(\hat{F}_k(X)\)
     from the training data \(x_{i,j}\).
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 构建一个弱学习器来从 \(X_1,\ldots,X_m\) 预测 \(Y\)，从训练数据 \(x_{i,j}\) 预测 \(\hat{F}_k(X)\)。
 - en: loop over number of desired estimators, \(k = 1,\ldots,K\)
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 遍历所需估计器的数量，\(k = 1,\ldots,K\)
 - en: calculate the residuals at the training data, \(h_k(x_{i}) = y_i - \hat{F}_k(x_{i})\)
+  id: totrans-56
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算训练数据中的残差，\(h_k(x_{i}) = y_i - \hat{F}_k(x_{i})\)
 - en: fit another week learner to predict \(h_k\) from \(X_1,\ldots,X_m\), \(\hat{F}_k(X)\)
     from the training data \(x_{i,j}\).
+  id: totrans-57
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将另一个弱学习器拟合到从 \(X_1,\ldots,X_m\) 预测 \(h_k\)，从训练数据 \(x_{i,j}\) 预测 \(\hat{F}_k(X)\)。
 - en: We have a hierarchy of simple \(K\) models.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有一个简单的 \(K\) 模型层次结构。
 - en: each model builds on the previous to improve the accuracy
+  id: totrans-59
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个模型都是基于前一个模型来提高准确性的
 - en: Our regression estimator is the summation over the \(K\) simple models.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的回归估计量是 \(K\) 个简单模型的和。
 - en: \[ \hat{Y} =\sum_{k=1}^{K} F_k(X_1,\ldots,X_m) \]
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \hat{Y} =\sum_{k=1}^{K} F_k(X_1,\ldots,X_m) \]
 - en: Gradient Boosting Methods
+  id: totrans-62
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 梯度提升方法
 - en: If you look at the previous method, it becomes clear that it could be mapped
     to a gradient descent problem
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你看一下前面的方法，它就清楚可以映射到一个梯度下降问题
 - en: At each step, \(k\), a model is being fit, then the error is calculated, \(h_k(X_1,\ldots,X_m)\).
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 在每个步骤 \(k\)，都在拟合一个模型，然后计算误差，\(h_k(X_1,\ldots,X_m)\)。
 - en: We can assign a loss function
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以分配一个损失函数
 - en: \[ L\left(y,F(X)\right) = \frac{\left(y - F(X)\right)^2}{2} \]
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ L\left(y,F(X)\right) = \frac{\left(y - F(X)\right)^2}{2} \]
 - en: 'So we want to minimize the \(\ell2\) loss function:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们想要最小化 \(\ell2\) 损失函数：
 - en: \[ J = \sum_{i=1}^{n} L\left(y_i, F_k(X) \right) \]
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ J = \sum_{i=1}^{n} L\left(y_i, F_k(X) \right) \]
 - en: by adjusting our model result over our training data \(F(x_1), F(x_2),\ldots,F(x_n)\).
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过调整我们的模型结果来调整我们的训练数据 \(F(x_1), F(x_2),\ldots,F(x_n)\)。
 - en: We can take the partial derivative of the error vs. our model.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以计算误差相对于我们模型的偏导数。
 - en: \[ \frac{\partial J}{\partial F(x_i)} = F(x_i) - y_i \]
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \frac{\partial J}{\partial F(x_i)} = F(x_i) - y_i \]
 - en: We can interpret the residuals as negative gradients.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将残差解释为负梯度。
 - en: \[ y_i - F(x_i) = -1 \frac{\partial J}{\partial F(x_i)} \]
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ y_i - F(x_i) = -1 \frac{\partial J}{\partial F(x_i)} \]
 - en: 'So now we have a gradient descent problem:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们现在有一个梯度下降问题：
 - en: \[ F_{k+1}(X_i) = F_k(X_i) + h(X_i) \]\[ F_{k+1}(X_i) = F_k(X_i) + y_i - F_k(X_i)
     \]\[ F_{k+1}(X_i) = F_k(X_i) - 1 \frac{\partial J}{\partial F_k(X_i)} \]
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ F_{k+1}(X_i) = F_k(X_i) + h(X_i) \]\[ F_{k+1}(X_i) = F_k(X_i) + y_i - F_k(X_i)
+    \]\[ F_{k+1}(X_i) = F_k(X_i) - 1 \frac{\partial J}{\partial F_k(X_i)} \]
 - en: 'Of the general form:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 通用形式如下：
 - en: \[ \phi_{k+1} = \phi_k - \rho \frac{\partial J}{\partial \phi_k} \]
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \phi_{k+1} = \phi_k - \rho \frac{\partial J}{\partial \phi_k} \]
 - en: where \(phi_k\) is the current state, \(\rho\) is the learning rate, \(J\) is
     the loss function, and \(\phi_{k+1}\) is the next state of our estimator.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 \(phi_k\) 是当前状态，\(\rho\) 是学习率，\(J\) 是损失函数，而 \(\phi_{k+1}\) 是我们估计器的下一个状态。
 - en: If we consider our residual at training data to be a gradient then we are performing
     gradient descent.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们将训练数据中的残差视为梯度，那么我们正在进行梯度下降。
 - en: fitting a series of models to negative gradients
+  id: totrans-80
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对负梯度拟合一系列模型
 - en: By approaching the problem as a gradient decent problem we are able to apply
     a variety of loss functions
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过将问题视为梯度下降问题，我们能够应用各种损失函数
 - en: \(\ell2\) is our \(\frac{\left(y - F(X)\right)^2}{2}\) is practical, but is
     not robust with outliers
+  id: totrans-82
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(\ell2\) 是我们的 \(\frac{\left(y - F(X)\right)^2}{2}\) 是实用的，但对外部异常值不稳健
 - en: \[ - 1 \frac{\partial J}{\partial F_k(X_i)} = y_i - F_k(X_i) \]
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ - 1 \frac{\partial J}{\partial F_k(X_i)} = y_i - F_k(X_i) \]
 - en: \(\ell1\) is our \(|y - F(X)|\) is more robust with outliers
+  id: totrans-84
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(\ell1\) 是我们的 \(|y - F(X)|\) 对外部异常值更稳健
 - en: \[ - 1 \frac{\partial J}{\partial F_k(X_i)} = sign(y_i - F_k(X_i)) \]
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ - 1 \frac{\partial J}{\partial F_k(X_i)} = sign(y_i - F_k(X_i)) \]
 - en: there are others like Huber Loss
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 还有其他一些，如 Huber 损失
 - en: '**Interpretability**'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: '**可解释性**'
 - en: Compared to decision trees, the ensemble methods have reduced interpretability.
     One tool to improve model interpretability is feature importance.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 与决策树相比，集成方法的可解释性较低。提高模型可解释性的一个工具是特征重要性。
 - en: 'We calculate variable importance through calculating the average of:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过计算以下平均来计算变量重要性：
 - en: residual sum of square reduction for all splits involving each predictor feature
     for regression
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对所有涉及每个预测特征的分隔进行残差平方和减少，以进行回归
 - en: the decrease in the Gini index for all splits involving each predictor feature
     for classification
+  id: totrans-91
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于所有涉及每个预测特征的分隔，降低 Gini 指数
 - en: Both are standardized to sum to 1.0 over the features.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两个库都标准化为在特征上的和为 1.0。
 - en: Classification
+  id: totrans-93
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分类
 - en: The response is a finite set of possible categories.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 响应是可能的有限类别集合。
 - en: For each training data the truth is 100% probability in the observed category
     and 0% otherwise
+  id: totrans-95
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于每个训练数据，真实值在观察类别中的概率为 100%，否则为 0%
 - en: Estimate the probability of each category with the a decision tree
+  id: totrans-96
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用决策树估计每个类别的概率
 - en: Use a measure of difference between the true and estimated distributions as
     the loss function to minimize
+  id: totrans-97
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用真实分布和估计分布之间的差异度作为损失函数来最小化
 - en: Load the Required Libraries
+  id: totrans-98
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 加载所需的库
 - en: We will also need some standard packages. These should have been installed with
     Anaconda 3.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还需要一些标准库。这些库应该已经与 Anaconda 3 一起安装。
 - en: '[PRE0]'
+  id: totrans-100
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: If you get a package import error, you may have to first install some of these
     packages. This can usually be accomplished by opening up a command window on Windows
     and then typing ‘python -m pip install [package-name]’. More assistance is available
     with the respective package docs.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您遇到包导入错误，您可能首先需要安装这些包中的一些。这通常可以通过在Windows上打开命令窗口然后输入‘python -m pip install
+    [package-name]’来完成。有关相应包的更多帮助，请参阅各自的包文档。
 - en: Declare Functions
+  id: totrans-102
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 声明函数
 - en: Let’s define a couple of functions to streamline plotting correlation matrices
     and visualization of a decision tree regression model.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们定义几个函数来简化绘制相关矩阵和决策树回归模型的可视化。
 - en: '[PRE1]'
+  id: totrans-104
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Set the Working Directory
+  id: totrans-105
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 设置工作目录
 - en: I always like to do this so I don’t lose files and to simplify subsequent read
     and writes (avoid including the full address each time).
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 我总是这样做，这样我就不会丢失文件，并且可以简化后续的读取和写入（避免每次都包含完整地址）。
 - en: '[PRE2]'
+  id: totrans-107
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: You will have to update the part in quotes with your own working directory and
     the format is different on a Mac (e.g. “~/PGE”).
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 您将不得不更新引号内的部分，以使用您自己的工作目录，并且在Mac上格式不同（例如：“~/PGE”）。
 - en: Loading Data
+  id: totrans-109
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 加载数据
 - en: 'Let’s load the provided multivariate, spatial dataset [unconv_MV.csv](https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/unconv_MV.csv)
     available in my GeoDataSet repo. It is a comma delimited file with:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们加载提供的多元、空间数据集 [unconv_MV.csv](https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/unconv_MV.csv)，它在我的GeoDataSet仓库中可用。它是一个逗号分隔的文件，包含：
 - en: well index (integer)
+  id: totrans-111
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 井指数（整数）
 - en: porosity (%)
+  id: totrans-112
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 孔隙率 (%)
 - en: permeability (\(mD\))
+  id: totrans-113
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 渗透率 (\(mD\))
 - en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^6\)).
+  id: totrans-114
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 声波阻抗 (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^6\))。
 - en: brittleness (%)
+  id: totrans-115
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 岩脆性 (%)
 - en: total organic carbon (%)
+  id: totrans-116
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 总有机碳 (%)
 - en: vitrinite reflectance (%)
+  id: totrans-117
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 玻璃光泽反射率 (%)
 - en: initial gas production (90 day average) (MCFPD)
+  id: totrans-118
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 初始气产量（90天平均）（MCFPD）
 - en: We load it with the pandas ‘read_csv’ function into a data frame we called ‘df’
     and then preview it to make sure it loaded correctly.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用pandas的‘read_csv’函数将其加载到我们称为‘df’的数据框中，然后预览以确保正确加载。
 - en: '**Python Tip: using functions from a package** just type the label for the
     package that we declared at the beginning:'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Python技巧：使用包中的函数**只需输入我们在开头声明的包的标签：'
 - en: '[PRE3]'
+  id: totrans-121
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'so we can access the pandas function ‘read_csv’ with the command:'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们可以使用命令访问pandas函数‘read_csv’：
 - en: '[PRE4]'
+  id: totrans-123
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: but read csv has required input parameters. The essential one is the name of
     the file. For our circumstance all the other default parameters are fine. If you
     want to see all the possible parameters for this function, just go to the docs
     [here](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html).
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 但读取csv需要输入参数。最重要的是文件名。在我们的情况下，所有其他默认参数都很好。如果您想查看此函数的所有可能参数，请访问[此处](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)的文档。
 - en: The docs are always helpful
+  id: totrans-125
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 文档总是很有帮助
 - en: There is often a lot of flexibility for Python functions, possible through using
     various inputs parameters
+  id: totrans-126
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于Python函数，通常有很多灵活性，可以通过使用各种输入参数来实现。
 - en: also, the program has an output, a pandas DataFrame loaded from the data. So
     we have to specficy the name / variable representing that new object.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，程序有一个输出，即从数据加载的pandas DataFrame。因此，我们必须指定代表该新对象的名称/变量。
 - en: '[PRE5]'
+  id: totrans-128
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Let’s run this command to load the data and then this command to extract a random
     subset of the data.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们运行此命令来加载数据，然后运行此命令来提取数据的随机子集。
 - en: '[PRE6]'
+  id: totrans-130
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Feature Engineering
+  id: totrans-131
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 特征工程
 - en: 'Let’s make some changes to the data to improve the workflow:'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们对数据进行一些修改以改进工作流程：
 - en: '**Select the predictor features (x2) and the response feature (x1)**, make
     sure the metadata is also consistent.'
+  id: totrans-133
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**选择预测特征（x2）和响应特征（x1）**，确保元数据也是一致的。'
 - en: '**Metadata** encoding such as the units, labels and display ranges for each
     feature.'
+  id: totrans-134
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**元数据编码**，如每个特征的单位、标签和显示范围。'
 - en: '**Reduce the number of data** for ease of visualization (hard to see if too
     many points on our plots).'
+  id: totrans-135
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**为了便于可视化减少数据数量**（如果图表上有太多点就难以看清）。'
 - en: '**Train and test data split** to demonstrate and visualize simple hyperparameter
     tuning.'
+  id: totrans-136
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**训练和测试数据分割**以演示和可视化简单的超参数调整。'
 - en: '**Add random noise to the data** to demonstrate model overfit. The original
     data is error free and does not readily demonstrate overfit.'
+  id: totrans-137
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**向数据添加随机噪声**以演示模型过拟合。原始数据没有错误，并不容易展示过拟合。'
 - en: Given this is properly set, one should be able to use any dataset and features
     for this demonstration.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设这个设置是正确的，那么应该能够使用任何数据集和特征进行这个演示。
 - en: for brevity we don’t show any feature selection here. Previous chapter, e.g.,
     k-nearest neighbours include some feature selection methods, but see the feature
     selection chapter for many possible methods with codes for feature selection.
+  id: totrans-139
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 为了简洁起见，我们这里不展示任何特征选择。例如，前一章中的k-最近邻包括一些特征选择方法，但请参阅特征选择章节，以了解许多可能的特征选择方法及其代码。
 - en: 'Optional: Add Random Noise to the Response Feature'
+  id: totrans-140
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可选：向响应特征添加随机噪声
 - en: We can do this to observe the impact of data noise on overfit and hyperparameter
     tuning.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以这样做来观察数据噪声对过拟合和超参数调整的影响。
 - en: This is for experiential learning, of course we wouldn’t add random noise to
     our data
+  id: totrans-142
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 这是为了经验学习，当然我们不会向我们的数据添加随机噪声
 - en: We set the random number seed for reproducibility
+  id: totrans-143
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们设置了随机数种子以确保可重复性
 - en: '[PRE7]'
+  id: totrans-144
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Let’s make sure that we have selected reasonable features to build a model
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们确保我们已经选择了合理的特征来构建模型
 - en: the 2 predictor features are not collinear, as this would result in an unstable
     prediction model
+  id: totrans-146
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 两个预测特征不共线性，因为这会导致预测模型不稳定
 - en: each of the features are related to the response feature, the predictor features
     inform the response
+  id: totrans-147
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个特征都与响应特征相关，预测特征通知响应
 - en: Calculate the Correlation Matrix and Correlation with Response Ranking
+  id: totrans-148
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 计算相关性矩阵和与响应排名的相关性
 - en: Let’s start with correlation analysis. We can calculate and view the correlation
     matrix and correlation to the response features with these previously declared
     functions.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从相关性分析开始。我们可以使用之前声明的函数来计算和查看相关性矩阵以及与响应特征的关联。
 - en: correlation analysis is based on the assumption of linear relationships, but
     it is a good start
+  id: totrans-150
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 相关性分析基于线性关系的假设，但这是一个良好的起点
 - en: '[PRE8]'
+  id: totrans-151
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '![_images/f16d805e35f1c39ce293ec74df9132232e9f79c7ca0cb2ab8b63641a714d99c3.png](../Images/3e93a8978cec90fe97483ce65cda346f.png)'
+  id: totrans-152
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/f16d805e35f1c39ce293ec74df9132232e9f79c7ca0cb2ab8b63641a714d99c3.png](../Images/3e93a8978cec90fe97483ce65cda346f.png)'
 - en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意由于每个变量与其自身的相关性而产生的1.0对角线。
 - en: This looks good. There is a mix of correlation magnitudes. Of course, correlation
     coefficients are limited to degree of linear correlations.
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 这看起来不错。存在不同大小的相关性。当然，相关系数限于线性相关程度。
 - en: Let’s look at the matrix scatter plot to see the pairwise relationship between
     the features.
+  id: totrans-155
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 让我们看看矩阵散点图，以了解特征之间的成对关系。
 - en: '[PRE9]'
+  id: totrans-156
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: '![_images/b641089892114f3044ca3ab9a43c2723da5e4105a26416ee749176d163822c57.png](../Images/8f6fc0dc9253e57bb674c41069015dde.png)'
+  id: totrans-157
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/b641089892114f3044ca3ab9a43c2723da5e4105a26416ee749176d163822c57.png](../Images/8f6fc0dc9253e57bb674c41069015dde.png)'
 - en: Train and Test Split
+  id: totrans-158
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练和测试分割
 - en: For convenience and simplicity we use scikit-learn’s random train and test split.
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了方便和简单，我们使用scikit-learn的随机训练和测试分割。
 - en: '[PRE10]'
+  id: totrans-160
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: Visualize the DataFrame
+  id: totrans-161
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可视化DataFrame
 - en: Visualizing the train and test DataFrame is useful check before we build our
     models.
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 可视化训练和测试DataFrame是在我们构建模型之前的一个有用的检查。
 - en: many things can go wrong, e.g., we loaded the wrong data, all the features did
     not load, etc.
+  id: totrans-163
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 许多事情可能会出错，例如，我们加载了错误的数据，所有特征都没有加载等。
 - en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
     and clean format, see below).
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过使用DataFrame的‘head’成员函数来预览（格式整洁，见下文）。
 - en: '[PRE11]'
+  id: totrans-165
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '[PRE12]'
+  id: totrans-166
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '|  | Por | Brittle | Production |'
+  id: totrans-167
   prefs: []
   type: TYPE_TB
+  zh: '|  | Por | Brittle | Production |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-168
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '| 86 | 12.83 | 29.87 | 995.700671 |'
+  id: totrans-169
   prefs: []
   type: TYPE_TB
+  zh: '| 86 | 12.83 | 29.87 | 995.700671 |'
 - en: '| 35 | 17.39 | 56.43 | 6060.760806 |'
+  id: totrans-170
   prefs: []
   type: TYPE_TB
+  zh: '| 35 | 17.39 | 56.43 | 6060.760806 |'
 - en: '| 75 | 12.23 | 40.67 | 3744.177137 |'
+  id: totrans-171
   prefs: []
   type: TYPE_TB
+  zh: '| 75 | 12.23 | 40.67 | 3744.177137 |'
 - en: '| 36 | 13.72 | 40.24 | 4203.470533 |'
+  id: totrans-172
   prefs: []
   type: TYPE_TB
+  zh: '| 36 | 13.72 | 40.24 | 4203.470533 |'
 - en: '| 126 | 12.83 | 17.20 | 2917.165695 |'
+  id: totrans-173
   prefs: []
   type: TYPE_TB
+  zh: '| 126 | 12.83 | 17.20 | 2917.165695 |'
 - en: '|  | Por | Brittle | Production |'
+  id: totrans-174
   prefs: []
   type: TYPE_TB
+  zh: '|  | Por | Brittle | Production |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-175
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '| 5 | 15.55 | 58.25 | 5619.930037 |'
+  id: totrans-176
   prefs: []
   type: TYPE_TB
+  zh: '| 5 | 15.55 | 58.25 | 5619.930037 |'
 - en: '| 46 | 20.21 | 23.78 | 3897.440411 |'
+  id: totrans-177
   prefs: []
   type: TYPE_TB
+  zh: '| 46 | 20.21 | 23.78 | 3897.440411 |'
 - en: '| 96 | 15.07 | 39.39 | 4504.608029 |'
+  id: totrans-178
   prefs: []
   type: TYPE_TB
+  zh: '| 96 | 15.07 | 39.39 | 4504.608029 |'
 - en: '| 45 | 12.10 | 63.24 | 3613.953926 |'
+  id: totrans-179
   prefs: []
   type: TYPE_TB
+  zh: '| 45 | 12.10 | 63.24 | 3613.953926 |'
 - en: '| 105 | 19.54 | 37.40 | 5314.937997 |'
+  id: totrans-180
   prefs: []
   type: TYPE_TB
+  zh: '| 105 | 19.54 | 37.40 | 5314.937997 |'
 - en: Summary Statistics for Tabular Data
+  id: totrans-181
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 表格数据的汇总统计
 - en: There are a lot of efficient methods to calculate summary statistics from tabular
     data in DataFrames.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 在DataFrames中，有许多高效的方法可以计算表格数据的汇总统计。
 - en: The describe command provides count, mean, minimum, maximum in a nice data table.
+  id: totrans-183
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: describe命令以美观的数据表形式提供计数、平均值、最小值、最大值。
 - en: '[PRE13]'
+  id: totrans-184
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: '[PRE14]'
+  id: totrans-185
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: '|  | Por | Brittle | Production |'
+  id: totrans-186
   prefs: []
   type: TYPE_TB
+  zh: '|  | Por | Brittle | Production |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-187
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '| count | 105.000000 | 105.000000 | 105.000000 |'
+  id: totrans-188
   prefs: []
   type: TYPE_TB
+  zh: '| count | 105.000000 | 105.000000 | 105.000000 |'
 - en: '| mean | 14.859238 | 48.861143 | 4192.479746 |'
+  id: totrans-189
   prefs: []
   type: TYPE_TB
+  zh: '| mean | 14.859238 | 48.861143 | 4192.479746 |'
 - en: '| std | 3.057228 | 14.432050 | 1347.391355 |'
+  id: totrans-190
   prefs: []
   type: TYPE_TB
+  zh: '| std | 3.057228 | 14.432050 | 1347.391355 |'
 - en: '| min | 7.220000 | 10.940000 | 357.449794 |'
+  id: totrans-191
   prefs: []
   type: TYPE_TB
+  zh: '| min | 7.220000 | 10.940000 | 357.449794 |'
 - en: '| max | 23.550000 | 84.330000 | 7934.478879 |'
+  id: totrans-192
   prefs: []
   type: TYPE_TB
+  zh: '| max | 23.550000 | 84.330000 | 7934.478879 |'
 - en: '|  | Por | Brittle | Production |'
+  id: totrans-193
   prefs: []
   type: TYPE_TB
+  zh: '|  | Por | Brittle | Production |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-194
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '| count | 35.000000 | 35.000000 | 35.000000 |'
+  id: totrans-195
   prefs: []
   type: TYPE_TB
+  zh: '| count | 35.000000 | 35.000000 | 35.000000 |'
 - en: '| mean | 15.011714 | 46.798286 | 4431.830496 |'
+  id: totrans-196
   prefs: []
   type: TYPE_TB
+  zh: '| mean | 15.011714 | 46.798286 | 4431.830496 |'
 - en: '| std | 3.574467 | 13.380910 | 1487.184992 |'
+  id: totrans-197
   prefs: []
   type: TYPE_TB
+  zh: '| std | 3.574467 | 13.380910 | 1487.184992 |'
 - en: '| min | 6.550000 | 20.120000 | 1572.738774 |'
+  id: totrans-198
   prefs: []
   type: TYPE_TB
+  zh: '| min | 6.550000 | 20.120000 | 1572.738774 |'
 - en: '| max | 20.860000 | 68.760000 | 7668.639376 |'
+  id: totrans-199
   prefs: []
   type: TYPE_TB
+  zh: '| max | 20.860000 | 68.760000 | 7668.639376 |'
 - en: It is good that we checked the summary statistics.
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 很好，我们已经检查了摘要统计。
 - en: there are no obvious issues
+  id: totrans-201
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 没有明显的错误
 - en: check out the range of values for each feature to set up and adjust plotting
     limits. See above.
+  id: totrans-202
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 检查每个特征的值范围，以设置和调整绘图限制。见上图。
 - en: Visualize the Train and Test Splits
+  id: totrans-203
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可视化训练和测试分割
 - en: Let’s check the consistency and coverage of training and testing with histograms
     and scatter plots.
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们检查使用直方图和散点图训练和测试的一致性和覆盖范围。
 - en: check to make sure the training and testing cover the range of possible feature
     combinations
+  id: totrans-205
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 检查以确保训练和测试覆盖了可能的特征组合范围
 - en: ensure we are not extrapolating beyond the training data with the testing cases
+  id: totrans-206
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 确保测试案例不会超出训练数据的范围进行外推
 - en: '[PRE15]'
+  id: totrans-207
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: '![_images/39becd8bd5d8101d8e6567bb5e26eb2b8fbe6499ce965fd4f72fdc3d8b7a3013.png](../Images/6c7c51e5c24b5320a250e5d2881b5021.png)'
+  id: totrans-208
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/39becd8bd5d8101d8e6567bb5e26eb2b8fbe6499ce965fd4f72fdc3d8b7a3013.png](../Images/6c7c51e5c24b5320a250e5d2881b5021.png)'
 - en: Sometimes I find it more convenient to compare distributions by looking at CDF’s
     instead of histograms.
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时我发现通过查看累积分布函数（CDF）而不是直方图来比较分布更方便。
 - en: we avoid the arbitrary choice of histogram bin size, because CDF’s are at the
     data resolution.
+  id: totrans-210
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们避免任意选择直方图柱状大小，因为累积分布函数（CDF）与数据分辨率一致。
 - en: '[PRE16]'
+  id: totrans-211
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: '![_images/26e6503a4d7debf39d1789ec8242383e943228b6a4f2f3dfc0a0f10cd99a5b46.png](../Images/e1017bcd0dfe07284cc05b94b7dd3861.png)'
+  id: totrans-212
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/26e6503a4d7debf39d1789ec8242383e943228b6a4f2f3dfc0a0f10cd99a5b46.png](../Images/e1017bcd0dfe07284cc05b94b7dd3861.png)'
 - en: Once again, the distributions are well behaved,
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次强调，分布表现良好，
 - en: we cannot observe obvious gaps nor truncations.
+  id: totrans-214
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们无法观察到明显的间隙或截断。
 - en: check coverage of the train and test data
+  id: totrans-215
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 检查训练和测试数据的覆盖范围
 - en: Let’s look at a scatter plot of Porosity vs. Brittleness with points colored
     by Production.
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看孔隙率与脆性之间的散点图，点根据生产量着色。
 - en: '[PRE17]'
+  id: totrans-217
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: '![_images/1a847dd38c7158f07f58197cf7bfb88e46738dacb7622cd79a3a267a25a94494.png](../Images/79e12ff1ac255ff9811cd9900912d141.png)'
+  id: totrans-218
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/1a847dd38c7158f07f58197cf7bfb88e46738dacb7622cd79a3a267a25a94494.png](../Images/79e12ff1ac255ff9811cd9900912d141.png)'
 - en: Tree-based Boosting
+  id: totrans-219
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 基于树的提升
 - en: 'To perform tree-based boosting, gradient boosting tree regression we:'
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
+  zh: 要执行基于树的提升，梯度提升树回归，我们：
 - en: set the hyperparameters for our model
+  id: totrans-221
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 设置我们模型的超参数
 - en: '[PRE18]'
+  id: totrans-222
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: instantiate the model
+  id: totrans-223
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 实例化模型
 - en: '[PRE19]'
+  id: totrans-224
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: train the model
+  id: totrans-225
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 训练模型
 - en: '[PRE20]'
+  id: totrans-226
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: visualize the model result over the feature space (easy to do as we have only
     2 predictor features)
+  id: totrans-227
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 可视化模型结果在特征空间上的结果（由于我们只有两个预测特征，这很容易做到）
 - en: Demonstration of Boosting
+  id: totrans-228
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 提升演示
 - en: For demonstration let’s set tree maximum depth to 1 and 6 tree-based boosting
     regression trees.
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了演示，我们将树的最大深度设置为1和6棵基于树的提升回归树。
 - en: each tree only has a single split, called decision stumps. This will prevent
     interaction between the predictor features and be highly interpretable
+  id: totrans-230
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每棵树只有一个分割，称为决策树桩。这将防止预测特征之间的交互，并且易于解释
 - en: You should be able to observe the additive nature of the trees, see the first
     tree and then the first plus the second tree and so on.
+  id: totrans-231
   prefs: []
   type: TYPE_NORMAL
+  zh: 你应该能够观察到树的累加性质，先看第一棵树，然后是第一棵加上第二棵，依此类推。
 - en: recall the estimate is the summation of multiple trees
+  id: totrans-232
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 回想一下，估计是多个树的求和
 - en: since we are working with fitting a gradient after the first tree, we can have
     negative and positive estimates
+  id: totrans-233
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 由于我们在第一棵树之后拟合梯度，我们可以有负数和正数的估计
 - en: in this example we can see some production estimates that are actually negative
+  id: totrans-234
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在这个例子中，我们可以看到一些实际上是负数的生产估计
 - en: '[PRE21]'
+  id: totrans-235
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: '![_images/0689fdfd411d646efca1490a036e9354bc12c7bd5797bac40f5b0295fb0f11a3.png](../Images/b2a16fd01b6c4a7a3f642f8cf90844b3.png)'
+  id: totrans-236
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/0689fdfd411d646efca1490a036e9354bc12c7bd5797bac40f5b0295fb0f11a3.png](../Images/b2a16fd01b6c4a7a3f642f8cf90844b3.png)'
 - en: Notice that there is significant misfit with the data
+  id: totrans-237
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，与数据存在显著的失配
 - en: we have only used up to 6 decision stumps (1 decision tree)
+  id: totrans-238
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们只使用了最多6个决策树桩（1个决策树）
 - en: Let’s check the cross validation results with the withheld testing data.
+  id: totrans-239
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们检查保留的测试数据集的交叉验证结果。
 - en: '[PRE22]'
+  id: totrans-240
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: '![_images/dca4db99b262b1382fe6624eace15ad6cfe1a52dd28209db869d61cb97d8a540.png](../Images/c19d0d925995b408d0e14db0f66b52ee.png)'
+  id: totrans-241
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/c19d0d925995b408d0e14db0f66b52ee.png)'
 - en: Of course with a single tree we do quite poorly, but by the time we get to 6
     stump trees we cut the MSE almost in half.
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，用一棵树我们表现相当糟糕，但当我们达到6个树桩树时，我们几乎将均方误差减半。
 - en: Time to Build More Trees
+  id: totrans-243
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 是时候种植更多树木了
 - en: Now let’s demonstrate the result of utilizing many more trees in our tree-based
     boosting model.
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们将展示在我们的基于树的提升模型中利用更多树木的结果。
 - en: we will still work with simple decision stumps, don’t worry we will add more
     later
+  id: totrans-245
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们仍然将与简单的决策树桩一起工作，不用担心，我们稍后会添加更多
 - en: '[PRE23]'
+  id: totrans-246
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: '![_images/ad50902645fae1091779c09e40ad78025d6ddf1261c9d5a405eb2af496ddd2df.png](../Images/3baea417052c8c32978d193e173228b1.png)'
+  id: totrans-247
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/3baea417052c8c32978d193e173228b1.png)'
 - en: 'See the plaid pattern? It is due to the use of decision stumps, and:'
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
+  zh: 看到格子图案吗？这是由于使用了决策树桩，并且：
 - en: an additive model
+  id: totrans-249
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个加性模型
 - en: all models contribute to all predictions
+  id: totrans-250
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 所有模型都对所有预测有贡献
 - en: See the dark and bright regions?
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
+  zh: 看到暗区和亮区了吗？
 - en: the additive model may extrapolate outside the data range
+  id: totrans-252
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 加性模型可能会超出数据范围外进行外推
 - en: Let’s cross validate with our testing data to see how our model has improved
     with more trees.
+  id: totrans-253
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用我们的测试数据来交叉验证，看看我们的模型在更多树木的情况下如何改进。
 - en: '[PRE24]'
+  id: totrans-254
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: '![_images/f6fae7eb28cbf98d98c8bfbf82659a7d3bcb67136928521595c9e0374bdc1147.png](../Images/3f37a775a250322ae1595efdbfe1669d.png)'
+  id: totrans-255
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/3f37a775a250322ae1595efdbfe1669d.png)'
 - en: Around 20 trees we get our best performance and then we start to degrade, we
     are likely starting to overfit the training data.
+  id: totrans-256
   prefs: []
   type: TYPE_NORMAL
+  zh: 大约20棵树时，我们获得最佳性能，然后开始下降，我们可能开始过度拟合训练数据。
 - en: Going Beyond Decision Stumps
+  id: totrans-257
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 超越决策树桩
 - en: As state before with decision stumps we prevent interactions between features.
+  id: totrans-258
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，使用决策树桩，我们防止了特征之间的交互。
 - en: Let’s extend to tree depth of 2
+  id: totrans-259
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们扩展到树深度为2
 - en: two nested decisions resulting in 4 terminal nodes
+  id: totrans-260
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 两个嵌套决策导致4个终端节点
 - en: '[PRE25]'
+  id: totrans-261
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: '![_images/07951866b16ac8dd604974240c5a929632a2a45dccbbed9c7a5b1fcc6d5e3f6e.png](../Images/65161de226c63aae698a6005291afae4.png)'
+  id: totrans-262
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/65161de226c63aae698a6005291afae4.png)'
 - en: We have much more flexibility now.
+  id: totrans-263
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在有更多的灵活性。
 - en: with one tree we have 4 terminal nodes (regions)
+  id: totrans-264
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用一棵树我们有4个终端节点（区域）
 - en: with only 6 trees we are capturing some complicate features
+  id: totrans-265
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 仅用6棵树，我们已经捕捉到一些复杂特征
 - en: Let’s increase the tree depth one more time.
+  id: totrans-266
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们再次增加树的深度。
 - en: '[PRE26]'
+  id: totrans-267
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: '![_images/aba462916f779681b9aa90d6b1a3a548e3d43d5ad379c5af304e09a38658a793.png](../Images/b36175195239341c3b7ea8c842eea5b7.png)'
+  id: totrans-268
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/b36175195239341c3b7ea8c842eea5b7.png)'
 - en: One more time, it is common to use trees with depths of 4-8, so let’s try 5.
+  id: totrans-269
   prefs: []
   type: TYPE_NORMAL
+  zh: 再来一次，使用深度为4-8的树很常见，所以让我们尝试5。
 - en: '[PRE27]'
+  id: totrans-270
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: '![_images/1739c0986e82122c4de50870f59b64abac148392710ba70c39c9f279197c0704.png](../Images/d2ae5319fcaa86e15b8c1c77df29902e.png)'
+  id: totrans-271
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/d2ae5319fcaa86e15b8c1c77df29902e.png)'
 - en: Let’s cross validate the model with testing data.
+  id: totrans-272
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用测试数据来交叉验证模型。
 - en: '[PRE28]'
+  id: totrans-273
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: '![_images/76eb33533b0470061aefadc2a8ad8b34dcd8adaa5de34b3a7fef0efc8af812ca.png](../Images/cdbb3edec9e81f128298ed05c7cd6189.png)'
+  id: totrans-274
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/cdbb3edec9e81f128298ed05c7cd6189.png)'
 - en: With a max tree depth of 5 our model performance peaks early and the addition
     of more trees has no impact.
+  id: totrans-275
   prefs: []
   type: TYPE_NORMAL
+  zh: 当树的最大深度为5时，我们的模型性能早期达到峰值，增加更多树木没有影响。
 - en: of course this is not a thorough analysis
+  id: totrans-276
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当然，这并不是一个彻底的分析
 - en: Let’s try something more thorough
+  id: totrans-277
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试更彻底的方法
 - en: we will cross validate models with \(1,\ldots,100\) trees with max tree depths
     of \(1, 2, 3, 10\).
+  id: totrans-278
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将使用 \(1,\ldots,100\) 棵树进行交叉验证，最大树深度为 \(1, 2, 3, 10\)。
 - en: we also slow down the learning rate, I increased it above to amplify the difference
     of the outputs for demonstration, but know we want to see the best possible model.
+  id: totrans-279
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们还降低了学习率，我之前提高了它以放大输出的差异以进行演示，但现在我们想看到最好的模型。
 - en: '[PRE29]'
+  id: totrans-280
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: '![_images/ae7e45a290e0fe1fb8cb9fe76b23eff4132746b7765f4629c874d06b593e0ca6.png](../Images/c2ee3e9f993c37a05e91acb8b4ce5baf.png)'
+  id: totrans-281
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/c2ee3e9f993c37a05e91acb8b4ce5baf.png)'
 - en: 'That’s interesting:'
+  id: totrans-282
   prefs: []
   type: TYPE_NORMAL
+  zh: 非常有趣：
 - en: with increasing tree depths our model may improve
+  id: totrans-283
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 随着树深度的增加，我们的模型可能会改进
 - en: more tree depth requires fewer trees for improved accuracy
+  id: totrans-284
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 更深的树深度需要更少的树来提高准确性
 - en: with tree depths of 2 and 3 the models behave the same and after 10-15 trees
     level off, they are resistant to overfit
+  id: totrans-285
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当树深度为2和3时，模型表现相同，在10-15棵树之后趋于平稳，它们对过度拟合有抵抗力
 - en: with tree depth of 10, the number of trees has no impact of model performance
+  id: totrans-286
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在树深度为10的情况下，树的数量对模型性能没有影响
 - en: Gradient Descent Hyperparameters
+  id: totrans-287
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 梯度下降超参数
 - en: The learning rate scales the additive impact of each additive tree to the overall
     model prediction.
+  id: totrans-288
   prefs: []
   type: TYPE_NORMAL
+  zh: 学习率按比例放大每个添加树对整体模型预测的附加影响。
 - en: lower learning rate will slow the convergence to a solution
+  id: totrans-289
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 较低的学习率将减慢收敛到解的速度
 - en: lower learning rate will help us not skip over an optimum solution
+  id: totrans-290
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 较低的学习率将帮助我们不会跳过最优解
 - en: We won’t spend much time on this, but let’s just try changing the learning rate.
+  id: totrans-291
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不会在这个问题上花费太多时间，但让我们试着改变学习率。
 - en: '[PRE30]'
+  id: totrans-292
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE30]'
 - en: '![_images/011852fab9e64d42c5e7ac6bcaa69e4f061994730784f35584ff27e0d4ba9831.png](../Images/d130f276273e2b117adb7bf8d1768618.png)'
+  id: totrans-293
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/d130f276273e2b117adb7bf8d1768618.png)'
 - en: Once again, a very interesting result.
+  id: totrans-294
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次强调，这是一个非常有趣的结果。
 - en: regardless of tree complexity, it is better to learn slowly!
+  id: totrans-295
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 无论树复杂度如何，缓慢学习总是更好的！
 - en: Machine Learning Pipelines for Clean, Compact Machine Learning Code
+  id: totrans-296
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 清洁、紧凑的机器学习代码的机器学习管道
 - en: Pipelines are a scikit-learn class that allows for the encapsulation of a sequence
     of data preparation and modeling steps
+  id: totrans-297
   prefs: []
   type: TYPE_NORMAL
+  zh: 管道是scikit-learn中的一个类，允许封装一系列数据准备和建模步骤
 - en: then we can treat the pipeline as an object in our much condensed workflow
+  id: totrans-298
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 然后，我们可以将管道视为我们高度精简的工作流程中的一个对象
 - en: 'The pipeline class allows us to:'
+  id: totrans-299
   prefs: []
   type: TYPE_NORMAL
+  zh: 管道类允许我们：
 - en: improve code readability and to keep everything straight
+  id: totrans-300
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 提高代码可读性并保持一切井然有序
 - en: build complete workflows with very few lines of readable code
+  id: totrans-301
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用非常少的可读代码行构建完整的工作流程
 - en: avoid common workflow problems like data leakage, testing data informing model
     parameter training
+  id: totrans-302
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 避免常见的流程问题，如数据泄露、测试数据告知模型参数训练
 - en: abstract common machine learning modeling and focus on building the best model
     possible
+  id: totrans-303
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 抽象常见的机器学习建模，专注于构建尽可能好的模型
 - en: The fundamental philosophy is to treat machine learning as a combinatorial search
     to find the best model (AutoML)
+  id: totrans-304
   prefs: []
   type: TYPE_NORMAL
+  zh: 基本哲学是将机器学习视为一种组合搜索，以找到最佳模型（AutoML）
 - en: For more information see my recorded lecture on [Machine Learning Pipelines](https://www.youtube.com/watch?v=tYrPs8s1l9U&list=PLG19vXLQHvSAufDFgZEFAYQEwMJXklnQV&index=5)
     and a well-documented demonstration [Machine Learning Pipeline Workflow](http://localhost:8892/notebooks/OneDrive%20-%20The%20University%20of%20Texas%20at%20Austin/Courses/Workflows/PythonDataBasics_Pipelines.ipynb).
+  id: totrans-305
   prefs: []
   type: TYPE_NORMAL
+  zh: 更多信息请参阅我关于[机器学习管道](https://www.youtube.com/watch?v=tYrPs8s1l9U&list=PLG19vXLQHvSAufDFgZEFAYQEwMJXklnQV&index=5)的录音讲座和一份详细记录的演示[机器学习管道工作流程](http://localhost:8892/notebooks/OneDrive%20-%20The%20University%20of%20Texas%20at%20Austin/Courses/Workflows/PythonDataBasics_Pipelines.ipynb)。
 - en: '[PRE31]'
+  id: totrans-306
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE31]'
 - en: '[PRE32]'
+  id: totrans-307
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE32]'
 - en: Comments
+  id: totrans-308
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 注释
 - en: I hope you found this chapter helpful. Much more could be done and discussed,
     I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources),
+  id: totrans-309
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望您觉得这一章有帮助。还有更多可以做的和讨论的，我有很多资源。查看我的[共享资源清单](https://michaelpyrcz.com/my-resources)，
 - en: '*Michael*'
+  id: totrans-310
   prefs: []
   type: TYPE_NORMAL
+  zh: '*迈克尔*'
 - en: 'The Author:'
+  id: totrans-311
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 作者：
 - en: Michael Pyrcz, Professor, The University of Texas at Austin *Novel Data Analytics,
     Geostatistics and Machine Learning Subsurface Solutions*
+  id: totrans-312
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔·皮尔奇，教授，德克萨斯大学奥斯汀分校 *新颖的数据分析、地球统计学和机器学习地下解决方案*
 - en: With over 17 years of experience in subsurface consulting, research and development,
     Michael has returned to academia driven by his passion for teaching and enthusiasm
     for enhancing engineers’ and geoscientists’ impact in subsurface resource development.
+  id: totrans-313
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔拥有超过17年的地下咨询、研究和开发经验，他因对教学的热情和对增强工程师和地球科学家在地下资源开发中影响的热情而重返学术界。
 - en: 'For more about Michael check out these links:'
+  id: totrans-314
   prefs: []
   type: TYPE_NORMAL
+  zh: 想了解更多关于迈克尔的信息，请查看以下链接：
 - en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
     | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
     | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
     | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
     Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
     | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  id: totrans-315
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [网站](http://michaelpyrcz.com) | [Google Scholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [书籍](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Python中的应用地球统计学电子书](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
 - en: Want to Work Together?
+  id: totrans-316
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 想一起工作吗？
 - en: I hope this content is helpful to those that want to learn more about subsurface
     modeling, data analytics and machine learning. Students and working professionals
     are welcome to participate.
+  id: totrans-317
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这些内容对那些想了解更多关于地下建模、数据分析和机器学习的人有所帮助。学生和在职专业人士都欢迎参加。
 - en: Want to invite me to visit your company for training, mentoring, project review,
     workflow design and / or consulting? I’d be happy to drop by and work with you!
+  id: totrans-318
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 想邀请我到您的公司进行培训、辅导、项目审查、工作流程设计和/或咨询吗？我很乐意拜访并与您合作！
 - en: Interested in partnering, supporting my graduate student research or my Subsurface
     Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
     My research combines data analytics, stochastic modeling and machine learning
     theory with practice to develop novel methods and workflows to add value. We are
     solving challenging subsurface problems!
+  id: totrans-319
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 感兴趣合作、支持我的研究生研究或我的地下数据分析与机器学习联盟（共同负责人是约翰·福斯特教授）吗？我的研究将数据分析、随机建模和机器学习理论与实践相结合，以开发新的方法和工作流程来增加价值。我们正在解决具有挑战性的地下问题！
 - en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  id: totrans-320
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我可以通过 [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu) 联系到您。
 - en: I’m always happy to discuss,
+  id: totrans-321
   prefs: []
   type: TYPE_NORMAL
+  zh: 我总是很高兴讨论，
 - en: '*Michael*'
+  id: totrans-322
   prefs: []
   type: TYPE_NORMAL
+  zh: '*迈克尔*'
 - en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
     Jackson School of Geosciences, The University of Texas at Austin
+  id: totrans-323
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔·皮尔奇，博士，P.Eng. 教授，德克萨斯大学奥斯汀分校 Cockrell 工程学院和 Jackson 地球科学学院
 - en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
     | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
     | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
     | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
     Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
     | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  id: totrans-324
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 更多资源请访问：[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [网站](http://michaelpyrcz.com) | [Google Scholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [书籍](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Python
+    地统计学电子书](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html) | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)
 - en: Motivations for Gradient Boosting Trees
+  id: totrans-325
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 梯度提升树的动机
 - en: Before we can understand gradient boosting trees we first need to cover decision
     trees. Here’s the critical concepts for decision trees.
+  id: totrans-326
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们能够理解梯度提升树之前，我们首先需要了解决策树。以下是决策树的关键概念。
 - en: Decision Tree
+  id: totrans-327
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 决策树
 - en: '**Prediction**'
+  id: totrans-328
   prefs: []
   type: TYPE_NORMAL
+  zh: '**预测**'
 - en: estimate a function \(\hat{f}\) such that we predict a response feature \(Y\)
     from a set of predictor features \(X_1,\ldots,X_m\).
+  id: totrans-329
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 估计一个函数 \(\hat{f}\)，使得我们能从一组预测特征 \(X_1,\ldots,X_m\) 中预测响应特征 \(Y\)。
 - en: the prediction is of the form \(\hat{Y} = \hat{f}(X_1,\ldots,X_m)\)
+  id: totrans-330
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 预测的形式为 \(\hat{Y} = \hat{f}(X_1,\ldots,X_m)\)
 - en: '**Supervised Learning**'
+  id: totrans-331
   prefs: []
   type: TYPE_NORMAL
+  zh: '**监督学习**'
 - en: the response feature label, \(Y\), is available over the training and testing
     data
+  id: totrans-332
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 响应特征标签，\(Y\)，在训练和测试数据中都是可用的
 - en: '**Based on an Ensemble of Decision Trees**'
+  id: totrans-333
   prefs: []
   type: TYPE_NORMAL
+  zh: '**基于决策树集成**'
 - en: These are the concepts related to decision tree.
+  id: totrans-334
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些是与决策树相关的概念。
 - en: '**Hierarchical, Binary Segmentation of the Feature Space**'
+  id: totrans-335
   prefs: []
   type: TYPE_NORMAL
+  zh: '**特征空间的分层二分分割**'
 - en: The fundamental idea is to divide the predictor space, \(𝑋_1,\ldots,X_m\), into
     \(J\) mutually exclusive, exhaustive regions
+  id: totrans-336
   prefs: []
   type: TYPE_NORMAL
+  zh: 基本思想是将预测空间，\(𝑋_1,\ldots,X_m\)，划分为 \(J\) 个互斥、穷尽的区域
 - en: '**mutually exclusive** – any combination of predictors only belongs to a single
     region, \(R_j\)'
+  id: totrans-337
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**互斥** – 任何预测特征的组合只属于单个区域，\(R_j\)'
 - en: '**exhaustive** – all combinations of predictors belong a region, \(R_j\), regions
     cover entire feature space (range of the variables being considered)'
+  id: totrans-338
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**穷尽** – 所有预测特征的组合都属于一个区域，\(R_j\)，区域覆盖整个特征空间（考虑的变量的范围）'
 - en: For every observation in a region, \(R_j\), we use the same prediction, \(\hat{Y}(R_j)\)
+  id: totrans-339
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于区域 \(R_j\) 中的每个观测值，我们使用相同的预测，\(\hat{Y}(R_j)\)
 - en: For example predict production, \(\hat{Y}\), from porosity, \({X_1}\)
+  id: totrans-340
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，从孔隙率，\({X_1}\) 预测产量，\(\hat{Y}\)
 - en: given the data within a mD feature space, \(X_1,\ldots,X_m\), find that boundary
     maximizes the gap between the two categories
+  id: totrans-341
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在一个 mD 特征空间内的数据中，\(X_1,\ldots,X_m\)，找到最大化两个类别之间差距的边界
 - en: new cases are classified based on where they fall relative to this boundary
+  id: totrans-342
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 新案例根据它们相对于这个边界的相对位置进行分类
 - en: '**Procedure for Tree Construction**'
+  id: totrans-343
   prefs: []
   type: TYPE_NORMAL
+  zh: '**树构建过程**'
 - en: The tree is constructed from the top down. We begin with a single region that
     covers the entire feature space and then proceed with a sequence of splits.
+  id: totrans-344
   prefs: []
   type: TYPE_NORMAL
+  zh: 树是从上往下构建的。我们从一个覆盖整个特征空间的单一区域开始，然后进行一系列的分割。
 - en: '**Scan All Possible Splits** over all regions and over all features.'
+  id: totrans-345
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**扫描所有可能的分割** 在所有区域和所有特征上。'
 - en: '**Greedy Optimization** The method proceeds by finding the first segmentation
     (split) in any feature that minimizes the residual sum of squares of errors over
     all the training data \(y_i\) over all of the regions \(j = 1,\ldots,J\).'
+  id: totrans-346
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**贪婪优化** 该方法通过在任意特征中找到第一个分割（分割），以最小化所有训练数据 \(y_i\) 在所有区域 \(j = 1,\ldots,J\)
+    上的残差平方和。'
 - en: \[ RSS = \sum^{J}_{j=1} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
+  id: totrans-347
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ RSS = \sum^{J}_{j=1} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
 - en: '**Stopping Criteria** is typically based on minimum number of training data
     in each region for a robust estimation and / or minimum reduction in RSS for the
     next split'
+  id: totrans-348
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**停止标准** 通常基于每个区域的最小训练数据量以进行稳健估计，以及/或下一个分割的最小RSS减少。'
 - en: Now we can cover gradient boosting trees that build on the concept of decision
     trees.
+  id: totrans-349
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以介绍基于决策树概念的梯度提升树。
 - en: Decision Tree
+  id: totrans-350
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 决策树
 - en: '**Prediction**'
+  id: totrans-351
   prefs: []
   type: TYPE_NORMAL
+  zh: '**预测**'
 - en: estimate a function \(\hat{f}\) such that we predict a response feature \(Y\)
     from a set of predictor features \(X_1,\ldots,X_m\).
+  id: totrans-352
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 估计一个函数 \(\hat{f}\)，以便我们从一个预测特征集 \(X_1,\ldots,X_m\) 中预测响应特征 \(Y\)。
 - en: the prediction is of the form \(\hat{Y} = \hat{f}(X_1,\ldots,X_m)\)
+  id: totrans-353
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 预测形式为 \(\hat{Y} = \hat{f}(X_1,\ldots,X_m)\)。
 - en: '**Supervised Learning**'
+  id: totrans-354
   prefs: []
   type: TYPE_NORMAL
+  zh: '**监督学习**'
 - en: the response feature label, \(Y\), is available over the training and testing
     data
+  id: totrans-355
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 响应特征标签 \(Y\) 在训练和测试数据中可用。
 - en: '**Based on an Ensemble of Decision Trees**'
+  id: totrans-356
   prefs: []
   type: TYPE_NORMAL
+  zh: '**基于决策树集成**'
 - en: These are the concepts related to decision tree.
+  id: totrans-357
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些是与决策树相关的概念。
 - en: '**Hierarchical, Binary Segmentation of the Feature Space**'
+  id: totrans-358
   prefs: []
   type: TYPE_NORMAL
+  zh: '**特征空间的分层二分分割**'
 - en: The fundamental idea is to divide the predictor space, \(𝑋_1,\ldots,X_m\), into
     \(J\) mutually exclusive, exhaustive regions
+  id: totrans-359
   prefs: []
   type: TYPE_NORMAL
+  zh: 基本思想是将预测空间 \(𝑋_1,\ldots,X_m\) 划分为 \(J\) 个相互排斥、穷尽的区域。
 - en: '**mutually exclusive** – any combination of predictors only belongs to a single
     region, \(R_j\)'
+  id: totrans-360
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**相互排斥** – 任何预测器的组合只属于单个区域 \(R_j\)。'
 - en: '**exhaustive** – all combinations of predictors belong a region, \(R_j\), regions
     cover entire feature space (range of the variables being considered)'
+  id: totrans-361
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**穷尽** – 所有预测器的组合属于一个区域 \(R_j\)，区域覆盖整个特征空间（考虑的变量的范围）。'
 - en: For every observation in a region, \(R_j\), we use the same prediction, \(\hat{Y}(R_j)\)
+  id: totrans-362
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于区域 \(R_j\) 中的每个观测值，我们使用相同的预测，\(\hat{Y}(R_j)\)。
 - en: For example predict production, \(\hat{Y}\), from porosity, \({X_1}\)
+  id: totrans-363
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，从孔隙率 \({X_1}\) 预测生产，\(\hat{Y}\)。
 - en: given the data within a mD feature space, \(X_1,\ldots,X_m\), find that boundary
     maximizes the gap between the two categories
+  id: totrans-364
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 给定一个 mD 特征空间内的数据，\(X_1,\ldots,X_m\)，找到边界以最大化两个类别之间的差距。
 - en: new cases are classified based on where they fall relative to this boundary
+  id: totrans-365
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 新案例根据它们相对于这个边界的位置进行分类。
 - en: '**Procedure for Tree Construction**'
+  id: totrans-366
   prefs: []
   type: TYPE_NORMAL
+  zh: '**树构建过程**'
 - en: The tree is constructed from the top down. We begin with a single region that
     covers the entire feature space and then proceed with a sequence of splits.
+  id: totrans-367
   prefs: []
   type: TYPE_NORMAL
+  zh: 树是从上往下构建的。我们从一个覆盖整个特征空间的单一区域开始，然后进行一系列的分割。
 - en: '**Scan All Possible Splits** over all regions and over all features.'
+  id: totrans-368
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**扫描所有可能的分割** 在所有区域和所有特征上。'
 - en: '**Greedy Optimization** The method proceeds by finding the first segmentation
     (split) in any feature that minimizes the residual sum of squares of errors over
     all the training data \(y_i\) over all of the regions \(j = 1,\ldots,J\).'
+  id: totrans-369
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**贪婪优化** 该方法通过在任意特征中找到第一个分割（分割），以最小化所有训练数据 \(y_i\) 在所有区域 \(j = 1,\ldots,J\)
+    上的残差平方和。'
 - en: \[ RSS = \sum^{J}_{j=1} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
+  id: totrans-370
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ RSS = \sum^{J}_{j=1} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
 - en: '**Stopping Criteria** is typically based on minimum number of training data
     in each region for a robust estimation and / or minimum reduction in RSS for the
     next split'
+  id: totrans-371
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**停止标准** 通常基于每个区域的最小训练数据量以进行稳健估计，以及/或下一个分割的最小RSS减少。'
 - en: Now we can cover gradient boosting trees that build on the concept of decision
     trees.
+  id: totrans-372
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以介绍基于决策树概念的梯度提升树。
 - en: Boosting Models
+  id: totrans-373
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 增量模型
 - en: Boosting additively applies multiple week learners to build a stronger learner.
+  id: totrans-374
   prefs: []
   type: TYPE_NORMAL
+  zh: 增量地将多个弱学习器应用于构建更强的学习器。
 - en: a weak learner is one that offers predictions just marginally better than random
     selection
+  id: totrans-375
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 弱学习器是指仅提供略优于随机选择的预测的学习器。
 - en: I’ll explain the method with words and then with equations.
+  id: totrans-376
   prefs: []
   type: TYPE_NORMAL
+  zh: 我会用文字和方程来解释这个方法。
 - en: build a simple model with a high error rate, the model can be quite inaccurate,
     but moves in the correct direction
+  id: totrans-377
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 建立一个误差率高的简单模型，模型可能相当不准确，但会朝着正确的方向移动
 - en: calculate the error from the model
+  id: totrans-378
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算模型的误差
 - en: fit another model to the error
+  id: totrans-379
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 拟合另一个模型来拟合误差
 - en: calculate the error from this addition of the first and second model
+  id: totrans-380
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算第一个和第二个模型组合的误差
 - en: repeat until the desired accuracy is obtained or some other stopping criteria
+  id: totrans-381
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 重复直到达到所需的精度或某些其他停止标准
 - en: 'The general workflow for predicting \(Y\) from \(X_1,\ldots,X_m\) is:'
+  id: totrans-382
   prefs: []
   type: TYPE_NORMAL
+  zh: 从 \(X_1,\ldots,X_m\) 预测 \(Y\) 的一般工作流程是：
 - en: build a week learner to predict \(Y\) from \(X_1,\ldots,X_m\), \(\hat{F}_k(X)\)
     from the training data \(x_{i,j}\).
+  id: totrans-383
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 建立一个弱学习者从 \(X_1,\ldots,X_m\) 预测 \(Y\)，从训练数据 \(x_{i,j}\) 预测 \(\hat{F}_k(X)\)。
 - en: loop over number of desired estimators, \(k = 1,\ldots,K\)
+  id: totrans-384
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 循环遍历所需估计器的数量，\(k = 1,\ldots,K\)
 - en: calculate the residuals at the training data, \(h_k(x_{i}) = y_i - \hat{F}_k(x_{i})\)
+  id: totrans-385
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算训练数据中的残差，\(h_k(x_{i}) = y_i - \hat{F}_k(x_{i})\)
 - en: fit another week learner to predict \(h_k\) from \(X_1,\ldots,X_m\), \(\hat{F}_k(X)\)
     from the training data \(x_{i,j}\).
+  id: totrans-386
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用另一周的学习者从 \(X_1,\ldots,X_m\) 预测 \(h_k\)，从训练数据 \(x_{i,j}\) 预测 \(\hat{F}_k(X)\)。
 - en: We have a hierarchy of simple \(K\) models.
+  id: totrans-387
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有一个简单 \(K\) 模型的层次结构。
 - en: each model builds on the previous to improve the accuracy
+  id: totrans-388
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个模型都基于前一个模型来提高精度
 - en: Our regression estimator is the summation over the \(K\) simple models.
+  id: totrans-389
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的回归估计器是 \(K\) 个简单模型的总和。
 - en: \[ \hat{Y} =\sum_{k=1}^{K} F_k(X_1,\ldots,X_m) \]
+  id: totrans-390
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \hat{Y} =\sum_{k=1}^{K} F_k(X_1,\ldots,X_m) \]
 - en: Gradient Boosting Methods
+  id: totrans-391
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 梯度提升方法
 - en: If you look at the previous method, it becomes clear that it could be mapped
     to a gradient descent problem
+  id: totrans-392
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你看一下之前的方法，它很清楚地可以映射到一个梯度下降问题
 - en: At each step, \(k\), a model is being fit, then the error is calculated, \(h_k(X_1,\ldots,X_m)\).
+  id: totrans-393
   prefs: []
   type: TYPE_NORMAL
+  zh: 在每个步骤 \(k\)，都在拟合一个模型，然后计算误差，\(h_k(X_1,\ldots,X_m)\)。
 - en: We can assign a loss function
+  id: totrans-394
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以分配一个损失函数
 - en: \[ L\left(y,F(X)\right) = \frac{\left(y - F(X)\right)^2}{2} \]
+  id: totrans-395
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ L\left(y,F(X)\right) = \frac{\left(y - F(X)\right)^2}{2} \]
 - en: 'So we want to minimize the \(\ell2\) loss function:'
+  id: totrans-396
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们希望最小化 \(\ell2\) 损失函数：
 - en: \[ J = \sum_{i=1}^{n} L\left(y_i, F_k(X) \right) \]
+  id: totrans-397
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ J = \sum_{i=1}^{n} L\left(y_i, F_k(X) \right) \]
 - en: by adjusting our model result over our training data \(F(x_1), F(x_2),\ldots,F(x_n)\).
+  id: totrans-398
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过调整我们的模型结果来覆盖我们的训练数据 \(F(x_1), F(x_2),\ldots,F(x_n)\)。
 - en: We can take the partial derivative of the error vs. our model.
+  id: totrans-399
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以求误差相对于我们模型的偏导数。
 - en: \[ \frac{\partial J}{\partial F(x_i)} = F(x_i) - y_i \]
+  id: totrans-400
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \frac{\partial J}{\partial F(x_i)} = F(x_i) - y_i \]
 - en: We can interpret the residuals as negative gradients.
+  id: totrans-401
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将残差解释为负梯度。
 - en: \[ y_i - F(x_i) = -1 \frac{\partial J}{\partial F(x_i)} \]
+  id: totrans-402
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ y_i - F(x_i) = -1 \frac{\partial J}{\partial F(x_i)} \]
 - en: 'So now we have a gradient descent problem:'
+  id: totrans-403
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们现在有一个梯度下降问题：
 - en: \[ F_{k+1}(X_i) = F_k(X_i) + h(X_i) \]\[ F_{k+1}(X_i) = F_k(X_i) + y_i - F_k(X_i)
     \]\[ F_{k+1}(X_i) = F_k(X_i) - 1 \frac{\partial J}{\partial F_k(X_i)} \]
+  id: totrans-404
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ F_{k+1}(X_i) = F_k(X_i) + h(X_i) \]\[ F_{k+1}(X_i) = F_k(X_i) + y_i - F_k(X_i)
+    \]\[ F_{k+1}(X_i) = F_k(X_i) - 1 \frac{\partial J}{\partial F_k(X_i)} \]
 - en: 'Of the general form:'
+  id: totrans-405
   prefs: []
   type: TYPE_NORMAL
+  zh: 的一般形式：
 - en: \[ \phi_{k+1} = \phi_k - \rho \frac{\partial J}{\partial \phi_k} \]
+  id: totrans-406
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \phi_{k+1} = \phi_k - \rho \frac{\partial J}{\partial \phi_k} \]
 - en: where \(phi_k\) is the current state, \(\rho\) is the learning rate, \(J\) is
     the loss function, and \(\phi_{k+1}\) is the next state of our estimator.
+  id: totrans-407
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 \(\phi_k\) 是当前状态，\(\rho\) 是学习率，\(J\) 是损失函数，而 \(\phi_{k+1}\) 是我们估计器的下一个状态。
 - en: If we consider our residual at training data to be a gradient then we are performing
     gradient descent.
+  id: totrans-408
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们把训练数据中的残差看作梯度，那么我们就是在执行梯度下降。
 - en: fitting a series of models to negative gradients
+  id: totrans-409
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 拟合一系列模型到负梯度
 - en: By approaching the problem as a gradient decent problem we are able to apply
     a variety of loss functions
+  id: totrans-410
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过将问题视为梯度下降问题，我们能够应用各种损失函数
 - en: \(\ell2\) is our \(\frac{\left(y - F(X)\right)^2}{2}\) is practical, but is
     not robust with outliers
+  id: totrans-411
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(\ell2\) 是我们的 \(\frac{\left(y - F(X)\right)^2}{2}\) 实际上很实用，但异常值鲁棒性不强
 - en: \[ - 1 \frac{\partial J}{\partial F_k(X_i)} = y_i - F_k(X_i) \]
+  id: totrans-412
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ - 1 \frac{\partial J}{\partial F_k(X_i)} = y_i - F_k(X_i) \]
 - en: \(\ell1\) is our \(|y - F(X)|\) is more robust with outliers
+  id: totrans-413
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(\ell1\) 是我们的 \(|y - F(X)|\) 对异常值更鲁棒
 - en: \[ - 1 \frac{\partial J}{\partial F_k(X_i)} = sign(y_i - F_k(X_i)) \]
+  id: totrans-414
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ - 1 \frac{\partial J}{\partial F_k(X_i)} = sign(y_i - F_k(X_i)) \]
 - en: there are others like Huber Loss
+  id: totrans-415
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 还有其他像 Huber Loss 这样的方法。
 - en: '**Interpretability**'
+  id: totrans-416
   prefs: []
   type: TYPE_NORMAL
+  zh: '**可解释性**'
 - en: Compared to decision trees, the ensemble methods have reduced interpretability.
     One tool to improve model interpretability is feature importance.
+  id: totrans-417
   prefs: []
   type: TYPE_NORMAL
+  zh: 与决策树相比，集成方法降低了可解释性。提高模型可解释性的一个工具是特征重要性。
 - en: 'We calculate variable importance through calculating the average of:'
+  id: totrans-418
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过计算平均来计算变量重要性：
 - en: residual sum of square reduction for all splits involving each predictor feature
     for regression
+  id: totrans-419
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于所有涉及每个预测特征的分枝，回归的残差平方和减少
 - en: the decrease in the Gini index for all splits involving each predictor feature
     for classification
+  id: totrans-420
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于所有涉及每个预测特征的分枝，Gini指数的降低
 - en: Both are standardized to sum to 1.0 over the features.
+  id: totrans-421
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两个都是标准化到特征总和为1.0。
 - en: Classification
+  id: totrans-422
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 分类
 - en: The response is a finite set of possible categories.
+  id: totrans-423
   prefs: []
   type: TYPE_NORMAL
+  zh: 响应是一个可能的有限类别集合。
 - en: For each training data the truth is 100% probability in the observed category
     and 0% otherwise
+  id: totrans-424
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于每个训练数据，真实情况是该观察类别100%的概率，否则为0%
 - en: Estimate the probability of each category with the a decision tree
+  id: totrans-425
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用决策树估计每个类别的概率
 - en: Use a measure of difference between the true and estimated distributions as
     the loss function to minimize
+  id: totrans-426
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用真实和估计分布之间的差异度量作为损失函数来最小化
 - en: Load the Required Libraries
+  id: totrans-427
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 加载所需的库
 - en: We will also need some standard packages. These should have been installed with
     Anaconda 3.
+  id: totrans-428
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还需要一些标准包。这些应该已经通过Anaconda 3安装。
 - en: '[PRE33]'
+  id: totrans-429
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE33]'
 - en: If you get a package import error, you may have to first install some of these
     packages. This can usually be accomplished by opening up a command window on Windows
     and then typing ‘python -m pip install [package-name]’. More assistance is available
     with the respective package docs.
+  id: totrans-430
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您遇到包导入错误，您可能必须首先安装这些包中的一些。这通常可以通过在Windows上打开命令窗口然后输入‘python -m pip install
+    [package-name]’来完成。有关相应包的更多帮助，请参阅各自的包文档。
 - en: Declare Functions
+  id: totrans-431
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 声明函数
 - en: Let’s define a couple of functions to streamline plotting correlation matrices
     and visualization of a decision tree regression model.
+  id: totrans-432
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们定义几个函数来简化绘制相关矩阵和决策树回归模型的可视化。
 - en: '[PRE34]'
+  id: totrans-433
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE34]'
 - en: Set the Working Directory
+  id: totrans-434
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 设置工作目录
 - en: I always like to do this so I don’t lose files and to simplify subsequent read
     and writes (avoid including the full address each time).
+  id: totrans-435
   prefs: []
   type: TYPE_NORMAL
+  zh: 我总是喜欢这样做，这样我就不会丢失文件，并且可以简化后续的读取和写入（避免每次都包含完整地址）。
 - en: '[PRE35]'
+  id: totrans-436
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE35]'
 - en: You will have to update the part in quotes with your own working directory and
     the format is different on a Mac (e.g. “~/PGE”).
+  id: totrans-437
   prefs: []
   type: TYPE_NORMAL
+  zh: 您将需要更新引号内的部分为您的自己的工作目录，并且格式在Mac上不同（例如：“~/PGE”）。
 - en: Loading Data
+  id: totrans-438
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 加载数据
 - en: 'Let’s load the provided multivariate, spatial dataset [unconv_MV.csv](https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/unconv_MV.csv)
     available in my GeoDataSet repo. It is a comma delimited file with:'
+  id: totrans-439
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们加载提供的多元、空间数据集 [unconv_MV.csv](https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/unconv_MV.csv)，它在我的GeoDataSet仓库中可用。它是一个逗号分隔的文件，包含：
 - en: well index (integer)
+  id: totrans-440
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 井指数（整数）
 - en: porosity (%)
+  id: totrans-441
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '孔隙率 (%) '
 - en: permeability (\(mD\))
+  id: totrans-442
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 渗透率 (\(mD\))
 - en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^6\)).
+  id: totrans-443
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 声阻抗 (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^6\))
 - en: brittleness (%)
+  id: totrans-444
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '剪切率 (%) '
 - en: total organic carbon (%)
+  id: totrans-445
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '总有机碳 (%) '
 - en: vitrinite reflectance (%)
+  id: totrans-446
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '玻璃质反射率 (%) '
 - en: initial gas production (90 day average) (MCFPD)
+  id: totrans-447
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 初始气产量（90天平均）(MCFPD)
 - en: We load it with the pandas ‘read_csv’ function into a data frame we called ‘df’
     and then preview it to make sure it loaded correctly.
+  id: totrans-448
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用pandas的‘read_csv’函数将其加载到我们称为‘df’的数据框中，然后预览它以确保正确加载。
 - en: '**Python Tip: using functions from a package** just type the label for the
     package that we declared at the beginning:'
+  id: totrans-449
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Python技巧：使用包中的函数**只需输入我们在开头声明的包的标签：'
 - en: '[PRE36]'
+  id: totrans-450
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE36]'
 - en: 'so we can access the pandas function ‘read_csv’ with the command:'
+  id: totrans-451
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们可以使用命令访问pandas函数‘read_csv’：
 - en: '[PRE37]'
+  id: totrans-452
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE37]'
 - en: but read csv has required input parameters. The essential one is the name of
     the file. For our circumstance all the other default parameters are fine. If you
     want to see all the possible parameters for this function, just go to the docs
     [here](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html).
+  id: totrans-453
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是read csv需要输入参数。最重要的一个是文件名。对于我们的情况，所有其他默认参数都很好。如果您想查看此函数的所有可能参数，请访问[这里](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)的文档。
 - en: The docs are always helpful
+  id: totrans-454
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 文档总是很有帮助
 - en: There is often a lot of flexibility for Python functions, possible through using
     various inputs parameters
+  id: totrans-455
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Python函数通常有很多灵活性，这可以通过使用各种输入参数来实现
 - en: also, the program has an output, a pandas DataFrame loaded from the data. So
     we have to specficy the name / variable representing that new object.
+  id: totrans-456
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，程序有一个输出，一个从数据加载的 pandas DataFrame。因此，我们必须指定代表该新对象的名字/变量。
 - en: '[PRE38]'
+  id: totrans-457
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE38]'
 - en: Let’s run this command to load the data and then this command to extract a random
     subset of the data.
+  id: totrans-458
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们运行此命令来加载数据，然后运行此命令来提取数据的随机子集。
 - en: '[PRE39]'
+  id: totrans-459
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE39]'
 - en: Feature Engineering
+  id: totrans-460
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 特征工程
 - en: 'Let’s make some changes to the data to improve the workflow:'
+  id: totrans-461
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们对数据进行一些修改以改进工作流程：
 - en: '**Select the predictor features (x2) and the response feature (x1)**, make
     sure the metadata is also consistent.'
+  id: totrans-462
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**选择预测特征（x2）和响应特征（x1）**，确保元数据也一致。'
 - en: '**Metadata** encoding such as the units, labels and display ranges for each
     feature.'
+  id: totrans-463
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**元数据**编码，如每个特征的单位、标签和显示范围。'
 - en: '**Reduce the number of data** for ease of visualization (hard to see if too
     many points on our plots).'
+  id: totrans-464
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**减少数据数量**以方便可视化（如果图表上有太多点就难以看到）。'
 - en: '**Train and test data split** to demonstrate and visualize simple hyperparameter
     tuning.'
+  id: totrans-465
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**训练和测试数据分割**以演示和可视化简单的超参数调整。'
 - en: '**Add random noise to the data** to demonstrate model overfit. The original
     data is error free and does not readily demonstrate overfit.'
+  id: totrans-466
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**向数据添加随机噪声**以演示模型过拟合。原始数据是无错误的，并不容易展示过拟合。'
 - en: Given this is properly set, one should be able to use any dataset and features
     for this demonstration.
+  id: totrans-467
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设这被正确设置，人们应该能够使用任何数据集和特征进行此演示。
 - en: for brevity we don’t show any feature selection here. Previous chapter, e.g.,
     k-nearest neighbours include some feature selection methods, but see the feature
     selection chapter for many possible methods with codes for feature selection.
+  id: totrans-468
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 为了简洁，我们在此不展示任何特征选择。例如，前一章中的 k 近邻包括一些特征选择方法，但请参阅特征选择章节，以了解许多可能的特征选择方法及其代码。
 - en: 'Optional: Add Random Noise to the Response Feature'
+  id: totrans-469
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可选：向响应特征添加随机噪声
 - en: We can do this to observe the impact of data noise on overfit and hyperparameter
     tuning.
+  id: totrans-470
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以这样做来观察数据噪声对过拟合和超参数调整的影响。
 - en: This is for experiential learning, of course we wouldn’t add random noise to
     our data
+  id: totrans-471
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 这是为了经验学习，当然我们不会向我们的数据添加随机噪声
 - en: We set the random number seed for reproducibility
+  id: totrans-472
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们设置随机数种子以确保可重复性
 - en: '[PRE40]'
+  id: totrans-473
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE40]'
 - en: Let’s make sure that we have selected reasonable features to build a model
+  id: totrans-474
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们确保我们已选择了合理的特征来构建模型
 - en: the 2 predictor features are not collinear, as this would result in an unstable
     prediction model
+  id: totrans-475
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 两个预测特征不共线，因为这会导致预测模型不稳定
 - en: each of the features are related to the response feature, the predictor features
     inform the response
+  id: totrans-476
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个特征都与响应特征相关，预测特征向响应特征提供信息
 - en: Calculate the Correlation Matrix and Correlation with Response Ranking
+  id: totrans-477
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 计算相关性矩阵和与响应特征的相关性排名
 - en: Let’s start with correlation analysis. We can calculate and view the correlation
     matrix and correlation to the response features with these previously declared
     functions.
+  id: totrans-478
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从相关性分析开始。我们可以使用之前声明的函数计算并查看相关性矩阵和与响应特征的相关性。
 - en: correlation analysis is based on the assumption of linear relationships, but
     it is a good start
+  id: totrans-479
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 相关性分析基于线性关系的假设，但这是一个良好的开端
 - en: '[PRE41]'
+  id: totrans-480
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE41]'
 - en: '![_images/f16d805e35f1c39ce293ec74df9132232e9f79c7ca0cb2ab8b63641a714d99c3.png](../Images/3e93a8978cec90fe97483ce65cda346f.png)'
+  id: totrans-481
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/3e93a8978cec90fe97483ce65cda346f.png)'
 - en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  id: totrans-482
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意由于每个变量与其自身的相关性而产生的 1.0 对角线。
 - en: This looks good. There is a mix of correlation magnitudes. Of course, correlation
     coefficients are limited to degree of linear correlations.
+  id: totrans-483
   prefs: []
   type: TYPE_NORMAL
+  zh: 这看起来不错。存在不同程度的相关性。当然，相关系数仅限于线性相关程度。
 - en: Let’s look at the matrix scatter plot to see the pairwise relationship between
     the features.
+  id: totrans-484
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 让我们看看矩阵散点图，以了解特征之间的成对关系。
 - en: '[PRE42]'
+  id: totrans-485
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE42]'
 - en: '![_images/b641089892114f3044ca3ab9a43c2723da5e4105a26416ee749176d163822c57.png](../Images/8f6fc0dc9253e57bb674c41069015dde.png)'
+  id: totrans-486
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/8f6fc0dc9253e57bb674c41069015dde.png)'
 - en: Train and Test Split
+  id: totrans-487
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练和测试分割
 - en: For convenience and simplicity we use scikit-learn’s random train and test split.
+  id: totrans-488
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了方便和简单，我们使用 scikit-learn 的随机训练和测试分割。
 - en: '[PRE43]'
+  id: totrans-489
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE43]'
 - en: Visualize the DataFrame
+  id: totrans-490
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可视化 DataFrame
 - en: Visualizing the train and test DataFrame is useful check before we build our
     models.
+  id: totrans-491
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们构建模型之前，可视化训练和测试 DataFrame 是一个有用的检查。
 - en: many things can go wrong, e.g., we loaded the wrong data, all the features did
     not load, etc.
+  id: totrans-492
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 许多事情可能会出错，例如，我们加载了错误的数据，所有特征都没有加载等。
 - en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
     and clean format, see below).
+  id: totrans-493
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过使用‘head’ DataFrame 成员函数来预览（格式整洁美观，见下文）。
 - en: '[PRE44]'
+  id: totrans-494
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE44]'
 - en: '[PRE45]'
+  id: totrans-495
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE45]'
 - en: '|  | Por | Brittle | Production |'
+  id: totrans-496
   prefs: []
   type: TYPE_TB
+  zh: '|  | Por | Brittle | Production |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-497
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '| 86 | 12.83 | 29.87 | 995.700671 |'
+  id: totrans-498
   prefs: []
   type: TYPE_TB
+  zh: '| 86 | 12.83 | 29.87 | 995.700671 |'
 - en: '| 35 | 17.39 | 56.43 | 6060.760806 |'
+  id: totrans-499
   prefs: []
   type: TYPE_TB
+  zh: '| 35 | 17.39 | 56.43 | 6060.760806 |'
 - en: '| 75 | 12.23 | 40.67 | 3744.177137 |'
+  id: totrans-500
   prefs: []
   type: TYPE_TB
+  zh: '| 75 | 12.23 | 40.67 | 3744.177137 |'
 - en: '| 36 | 13.72 | 40.24 | 4203.470533 |'
+  id: totrans-501
   prefs: []
   type: TYPE_TB
+  zh: '| 36 | 13.72 | 40.24 | 4203.470533 |'
 - en: '| 126 | 12.83 | 17.20 | 2917.165695 |'
+  id: totrans-502
   prefs: []
   type: TYPE_TB
+  zh: '| 126 | 12.83 | 17.20 | 2917.165695 |'
 - en: '|  | Por | Brittle | Production |'
+  id: totrans-503
   prefs: []
   type: TYPE_TB
+  zh: '|  | Por | Brittle | Production |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-504
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '| 5 | 15.55 | 58.25 | 5619.930037 |'
+  id: totrans-505
   prefs: []
   type: TYPE_TB
+  zh: '| 5 | 15.55 | 58.25 | 5619.930037 |'
 - en: '| 46 | 20.21 | 23.78 | 3897.440411 |'
+  id: totrans-506
   prefs: []
   type: TYPE_TB
+  zh: '| 46 | 20.21 | 23.78 | 3897.440411 |'
 - en: '| 96 | 15.07 | 39.39 | 4504.608029 |'
+  id: totrans-507
   prefs: []
   type: TYPE_TB
+  zh: '| 96 | 15.07 | 39.39 | 4504.608029 |'
 - en: '| 45 | 12.10 | 63.24 | 3613.953926 |'
+  id: totrans-508
   prefs: []
   type: TYPE_TB
+  zh: '| 45 | 12.10 | 63.24 | 3613.953926 |'
 - en: '| 105 | 19.54 | 37.40 | 5314.937997 |'
+  id: totrans-509
   prefs: []
   type: TYPE_TB
+  zh: '| 105 | 19.54 | 37.40 | 5314.937997 |'
 - en: Summary Statistics for Tabular Data
+  id: totrans-510
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 表格数据的摘要统计信息
 - en: There are a lot of efficient methods to calculate summary statistics from tabular
     data in DataFrames.
+  id: totrans-511
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 DataFrame 中，有许多高效的方法可以计算表格数据的摘要统计信息。
 - en: The describe command provides count, mean, minimum, maximum in a nice data table.
+  id: totrans-512
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`describe` 命令以一个美观的数据表形式提供计数、平均值、最小值、最大值。'
 - en: '[PRE46]'
+  id: totrans-513
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE46]'
 - en: '[PRE47]'
+  id: totrans-514
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE47]'
 - en: '|  | Por | Brittle | Production |'
+  id: totrans-515
   prefs: []
   type: TYPE_TB
+  zh: '|  | Por | Brittle | Production |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-516
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '| count | 105.000000 | 105.000000 | 105.000000 |'
+  id: totrans-517
   prefs: []
   type: TYPE_TB
+  zh: '| 计数 | 105.000000 | 105.000000 | 105.000000 |'
 - en: '| mean | 14.859238 | 48.861143 | 4192.479746 |'
+  id: totrans-518
   prefs: []
   type: TYPE_TB
+  zh: '| 平均值 | 14.859238 | 48.861143 | 4192.479746 |'
 - en: '| std | 3.057228 | 14.432050 | 1347.391355 |'
+  id: totrans-519
   prefs: []
   type: TYPE_TB
+  zh: '| 标准差 | 3.057228 | 14.432050 | 1347.391355 |'
 - en: '| min | 7.220000 | 10.940000 | 357.449794 |'
+  id: totrans-520
   prefs: []
   type: TYPE_TB
+  zh: '| 最小值 | 7.220000 | 10.940000 | 357.449794 |'
 - en: '| max | 23.550000 | 84.330000 | 7934.478879 |'
+  id: totrans-521
   prefs: []
   type: TYPE_TB
+  zh: '| 最大值 | 23.550000 | 84.330000 | 7934.478879 |'
 - en: '|  | Por | Brittle | Production |'
+  id: totrans-522
   prefs: []
   type: TYPE_TB
+  zh: '|  | Por | Brittle | Production |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-523
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '| count | 35.000000 | 35.000000 | 35.000000 |'
+  id: totrans-524
   prefs: []
   type: TYPE_TB
+  zh: '| 计数 | 35.000000 | 35.000000 | 35.000000 |'
 - en: '| mean | 15.011714 | 46.798286 | 4431.830496 |'
+  id: totrans-525
   prefs: []
   type: TYPE_TB
+  zh: '| 平均值 | 15.011714 | 46.798286 | 4431.830496 |'
 - en: '| std | 3.574467 | 13.380910 | 1487.184992 |'
+  id: totrans-526
   prefs: []
   type: TYPE_TB
+  zh: '| 标准差 | 3.574467 | 13.380910 | 1487.184992 |'
 - en: '| min | 6.550000 | 20.120000 | 1572.738774 |'
+  id: totrans-527
   prefs: []
   type: TYPE_TB
+  zh: '| 最小值 | 6.550000 | 20.120000 | 1572.738774 |'
 - en: '| max | 20.860000 | 68.760000 | 7668.639376 |'
+  id: totrans-528
   prefs: []
   type: TYPE_TB
+  zh: '| 最大值 | 20.860000 | 68.760000 | 7668.639376 |'
 - en: It is good that we checked the summary statistics.
+  id: totrans-529
   prefs: []
   type: TYPE_NORMAL
+  zh: 很好，我们已经检查了摘要统计信息。
 - en: there are no obvious issues
+  id: totrans-530
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 没有明显的明显问题
 - en: check out the range of values for each feature to set up and adjust plotting
     limits. See above.
+  id: totrans-531
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 检查每个特征的值范围以设置和调整绘图限制。见上文。
 - en: Visualize the Train and Test Splits
+  id: totrans-532
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可视化训练和测试分割
 - en: Let’s check the consistency and coverage of training and testing with histograms
     and scatter plots.
+  id: totrans-533
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们检查使用直方图和散点图来检查训练和测试的一致性和覆盖率。
 - en: check to make sure the training and testing cover the range of possible feature
     combinations
+  id: totrans-534
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 检查以确保训练和测试覆盖了可能的特征组合范围
 - en: ensure we are not extrapolating beyond the training data with the testing cases
+  id: totrans-535
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 确保我们不是通过测试案例外推训练数据
 - en: '[PRE48]'
+  id: totrans-536
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE48]'
 - en: '![_images/39becd8bd5d8101d8e6567bb5e26eb2b8fbe6499ce965fd4f72fdc3d8b7a3013.png](../Images/6c7c51e5c24b5320a250e5d2881b5021.png)'
+  id: totrans-537
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/39becd8bd5d8101d8e6567bb5e26eb2b8fbe6499ce965fd4f72fdc3d8b7a3013.png](../Images/6c7c51e5c24b5320a250e5d2881b5021.png)'
 - en: Sometimes I find it more convenient to compare distributions by looking at CDF’s
     instead of histograms.
+  id: totrans-538
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时我发现通过查看累积分布函数（CDF）而不是直方图来比较分布更方便。
 - en: we avoid the arbitrary choice of histogram bin size, because CDF’s are at the
     data resolution.
+  id: totrans-539
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们避免了选择直方图 bin 大小的任意性，因为累积分布函数（CDF）与数据分辨率一致。
 - en: '[PRE49]'
+  id: totrans-540
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE49]'
 - en: '![_images/26e6503a4d7debf39d1789ec8242383e943228b6a4f2f3dfc0a0f10cd99a5b46.png](../Images/e1017bcd0dfe07284cc05b94b7dd3861.png)'
+  id: totrans-541
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/26e6503a4d7debf39d1789ec8242383e943228b6a4f2f3dfc0a0f10cd99a5b46.png](../Images/e1017bcd0dfe07284cc05b94b7dd3861.png)'
 - en: Once again, the distributions are well behaved,
+  id: totrans-542
   prefs: []
   type: TYPE_NORMAL
+  zh: 一次又一次，分布表现得很好，
 - en: we cannot observe obvious gaps nor truncations.
+  id: totrans-543
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们无法观察到明显的缺口或截断。
 - en: check coverage of the train and test data
+  id: totrans-544
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 检查训练和测试数据的覆盖率
 - en: Let’s look at a scatter plot of Porosity vs. Brittleness with points colored
     by Production.
+  id: totrans-545
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看孔隙率与脆性之间的散点图，点按生产量着色。
 - en: '[PRE50]'
+  id: totrans-546
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE50]'
 - en: '![_images/1a847dd38c7158f07f58197cf7bfb88e46738dacb7622cd79a3a267a25a94494.png](../Images/79e12ff1ac255ff9811cd9900912d141.png)'
+  id: totrans-547
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/1a847dd38c7158f07f58197cf7bfb88e46738dacb7622cd79a3a267a25a94494.png](../Images/79e12ff1ac255ff9811cd9900912d141.png)'
 - en: Tree-based Boosting
+  id: totrans-548
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 基于树的增强学习
 - en: 'To perform tree-based boosting, gradient boosting tree regression we:'
+  id: totrans-549
   prefs: []
   type: TYPE_NORMAL
+  zh: 要执行基于树的增强学习，梯度提升树回归，我们：
 - en: set the hyperparameters for our model
+  id: totrans-550
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为我们的模型设置超参数
 - en: '[PRE51]'
+  id: totrans-551
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE51]'
 - en: instantiate the model
+  id: totrans-552
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 实例化模型
 - en: '[PRE52]'
+  id: totrans-553
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE52]'
 - en: train the model
+  id: totrans-554
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 训练模型
 - en: '[PRE53]'
+  id: totrans-555
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE53]'
 - en: visualize the model result over the feature space (easy to do as we have only
     2 predictor features)
+  id: totrans-556
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 可视化模型结果在特征空间上的结果（由于我们只有两个预测特征，这很容易做到）
 - en: Demonstration of Boosting
+  id: totrans-557
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 增强学习演示
 - en: For demonstration let’s set tree maximum depth to 1 and 6 tree-based boosting
     regression trees.
+  id: totrans-558
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了演示，让我们将树的最大深度设置为1和6个基于树的提升回归树。
 - en: each tree only has a single split, called decision stumps. This will prevent
     interaction between the predictor features and be highly interpretable
+  id: totrans-559
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每棵树只有一个分割，称为决策树桩。这将防止预测特征之间的交互，并且具有高度的可解释性
 - en: You should be able to observe the additive nature of the trees, see the first
     tree and then the first plus the second tree and so on.
+  id: totrans-560
   prefs: []
   type: TYPE_NORMAL
+  zh: 你应该能够观察到树的加性性质，看到第一棵树，然后是第一棵加上第二棵，以此类推。
 - en: recall the estimate is the summation of multiple trees
+  id: totrans-561
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 回想一下，估计是多个树的加和
 - en: since we are working with fitting a gradient after the first tree, we can have
     negative and positive estimates
+  id: totrans-562
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 由于我们在第一棵树之后拟合梯度，我们可以有负的和正的估计
 - en: in this example we can see some production estimates that are actually negative
+  id: totrans-563
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在这个例子中，我们可以看到一些实际上是负数的生产估计
 - en: '[PRE54]'
+  id: totrans-564
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE54]'
 - en: '![_images/0689fdfd411d646efca1490a036e9354bc12c7bd5797bac40f5b0295fb0f11a3.png](../Images/b2a16fd01b6c4a7a3f642f8cf90844b3.png)'
+  id: totrans-565
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/b2a16fd01b6c4a7a3f642f8cf90844b3.png)'
 - en: Notice that there is significant misfit with the data
+  id: totrans-566
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，与数据存在显著的偏差
 - en: we have only used up to 6 decision stumps (1 decision tree)
+  id: totrans-567
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们只使用了最多6个决策树桩（1个决策树）
 - en: Let’s check the cross validation results with the withheld testing data.
+  id: totrans-568
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们检查与保留的测试数据一起的交叉验证结果。
 - en: '[PRE55]'
+  id: totrans-569
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE55]'
 - en: '![_images/dca4db99b262b1382fe6624eace15ad6cfe1a52dd28209db869d61cb97d8a540.png](../Images/c19d0d925995b408d0e14db0f66b52ee.png)'
+  id: totrans-570
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/c19d0d925995b408d0e14db0f66b52ee.png)'
 - en: Of course with a single tree we do quite poorly, but by the time we get to 6
     stump trees we cut the MSE almost in half.
+  id: totrans-571
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，用一棵树我们做得相当差，但当我们达到6个树桩树时，我们将均方误差几乎减半。
 - en: Time to Build More Trees
+  id: totrans-572
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 建立更多树的时候到了
 - en: Now let’s demonstrate the result of utilizing many more trees in our tree-based
     boosting model.
+  id: totrans-573
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们演示在基于树的提升模型中使用更多树的结果。
 - en: we will still work with simple decision stumps, don’t worry we will add more
     later
+  id: totrans-574
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们仍然会使用简单的决策树桩，不用担心，我们稍后会添加更多
 - en: '[PRE56]'
+  id: totrans-575
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE56]'
 - en: '![_images/ad50902645fae1091779c09e40ad78025d6ddf1261c9d5a405eb2af496ddd2df.png](../Images/3baea417052c8c32978d193e173228b1.png)'
+  id: totrans-576
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/3baea417052c8c32978d193e173228b1.png)'
 - en: 'See the plaid pattern? It is due to the use of decision stumps, and:'
+  id: totrans-577
   prefs: []
   type: TYPE_NORMAL
+  zh: 看到格子图案了吗？这是由于使用了决策树桩，并且：
 - en: an additive model
+  id: totrans-578
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个加性模型
 - en: all models contribute to all predictions
+  id: totrans-579
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 所有模型都对所有预测有贡献
 - en: See the dark and bright regions?
+  id: totrans-580
   prefs: []
   type: TYPE_NORMAL
+  zh: 看到暗和亮区域了吗？
 - en: the additive model may extrapolate outside the data range
+  id: totrans-581
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 加性模型可能会超出数据范围
 - en: Let’s cross validate with our testing data to see how our model has improved
     with more trees.
+  id: totrans-582
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用测试数据交叉验证，看看我们的模型随着更多树的使用是如何改进的。
 - en: '[PRE57]'
+  id: totrans-583
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE57]'
 - en: '![_images/f6fae7eb28cbf98d98c8bfbf82659a7d3bcb67136928521595c9e0374bdc1147.png](../Images/3f37a775a250322ae1595efdbfe1669d.png)'
+  id: totrans-584
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/3f37a775a250322ae1595efdbfe1669d.png)'
 - en: Around 20 trees we get our best performance and then we start to degrade, we
     are likely starting to overfit the training data.
+  id: totrans-585
   prefs: []
   type: TYPE_NORMAL
+  zh: 大约20棵树时，我们达到最佳性能，然后开始下降，我们可能开始过度拟合训练数据。
 - en: Going Beyond Decision Stumps
+  id: totrans-586
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 超越决策树桩
 - en: As state before with decision stumps we prevent interactions between features.
+  id: totrans-587
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，使用决策树桩我们可以防止特征之间的交互。
 - en: Let’s extend to tree depth of 2
+  id: totrans-588
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们扩展到树的深度为2
 - en: two nested decisions resulting in 4 terminal nodes
+  id: totrans-589
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 两个嵌套决策导致4个终端节点
 - en: '[PRE58]'
+  id: totrans-590
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE58]'
 - en: '![_images/07951866b16ac8dd604974240c5a929632a2a45dccbbed9c7a5b1fcc6d5e3f6e.png](../Images/65161de226c63aae698a6005291afae4.png)'
+  id: totrans-591
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/65161de226c63aae698a6005291afae4.png)'
 - en: We have much more flexibility now.
+  id: totrans-592
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在有更多的灵活性。
 - en: with one tree we have 4 terminal nodes (regions)
+  id: totrans-593
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用一棵树我们有4个终端节点（区域）
 - en: with only 6 trees we are capturing some complicate features
+  id: totrans-594
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 只用6棵树，我们就能捕捉到一些复杂特征
 - en: Let’s increase the tree depth one more time.
+  id: totrans-595
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们再次增加树的深度。
 - en: '[PRE59]'
+  id: totrans-596
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE59]'
 - en: '![_images/aba462916f779681b9aa90d6b1a3a548e3d43d5ad379c5af304e09a38658a793.png](../Images/b36175195239341c3b7ea8c842eea5b7.png)'
+  id: totrans-597
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/b36175195239341c3b7ea8c842eea5b7.png)'
 - en: One more time, it is common to use trees with depths of 4-8, so let’s try 5.
+  id: totrans-598
   prefs: []
   type: TYPE_NORMAL
+  zh: 再一次，使用深度为4-8的树是常见的，所以让我们尝试5。
 - en: '[PRE60]'
+  id: totrans-599
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE60]'
 - en: '![_images/1739c0986e82122c4de50870f59b64abac148392710ba70c39c9f279197c0704.png](../Images/d2ae5319fcaa86e15b8c1c77df29902e.png)'
+  id: totrans-600
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/d2ae5319fcaa86e15b8c1c77df29902e.png)'
 - en: Let’s cross validate the model with testing data.
+  id: totrans-601
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用测试数据交叉验证模型。
 - en: '[PRE61]'
+  id: totrans-602
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE61]'
 - en: '![_images/76eb33533b0470061aefadc2a8ad8b34dcd8adaa5de34b3a7fef0efc8af812ca.png](../Images/cdbb3edec9e81f128298ed05c7cd6189.png)'
+  id: totrans-603
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/cdbb3edec9e81f128298ed05c7cd6189.png)'
 - en: With a max tree depth of 5 our model performance peaks early and the addition
     of more trees has no impact.
+  id: totrans-604
   prefs: []
   type: TYPE_NORMAL
+  zh: 当最大树深度为5时，我们的模型性能在早期达到峰值，增加更多树没有影响。
 - en: of course this is not a thorough analysis
+  id: totrans-605
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当然，这并不是一个彻底的分析。
 - en: Let’s try something more thorough
+  id: totrans-606
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试更深入的东西。
 - en: we will cross validate models with \(1,\ldots,100\) trees with max tree depths
     of \(1, 2, 3, 10\).
+  id: totrans-607
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将使用\(1,\ldots,100\)棵树进行交叉验证，最大树深度为\(1, 2, 3, 10\)。
 - en: we also slow down the learning rate, I increased it above to amplify the difference
     of the outputs for demonstration, but know we want to see the best possible model.
+  id: totrans-608
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们还减慢了学习率，我之前提高了它以放大输出差异的演示，但现在我们想看到最佳可能的模型。
 - en: '[PRE62]'
+  id: totrans-609
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE62]'
 - en: '![_images/ae7e45a290e0fe1fb8cb9fe76b23eff4132746b7765f4629c874d06b593e0ca6.png](../Images/c2ee3e9f993c37a05e91acb8b4ce5baf.png)'
+  id: totrans-610
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/c2ee3e9f993c37a05e91acb8b4ce5baf.png)'
 - en: 'That’s interesting:'
+  id: totrans-611
   prefs: []
   type: TYPE_NORMAL
+  zh: 非常有趣：
 - en: with increasing tree depths our model may improve
+  id: totrans-612
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 随着树深度的增加，我们的模型可能会改进。
 - en: more tree depth requires fewer trees for improved accuracy
+  id: totrans-613
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 更深的树深度需要更少的树来提高准确性。
 - en: with tree depths of 2 and 3 the models behave the same and after 10-15 trees
     level off, they are resistant to overfit
+  id: totrans-614
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当树深度为2和3时，模型的行为相同，并且在10-15棵树之后趋于平稳，它们对过拟合具有抵抗力。
 - en: with tree depth of 10, the number of trees has no impact of model performance
+  id: totrans-615
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当树深度为10时，树的数量对模型性能没有影响。
 - en: Gradient Descent Hyperparameters
+  id: totrans-616
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 梯度下降超参数
 - en: The learning rate scales the additive impact of each additive tree to the overall
     model prediction.
+  id: totrans-617
   prefs: []
   type: TYPE_NORMAL
+  zh: 学习率调整每个添加树对整体模型预测的附加影响。
 - en: lower learning rate will slow the convergence to a solution
+  id: totrans-618
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 更低的 learning rate 将减慢收敛到解决方案的速度。
 - en: lower learning rate will help us not skip over an optimum solution
+  id: totrans-619
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 更低的 learning rate 将帮助我们不会跳过最佳解决方案。
 - en: We won’t spend much time on this, but let’s just try changing the learning rate.
+  id: totrans-620
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不会在这个问题上花费太多时间，但让我们试着改变学习率。
 - en: '[PRE63]'
+  id: totrans-621
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE63]'
 - en: '![_images/011852fab9e64d42c5e7ac6bcaa69e4f061994730784f35584ff27e0d4ba9831.png](../Images/d130f276273e2b117adb7bf8d1768618.png)'
+  id: totrans-622
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/d130f276273e2b117adb7bf8d1768618.png)'
 - en: Once again, a very interesting result.
+  id: totrans-623
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次强调，这是一个非常有趣的结果。
 - en: regardless of tree complexity, it is better to learn slowly!
+  id: totrans-624
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 无论树复杂度如何，缓慢学习总是更好的！
 - en: Machine Learning Pipelines for Clean, Compact Machine Learning Code
+  id: totrans-625
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 清洁、紧凑的机器学习代码的机器学习管道
 - en: Pipelines are a scikit-learn class that allows for the encapsulation of a sequence
     of data preparation and modeling steps
+  id: totrans-626
   prefs: []
   type: TYPE_NORMAL
+  zh: 管道是scikit-learn中的一个类，它允许封装一系列数据准备和建模步骤。
 - en: then we can treat the pipeline as an object in our much condensed workflow
+  id: totrans-627
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 然后，我们可以将管道视为我们高度浓缩的工作流程中的一个对象。
 - en: 'The pipeline class allows us to:'
+  id: totrans-628
   prefs: []
   type: TYPE_NORMAL
+  zh: 管道类允许我们：
 - en: improve code readability and to keep everything straight
+  id: totrans-629
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 提高代码可读性，并保持一切井然有序。
 - en: build complete workflows with very few lines of readable code
+  id: totrans-630
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 用非常少的可读代码构建完整的流程。
 - en: avoid common workflow problems like data leakage, testing data informing model
     parameter training
+  id: totrans-631
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 避免常见的流程问题，如数据泄露，测试数据影响模型参数训练。
 - en: abstract common machine learning modeling and focus on building the best model
     possible
+  id: totrans-632
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 抽象常见的机器学习建模，专注于构建尽可能好的模型。
 - en: The fundamental philosophy is to treat machine learning as a combinatorial search
     to find the best model (AutoML)
+  id: totrans-633
   prefs: []
   type: TYPE_NORMAL
+  zh: 基本哲学是将机器学习视为组合搜索以找到最佳模型（AutoML）。
 - en: For more information see my recorded lecture on [Machine Learning Pipelines](https://www.youtube.com/watch?v=tYrPs8s1l9U&list=PLG19vXLQHvSAufDFgZEFAYQEwMJXklnQV&index=5)
     and a well-documented demonstration [Machine Learning Pipeline Workflow](http://localhost:8892/notebooks/OneDrive%20-%20The%20University%20of%20Texas%20at%20Austin/Courses/Workflows/PythonDataBasics_Pipelines.ipynb).
+  id: totrans-634
   prefs: []
   type: TYPE_NORMAL
+  zh: 更多信息请参阅我关于[机器学习管道](https://www.youtube.com/watch?v=tYrPs8s1l9U&list=PLG19vXLQHvSAufDFgZEFAYQEwMJXklnQV&index=5)的录音讲座和一份详细记录的演示[机器学习管道工作流程](http://localhost:8892/notebooks/OneDrive%20-%20The%20University%20of%20Texas%20at%20Austin/Courses/Workflows/PythonDataBasics_Pipelines.ipynb)。
 - en: '[PRE64]'
+  id: totrans-635
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE64]'
 - en: '[PRE65]'
+  id: totrans-636
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE65]'
 - en: Comments
+  id: totrans-637
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 注释
 - en: I hope you found this chapter helpful. Much more could be done and discussed,
     I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources),
+  id: totrans-638
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望你发现这一章很有帮助。还有很多可以做的和讨论的，我有很多更多的资源。查看我的[共享资源清单](https://michaelpyrcz.com/my-resources)，
 - en: '*Michael*'
+  id: totrans-639
   prefs: []
   type: TYPE_NORMAL
+  zh: '*迈克尔*'
 - en: 'The Author:'
+  id: totrans-640
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 作者：
 - en: Michael Pyrcz, Professor, The University of Texas at Austin *Novel Data Analytics,
     Geostatistics and Machine Learning Subsurface Solutions*
+  id: totrans-641
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔·皮尔奇，教授，德克萨斯大学奥斯汀分校 *新颖的数据分析、地球统计学和机器学习地下解决方案*
 - en: With over 17 years of experience in subsurface consulting, research and development,
     Michael has returned to academia driven by his passion for teaching and enthusiasm
     for enhancing engineers’ and geoscientists’ impact in subsurface resource development.
+  id: totrans-642
   prefs: []
   type: TYPE_NORMAL
+  zh: 在地下咨询、研究和开发方面拥有超过17年的经验，迈克尔因他对教学的热情和对增强工程师和地球科学家在地下资源开发中影响的热情而重返学术界。
 - en: 'For more about Michael check out these links:'
+  id: totrans-643
   prefs: []
   type: TYPE_NORMAL
+  zh: 更多关于迈克尔的信息，请查看以下链接：
 - en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
     | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
     | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
     | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
     Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
     | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  id: totrans-644
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [网站](http://michaelpyrcz.com) | [Google Scholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [书籍](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Python中的应用地球统计学电子书](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
 - en: Want to Work Together?
+  id: totrans-645
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 想一起工作吗？
 - en: I hope this content is helpful to those that want to learn more about subsurface
     modeling, data analytics and machine learning. Students and working professionals
     are welcome to participate.
+  id: totrans-646
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这些内容对那些想了解更多关于地下建模、数据分析和机器学习的人有所帮助。学生和在职专业人士都欢迎参与。
 - en: Want to invite me to visit your company for training, mentoring, project review,
     workflow design and / or consulting? I’d be happy to drop by and work with you!
+  id: totrans-647
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 想邀请我到贵公司进行培训、辅导、项目审查、工作流程设计和/或咨询吗？我很乐意拜访并与您合作！
 - en: Interested in partnering, supporting my graduate student research or my Subsurface
     Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
     My research combines data analytics, stochastic modeling and machine learning
     theory with practice to develop novel methods and workflows to add value. We are
     solving challenging subsurface problems!
+  id: totrans-648
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 感兴趣合作，支持我的研究生研究或我的地下数据分析与机器学习联盟（共同负责人是约翰·福斯特教授）吗？我的研究结合数据分析、随机建模和机器学习理论与实践，开发新的方法和工作流程以增加价值。我们正在解决具有挑战性的地下问题！
 - en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  id: totrans-649
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 您可以通过[mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu)联系我。
 - en: I’m always happy to discuss,
+  id: totrans-650
   prefs: []
   type: TYPE_NORMAL
+  zh: 我总是很高兴讨论，
 - en: '*Michael*'
+  id: totrans-651
   prefs: []
   type: TYPE_NORMAL
+  zh: '*迈克尔*'
 - en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
     Jackson School of Geosciences, The University of Texas at Austin
+  id: totrans-652
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔·皮尔奇，博士，P.Eng. 教授，德克萨斯大学奥斯汀分校的科克雷尔工程学院和杰克逊地球科学学院
 - en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
     | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
     | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
     | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
     Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
     | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  id: totrans-653
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 更多资源可在以下链接获取：[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [网站](http://michaelpyrcz.com) | [Google Scholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [书籍](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Python中的应用地球统计学电子书](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)

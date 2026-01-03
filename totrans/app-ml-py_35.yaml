@@ -1,1126 +1,1721 @@
 - en: Time Series Analysis and Modeling
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 时间序列分析和建模
 - en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_time_series.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_time_series.html)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_time_series.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_time_series.html)
 - en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔·J·皮尔奇，教授，德克萨斯大学奥斯汀分校
 - en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
     | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
     | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
     | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
     Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
     | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [网站](http://michaelpyrcz.com) | [Google Scholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [书籍](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Python应用地质统计学电子书](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
 - en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
     Code”.'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 本书章节：“Python应用机器学习：带代码的手册”。
 - en: 'Cite this e-Book as:'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用此电子书：
 - en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
     Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: Pyrcz, M.J., 2024, *Python应用机器学习：带代码的手册* [电子书]. Zenodo. doi:10.5281/zenodo.15169138
+    [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)
 - en: 'The workflows in this book and more are available here:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 本书中的工作流程以及更多内容可在以下位置找到：
 - en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用MachineLearningDemos GitHub仓库：
 - en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
     Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
     GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
     [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [软件]. Zenodo. DOI: 10.5281/zenodo.13835312\. GitHub仓库：[GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
 - en: By Michael J. Pyrcz
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者：迈克尔·J·皮尔奇
 - en: © Copyright 2024.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: © 版权所有 2024。
 - en: This chapter is a tutorial for / demonstration of **time series analysis and
     modeling**.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 本章是关于**时间序列分析和建模**的教程和演示。
 - en: '**YouTube Lecture**: check out my lectures on:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '**YouTube讲座**：查看我在以下方面的讲座：'
 - en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[机器学习简介](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
 - en: '[Time Series Analysis](https://youtu.be/nxY1HS3SrQ4?si=VSYYO2bqBd_ftb4u)'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[时间序列分析](https://youtu.be/nxY1HS3SrQ4?si=VSYYO2bqBd_ftb4u)'
 - en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
     on YouTube with linked well-documented Python workflows and interactive dashboards.
     My goal is to share accessible, actionable, and repeatable educational content.
     If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些讲座都是我YouTube上的[机器学习课程](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)的一部分，其中包含了链接良好的Python工作流程和交互式仪表板。我的目标是分享易于获取、可操作和可重复的教育内容。如果你想知道我的动机，请查看[迈克尔的故事](https://michaelpyrcz.com/my-story)。
 - en: Motivation for Time Series Analysis and Modeling
+  id: totrans-17
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列分析和建模的动机
 - en: 'Time series data is typically 1D over time. This data may be univariate, bivariate
     or multivariate. So why not just apply regular machine learning methods in 1D?
     There are many unique aspects for time series analysis and modeling that preclude
     this:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间序列数据通常是时间上的1D数据。这些数据可能是单变量、双变量或多变量的。那么为什么不在1D上应用常规机器学习方法呢？时间序列分析和建模有许多独特的方面，这使得这一点成为不可能：
 - en: time series phenomenon are often highly nonstationary with trends and cyclicity
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间序列现象通常是非平稳的，具有趋势和周期性
 - en: time series models are often focused on forecasting, i.e., significant extrapolation
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间序列模型通常专注于预测，即重要的外推
 - en: over the observed time interval the data is usually dense, and often exhaustive
     with sampling at the same rate as applied in the trained model
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在观察的时间间隔内，数据通常很密集，并且通常与训练模型中应用的采样率相同
 - en: As result, we need a unique set of tools, analysis and models to address time
     series phenomenon.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们需要一套独特的工具、分析和模型来解决时间序列现象。
 - en: Time Series Analysis and Modeling
+  id: totrans-23
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列分析和建模
 - en: Time series analysis for learning from time series data. Here are some key aspects
     of time series analysis and modeling.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间序列分析用于从时间序列数据中学习。以下是时间序列分析和建模的一些关键方面。
 - en: '**One Dimensional**'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '**一维**'
 - en: whereas spatial data is typically over 2 or 3 dimensions and multivariate data
     may have any dimension in feature space, time series data is fundamentally a 1D
     dataset with measures over \(y(\bf{t_{\alpha}})\), for \(\alpha = 1, \dots, n\)
     samples typically observed at a constant rate.
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 而空间数据通常是2或3维，多元数据可能在特征空间中具有任何维度，时间序列数据本质上是一个1维数据集，具有对 \(y(\bf{t_{\alpha}})\)
+    的度量，对于 \(\alpha = 1, \dots, n\) 样本通常以恒定速率观察。
 - en: '**Compositional**'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '**组成**'
 - en: time series data may often be decomposed into separate additive or multiplicative
     trend, seasonal and residual components.
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间序列数据通常可以分解为单独的加法或乘法趋势、季节性和残差成分。
 - en: any model will need to account for each of these components
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 任何模型都需要考虑这些组成部分中的每一个
 - en: '**Autocorrelation**'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '**自相关**'
 - en: the autocorrelation is commonly applied to quantify the degree information shared
     over intervals of time.
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 自相关通常用于量化在时间间隔内共享的信息程度。
 - en: note autocorrelation is known as the correlogram in geostatistics and the principals,
     calculation and modeling procedures are the same.
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 注意，自相关在地质统计学中被称为相关图，其原理、计算和建模程序是相同的。
 - en: '**Nonstationary**'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '**非平稳**'
 - en: time series data are often nonstationary and are commonly evaluated with moving
     window statistics to characterize and model changes over time
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间序列数据通常是非平稳的，通常使用移动窗口统计来表征和建模随时间的变化
 - en: the choice of moving window size is analogous (although not exactly equivalent)
     to the k hyperparameter for k-nearest neighbour models.
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 移动窗口大小的选择与k最近邻模型的k超参数类似（尽管并不完全相同）。
 - en: Examples of Time Series Analysis
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列分析的示例
 - en: 'There are many well-known, important examples of time series analysis:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间序列分析有许多众所周知、重要的示例：
 - en: local and global CO2 emisions that are applied to model and forecast climate
     change
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 应用于模型和预测气候变化的局部和全球二氧化碳排放量
 - en: mill efficiency measured as recover rate of mineral extraction from the plan
     feed to forecast mineral production
+  id: totrans-39
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 以从计划进料中提取矿物的回收率来衡量磨矿效率，以预测矿物产量
 - en: rate of natural gas production for a well in a specific reservoir to determine
     the number of well needed to meet local energy needs
+  id: totrans-40
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 特定储层中井的天然气产量率，以确定满足当地能源需求所需的井数
 - en: In addition, there are many systems with mixed multivariate with time series
     phenomenon. For the above,
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，还有许多具有混合多元时间序列现象的系统。对于上述内容，
 - en: inclusion of population, GDP and efficiency measures to improve the CO2 emission
     forecasts
+  id: totrans-42
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 包含人口、GDP和效率指标以改善二氧化碳排放预测
 - en: inclusion of mineral grades, mining schedule and plant down time to improve
     mill mineral production forecasts
+  id: totrans-43
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 包含矿物等级、采矿计划和工厂停机时间以改善磨矿矿物产量预测
 - en: inclusion of local models of facies, porosity and permeability models to improve
     well natural gas production forecasts.
+  id: totrans-44
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 包含局部岩性、孔隙度和渗透率模型，以改善井天然气产量预测。
 - en: While multivariate is important, for this brevity I only cover univariate time
     series analysis and modeling here.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然多元很重要，但为了简洁，我这里只涵盖单变量时间序列分析和建模。
 - en: What Do I Cover?
+  id: totrans-46
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 我会涵盖哪些内容？
 - en: 'For time series analysis, modeling and prediction the following is included:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于时间序列分析、建模和预测，以下内容包含在内：
 - en: Formatting time series dataset
+  id: totrans-48
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 格式化时间序列数据集
 - en: Basic time series visualization
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基本时间序列可视化
 - en: Autocorrelation analysis
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 自相关分析
 - en: Trend modeling and differencing for detrending
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 趋势建模和差分以去趋势
 - en: Time Series Decomposition with ARIMA modeling and forecasting
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用ARIMA建模和预测的时间序列分解
 - en: Load the required libraries
+  id: totrans-53
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 加载所需的库
 - en: We will also need some standard packages. These should have been installed with
     Anaconda 3.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还需要一些标准包。这些应该已经与Anaconda 3一起安装。
 - en: '[PRE0]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '[PRE1]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We will also need some standard packages. These should have been installed with
     Anaconda 3.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还需要一些标准包。这些应该已经与Anaconda 3一起安装。
 - en: '[PRE2]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '[PRE3]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: If you get a package import error, you may have to first install some of these
     packages. This can usually be accomplished by opening up a command window on Windows
     and then typing ‘python -m pip install [package-name]’. More assistance is available
     with the respective package docs.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你遇到包导入错误，你可能首先需要安装这些包中的一些。这通常可以通过在 Windows 上打开命令窗口，然后输入‘python -m pip install
+    [package-name]’来完成。有关相应包的文档中提供了更多帮助。
 - en: Declare Functions
+  id: totrans-61
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 声明函数
 - en: Let’s define a couple of functions to streamline plotting correlation matrices
     and visualization of a decision tree regression model.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们定义一些函数来简化绘制相关矩阵和决策树回归模型的可视化。
 - en: '[PRE4]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Set the Working Directory
+  id: totrans-64
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 设置工作目录
 - en: I always like to do this so I don’t lose files and to simplify subsequent read
     and writes (avoid including the full address each time).
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 我总是喜欢这样做，这样我就不会丢失文件，并简化后续的读取和写入（避免每次都包含完整地址）。
 - en: '[PRE5]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Generating a Synthetic Time Series
+  id: totrans-67
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 生成合成时间序列
 - en: We will build a simple time series representing production at an hypothetical
     lithium (Li) mine, where we have daily measurements of lithium recovery in tonnes
     per day.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将构建一个简单的代表假设锂（Li）矿生产的时间序列，其中我们每天测量锂的回收量，单位为每天吨。
 - en: We will use an additive model with trend, cycles and stochastic noise (short
     scale continuity) features
+  id: totrans-69
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将使用具有趋势、周期和随机噪声（短期连续性）特征的加性模型
 - en: I have left the synthetic data generation workflow here, instead of just putting
     the resulting dataset on GitHub, to allow you to change the synthetic dataset
     and experiment with the following time series analysis and modeling workflow
+  id: totrans-70
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我在这里留下了合成数据生成的工作流程，而不是仅仅将结果数据集放在 GitHub 上，这样你可以更改合成数据集，并实验以下时间序列分析和建模工作流程
 - en: '[PRE6]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '![_images/8eaacb8be90267349d2927db867f7572d8f7f3309f55fbd017ac128c820ad744.png](../Images/f9e6d5d99298bb06b9335a9c1cf1f8cb.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/f9e6d5d99298bb06b9335a9c1cf1f8cb.png)'
 - en: Time Series DataFrame
+  id: totrans-73
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列 DataFrame
 - en: 'Let’s make a pandas DataFrame with the lithium production data indexed by date
     of the production. We utilize the useful functionality with Pandas’ DataFrames
     to work with time series data, this includes:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们创建一个以生产日期为索引的锂生产数据的 pandas DataFrame。我们利用 Pandas DataFrame 的有用功能来处理时间序列数据，这包括：
 - en: the ability to use various time formats for display
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 能够使用各种时间格式进行显示
 - en: to do calculations in time, like the number of day between to 2 dates in year,
     month and day of the month, i.e., Pandas knows the calendar!
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 进行时间计算，例如在年、月和月份的日之间计算天数，即 Pandas 知道日历！
 - en: To do this we make date index parameterized by a start date, the number of periods
     (number of values in our model above, nx) and the sampling frequency ‘D’ indicating
     daily.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 要做到这一点，我们创建一个以起始日期为参数的日期索引，周期数（模型中上面的值数，nx）和表示每日的采样频率‘D’。
 - en: we set this as the data field for the DataFrame and set this to be the DataFrame’s
     index.
+  id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将其设置为 DataFrame 的数据字段，并将其设置为 DataFrame 的索引。
 - en: '[PRE7]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: We can take advantage of the ability to easily work with and plot time series
     data with pandas DataFrames.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以利用利用 pandas DataFrame 容易处理和绘制时间序列数据的能力。
 - en: we added some improved formatting, including custom date intervals and labels
     on the x axis
+  id: totrans-81
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们添加了一些改进的格式，包括自定义日期间隔和 x 轴上的标签
 - en: '[PRE8]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '![_images/9e25d86a0fdea89ff11a7de4580eff760df12ab968b6b2f3c20c51d909258486.png](../Images/694bb9b0dd890d4eb3aa5efa14cb234c.png)'
+  id: totrans-83
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/694bb9b0dd890d4eb3aa5efa14cb234c.png)'
 - en: That’s a good plot for time series data. Now let’s start doing analysis with
     our lithium production data.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个很好的时间序列数据图。现在让我们开始用我们的锂生产数据进行分析。
 - en: Autocorrelation
+  id: totrans-85
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自相关
 - en: Autocorrelation is applied in time series analysis to detect relationships over
     lags in time. The autocorrelation is the correlogram (standardized covariance
     function) commonly used in geostatistics applied to the one dimensional time series
     data.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 自相关在时间序列分析中用于检测时间滞后中的关系。自相关是地统计学中常用的一种相关图（标准化协方差函数），应用于一维时间序列数据。
 - en: Also, for the calculation of a predictive model we often check for the presence
     of autocorrelation between error residual values.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，对于预测模型的计算，我们经常检查误差残差值之间是否存在自相关。
 - en: we will use the autocorrelation and partial autocorrelation of our residual
+  id: totrans-88
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将使用我们的残差的自相关和部分自相关
 - en: The partial autocorrelation provides a measure of the correlation after removal
     of differences observed in previous lags
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 部分自相关提供了在移除先前滞后中观察到的差异后的相关度度量
 - en: measure of correlation at lag \( = n\), after removing the effects explained
     over lags \( 1, \ldots, n-1\).
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 滞后 \( = n\) 的相关度量，在移除滞后 \( 1, \ldots, n-1\) 的效应后。
 - en: '[PRE9]'
+  id: totrans-91
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: '![_images/6d45f0eabb836924372dcb385861ed9d29dab4bc6ed4806234ea5d7b6d832c24.png](../Images/72dd0f4c8b3faee78bf66928f236029b.png)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/6d45f0eabb836924372dcb385861ed9d29dab4bc6ed4806234ea5d7b6d832c24.png](../Images/72dd0f4c8b3faee78bf66928f236029b.png)'
 - en: Test for Stationarity
+  id: totrans-93
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 平稳性检验
 - en: 'Is this dataset stationary? Does the mean change locally? We use the Dickey-Fuller
     Test to test for stationarity of our time series with the following hypotheses:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个数据集是平稳的吗？均值是否在局部发生变化？我们使用迪基-富勒检验来检验时间序列的平稳性，以下为假设：
 - en: \(H_0 =\) time series is non-stationary
+  id: totrans-95
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_0 =\) 时间序列是非平稳的
 - en: \(H_1 =\) time series is stationary
+  id: totrans-96
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_1 =\) 时间序列是平稳的
 - en: If the **Test Statistic** is less then the **Critical Value** at an alpha level
     (1 - significance level) then we reject the null hypothesis and state that the
     time series is stationary.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果**检验统计量**小于在alpha水平（1 - 显著性水平）下的**临界值**，则我们拒绝零假设，并声明时间序列是平稳的。
 - en: '[PRE10]'
+  id: totrans-98
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '[PRE11]'
+  id: totrans-99
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Since the test statistic within the +/- the critical value interval (at 5%)
     and the p-value is > 5% we would fail to reject the null hypothesis that the dataset
     is stationary, we assume it is nonstationary.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于检验统计量在临界值区间（5%）内，且p值大于5%，我们无法拒绝数据集平稳性的零假设，我们假设它是非平稳的。
 - en: What do we need to do about our nonstationary time series data?
+  id: totrans-101
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们应该如何处理我们的非平稳时间序列数据？
 - en: Stationarity Transformations for Time Series
+  id: totrans-102
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列的平稳性转换
 - en: Most time series models (like spatial models) require a stationarity assumption.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 大多数时间序列模型（如空间模型）需要平稳性假设。
 - en: 'To transform time series to stationary we must model and remove:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了将时间序列转换为平稳性，我们必须建模并移除：
 - en: trends - locally variable mean over the domain of the time series
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 趋势 - 时间序列域内的局部可变均值
 - en: seasonality - repeating cycles with a specific wavelength
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 季节性 - 具有特定波长的重复周期
 - en: Rolling, Moving Window Statistics
+  id: totrans-107
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 滚动、移动窗口统计
 - en: We calculate moving window statistics to evaluate the local change in these
     statistics.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们计算移动窗口统计量以评估这些统计量的局部变化。
 - en: visually observe the local changes continuously over the time series
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在时间序列上连续观察局部变化
 - en: can be calculated on a wide range of statistics
+  id: totrans-110
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 可以在广泛的统计量上计算
 - en: We evaluate the moving window mean and sample standard deviation over a window
     of 20 days.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们评估20天窗口内的移动窗口平均值和样本标准差。
 - en: assuming a uniform weighting of the statistics
+  id: totrans-112
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 假设统计量的均匀加权
 - en: could consider triangular and Gaussian weighting templates for smoother results
+  id: totrans-113
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 可以考虑使用三角形和高斯加权模板以获得更平滑的结果
 - en: '[PRE12]'
+  id: totrans-114
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '![_images/ebd01cd4f074263672a8d1dad448eac53fe00c2e03f52c0a01abb2ed94f3bc21.png](../Images/23817cbd2c8216f20891b70b7a7fcbac.png)'
+  id: totrans-115
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/ebd01cd4f074263672a8d1dad448eac53fe00c2e03f52c0a01abb2ed94f3bc21.png](../Images/23817cbd2c8216f20891b70b7a7fcbac.png)'
 - en: Working with Residuals
+  id: totrans-116
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 处理残差
 - en: Let’s remove (subtract) the moving window average from the original production
     time series and calculate the residual.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从原始的生产时间序列中移除（减去）移动窗口平均值，并计算残差。
 - en: '[PRE13]'
+  id: totrans-118
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: '|  | production | rolling_mean | rolling_std | rolling_lower | rolling_upper
     | residual |'
+  id: totrans-119
   prefs: []
   type: TYPE_TB
+  zh: '|  | 生产 | 滚动均值 | 滚动标准差 | 滚动下限 | 滚动上限 | 残差 |'
 - en: '| --- | --- | --- | --- | --- | --- | --- |'
+  id: totrans-120
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- | --- | --- |'
 - en: '| date |  |  |  |  |  |  |'
+  id: totrans-121
   prefs: []
   type: TYPE_TB
+  zh: '| 日期 |  |  |  |  |  |  |'
 - en: '| --- | --- | --- | --- | --- | --- | --- |'
+  id: totrans-122
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- | --- | --- |'
 - en: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-123
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-124
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-125
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-126
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-127
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-06 | 84.041801 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-128
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-06 | 84.041801 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-07 | 82.224334 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-129
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-07 | 82.224334 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-08 | 80.794563 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-130
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-08 | 80.794563 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-09 | 80.045364 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-131
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-09 | 80.045364 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-10 | 80.389419 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-132
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-10 | 80.389419 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-11 | 82.188769 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-133
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-11 | 82.188769 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-12 | 85.573237 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-134
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-12 | 85.573237 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-13 | 90.404332 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-135
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-13 | 90.404332 | NaN | NaN | NaN | NaN | NaN |'
 - en: We have some ‘NaN’, missing values because the moving window does not calculate
     values when the window overlaps with the edge of the data.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于移动窗口在窗口与数据边缘重叠时不计算值，因此我们有一些“NaN”，缺失值。
 - en: We will have to deal with these in the following workflow.
+  id: totrans-137
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将在以下工作流程中处理这些问题。
 - en: Now let’s plot and visualize the residual.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们绘制并可视化残差。
 - en: It should be more stationary
+  id: totrans-139
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它应该更平稳
 - en: '[PRE14]'
+  id: totrans-140
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: '![_images/9ce3c71d560b0f9a1c7e48b18377b17c68c5db0a0b3b80a1c532ab4ec60c2ae0.png](../Images/d8c6125fd07b146e72271820cf73a380.png)'
+  id: totrans-141
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/d8c6125fd07b146e72271820cf73a380.png)'
 - en: The residual after we remove the trend is more stationary as anticipated.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 移除趋势后的残差比预期的更平稳。
 - en: Let’s try a variety of window sizes.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试不同的窗口大小。
 - en: 20 days
+  id: totrans-144
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 20天
 - en: 40 days
+  id: totrans-145
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 40天
 - en: 100 days
+  id: totrans-146
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 100天
 - en: '[PRE15]'
+  id: totrans-147
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: '![_images/f8caff768dda3c4519ca9a6e8f0edc6e39ce2a61832a0d807e92e09aee275a56.png](../Images/a6bbb9fc308febc4dc8321f2016b765c.png)'
+  id: totrans-148
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/a6bbb9fc308febc4dc8321f2016b765c.png)'
 - en: Additivity of Variance Trend and Residual Components and Residual Distribution
     Checks
+  id: totrans-149
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 方差趋势和残差成分的加性以及残差分布检查
 - en: 'When we work with a trend and residual model we are decomposing the temporal
     phenomenon into:'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们处理趋势和残差模型时，我们将时间现象分解为：
 - en: deterministic trend - known
+  id: totrans-151
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 确定性趋势 - 已知
 - en: stochastic residual - unknown
+  id: totrans-152
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机残差 - 未知
 - en: 'We will calculated the proportion of variance in the trend and the residual.
     This includes the following steps:'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将计算趋势和残差中的方差比例。这包括以下步骤：
 - en: calculate the representative weighted standard deviation of the original data,
     convert to variance, \(\sigma\)
+  id: totrans-154
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算原始数据的代表性加权标准差，转换为方差，\(\sigma\)
 - en: calculate the standard deviation of the trend model, convert to variance, \(\sigma_t\)
+  id: totrans-155
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算趋势模型的方差，转换为方差，\(\sigma_t\)
 - en: calculate the variance of the residual at the data locations, \(\sigma_r\)
+  id: totrans-156
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算数据位置处的残差方差，\(\sigma_r\)
 - en: 'back calculate the covariance form the relationship:'
+  id: totrans-157
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从以下关系式反推协方差：
 - en: \[ \sigma^2 = \sigma^2_t + \sigma^2_r + 2 \times C_{tr} \]
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \sigma^2 = \sigma^2_t + \sigma^2_r + 2 \times C_{tr} \]
 - en: 'We also check the residual univariate distribution. We are checking for:'
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还检查残差的单变量分布。我们正在检查：
 - en: residual mean close to zero
+  id: totrans-160
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 残差均值接近零
 - en: minimum and maximum residual for extreme values
+  id: totrans-161
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 极端值的最大和最小残差
 - en: monomodal, symmetric distribution shape
+  id: totrans-162
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 单峰，对称分布形状
 - en: '[PRE16]'
+  id: totrans-163
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: '![_images/9625079434c189f991745e5bea6b99ea5186f177353acf52f8da72e4e87dae61.png](../Images/db74416a3a6fe471686fc6bcb1772c2b.png)'
+  id: totrans-164
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/db74416a3a6fe471686fc6bcb1772c2b.png)'
 - en: Test for Stationarity on the De-trended Time Series
+  id: totrans-165
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在去趋势时间序列上测试平稳性
 - en: We use the Dickey-Fuller Test to test for stationarity of our detrened time
     series
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用 Dickey-Fuller 测试来测试我们去趋势时间序列的平稳性
 - en: \(H_0 =\) time series is non-stationary
+  id: totrans-167
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_0 =\) 时间序列是非平稳的
 - en: \(H_1 =\) time series is stationary
+  id: totrans-168
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_1 =\) 时间序列是平稳的
 - en: If the **Test Statistic** is less then the **Critical Value** at an alpha level
     (1 - significance level) then we reject the null hypothesis and state that the
     time series is stationary.
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果**检验统计量**小于在 alpha 水平（1 - 显著性水平）下的**临界值**，则我们拒绝零假设并声明时间序列是平稳的。
 - en: '[PRE17]'
+  id: totrans-170
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: '[PRE18]'
+  id: totrans-171
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: Now we reject the null hypothesis, \(H_0\), and state that the detrended time
     series is stationary.
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们拒绝零假设 \(H_0\)，并声明去趋势的时间序列是平稳的。
 - en: Differencing to Remove Nonstationarity
+  id: totrans-173
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 用于去除非平稳性的差分
 - en: 'Differencing is a common approach applied to tine series to remove nonstationarity.
     Differencing proceeds as:'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: 差分是应用于时间序列以去除非平稳性的常见方法。差分过程如下：
 - en: \(y(\bf{u_i}) = z(\bf{u}_{i+1}) - z(\bf{u}_i)\)
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: \(y(\bf{u_i}) = z(\bf{u}_{i+1}) - z(\bf{u}_i)\)
 - en: where \(z(\bf{u}_{i+1}) - z(\bf{u}_i)\) is the difference between the current
     and the next value in the time series.
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 \(z(\bf{u}_{i+1}) - z(\bf{u}_i)\) 是时间序列中当前值与下一个值之间的差。
 - en: NumPy has a function for differencing ndarrays.
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: NumPy 有一个用于差分 ndarrays 的函数。
 - en: '[PRE19]'
+  id: totrans-178
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: 'Comments on differencing:'
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于差分的注释：
 - en: if the series is already stationary then there is no need to apply differencing
+  id: totrans-180
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果序列已经是平稳的，那么就没有必要应用差分
 - en: the order of differencing is the number of differencing operations applied in
     sequence.
+  id: totrans-181
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 差分的阶数是按顺序应用的差分操作的次数。
 - en: first order is \(y_1(\bf{u_i}) = z(\bf{u_{i+1}}) - z(\bf{u_i})\)
+  id: totrans-182
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一阶差分是 \(y_1(\bf{u_i}) = z(\bf{u_{i+1}}) - z(\bf{u_i})\)
 - en: second order is \(y_2(\bf{u_i}) = y_1(\bf{u_{i+1}}) - y_1(\bf{u_i})\)
+  id: totrans-183
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 二阶差分是 \(y_2(\bf{u_i}) = y_1(\bf{u_{i+1}}) - y_1(\bf{u_i})\)
 - en: third order is \(y_3(\bf{u_i}) = y_2(\bf{u_{i+1}}) - y_2(\bf{u_i})\)
+  id: totrans-184
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 三阶差分是 \(y_3(\bf{u_i}) = y_2(\bf{u_{i+1}}) - y_2(\bf{u_i})\)
 - en: We demonstrate differencing on our production dataset.
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在我们的生产数据集上演示了差分。
 - en: We will plot the autocorrelation of the result to demonstrate that we have actually
     removed the trend.
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将绘制结果的自相关图来证明我们已经移除了趋势。
 - en: trend structure in autocorrelation is a linear shift over lag distances downward
     toward 0.0 and beyond into negative values.
+  id: totrans-187
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 自相关中的趋势结构是滞后距离向下的线性位移，趋向于0.0以及更低的负值。
 - en: '[PRE20]'
+  id: totrans-188
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: '|  | production | rolling_mean | rolling_std | rolling_lower | rolling_upper
     | residual | rolling_mean_20 | rolling_res_20 | rolling_mean_40 | rolling_res_40
     | rolling_mean_100 | rolling_res_100 | first_difference | second_difference |'
+  id: totrans-189
   prefs: []
   type: TYPE_TB
+  zh: '|  | 生产 | 滚动均值 | 滚动标准差 | 滚动下限 | 滚动上限 | 残差 | 滚动均值_20 | 滚动残差_20 | 滚动均值_40 | 滚动残差_40
+    | 滚动均值_100 | 滚动残差_100 | 第一次差分 | 第二次差分 |'
 - en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
     | --- | --- |'
+  id: totrans-190
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- |'
 - en: '| date |  |  |  |  |  |  |  |  |  |  |  |  |  |  |'
+  id: totrans-191
   prefs: []
   type: TYPE_TB
+  zh: '| 日期 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |'
 - en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
     | --- | --- |'
+  id: totrans-192
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- |'
 - en: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
     NaN | NaN | NaN | -0.129910 | -1.403020 |'
+  id: totrans-193
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -0.129910 | -1.403020 |'
 - en: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
     NaN | NaN | NaN | -1.532930 | -0.656781 |'
+  id: totrans-194
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -1.532930 | -0.656781 |'
 - en: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
     NaN | NaN | NaN | -2.189710 | -0.084540 |'
+  id: totrans-195
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.189710 | -0.084540 |'
 - en: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
     NaN | NaN | NaN | -2.274251 | 0.186395 |'
+  id: totrans-196
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.274251 | 0.186395 |'
 - en: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
     NaN | NaN | NaN | -2.087856 | 0.270389 |'
+  id: totrans-197
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.087856 | 0.270389 |'
 - en: 'Now let’s plot the:'
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们绘制：
 - en: original
+  id: totrans-199
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 原始
 - en: first order
+  id: totrans-200
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一阶
 - en: second order
+  id: totrans-201
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 二阶
 - en: '[PRE21]'
+  id: totrans-202
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: '![_images/76c2c1539d096bd5ed76cd73c18d1b0eaa89dd3586006f78e3617d98f703b532.png](../Images/4090c0ae317b920d7fdb77ad60d60fbd.png)'
+  id: totrans-203
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/4090c0ae317b920d7fdb77ad60d60fbd.png)'
 - en: Observe that the result becomes more stationary as we mover from original production
     to first difference and then to second difference.
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: 观察到，当我们从原始生产数据移动到第一次差分，然后到第二次差分时，结果变得更加平稳。
 - en: The autocorrelation indicates that the temporal correlation is also removed.
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: 自相关表明时间相关性也被移除了。
 - en: Test for Stationarity on the First and Second Differenced Time Series
+  id: totrans-206
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 对第一和第二次差分时间序列进行平稳性检验
 - en: We use the Dickey-Fuller Test for stationarity of our first and second difference
     of our production time series
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用迪基-富勒检验来检验我们生产时间序列的第一和第二次差分的平稳性
 - en: \(H_0 =\) time series is non-stationary
+  id: totrans-208
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_0 =\) 时间序列是非平稳的
 - en: \(H_1 =\) time series is stationary
+  id: totrans-209
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_1 =\) 时间序列是平稳的
 - en: If the **Test Statistic** is less than the **Critical Value** at an alpha level
     (1 - significance level) then we reject the null hypothesis and state that the
     time series is stationary.
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果**检验统计量**小于在alpha水平（1 - 显著性水平）下的**临界值**，则我们拒绝原假设，并声明时间序列是平稳的。
 - en: '[PRE22]'
+  id: totrans-211
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: '[PRE23]'
+  id: totrans-212
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: Both the local moving window and differencing methods have demonstrated the
     ability to remove the trend in the production mean and provide a stationary dataset.
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: 两种方法，即局部移动窗口和差分方法，都证明了它们能够移除生产均值中的趋势，并提供一个平稳的数据集。
 - en: 'In general, any predictive model will:'
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，任何预测模型都将：
 - en: require a stationary time series dataset (assumes stationarity)
+  id: totrans-215
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 需要一个平稳的时间序列数据集（假设平稳性）
 - en: first model and remove a nonstationary component and then work with the stationary
     residual or transform
+  id: totrans-216
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第一个模型，移除非平稳成分，然后与平稳残差或转换一起工作
 - en: Time Series Decomposition
+  id: totrans-217
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列分解
 - en: Let’s demonstrate an automated method to decompose a time series into multiple
     components. With time series decomposition we will decompose the time series into
     the following components.
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们演示一种自动化的方法来将时间序列分解成多个组成部分。通过时间序列分解，我们将时间序列分解成以下组成部分。
 - en: trend
+  id: totrans-219
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 趋势
 - en: seasonality
+  id: totrans-220
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 季节性
 - en: noise / residual
+  id: totrans-221
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 噪音/残差
 - en: We will use the [StatsModels](https://www.statsmodels.org/stable/index.html)
     package for statistical modeling in Python.
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用[StatsModels](https://www.statsmodels.org/stable/index.html)包在Python中进行统计建模。
 - en: '[PRE24]'
+  id: totrans-223
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: '![_images/a3e165bfa639408cfaef2dbf2d4803e515498da32ae0a8ab59eb539d79b4aa60.png](../Images/257ba56c0d6d741261e4f9f46dad7f36.png)'
+  id: totrans-224
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/257ba56c0d6d741261e4f9f46dad7f36.png)'
 - en: Let’s also check the variance components, were \(t\) is trend, \(s\) is seasonal
     and \(r\) is residual.
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们也检查方差成分，其中 \(t\) 是趋势，\(s\) 是季节性，\(r\) 是残差。
 - en: \[ \sigma^2 = \sigma^2_{t} + \sigma^2_{s} + \sigma^2_{r} + 2 \times C_{t,s}
     + 2 \times C_{s,r} + 2 \times C_{t,r} \]
+  id: totrans-226
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \sigma^2 = \sigma^2_{t} + \sigma^2_{s} + \sigma^2_{r} + 2 \times C_{t,s}
+    + 2 \times C_{s,r} + 2 \times C_{t,r} \]
 - en: Due to the covariance terms, we cannot assume that the sum of the variance of
     the 3 decomposed components will be the original variance.
+  id: totrans-227
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于协方差项，我们不能假设三个分解成分的方差之和将是原始方差。
 - en: for simplicity, we will ignore the covariance terms and plot the proportions
     of the sum of variances of trend, seasonal and residual components.
+  id: totrans-228
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 为了简单起见，我们将忽略协方差项，并绘制趋势、季节性和残差成分的方差总和的比例。
 - en: '[PRE25]'
+  id: totrans-229
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: '![_images/52ac6dc6b4820ea1432545ce5c7276cae52d7522e1ce0bbf71c4e8bd3fec1558.png](../Images/ddd0ddcbee1016004a500b4fd5be5fca.png)'
+  id: totrans-230
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/ddd0ddcbee1016004a500b4fd5be5fca.png)'
 - en: Note, that our model sees the cyclicity that we added to the synthetic data
     as the trend component and found a higher frequency, lower amplitude cyclicity
     as the seasonal component and the remaining noise residual component has an amplitude
     about twice the amplitude of the seasonal and about one fifth the trend amplitude.
+  id: totrans-231
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，我们的模型将我们添加到合成数据中的周期性视为趋势成分，并发现更高频率、更低幅度的周期性作为季节性成分，而剩余的噪声残差成分的振幅大约是季节性的两倍，大约是趋势振幅的五分之一。
 - en: Let’s check for stationarity of the residual component from the above decomposition.
     We do this to confirm that we have removed the nonstationarity through removal
     of the seasonal and trend components.
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们检查上面分解的残差成分的平稳性。我们这样做是为了确认我们已经通过去除季节性和趋势成分来消除了非平稳性。
 - en: '[PRE26]'
+  id: totrans-233
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: '[PRE27]'
+  id: totrans-234
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: Once again we reject the null hypothesis, \(H_0\), and state that the detrended
     time series is stationary.
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次，我们拒绝零假设 \(H_0\)，并声明去趋势的时间序列是平稳的。
 - en: the time series decomposition method has successfully removed the non-stationarity
     in the mean of the time series
+  id: totrans-236
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间序列分解方法已成功消除了时间序列均值中的非平稳性
 - en: Let’s confirm that the trend has been removed with the autocorrelation.
+  id: totrans-237
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们通过自相关来确认趋势已被去除。
 - en: '[PRE28]'
+  id: totrans-238
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: '![_images/8138b13030257a1c90aeb7b070fdcbaacf8e0418807041092b342dd662480eef.png](../Images/1aa2ae1252a319119d0f115eaa0e864c.png)'
+  id: totrans-239
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/1aa2ae1252a319119d0f115eaa0e864c.png)'
 - en: From these plots we can determine that there is no autocorrelation nor partial
     autocorrelation over any lag
+  id: totrans-240
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这些图中我们可以确定，在任何滞后上都没有自相关或部分自相关
 - en: the plot crosses the upper confidence interval for zero autocorrelation at lag
     = 1
+  id: totrans-241
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 图像在滞后 = 1 处穿过零自相关的上置信区间
 - en: What have we learned about our production data so far?
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们对我们生产数据学到了什么？
 - en: there is a significant trend that can be removed with a moving window or first
     difference
+  id: totrans-243
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 存在一个可以通过移动窗口或第一次差分去除的显著趋势
 - en: there is no significant autocorrelation of the
+  id: totrans-244
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 没有显著的自相关
 - en: Train and Test Split
+  id: totrans-245
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练和测试分割
 - en: Let’s split the data with train and test and attempt time series forecasting.
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用训练和测试数据分割数据，并尝试时间序列预测。
 - en: '[PRE29]'
+  id: totrans-247
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: '[PRE30]'
+  id: totrans-248
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE30]'
 - en: ARIMA (Auto-Regressive Integrated Moving Average) Model for Time Series
+  id: totrans-249
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列的 ARIMA（自回归积分移动平均）模型
 - en: 'The ARIMA model is based on the following parameters:'
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
+  zh: ARIMA 模型基于以下参数：
 - en: number of auto-regressive terms (p) is the number of lags for autocorrelation
     - we find this from the number of significant lags in the partial autocorrelation.
     There was only one lag (see above). \(p=1\)
+  id: totrans-251
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 自回归项数（p）是自相关的滞后数——我们从部分自相关中的显著滞后数中找到这个值。只有一个滞后（见上面）。\(p=1\)
 - en: number of moving average terms (q) is the number of differencing required remove
     the trend. From above we demonstrated that we had a stationary dataset after the
     first difference, but we improved the removal of the cycles after the second difference,
     let’s use second difference. \(q = 2\)
+  id: totrans-252
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 移动平均项数（q）是需要进行差分以去除趋势的差分数量。从上面我们可以看到，在第一次差分之后，我们得到了一个平稳的数据集，但在第二次差分之后，我们改进了对周期的去除，让我们使用第二次差分。\(q
+    = 2\)
 - en: number of non-seasonal differences (d) is the seasonal effect, our dataset did
     not show any significant seasonal cyclicity in the decomposition above, so we
     will just set it to one. \(d=1\)
+  id: totrans-253
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 非季节性差分数（d）是季节性效应，我们上面的分解中没有显示出任何显著的季节性周期性，所以我们将其设置为1。\(d=1\)
 - en: '[PRE31]'
+  id: totrans-254
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE31]'
 - en: '[PRE32]'
+  id: totrans-255
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE32]'
 - en: Here’s what we can interpret from above.
+  id: totrans-256
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是我们可以从上述内容中解读的内容。
 - en: the coefficients AR.1, MA.1 and MA.2 are all significant, the model based on
     trend and autocorrelation is significant
+  id: totrans-257
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: AR.1、MA.1和MA.2的系数都是显著的，基于趋势和自相关的模型是显著的
 - en: the constant is not significantly different from zero
+  id: totrans-258
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 常数与零没有显著差异
 - en: 'Note the AIC is the Akaike Information Criteria (AIC) that quantifies:'
+  id: totrans-259
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意AIC是赤池信息准则（AIC），它量化：
 - en: the goodness of fit
+  id: totrans-260
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 良好的拟合度
 - en: the simplicity / parsimony
+  id: totrans-261
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 简单/简约性
 - en: The lower the AIC the better.
+  id: totrans-262
   prefs: []
   type: TYPE_NORMAL
+  zh: AIC越低越好。
 - en: Let’s plot the residuals from our model to check for a constant mean (near zero)
     and variance.
+  id: totrans-263
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们绘制我们模型的残差图，以检查是否存在恒定的均值（接近零）和方差。
 - en: '[PRE33]'
+  id: totrans-264
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE33]'
 - en: '![_images/863c09d404d499b67217b911f1e3586c5a4d3471981ff76b8636995108bdd134.png](../Images/4d4925e7b85076760e57bfefe6fefcef.png)'
+  id: totrans-265
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/4d4925e7b85076760e57bfefe6fefcef.png)'
 - en: Let’s look at the predictions from our model.
+  id: totrans-266
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看我们模型的预测结果。
 - en: this is the predictions our model would make if we trained with \(y(\bf{u_{\alpha}})\),
     for \(\alpha = 1, \dots, i-1\), to predict at \(y(\bf{u_i})\)
+  id: totrans-267
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果我们用 \(y(\bf{u_{\alpha}})\)，对于 \(\alpha = 1, \dots, i-1\) 来预测 \(y(\bf{u_i})\)，这是我们的模型会做出的预测
 - en: '[PRE34]'
+  id: totrans-268
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE34]'
 - en: '![_images/13aa79d2f8da832d631685229be46fab79c1163ebef3251aad4a0266240d4660.png](../Images/3c025647f72ffba94e011821bf8dab17.png)'
+  id: totrans-269
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/3c025647f72ffba94e011821bf8dab17.png)'
 - en: 'Some observations about our ability to forecast:'
+  id: totrans-270
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于我们预测能力的几点观察：
 - en: the general linear trend with increasing production was captured by the model
+  id: totrans-271
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模型捕捉了随着产量增加的总体线性趋势
 - en: the short term forecast is quite good, but fails to capture the cycles, we could
     increase the number of periods in the seasons, but that dramatically increases
     the run time and was impractical with this e-book.
+  id: totrans-272
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 短期预测相当好，但未能捕捉到周期，我们可以增加季节中的周期数，但这会显著增加运行时间，并且在这个电子书中不切实际。
 - en: We could have improved model performance by manually removing the trend and
     cycle and modeling the residual. Also, more could be done with Python packages
     for autotuning ARIMA models (e.g., pmdarima package).
+  id: totrans-273
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过手动去除趋势和周期并建模残差来提高模型性能。此外，还可以使用Python包来自动调整ARIMA模型（例如，pmdarima包）进行更多操作。
 - en: Time Series Analysis and Modeling Summary
+  id: totrans-274
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列分析与建模总结
 - en: 'Here’s some observations:'
+  id: totrans-275
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一些观察结果：
 - en: We need to check time series data for stationarity
+  id: totrans-276
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们需要检查时间序列数据是否平稳
 - en: If time series are nonstationary we should mitigate this with trend removal
     or differencing
+  id: totrans-277
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果时间序列是非平稳的，我们应该通过趋势消除或差分来减轻这一点
 - en: We can measure the degree of temporal correlation and see nonstationarity or
     trend structures with autocorrelation
+  id: totrans-278
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们可以通过自相关来测量时间相关性的程度，并看到非平稳性或趋势结构
 - en: ARIMA models allow us to simultaneously capture trend, seasonality and residual
     components in a single model
+  id: totrans-279
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: ARIMA模型使我们能够在单个模型中同时捕捉趋势、季节性和残差成分
 - en: Comments
+  id: totrans-280
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 评论
 - en: Much more could be done and discussed, I have many more resources. Check out
     my [shared resource inventory](https://michaelpyrcz.com/my-resources).
+  id: totrans-281
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以做和讨论的还有很多，我有很多更多的资源。查看我的[共享资源清单](https://michaelpyrcz.com/my-resources)。
 - en: I hope this was helpful,
+  id: totrans-282
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望这有所帮助，
 - en: '*Michael*'
+  id: totrans-283
   prefs: []
   type: TYPE_NORMAL
+  zh: '*迈克尔*'
 - en: 'The Author:'
+  id: totrans-284
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 作者：
 - en: Michael Pyrcz, Professor, The University of Texas at Austin *Novel Data Analytics,
     Geostatistics and Machine Learning Subsurface Solutions*
+  id: totrans-285
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔·皮尔奇，教授，德克萨斯大学奥斯汀分校 *新颖数据分析、地统计学和机器学习地下解决方案*
 - en: With over 17 years of experience in subsurface consulting, research and development,
     Michael has returned to academia driven by his passion for teaching and enthusiasm
     for enhancing engineers’ and geoscientists’ impact in subsurface resource development.
+  id: totrans-286
   prefs: []
   type: TYPE_NORMAL
+  zh: 在地下咨询、研究和开发方面拥有超过17年的经验后，迈克尔因他对教学的热情和对增强工程师和地球科学家在地下资源开发中影响的热情而重返学术界。
 - en: 'For more about Michael check out these links:'
+  id: totrans-287
   prefs: []
   type: TYPE_NORMAL
+  zh: 更多关于迈克尔的信息，请查看以下链接：
 - en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
     | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
     | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
@@ -1128,44 +1723,67 @@
     Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
     | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
     | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  id: totrans-288
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [网站](http://michaelpyrcz.com) | [Google Scholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [地统计学书籍](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Python中应用地统计学电子书](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Python中应用机器学习电子书](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
 - en: Want to Work Together?
+  id: totrans-289
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 想一起工作吗？
 - en: I hope this content is helpful to those that want to learn more about subsurface
     modeling, data analytics and machine learning. Students and working professionals
     are welcome to participate.
+  id: totrans-290
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这些内容对那些想了解更多关于地下建模、数据分析和机器学习的人有所帮助。学生和在职专业人士都欢迎参加。
 - en: Want to invite me to visit your company for training, mentoring, project review,
     workflow design and / or consulting? I’d be happy to drop by and work with you!
+  id: totrans-291
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 想邀请我到贵公司进行培训、辅导、项目审查、工作流程设计和/或咨询吗？我很乐意拜访并与您合作！
 - en: Interested in partnering, supporting my graduate student research or my Subsurface
     Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
     My research combines data analytics, stochastic modeling and machine learning
     theory with practice to develop novel methods and workflows to add value. We are
     solving challenging subsurface problems!
+  id: totrans-292
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 想要合作、支持我的研究生研究或我的地下数据分析与机器学习联盟（共同负责人是约翰·福斯特教授）吗？我的研究将数据分析、随机建模和机器学习理论与实践相结合，以开发新的方法和工作流程，增加价值。我们正在解决具有挑战性的地下问题！
 - en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  id: totrans-293
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 您可以通过[mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu)联系到我。
 - en: I’m always happy to discuss,
+  id: totrans-294
   prefs: []
   type: TYPE_NORMAL
+  zh: 我总是很高兴讨论，
 - en: '*Michael*'
+  id: totrans-295
   prefs: []
   type: TYPE_NORMAL
+  zh: '*迈克尔*'
 - en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
     Jackson School of Geosciences, The University of Texas at Austin
+  id: totrans-296
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔·皮尔茨，博士，P.Eng. 教授，德克萨斯大学奥斯汀分校Cockrell工程学院和Jackson地球科学学院
 - en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
     | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
     | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
@@ -1173,1063 +1791,1624 @@
     Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
     | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
     | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  id: totrans-297
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 更多资源请访问：[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [网站](http://michaelpyrcz.com) | [Google Scholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [地统计学书籍](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Python中应用地统计学电子书](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Python中应用机器学习电子书](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)
 - en: Motivation for Time Series Analysis and Modeling
+  id: totrans-298
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列分析与建模的动机
 - en: 'Time series data is typically 1D over time. This data may be univariate, bivariate
     or multivariate. So why not just apply regular machine learning methods in 1D?
     There are many unique aspects for time series analysis and modeling that preclude
     this:'
+  id: totrans-299
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间序列数据通常是时间上的1D。这些数据可能是单变量的、双变量的或多变量的。那么为什么不在1D上应用常规的机器学习方法呢？时间序列分析和建模有许多独特的方面，这阻止了这一点：
 - en: time series phenomenon are often highly nonstationary with trends and cyclicity
+  id: totrans-300
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间序列现象通常是非平稳的，具有趋势和周期性
 - en: time series models are often focused on forecasting, i.e., significant extrapolation
+  id: totrans-301
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间序列模型通常侧重于预测，即重要的外推
 - en: over the observed time interval the data is usually dense, and often exhaustive
     with sampling at the same rate as applied in the trained model
+  id: totrans-302
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在观察的时间间隔内，数据通常很密集，并且通常与训练模型中应用的采样率相同
 - en: As result, we need a unique set of tools, analysis and models to address time
     series phenomenon.
+  id: totrans-303
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们需要一套独特的工具、分析和模型来解决时间序列现象。
 - en: Time Series Analysis and Modeling
+  id: totrans-304
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列分析和建模
 - en: Time series analysis for learning from time series data. Here are some key aspects
     of time series analysis and modeling.
+  id: totrans-305
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间序列分析用于从时间序列数据中学习。以下是时间序列分析和建模的一些关键方面。
 - en: '**One Dimensional**'
+  id: totrans-306
   prefs: []
   type: TYPE_NORMAL
+  zh: '**一维**'
 - en: whereas spatial data is typically over 2 or 3 dimensions and multivariate data
     may have any dimension in feature space, time series data is fundamentally a 1D
     dataset with measures over \(y(\bf{t_{\alpha}})\), for \(\alpha = 1, \dots, n\)
     samples typically observed at a constant rate.
+  id: totrans-307
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 而空间数据通常是2或3维，多变量数据可能在特征空间中具有任何维度，时间序列数据在本质上是一个1维数据集，具有对 \(y(\bf{t_{\alpha}})\)
+    的度量，对于 \(\alpha = 1, \dots, n\) 样本通常以恒定速率观察。
 - en: '**Compositional**'
+  id: totrans-308
   prefs: []
   type: TYPE_NORMAL
+  zh: '**组成**'
 - en: time series data may often be decomposed into separate additive or multiplicative
     trend, seasonal and residual components.
+  id: totrans-309
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间序列数据可能经常分解为单独的加法或乘法趋势、季节和残差成分。
 - en: any model will need to account for each of these components
+  id: totrans-310
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 任何模型都需要考虑这些组成部分
 - en: '**Autocorrelation**'
+  id: totrans-311
   prefs: []
   type: TYPE_NORMAL
+  zh: '**自相关**'
 - en: the autocorrelation is commonly applied to quantify the degree information shared
     over intervals of time.
+  id: totrans-312
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 自相关通常用于量化在时间间隔内共享的信息程度。
 - en: note autocorrelation is known as the correlogram in geostatistics and the principals,
     calculation and modeling procedures are the same.
+  id: totrans-313
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 注意，自相关在地质统计学中被称为自相关图，其原理、计算和建模程序是相同的。
 - en: '**Nonstationary**'
+  id: totrans-314
   prefs: []
   type: TYPE_NORMAL
+  zh: '**非平稳**'
 - en: time series data are often nonstationary and are commonly evaluated with moving
     window statistics to characterize and model changes over time
+  id: totrans-315
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间序列数据通常是非平稳的，通常使用移动窗口统计来评估和建模随时间的变化
 - en: the choice of moving window size is analogous (although not exactly equivalent)
     to the k hyperparameter for k-nearest neighbour models.
+  id: totrans-316
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 移动窗口大小的选择类似于（尽管不是完全等价）k-最近邻模型的k超参数。
 - en: Examples of Time Series Analysis
+  id: totrans-317
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列分析的示例
 - en: 'There are many well-known, important examples of time series analysis:'
+  id: totrans-318
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间序列分析有许多众所周知且重要的示例：
 - en: local and global CO2 emisions that are applied to model and forecast climate
     change
+  id: totrans-319
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 应用于模型和预测的局部和全球二氧化碳排放
 - en: mill efficiency measured as recover rate of mineral extraction from the plan
     feed to forecast mineral production
+  id: totrans-320
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 以从工厂进料中提取矿物的回收率来衡量磨矿效率，以预测矿物生产
 - en: rate of natural gas production for a well in a specific reservoir to determine
     the number of well needed to meet local energy needs
+  id: totrans-321
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 确定特定储层中一口井的天然气生产率，以确定满足当地能源需求所需井的数量
 - en: In addition, there are many systems with mixed multivariate with time series
     phenomenon. For the above,
+  id: totrans-322
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，还有许多具有混合多变量时间序列现象的系统。对于上述内容，
 - en: inclusion of population, GDP and efficiency measures to improve the CO2 emission
     forecasts
+  id: totrans-323
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 包含人口、GDP和效率指标以改善二氧化碳排放预测
 - en: inclusion of mineral grades, mining schedule and plant down time to improve
     mill mineral production forecasts
+  id: totrans-324
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 包含矿物等级、采矿计划和工厂停机时间，以改善磨矿矿物生产预测
 - en: inclusion of local models of facies, porosity and permeability models to improve
     well natural gas production forecasts.
+  id: totrans-325
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 包含局部模型的地层、孔隙率和渗透率模型以改善井天然气生产预测。
 - en: While multivariate is important, for this brevity I only cover univariate time
     series analysis and modeling here.
+  id: totrans-326
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然多变量很重要，但为了简洁起见，我在这里只涵盖单变量时间序列分析和建模。
 - en: What Do I Cover?
+  id: totrans-327
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 我会涵盖哪些内容？
 - en: 'For time series analysis, modeling and prediction the following is included:'
+  id: totrans-328
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于时间序列分析、建模和预测，以下内容包括：
 - en: Formatting time series dataset
+  id: totrans-329
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 格式化时间序列数据集
 - en: Basic time series visualization
+  id: totrans-330
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基本时间序列可视化
 - en: Autocorrelation analysis
+  id: totrans-331
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 自相关分析
 - en: Trend modeling and differencing for detrending
+  id: totrans-332
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 趋势建模和差分以去趋势
 - en: Time Series Decomposition with ARIMA modeling and forecasting
+  id: totrans-333
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用ARIMA模型进行时间序列分解和预测
 - en: Load the required libraries
+  id: totrans-334
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 加载所需的库
 - en: We will also need some standard packages. These should have been installed with
     Anaconda 3.
+  id: totrans-335
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还需要一些标准包。这些应该已经与Anaconda 3一起安装。
 - en: '[PRE35]'
+  id: totrans-336
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE35]'
 - en: '[PRE36]'
+  id: totrans-337
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE36]'
 - en: We will also need some standard packages. These should have been installed with
     Anaconda 3.
+  id: totrans-338
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还需要一些标准包。这些应该已经与Anaconda 3一起安装。
 - en: '[PRE37]'
+  id: totrans-339
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE37]'
 - en: '[PRE38]'
+  id: totrans-340
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE38]'
 - en: If you get a package import error, you may have to first install some of these
     packages. This can usually be accomplished by opening up a command window on Windows
     and then typing ‘python -m pip install [package-name]’. More assistance is available
     with the respective package docs.
+  id: totrans-341
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你遇到包导入错误，你可能首先需要安装这些包中的一些。这通常可以通过在Windows上打开命令窗口，然后输入‘python -m pip install
+    [package-name]’来完成。有关相应包的文档中提供了更多帮助。
 - en: Declare Functions
+  id: totrans-342
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 声明函数
 - en: Let’s define a couple of functions to streamline plotting correlation matrices
     and visualization of a decision tree regression model.
+  id: totrans-343
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们定义几个函数来简化相关矩阵的绘制和决策树回归模型的可视化。
 - en: '[PRE39]'
+  id: totrans-344
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE39]'
 - en: Set the Working Directory
+  id: totrans-345
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 设置工作目录
 - en: I always like to do this so I don’t lose files and to simplify subsequent read
     and writes (avoid including the full address each time).
+  id: totrans-346
   prefs: []
   type: TYPE_NORMAL
+  zh: 我总是喜欢这样做，这样我就不会丢失文件，并且可以简化后续的读取和写入（避免每次都包含完整地址）。
 - en: '[PRE40]'
+  id: totrans-347
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE40]'
 - en: Generating a Synthetic Time Series
+  id: totrans-348
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 生成合成时间序列
 - en: We will build a simple time series representing production at an hypothetical
     lithium (Li) mine, where we have daily measurements of lithium recovery in tonnes
     per day.
+  id: totrans-349
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将构建一个简单的代表假设锂（Li）矿生产的时间序列，其中我们每天测量锂回收量，以吨/天为单位。
 - en: We will use an additive model with trend, cycles and stochastic noise (short
     scale continuity) features
+  id: totrans-350
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将使用具有趋势、周期和随机噪声（短期连续性）特征的加性模型
 - en: I have left the synthetic data generation workflow here, instead of just putting
     the resulting dataset on GitHub, to allow you to change the synthetic dataset
     and experiment with the following time series analysis and modeling workflow
+  id: totrans-351
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我在这里留下了合成数据生成工作流程，而不是仅仅将结果数据集放在GitHub上，这样你可以更改合成数据集，并实验以下时间序列分析和建模工作流程。
 - en: '[PRE41]'
+  id: totrans-352
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE41]'
 - en: '![_images/8eaacb8be90267349d2927db867f7572d8f7f3309f55fbd017ac128c820ad744.png](../Images/f9e6d5d99298bb06b9335a9c1cf1f8cb.png)'
+  id: totrans-353
   prefs: []
   type: TYPE_IMG
+  zh: '![图片链接](../Images/f9e6d5d99298bb06b9335a9c1cf1f8cb.png)'
 - en: Time Series DataFrame
+  id: totrans-354
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列DataFrame
 - en: 'Let’s make a pandas DataFrame with the lithium production data indexed by date
     of the production. We utilize the useful functionality with Pandas’ DataFrames
     to work with time series data, this includes:'
+  id: totrans-355
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们创建一个以生产日期为索引的锂生产数据的pandas DataFrame。我们利用Pandas DataFrame的有用功能来处理时间序列数据，这包括：
 - en: the ability to use various time formats for display
+  id: totrans-356
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 能够使用各种时间格式进行显示
 - en: to do calculations in time, like the number of day between to 2 dates in year,
     month and day of the month, i.e., Pandas knows the calendar!
+  id: totrans-357
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 进行时间计算，例如在年、月和月日之间计算两个日期之间的天数，即Pandas知道日历！
 - en: To do this we make date index parameterized by a start date, the number of periods
     (number of values in our model above, nx) and the sampling frequency ‘D’ indicating
     daily.
+  id: totrans-358
   prefs: []
   type: TYPE_NORMAL
+  zh: 要做到这一点，我们创建一个由起始日期、周期数（模型中上述值的数量，nx）和采样频率‘D’（表示每日）参数化的日期索引。
 - en: we set this as the data field for the DataFrame and set this to be the DataFrame’s
     index.
+  id: totrans-359
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将此作为DataFrame的数据字段，并将其设置为DataFrame的索引。
 - en: '[PRE42]'
+  id: totrans-360
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE42]'
 - en: We can take advantage of the ability to easily work with and plot time series
     data with pandas DataFrames.
+  id: totrans-361
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以利用利用pandas DataFrame轻松处理和绘制时间序列数据的能力。
 - en: we added some improved formatting, including custom date intervals and labels
     on the x axis
+  id: totrans-362
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们添加了一些改进的格式化，包括自定义日期间隔和x轴上的标签
 - en: '[PRE43]'
+  id: totrans-363
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE43]'
 - en: '![_images/9e25d86a0fdea89ff11a7de4580eff760df12ab968b6b2f3c20c51d909258486.png](../Images/694bb9b0dd890d4eb3aa5efa14cb234c.png)'
+  id: totrans-364
   prefs: []
   type: TYPE_IMG
+  zh: '![图片链接](../Images/694bb9b0dd890d4eb3aa5efa14cb234c.png)'
 - en: That’s a good plot for time series data. Now let’s start doing analysis with
     our lithium production data.
+  id: totrans-365
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个很好的时间序列数据图表。现在让我们开始用我们的锂生产数据进行分析。
 - en: Autocorrelation
+  id: totrans-366
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自相关
 - en: Autocorrelation is applied in time series analysis to detect relationships over
     lags in time. The autocorrelation is the correlogram (standardized covariance
     function) commonly used in geostatistics applied to the one dimensional time series
     data.
+  id: totrans-367
   prefs: []
   type: TYPE_NORMAL
+  zh: 自相关在时间序列分析中应用于检测时间滞后中的关系。自相关是地统计学中常用的相关图（标准化协方差函数），应用于一维时间序列数据。
 - en: Also, for the calculation of a predictive model we often check for the presence
     of autocorrelation between error residual values.
+  id: totrans-368
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，在计算预测模型时，我们经常检查误差残差值之间是否存在自相关。
 - en: we will use the autocorrelation and partial autocorrelation of our residual
+  id: totrans-369
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将使用我们的残差的自相关和部分自相关
 - en: The partial autocorrelation provides a measure of the correlation after removal
     of differences observed in previous lags
+  id: totrans-370
   prefs: []
   type: TYPE_NORMAL
+  zh: 部分自相关提供了在去除先前滞后中观察到的差异后的相关性的度量
 - en: measure of correlation at lag \( = n\), after removing the effects explained
     over lags \( 1, \ldots, n-1\).
+  id: totrans-371
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 滞后 \( = n\) 的相关度度量，在移除滞后 \(1, \ldots, n-1\) 的效应后。
 - en: '[PRE44]'
+  id: totrans-372
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE44]'
 - en: '![_images/6d45f0eabb836924372dcb385861ed9d29dab4bc6ed4806234ea5d7b6d832c24.png](../Images/72dd0f4c8b3faee78bf66928f236029b.png)'
+  id: totrans-373
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/6d45f0eabb836924372dcb385861ed9d29dab4bc6ed4806234ea5d7b6d832c24.png](../Images/72dd0f4c8b3faee78bf66928f236029b.png)'
 - en: Test for Stationarity
+  id: totrans-374
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 平稳性检验
 - en: 'Is this dataset stationary? Does the mean change locally? We use the Dickey-Fuller
     Test to test for stationarity of our time series with the following hypotheses:'
+  id: totrans-375
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个数据集是平稳的吗？均值是否在局部发生变化？我们使用Dickey-Fuller检验来测试我们时间序列的平稳性，以下是我们提出的假设：
 - en: \(H_0 =\) time series is non-stationary
+  id: totrans-376
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_0 =\) 时间序列是非平稳的
 - en: \(H_1 =\) time series is stationary
+  id: totrans-377
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_1 =\) 时间序列是平稳的
 - en: If the **Test Statistic** is less then the **Critical Value** at an alpha level
     (1 - significance level) then we reject the null hypothesis and state that the
     time series is stationary.
+  id: totrans-378
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果**检验统计量**小于在alpha水平（1 - 显著性水平）下的**临界值**，则我们拒绝零假设，并声明时间序列是平稳的。
 - en: '[PRE45]'
+  id: totrans-379
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE45]'
 - en: '[PRE46]'
+  id: totrans-380
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE46]'
 - en: Since the test statistic within the +/- the critical value interval (at 5%)
     and the p-value is > 5% we would fail to reject the null hypothesis that the dataset
     is stationary, we assume it is nonstationary.
+  id: totrans-381
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于检验统计量在临界值区间（5%）内，且p值大于5%，我们无法拒绝数据集是平稳的零假设，我们假设它是非平稳的。
 - en: What do we need to do about our nonstationary time series data?
+  id: totrans-382
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们需要对我们非平稳的时间序列数据做些什么？
 - en: Stationarity Transformations for Time Series
+  id: totrans-383
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列的平稳性转换
 - en: Most time series models (like spatial models) require a stationarity assumption.
+  id: totrans-384
   prefs: []
   type: TYPE_NORMAL
+  zh: 大多数时间序列模型（如空间模型）都需要平稳性假设。
 - en: 'To transform time series to stationary we must model and remove:'
+  id: totrans-385
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了将时间序列转换为平稳序列，我们必须建模并去除：
 - en: trends - locally variable mean over the domain of the time series
+  id: totrans-386
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 趋势 - 时间序列域内的局部变量均值
 - en: seasonality - repeating cycles with a specific wavelength
+  id: totrans-387
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 季节性 - 具有特定波长的重复周期
 - en: Rolling, Moving Window Statistics
+  id: totrans-388
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 滚动，移动窗口统计
 - en: We calculate moving window statistics to evaluate the local change in these
     statistics.
+  id: totrans-389
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们计算移动窗口统计量以评估这些统计量的局部变化。
 - en: visually observe the local changes continuously over the time series
+  id: totrans-390
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在时间序列上连续观察局部变化
 - en: can be calculated on a wide range of statistics
+  id: totrans-391
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 可以在广泛的统计量上计算
 - en: We evaluate the moving window mean and sample standard deviation over a window
     of 20 days.
+  id: totrans-392
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在20天的窗口上评估移动窗口平均值和样本标准差。
 - en: assuming a uniform weighting of the statistics
+  id: totrans-393
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 假设统计量的均匀加权
 - en: could consider triangular and Gaussian weighting templates for smoother results
+  id: totrans-394
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 可以考虑使用三角形和高斯加权模板以获得更平滑的结果
 - en: '[PRE47]'
+  id: totrans-395
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE47]'
 - en: '![_images/ebd01cd4f074263672a8d1dad448eac53fe00c2e03f52c0a01abb2ed94f3bc21.png](../Images/23817cbd2c8216f20891b70b7a7fcbac.png)'
+  id: totrans-396
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/ebd01cd4f074263672a8d1dad448eac53fe00c2e03f52c0a01abb2ed94f3bc21.png](../Images/23817cbd2c8216f20891b70b7a7fcbac.png)'
 - en: Working with Residuals
+  id: totrans-397
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 处理残差
 - en: Let’s remove (subtract) the moving window average from the original production
     time series and calculate the residual.
+  id: totrans-398
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从原始生产时间序列中移除（减去）移动窗口平均值，并计算残差。
 - en: '[PRE48]'
+  id: totrans-399
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE48]'
 - en: '|  | production | rolling_mean | rolling_std | rolling_lower | rolling_upper
     | residual |'
+  id: totrans-400
   prefs: []
   type: TYPE_TB
+  zh: '|  | 生产 | 滚动平均值 | 滚动标准差 | 滚动下限 | 滚动上限 | 残差 |'
 - en: '| --- | --- | --- | --- | --- | --- | --- |'
+  id: totrans-401
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- | --- | --- |'
 - en: '| date |  |  |  |  |  |  |'
+  id: totrans-402
   prefs: []
   type: TYPE_TB
+  zh: '| 日期 |  |  |  |  |  |  |'
 - en: '| --- | --- | --- | --- | --- | --- | --- |'
+  id: totrans-403
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- | --- | --- |'
 - en: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-404
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-405
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-406
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-407
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-408
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-06 | 84.041801 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-409
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-06 | 84.041801 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-07 | 82.224334 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-410
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-07 | 82.224334 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-08 | 80.794563 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-411
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-08 | 80.794563 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-09 | 80.045364 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-412
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-09 | 80.045364 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-10 | 80.389419 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-413
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-10 | 80.389419 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-11 | 82.188769 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-414
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-11 | 82.188769 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-12 | 85.573237 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-415
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-12 | 85.573237 | NaN | NaN | NaN | NaN | NaN |'
 - en: '| 2016-01-13 | 90.404332 | NaN | NaN | NaN | NaN | NaN |'
+  id: totrans-416
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-13 | 90.404332 | NaN | NaN | NaN | NaN | NaN |'
 - en: We have some ‘NaN’, missing values because the moving window does not calculate
     values when the window overlaps with the edge of the data.
+  id: totrans-417
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有一些“NaN”，缺失值，因为移动窗口在窗口与数据边缘重叠时不计算值。
 - en: We will have to deal with these in the following workflow.
+  id: totrans-418
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们将在以下工作流程中处理这些问题。
 - en: Now let’s plot and visualize the residual.
+  id: totrans-419
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们来绘制和可视化残差。
 - en: It should be more stationary
+  id: totrans-420
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它应该更加平稳
 - en: '[PRE49]'
+  id: totrans-421
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE49]'
 - en: '![_images/9ce3c71d560b0f9a1c7e48b18377b17c68c5db0a0b3b80a1c532ab4ec60c2ae0.png](../Images/d8c6125fd07b146e72271820cf73a380.png)'
+  id: totrans-422
   prefs: []
   type: TYPE_IMG
+  zh: '![图像](../Images/d8c6125fd07b146e72271820cf73a380.png)'
 - en: The residual after we remove the trend is more stationary as anticipated.
+  id: totrans-423
   prefs: []
   type: TYPE_NORMAL
+  zh: 移除趋势后的残差比预期的更加平稳。
 - en: Let’s try a variety of window sizes.
+  id: totrans-424
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们尝试不同的窗口大小。
 - en: 20 days
+  id: totrans-425
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 20 天
 - en: 40 days
+  id: totrans-426
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 40 天
 - en: 100 days
+  id: totrans-427
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 100 天
 - en: '[PRE50]'
+  id: totrans-428
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE50]'
 - en: '![_images/f8caff768dda3c4519ca9a6e8f0edc6e39ce2a61832a0d807e92e09aee275a56.png](../Images/a6bbb9fc308febc4dc8321f2016b765c.png)'
+  id: totrans-429
   prefs: []
   type: TYPE_IMG
+  zh: '![图像](../Images/a6bbb9fc308febc4dc8321f2016b765c.png)'
 - en: Additivity of Variance Trend and Residual Components and Residual Distribution
     Checks
+  id: totrans-430
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 添加方差趋势和残差成分以及残差分布检查
 - en: 'When we work with a trend and residual model we are decomposing the temporal
     phenomenon into:'
+  id: totrans-431
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们处理趋势和残差模型时，我们将时间现象分解为：
 - en: deterministic trend - known
+  id: totrans-432
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 确定性趋势 - 已知
 - en: stochastic residual - unknown
+  id: totrans-433
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机残差 - 未知
 - en: 'We will calculated the proportion of variance in the trend and the residual.
     This includes the following steps:'
+  id: totrans-434
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将计算趋势和残差中的方差比例。这包括以下步骤：
 - en: calculate the representative weighted standard deviation of the original data,
     convert to variance, \(\sigma\)
+  id: totrans-435
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算原始数据的代表性加权标准差，转换为方差，\(\sigma\)
 - en: calculate the standard deviation of the trend model, convert to variance, \(\sigma_t\)
+  id: totrans-436
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算趋势模型的方差，转换为方差，\(\sigma_t\)
 - en: calculate the variance of the residual at the data locations, \(\sigma_r\)
+  id: totrans-437
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算数据位置处的残差方差，\(\sigma_r\)
 - en: 'back calculate the covariance form the relationship:'
+  id: totrans-438
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从关系式反向计算协方差：
 - en: \[ \sigma^2 = \sigma^2_t + \sigma^2_r + 2 \times C_{tr} \]
+  id: totrans-439
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \sigma^2 = \sigma^2_t + \sigma^2_r + 2 \times C_{tr} \]
 - en: 'We also check the residual univariate distribution. We are checking for:'
+  id: totrans-440
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还检查残差的单变量分布。我们正在检查：
 - en: residual mean close to zero
+  id: totrans-441
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 残差均值接近零
 - en: minimum and maximum residual for extreme values
+  id: totrans-442
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 极端值的最小和最大残差
 - en: monomodal, symmetric distribution shape
+  id: totrans-443
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 单峰，对称分布形状
 - en: '[PRE51]'
+  id: totrans-444
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE51]'
 - en: '![_images/9625079434c189f991745e5bea6b99ea5186f177353acf52f8da72e4e87dae61.png](../Images/db74416a3a6fe471686fc6bcb1772c2b.png)'
+  id: totrans-445
   prefs: []
   type: TYPE_IMG
+  zh: '![图像](../Images/db74416a3a6fe471686fc6bcb1772c2b.png)'
 - en: Test for Stationarity on the De-trended Time Series
+  id: totrans-446
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 对去趋势时间序列进行平稳性测试
 - en: We use the Dickey-Fuller Test to test for stationarity of our detrened time
     series
+  id: totrans-447
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用 Dickey-Fuller 测试来测试去趋势时间序列的平稳性
 - en: \(H_0 =\) time series is non-stationary
+  id: totrans-448
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_0 =\) 时间序列是非平稳的
 - en: \(H_1 =\) time series is stationary
+  id: totrans-449
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_1 =\) 时间序列是平稳的
 - en: If the **Test Statistic** is less then the **Critical Value** at an alpha level
     (1 - significance level) then we reject the null hypothesis and state that the
     time series is stationary.
+  id: totrans-450
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果**检验统计量**小于在 alpha 水平（1 - 显著性水平）下的**临界值**，则我们拒绝零假设，并声明时间序列是平稳的。
 - en: '[PRE52]'
+  id: totrans-451
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE52]'
 - en: '[PRE53]'
+  id: totrans-452
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE53]'
 - en: Now we reject the null hypothesis, \(H_0\), and state that the detrended time
     series is stationary.
+  id: totrans-453
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们拒绝零假设，\(H_0\)，并声明去趋势的时间序列是平稳的。
 - en: Differencing to Remove Nonstationarity
+  id: totrans-454
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 去除非平稳性的差分
 - en: 'Differencing is a common approach applied to tine series to remove nonstationarity.
     Differencing proceeds as:'
+  id: totrans-455
   prefs: []
   type: TYPE_NORMAL
+  zh: 差分是应用于时间序列以去除非平稳性的常见方法。差分过程如下：
 - en: \(y(\bf{u_i}) = z(\bf{u}_{i+1}) - z(\bf{u}_i)\)
+  id: totrans-456
   prefs: []
   type: TYPE_NORMAL
+  zh: \(y(\bf{u_i}) = z(\bf{u}_{i+1}) - z(\bf{u}_i)\)
 - en: where \(z(\bf{u}_{i+1}) - z(\bf{u}_i)\) is the difference between the current
     and the next value in the time series.
+  id: totrans-457
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 \(z(\bf{u}_{i+1}) - z(\bf{u}_i)\) 是时间序列中当前值与下一个值之间的差。
 - en: NumPy has a function for differencing ndarrays.
+  id: totrans-458
   prefs: []
   type: TYPE_NORMAL
+  zh: NumPy 有一个用于差分 ndarrays 的函数。
 - en: '[PRE54]'
+  id: totrans-459
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE54]'
 - en: 'Comments on differencing:'
+  id: totrans-460
   prefs: []
   type: TYPE_NORMAL
+  zh: 差分的注释：
 - en: if the series is already stationary then there is no need to apply differencing
+  id: totrans-461
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果序列已经是平稳的，则不需要应用差分
 - en: the order of differencing is the number of differencing operations applied in
     sequence.
+  id: totrans-462
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 差分阶数是指按顺序应用差分操作的次数。
 - en: first order is \(y_1(\bf{u_i}) = z(\bf{u_{i+1}}) - z(\bf{u_i})\)
+  id: totrans-463
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一阶是 \(y_1(\bf{u_i}) = z(\bf{u_{i+1}}) - z(\bf{u_i})\)
 - en: second order is \(y_2(\bf{u_i}) = y_1(\bf{u_{i+1}}) - y_1(\bf{u_i})\)
+  id: totrans-464
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 二阶是 \(y_2(\bf{u_i}) = y_1(\bf{u_{i+1}}) - y_1(\bf{u_i})\)
 - en: third order is \(y_3(\bf{u_i}) = y_2(\bf{u_{i+1}}) - y_2(\bf{u_i})\)
+  id: totrans-465
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 三阶是 \(y_3(\bf{u_i}) = y_2(\bf{u_{i+1}}) - y_2(\bf{u_i})\)
 - en: We demonstrate differencing on our production dataset.
+  id: totrans-466
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在我们的生产数据集上展示了差分操作。
 - en: We will plot the autocorrelation of the result to demonstrate that we have actually
     removed the trend.
+  id: totrans-467
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将绘制结果的自相关图来证明我们已经移除了趋势。
 - en: trend structure in autocorrelation is a linear shift over lag distances downward
     toward 0.0 and beyond into negative values.
+  id: totrans-468
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 自相关中的趋势结构是随滞后距离线性向下移动，趋向于0.0以及更低的负值。
 - en: '[PRE55]'
+  id: totrans-469
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE55]'
 - en: '|  | production | rolling_mean | rolling_std | rolling_lower | rolling_upper
     | residual | rolling_mean_20 | rolling_res_20 | rolling_mean_40 | rolling_res_40
     | rolling_mean_100 | rolling_res_100 | first_difference | second_difference |'
+  id: totrans-470
   prefs: []
   type: TYPE_TB
+  zh: '|  | 生产 | 滚动平均 | 滚动标准差 | 滚动下限 | 滚动上限 | 残差 | 滚动平均_20 | 滚动残差_20 | 滚动平均_40 | 滚动残差_40
+    | 滚动平均_100 | 滚动残差_100 | 一阶差分 | 二阶差分 |'
 - en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
     | --- | --- |'
+  id: totrans-471
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- |'
 - en: '| date |  |  |  |  |  |  |  |  |  |  |  |  |  |  |'
+  id: totrans-472
   prefs: []
   type: TYPE_TB
+  zh: '| 日期 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |'
 - en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
     | --- | --- |'
+  id: totrans-473
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- |'
 - en: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
     NaN | NaN | NaN | -0.129910 | -1.403020 |'
+  id: totrans-474
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -0.129910 | -1.403020 |'
 - en: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
     NaN | NaN | NaN | -1.532930 | -0.656781 |'
+  id: totrans-475
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -1.532930 | -0.656781 |'
 - en: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
     NaN | NaN | NaN | -2.189710 | -0.084540 |'
+  id: totrans-476
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.189710 | -0.084540 |'
 - en: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
     NaN | NaN | NaN | -2.274251 | 0.186395 |'
+  id: totrans-477
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.274251 | 0.186395 |'
 - en: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
     NaN | NaN | NaN | -2.087856 | 0.270389 |'
+  id: totrans-478
   prefs: []
   type: TYPE_TB
+  zh: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.087856 | 0.270389 |'
 - en: 'Now let’s plot the:'
+  id: totrans-479
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们绘制：
 - en: original
+  id: totrans-480
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 原始
 - en: first order
+  id: totrans-481
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一阶
 - en: second order
+  id: totrans-482
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 二阶
 - en: '[PRE56]'
+  id: totrans-483
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE56]'
 - en: '![_images/76c2c1539d096bd5ed76cd73c18d1b0eaa89dd3586006f78e3617d98f703b532.png](../Images/4090c0ae317b920d7fdb77ad60d60fbd.png)'
+  id: totrans-484
   prefs: []
   type: TYPE_IMG
+  zh: '![_images/76c2c1539d096bd5ed76cd73c18d1b0eaa89dd3586006f78e3617d98f703b532.png](../Images/4090c0ae317b920d7fdb77ad60d60fbd.png)'
 - en: Observe that the result becomes more stationary as we mover from original production
     to first difference and then to second difference.
+  id: totrans-485
   prefs: []
   type: TYPE_NORMAL
+  zh: 观察到，随着我们从原始生产数据移动到一阶差分，然后到二阶差分，结果变得更加平稳。
 - en: The autocorrelation indicates that the temporal correlation is also removed.
+  id: totrans-486
   prefs: []
   type: TYPE_NORMAL
+  zh: 自相关系数表明时间相关性也被移除了。
 - en: Test for Stationarity on the First and Second Differenced Time Series
+  id: totrans-487
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在一阶和二阶差分时间序列上进行平稳性检验
 - en: We use the Dickey-Fuller Test for stationarity of our first and second difference
     of our production time series
+  id: totrans-488
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用Dickey-Fuller测试来检验我们生产时间序列的一阶和二阶差分的平稳性
 - en: \(H_0 =\) time series is non-stationary
+  id: totrans-489
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_0 =\) 时间序列是非平稳的
 - en: \(H_1 =\) time series is stationary
+  id: totrans-490
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: \(H_1 =\) 时间序列是平稳的
 - en: If the **Test Statistic** is less than the **Critical Value** at an alpha level
     (1 - significance level) then we reject the null hypothesis and state that the
     time series is stationary.
+  id: totrans-491
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果**检验统计量**小于在alpha水平（1 - 显著性水平）下的**临界值**，则我们拒绝原假设，并声明时间序列是平稳的。
 - en: '[PRE57]'
+  id: totrans-492
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE57]'
 - en: '[PRE58]'
+  id: totrans-493
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE58]'
 - en: Both the local moving window and differencing methods have demonstrated the
     ability to remove the trend in the production mean and provide a stationary dataset.
+  id: totrans-494
   prefs: []
   type: TYPE_NORMAL
+  zh: 无论是局部移动窗口方法还是差分方法，都证明了它们能够去除生产平均数中的趋势，并提供一个平稳的数据集。
 - en: 'In general, any predictive model will:'
+  id: totrans-495
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，任何预测模型都将：
 - en: require a stationary time series dataset (assumes stationarity)
+  id: totrans-496
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 需要一个平稳的时间序列数据集（假设平稳性）
 - en: first model and remove a nonstationary component and then work with the stationary
     residual or transform
+  id: totrans-497
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先使用第一个模型去除非平稳成分，然后处理平稳残差或进行转换
 - en: Time Series Decomposition
+  id: totrans-498
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列分解
 - en: Let’s demonstrate an automated method to decompose a time series into multiple
     components. With time series decomposition we will decompose the time series into
     the following components.
+  id: totrans-499
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们演示一种自动化的方法来将时间序列分解成多个成分。通过时间序列分解，我们将时间序列分解成以下成分。
 - en: trend
+  id: totrans-500
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 趋势
 - en: seasonality
+  id: totrans-501
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 季节性
 - en: noise / residual
+  id: totrans-502
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 噪声 / 残差
 - en: We will use the [StatsModels](https://www.statsmodels.org/stable/index.html)
     package for statistical modeling in Python.
+  id: totrans-503
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用[StatsModels](https://www.statsmodels.org/stable/index.html)包在Python中进行统计建模。
 - en: '[PRE59]'
+  id: totrans-504
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE59]'
 - en: '![_images/a3e165bfa639408cfaef2dbf2d4803e515498da32ae0a8ab59eb539d79b4aa60.png](../Images/257ba56c0d6d741261e4f9f46dad7f36.png)'
+  id: totrans-505
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/257ba56c0d6d741261e4f9f46dad7f36.png)'
 - en: Let’s also check the variance components, were \(t\) is trend, \(s\) is seasonal
     and \(r\) is residual.
+  id: totrans-506
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们也检查方差成分，其中 \(t\) 是趋势，\(s\) 是季节，\(r\) 是残差。
 - en: \[ \sigma^2 = \sigma^2_{t} + \sigma^2_{s} + \sigma^2_{r} + 2 \times C_{t,s}
     + 2 \times C_{s,r} + 2 \times C_{t,r} \]
+  id: totrans-507
   prefs: []
   type: TYPE_NORMAL
+  zh: \[ \sigma^2 = \sigma^2_{t} + \sigma^2_{s} + \sigma^2_{r} + 2 \times C_{t,s}
+    + 2 \times C_{s,r} + 2 \times C_{t,r} \]
 - en: Due to the covariance terms, we cannot assume that the sum of the variance of
     the 3 decomposed components will be the original variance.
+  id: totrans-508
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于协方差项，我们不能假设3个分解成分的方差之和将是原始方差。
 - en: for simplicity, we will ignore the covariance terms and plot the proportions
     of the sum of variances of trend, seasonal and residual components.
+  id: totrans-509
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 为了简化，我们将忽略协方差项，并绘制趋势、季节和残差成分的方差总和的比例。
 - en: '[PRE60]'
+  id: totrans-510
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE60]'
 - en: '![_images/52ac6dc6b4820ea1432545ce5c7276cae52d7522e1ce0bbf71c4e8bd3fec1558.png](../Images/ddd0ddcbee1016004a500b4fd5be5fca.png)'
+  id: totrans-511
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/ddd0ddcbee1016004a500b4fd5be5fca.png)'
 - en: Note, that our model sees the cyclicity that we added to the synthetic data
     as the trend component and found a higher frequency, lower amplitude cyclicity
     as the seasonal component and the remaining noise residual component has an amplitude
     about twice the amplitude of the seasonal and about one fifth the trend amplitude.
+  id: totrans-512
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，我们的模型将我们添加到合成数据中的周期性视为趋势成分，并找到了更高频率、更低幅度的周期性作为季节成分，而剩余的噪声残差成分的振幅大约是季节振幅的两倍，大约是趋势振幅的五分之一。
 - en: Let’s check for stationarity of the residual component from the above decomposition.
     We do this to confirm that we have removed the nonstationarity through removal
     of the seasonal and trend components.
+  id: totrans-513
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们检查上述分解中残差成分的平稳性。我们这样做是为了确认我们已经通过去除季节和趋势成分来消除了非平稳性。
 - en: '[PRE61]'
+  id: totrans-514
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE61]'
 - en: '[PRE62]'
+  id: totrans-515
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE62]'
 - en: Once again we reject the null hypothesis, \(H_0\), and state that the detrended
     time series is stationary.
+  id: totrans-516
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次，我们拒绝了零假设 \(H_0\)，并声明去趋势的时间序列是平稳的。
 - en: the time series decomposition method has successfully removed the non-stationarity
     in the mean of the time series
+  id: totrans-517
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 时间序列分解方法已成功消除了时间序列均值中的非平稳性
 - en: Let’s confirm that the trend has been removed with the autocorrelation.
+  id: totrans-518
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们通过自相关来确认趋势已经被去除。
 - en: '[PRE63]'
+  id: totrans-519
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE63]'
 - en: '![_images/8138b13030257a1c90aeb7b070fdcbaacf8e0418807041092b342dd662480eef.png](../Images/1aa2ae1252a319119d0f115eaa0e864c.png)'
+  id: totrans-520
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/1aa2ae1252a319119d0f115eaa0e864c.png)'
 - en: From these plots we can determine that there is no autocorrelation nor partial
     autocorrelation over any lag
+  id: totrans-521
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这些图中我们可以确定，在任何滞后上都没有自相关或部分自相关
 - en: the plot crosses the upper confidence interval for zero autocorrelation at lag
     = 1
+  id: totrans-522
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 图像在滞后 = 1 处穿过零自相关性的上置信区间
 - en: What have we learned about our production data so far?
+  id: totrans-523
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们对我们生产数据学到了什么？
 - en: there is a significant trend that can be removed with a moving window or first
     difference
+  id: totrans-524
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 存在一个可以通过移动窗口或一阶差分去除的显著趋势
 - en: there is no significant autocorrelation of the
+  id: totrans-525
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 没有显著的自相关
 - en: Train and Test Split
+  id: totrans-526
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练和测试分割
 - en: Let’s split the data with train and test and attempt time series forecasting.
+  id: totrans-527
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用训练和测试数据分割数据，并尝试时间序列预测。
 - en: '[PRE64]'
+  id: totrans-528
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE64]'
 - en: '[PRE65]'
+  id: totrans-529
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE65]'
 - en: ARIMA (Auto-Regressive Integrated Moving Average) Model for Time Series
+  id: totrans-530
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列的ARIMA（自回归积分移动平均）模型
 - en: 'The ARIMA model is based on the following parameters:'
+  id: totrans-531
   prefs: []
   type: TYPE_NORMAL
+  zh: ARIMA模型基于以下参数：
 - en: number of auto-regressive terms (p) is the number of lags for autocorrelation
     - we find this from the number of significant lags in the partial autocorrelation.
     There was only one lag (see above). \(p=1\)
+  id: totrans-532
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 自回归项的数量（p）是自相关滞后数 - 我们从部分自相关中的显著滞后数中找到这个值。只有一个滞后（见上面）。 \(p=1\)
 - en: number of moving average terms (q) is the number of differencing required remove
     the trend. From above we demonstrated that we had a stationary dataset after the
     first difference, but we improved the removal of the cycles after the second difference,
     let’s use second difference. \(q = 2\)
+  id: totrans-533
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 移动平均项的数量（q）是去除趋势所需的差分次数。从上面我们可以看出，在第一次差分后我们得到了一个平稳的数据集，但在第二次差分后我们提高了周期去除的效果，让我们使用第二次差分。
+    \(q = 2\)
 - en: number of non-seasonal differences (d) is the seasonal effect, our dataset did
     not show any significant seasonal cyclicity in the decomposition above, so we
     will just set it to one. \(d=1\)
+  id: totrans-534
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 非季节性差异的数量（d）是季节效应，上述分解中我们的数据集没有显示出任何显著的季节性周期性，因此我们将它设为1。 \(d=1\)
 - en: '[PRE66]'
+  id: totrans-535
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE66]'
 - en: '[PRE67]'
+  id: totrans-536
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE67]'
 - en: Here’s what we can interpret from above.
+  id: totrans-537
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是我们可以从上述内容中解读的信息。
 - en: the coefficients AR.1, MA.1 and MA.2 are all significant, the model based on
     trend and autocorrelation is significant
+  id: totrans-538
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: AR.1，MA.1和MA.2的系数都显著，基于趋势和自相关的模型是显著的
 - en: the constant is not significantly different from zero
+  id: totrans-539
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 常数与零没有显著差异
 - en: 'Note the AIC is the Akaike Information Criteria (AIC) that quantifies:'
+  id: totrans-540
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意AIC是赤池信息准则（AIC），它量化了：
 - en: the goodness of fit
+  id: totrans-541
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 良好的拟合度
 - en: the simplicity / parsimony
+  id: totrans-542
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 简单性/简约性
 - en: The lower the AIC the better.
+  id: totrans-543
   prefs: []
   type: TYPE_NORMAL
+  zh: AIC越低越好。
 - en: Let’s plot the residuals from our model to check for a constant mean (near zero)
     and variance.
+  id: totrans-544
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们绘制我们模型的残差图，以检查是否存在恒定的均值（接近零）和方差。
 - en: '[PRE68]'
+  id: totrans-545
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE68]'
 - en: '![_images/863c09d404d499b67217b911f1e3586c5a4d3471981ff76b8636995108bdd134.png](../Images/4d4925e7b85076760e57bfefe6fefcef.png)'
+  id: totrans-546
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/4d4925e7b85076760e57bfefe6fefcef.png)'
 - en: Let’s look at the predictions from our model.
+  id: totrans-547
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看我们模型的预测结果。
 - en: this is the predictions our model would make if we trained with \(y(\bf{u_{\alpha}})\),
     for \(\alpha = 1, \dots, i-1\), to predict at \(y(\bf{u_i})\)
+  id: totrans-548
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 这是我们模型在用\(y(\bf{u_{\alpha}})\)进行训练，对于\(\alpha = 1, \dots, i-1\)，预测\(y(\bf{u_i})\)时所做的预测
 - en: '[PRE69]'
+  id: totrans-549
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE69]'
 - en: '![_images/13aa79d2f8da832d631685229be46fab79c1163ebef3251aad4a0266240d4660.png](../Images/3c025647f72ffba94e011821bf8dab17.png)'
+  id: totrans-550
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/3c025647f72ffba94e011821bf8dab17.png)'
 - en: 'Some observations about our ability to forecast:'
+  id: totrans-551
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于我们预测能力的几点观察：
 - en: the general linear trend with increasing production was captured by the model
+  id: totrans-552
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模型捕捉了随着生产增加的总体线性趋势
 - en: the short term forecast is quite good, but fails to capture the cycles, we could
     increase the number of periods in the seasons, but that dramatically increases
     the run time and was impractical with this e-book.
+  id: totrans-553
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 短期预测相当好，但未能捕捉到周期，我们可以增加季节中的周期数，但这会大大增加运行时间，并且在这个电子书中不切实际。
 - en: We could have improved model performance by manually removing the trend and
     cycle and modeling the residual. Also, more could be done with Python packages
     for autotuning ARIMA models (e.g., pmdarima package).
+  id: totrans-554
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过手动移除趋势和周期并建模残差来提高模型性能。此外，还可以使用Python包来自动调整ARIMA模型（例如，pmdarima包）进行更多操作。
 - en: Time Series Analysis and Modeling Summary
+  id: totrans-555
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间序列分析和建模总结
 - en: 'Here’s some observations:'
+  id: totrans-556
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是一些观察结果：
 - en: We need to check time series data for stationarity
+  id: totrans-557
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们需要检查时间序列数据是否具有平稳性
 - en: If time series are nonstationary we should mitigate this with trend removal
     or differencing
+  id: totrans-558
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果时间序列是非平稳的，我们应该通过趋势移除或差分来减轻这种情况
 - en: We can measure the degree of temporal correlation and see nonstationarity or
     trend structures with autocorrelation
+  id: totrans-559
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们可以测量时间相关性的程度，并使用自相关查看非平稳性或趋势结构。
 - en: ARIMA models allow us to simultaneously capture trend, seasonality and residual
     components in a single model
+  id: totrans-560
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: ARIMA模型使我们能够在单个模型中同时捕捉趋势、季节性和残差成分
 - en: Comments
+  id: totrans-561
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 评论
 - en: Much more could be done and discussed, I have many more resources. Check out
     my [shared resource inventory](https://michaelpyrcz.com/my-resources).
+  id: totrans-562
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以做和讨论的还有很多，我有很多更多的资源。查看我的[共享资源清单](https://michaelpyrcz.com/my-resources)。
 - en: I hope this was helpful,
+  id: totrans-563
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这有所帮助，
 - en: '*Michael*'
+  id: totrans-564
   prefs: []
   type: TYPE_NORMAL
+  zh: '*迈克尔*'
 - en: 'The Author:'
+  id: totrans-565
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 作者：
 - en: Michael Pyrcz, Professor, The University of Texas at Austin *Novel Data Analytics,
     Geostatistics and Machine Learning Subsurface Solutions*
+  id: totrans-566
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔·皮尔奇，教授，德克萨斯大学奥斯汀分校 *新颖数据分析、地统计学和机器学习地下解决方案*
 - en: With over 17 years of experience in subsurface consulting, research and development,
     Michael has returned to academia driven by his passion for teaching and enthusiasm
     for enhancing engineers’ and geoscientists’ impact in subsurface resource development.
+  id: totrans-567
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔拥有超过17年的地下咨询、研究和开发经验，他因对教学的热情和对增强工程师和地球科学家在地下资源开发中影响的热情而重返学术界。
 - en: 'For more about Michael check out these links:'
+  id: totrans-568
   prefs: []
   type: TYPE_NORMAL
+  zh: 更多关于迈克尔的信息，请查看以下链接：
 - en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
     | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
     | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
@@ -2237,44 +3416,67 @@
     Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
     | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
     | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  id: totrans-569
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [网站](http://michaelpyrcz.com) | [Google Scholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [地统计学书籍](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Python
+    地统计学应用电子书](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html) | [Python
+    应用机器学习电子书](https://geostatsguy.github.io/MachineLearningDemos_Book/) | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
 - en: Want to Work Together?
+  id: totrans-570
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 想要一起工作吗？
 - en: I hope this content is helpful to those that want to learn more about subsurface
     modeling, data analytics and machine learning. Students and working professionals
     are welcome to participate.
+  id: totrans-571
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这些内容对那些想要了解更多关于地下建模、数据分析和机器学习的人有所帮助。学生和在职专业人士都欢迎参与。
 - en: Want to invite me to visit your company for training, mentoring, project review,
     workflow design and / or consulting? I’d be happy to drop by and work with you!
+  id: totrans-572
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 想邀请我到贵公司进行培训、辅导、项目审查、工作流程设计和/或咨询吗？我很乐意拜访并与您合作！
 - en: Interested in partnering, supporting my graduate student research or my Subsurface
     Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
     My research combines data analytics, stochastic modeling and machine learning
     theory with practice to develop novel methods and workflows to add value. We are
     solving challenging subsurface problems!
+  id: totrans-573
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 想要合作，支持我的研究生研究或我的地下数据分析与机器学习联盟（共同负责人是约翰·福斯特教授）吗？我的研究将数据分析、随机建模和机器学习理论与实践相结合，以开发新的方法和工作流程来增加价值。我们正在解决具有挑战性的地下问题！
 - en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  id: totrans-574
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 您可以通过 [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu) 联系到我。
 - en: I’m always happy to discuss,
+  id: totrans-575
   prefs: []
   type: TYPE_NORMAL
+  zh: 我总是乐于讨论，
 - en: '*Michael*'
+  id: totrans-576
   prefs: []
   type: TYPE_NORMAL
+  zh: '*迈克尔*'
 - en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
     Jackson School of Geosciences, The University of Texas at Austin
+  id: totrans-577
   prefs: []
   type: TYPE_NORMAL
+  zh: 迈克尔·皮尔茨，博士，P.Eng. 教授，德克萨斯大学奥斯汀分校 Cockrell 工程学院和 Jackson 地球科学学院
 - en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
     | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
     | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
@@ -2282,6 +3484,13 @@
     Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
     | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
     | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  id: totrans-578
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 更多资源可在以下链接获取：[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [网站](http://michaelpyrcz.com) | [Google Scholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [地统计学书籍](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Python
+    地统计学应用电子书](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html) | [Python
+    应用机器学习电子书](https://geostatsguy.github.io/MachineLearningDemos_Book/) | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)
