@@ -97,9 +97,9 @@ perceptron.fit(X_cancer, y_cancer);
 
 最后，我们使用 `scikit-learn` 的 `LinearDiscriminantAnalysis` 类拟合费舍尔线性判别。这个类也可以被视为一个生成模型，这将在下一章中讨论，但下面的实现简化为在概念部分推导出的判别分类器。指定 `n_components = 1` 告诉模型将数据降低到一维。这相当于生成
 
-\[ f(\bx_n) = \bbeta^\top \bx_n \]
+$$ f(\bx_n) = \bbeta^\top \bx_n $$
 
-我们在概念部分看到的一些转换。然后我们可以通过检查以下两种情况来确定两个类别是否被分离：1) 对于类别 0 中的所有 \(n\) 和类别 1 中的所有 \(m\)，\(f(\bx_n) < f(\bx_m)\)；或者 2) 对于类别 0 中的所有 \(n\) 和类别 1 中的所有 \(m\)，\(f(\bx_n) > f(\bx_m)\)。等价地，我们可以在下面的直方图中看到两个类别没有被分离。
+我们在概念部分看到的一些转换。然后我们可以通过检查以下两种情况来确定两个类别是否被分离：1) 对于类别 0 中的所有 $n$ 和类别 1 中的所有 $m$，$f(\bx_n) < f(\bx_m)$；或者 2) 对于类别 0 中的所有 $n$ 和类别 1 中的所有 $m$，$f(\bx_n) > f(\bx_m)$。等价地，我们可以在下面的直方图中看到两个类别没有被分离。
 
 ```py
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -265,9 +265,9 @@ perceptron.fit(X_cancer, y_cancer);
 
 最后，我们使用 `scikit-learn` 中的 `LinearDiscriminantAnalysis` 类来拟合鲍尔斯线性判别。这个类也可以被视为一个生成模型，这将在下一章中讨论，但下面的实现简化为概念部分推导出的判别分类器。指定 `n_components = 1` 告诉模型将数据降低到一维。这相当于生成
 
-\[ f(\bx_n) = \bbeta^\top \bx_n \]
+$$ f(\bx_n) = \bbeta^\top \bx_n $$
 
-我们在概念部分看到的变换。然后我们可以通过检查以下任一条件来查看两个类别是否被分离：1) 对于类别 0 中的所有 \(n\) 和类别 1 中的所有 \(m\)，有 \(f(\bx_n) < f(\bx_m)\)；或者 2) 对于类别 0 中的所有 \(n\) 和类别 1 中的所有 \(m\)，有 \(f(\bx_n) > f(\bx_m)\)。等价地，我们可以在下面的直方图中看到两个类别没有被分离。
+我们在概念部分看到的变换。然后我们可以通过检查以下任一条件来查看两个类别是否被分离：1) 对于类别 0 中的所有 $n$ 和类别 1 中的所有 $m$，有 $f(\bx_n) < f(\bx_m)$；或者 2) 对于类别 0 中的所有 $n$ 和类别 1 中的所有 $m$，有 $f(\bx_n) > f(\bx_m)$。等价地，我们可以在下面的直方图中看到两个类别没有被分离。
 
 ```py
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis

@@ -2,19 +2,19 @@
 
 > 原文：[`dafriedman97.github.io/mlbook/content/c1/construction.html`](https://dafriedman97.github.io/mlbook/content/c1/construction.html)
 
-\[ \newcommand{\sumN}{\sum_{n = 1}^N} \newcommand{\sumn}{\sum_n} \newcommand{\bx}{\mathbf{x}} \newcommand{\bbeta}{\boldsymbol{\beta}} \newcommand{\btheta}{\boldsymbol{\theta}} \newcommand{\bbetahat}{\boldsymbol{\hat{\beta}}} \newcommand{\bthetahat}{\boldsymbol{\hat{\theta}}} \newcommand{\dadb}[2]{\frac{\partial #1}{\partial #2}} \newcommand{\by}{\mathbf{y}} \newcommand{\bX}{\mathbf{X}} \]
+$$ \newcommand{\sumN}{\sum_{n = 1}^N} \newcommand{\sumn}{\sum_n} \newcommand{\bx}{\mathbf{x}} \newcommand{\bbeta}{\boldsymbol{\beta}} \newcommand{\btheta}{\boldsymbol{\theta}} \newcommand{\bbetahat}{\boldsymbol{\hat{\beta}}} \newcommand{\bthetahat}{\boldsymbol{\hat{\theta}}} \newcommand{\dadb}[2]{\frac{\partial #1}{\partial #2}} \newcommand{\by}{\mathbf{y}} \newcommand{\bX}{\mathbf{X}} $$
 
 本节演示了如何仅使用`numpy`构建线性回归模型。为此，我们创建了一个名为`LinearRegression`的类。我们使用这个类来训练模型和进行未来的预测。
 
-`LinearRegression`类中的第一个方法是`fit()`，它负责估计\(\bbeta\)参数。这仅仅包括计算
+`LinearRegression`类中的第一个方法是`fit()`，它负责估计$\bbeta$参数。这仅仅包括计算
 
-\[ \bbetahat = \left(\bX^\top \bX\right)^{-1}\bX^\top \by \]
+$$ \bbetahat = \left(\bX^\top \bX\right)^{-1}\bX^\top \by $$
 
-`fit`方法也在样本内进行预测，\(\hat{\by} = \bX \bbetahat\)，并计算训练损失
+`fit`方法也在样本内进行预测，$\hat{\by} = \bX \bbetahat$，并计算训练损失
 
-\[ \mathcal{L}(\bbetahat) = \frac{1}{2}\sumN \left(y_n - \hat{y}_n \right)². \]
+$$ \mathcal{L}(\bbetahat) = \frac{1}{2}\sumN \left(y_n - \hat{y}_n \right)². $$
 
-第二种方法是`predict()`，它形成样本外预测。给定一个预测变量测试集\(\bX'\)，我们可以用\(\hat{\by}' = \bX' \bbetahat\)来形成拟合值。
+第二种方法是`predict()`，它形成样本外预测。给定一个预测变量测试集$\bX'$，我们可以用$\hat{\by}' = \bX' \bbetahat$来形成拟合值。
 
 ```py
 import numpy as np 
@@ -73,7 +73,7 @@ model.fit(X, y, intercept = False) # fit model
 
 注意
 
-注意那些\(y = 50\)的观测值。这是由于数据收集过程中的审查所致。看起来平均房价超过 50,000 美元的社区甚至被分配了一个 50 的值。
+注意那些$y = 50$的观测值。这是由于数据收集过程中的审查所致。看起来平均房价超过 50,000 美元的社区甚至被分配了一个 50 的值。
 
 ```py
 fig, ax = plt.subplots()

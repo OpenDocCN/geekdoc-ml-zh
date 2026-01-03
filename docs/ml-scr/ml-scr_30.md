@@ -217,17 +217,17 @@ np.mean(y_cancer_test_hat.round() == y_cancer_test)
 
 下面的梯度计算大多数都很直接。少数需要张量点积，这可以使用 numpy 很容易地完成。考虑以下梯度：
 
-\[ \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}_{i, j}} = \sum_{n = 1}^N (\nabla \mathbf{H}^{(L)})_{i, n}\cdot \mathbf{Z}^{(L-1)}_{j, n}. \]
+$$ \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}_{i, j}} = \sum_{n = 1}^N (\nabla \mathbf{H}^{(L)})_{i, n}\cdot \mathbf{Z}^{(L-1)}_{j, n}. $$
 
-用语言来说，\(\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}}\) 是一个矩阵，其 \((i, j)^\text{th}\) 个元素等于 \(\nabla \mathbf{H}^{(L)}\) 的第 \(i\) 行元素与 \(\mathbf{Z}^{(L-1)}\) 的第 \(j\) 行元素逐元素相乘后的总和。
+用语言来说，$\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}}$ 是一个矩阵，其 $(i, j)^\text{th}$ 个元素等于 $\nabla \mathbf{H}^{(L)}$ 的第 $i$ 行元素与 $\mathbf{Z}^{(L-1)}$ 的第 $j$ 行元素逐元素相乘后的总和。
 
-这个计算可以用 `np.tensordot(A, B, (1,1))` 来完成，其中 `A` 是 \(\nabla \mathbf{H}^{(L)}\)，而 `B` 是 \(\mathbf{Z}^{(L-1)}\)。`np.tensordot()` 沿指定索引求和 `A` 和 `B` 的元素逐元素乘积。在这里，我们指定索引为 `(1,1)`，表示我们想要对每一列进行求和。
+这个计算可以用 `np.tensordot(A, B, (1,1))` 来完成，其中 `A` 是 $\nabla \mathbf{H}^{(L)}$，而 `B` 是 $\mathbf{Z}^{(L-1)}$。`np.tensordot()` 沿指定索引求和 `A` 和 `B` 的元素逐元素乘积。在这里，我们指定索引为 `(1,1)`，表示我们想要对每一列进行求和。
 
 类似地，我们将使用以下梯度：
 
-\[ \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{(L-1)}_{i, n}} = \sum_{d = 1}^{D_y} (\nabla \mathbf{H}^{(L)})_{d, n}\cdot \mathbf{W}^{(L)}_{d, i}. \]
+$$ \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{(L-1)}_{i, n}} = \sum_{d = 1}^{D_y} (\nabla \mathbf{H}^{(L)})_{d, n}\cdot \mathbf{W}^{(L)}_{d, i}. $$
 
-用 `C` 表示 \(\mathbf{W}^{(L)}\)，我们可以在 numpy 中使用 `np.tensordot(C, A, (0,0))` 来计算这个梯度。
+用 `C` 表示 $\mathbf{W}^{(L)}$，我们可以在 numpy 中使用 `np.tensordot(C, A, (0,0))` 来计算这个梯度。
 
 ```py
 class FeedForwardNeuralNetwork:
@@ -500,17 +500,17 @@ np.mean(y_cancer_test_hat.round() == y_cancer_test)
 
 以下的大部分梯度计算都很直接。其中一些需要张量点积，这可以通过 numpy 很容易地完成。考虑以下梯度：
 
-\[ \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}_{i, j}} = \sum_{n = 1}^N (\nabla \mathbf{H}^{(L)})_{i, n}\cdot \mathbf{Z}^{(L-1)}_{j, n}. \]
+$$ \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(L)}_{i, j}} = \sum_{n = 1}^N (\nabla \mathbf{H}^{(L)})_{i, n}\cdot \mathbf{Z}^{(L-1)}_{j, n}. $$
 
-用文字来说，\(\partial\mathcal{L}/\partial \mathbf{W}^{(L)}\) 是一个矩阵，其 \((i, j)^\text{th}\) 个条目等于 \(\nabla \mathbf{H}^{(L)}\) 的第 \(i\) 行与 \(\mathbf{Z}^{(L-1)}\) 的第 \(j\) 行逐元素相乘后的总和。
+用文字来说，$\partial\mathcal{L}/\partial \mathbf{W}^{(L)}$ 是一个矩阵，其 $(i, j)^\text{th}$ 个条目等于 $\nabla \mathbf{H}^{(L)}$ 的第 $i$ 行与 $\mathbf{Z}^{(L-1)}$ 的第 $j$ 行逐元素相乘后的总和。
 
-这个计算可以通过 `np.tensordot(A, B, (1,1))` 完成，其中 `A` 是 \(\nabla \mathbf{H}^{(L)}\)，而 `B` 是 \(\mathbf{Z}^{(L-1)}\)。`np.tensordot()` 沿指定索引求 `A` 和 `B` 的元素级乘积之和。在这里，我们指定索引为 `(1,1)`，表示我们想要对每一列进行求和。
+这个计算可以通过 `np.tensordot(A, B, (1,1))` 完成，其中 `A` 是 $\nabla \mathbf{H}^{(L)}$，而 `B` 是 $\mathbf{Z}^{(L-1)}$。`np.tensordot()` 沿指定索引求 `A` 和 `B` 的元素级乘积之和。在这里，我们指定索引为 `(1,1)`，表示我们想要对每一列进行求和。
 
 同样，我们将使用以下梯度：
 
-\[ \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{(L-1)}_{i, n}} = \sum_{d = 1}^{D_y} (\nabla \mathbf{H}^{(L)})_{d, n}\cdot \mathbf{W}^{(L)}_{d, i}. \]
+$$ \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{(L-1)}_{i, n}} = \sum_{d = 1}^{D_y} (\nabla \mathbf{H}^{(L)})_{d, n}\cdot \mathbf{W}^{(L)}_{d, i}. $$
 
-令 `C` 代表 \(\mathbf{W}^{(L)}\)，我们可以使用 `np.tensordot(C, A, (0,0))` 在 numpy 中计算这个梯度。
+令 `C` 代表 $\mathbf{W}^{(L)}$，我们可以使用 `np.tensordot(C, A, (0,0))` 在 numpy 中计算这个梯度。
 
 ```py
 class FeedForwardNeuralNetwork:

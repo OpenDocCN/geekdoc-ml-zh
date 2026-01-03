@@ -33,7 +33,7 @@ X_test = X.loc[test_idxs]
 y_test = y.loc[test_idxs] 
 ```
 
-我们可以使用 `DecisionTreeRegressor` 类来拟合回归树。不幸的是，`scikit-learn` 目前不支持分类预测器。相反，我们首先必须将这些预测器转换为虚拟变量。请注意，这意味着分类变量的分割只能将一个值与其他值分开。例如，具有离散值 \(a, b, c\) 和 \(d\) 的变量不能分割为 \(\{a, b\}\) 与 \(\{c, d\}\)。
+我们可以使用 `DecisionTreeRegressor` 类来拟合回归树。不幸的是，`scikit-learn` 目前不支持分类预测器。相反，我们首先必须将这些预测器转换为虚拟变量。请注意，这意味着分类变量的分割只能将一个值与其他值分开。例如，具有离散值 $a, b, c$ 和 $d$ 的变量不能分割为 $\{a, b\}$ 与 $\{c, d\}$。
 
 ```py
 from sklearn.tree import DecisionTreeRegressor
@@ -119,7 +119,7 @@ X_test = X.loc[test_idxs]
 y_test = y.loc[test_idxs] 
 ```
 
-然后，我们可以使用 `DecisionTreeRegressor` 类来拟合回归树。不幸的是，`scikit-learn` 目前不支持分类预测器。相反，我们首先必须将这些预测器转换为虚拟变量。请注意，这意味着分类变量的分割只能将一个值与其他值分开。例如，具有离散值 \(a, b, c\) 和 \(d\) 的变量不能分割为 \(\{a, b\}\) 与 \(\{c, d\}\)。
+然后，我们可以使用 `DecisionTreeRegressor` 类来拟合回归树。不幸的是，`scikit-learn` 目前不支持分类预测器。相反，我们首先必须将这些预测器转换为虚拟变量。请注意，这意味着分类变量的分割只能将一个值与其他值分开。例如，具有离散值 $a, b, c$ 和 $d$ 的变量不能分割为 $\{a, b\}$ 与 $\{c, d\}$。
 
 ```py
 from sklearn.tree import DecisionTreeRegressor
