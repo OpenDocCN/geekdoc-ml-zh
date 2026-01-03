@@ -1,0 +1,1469 @@
+- en: Loading and Plotting Data and Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_plotting_data_models.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_plotting_data_models.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Loading and Plotting Data
+    and Models**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I cover loading data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**data tables** - \(n \times m\) comma delimited files representing tabular
+    data with the \(n\) rows for samples and the \(m\) columns for features. The feature
+    may include various collocated measurements for multivariate datasets and may
+    include location coordinates \(x, y, z\) for spatial data. The feature names are
+    assumed to be in the first row. The specific value denoting missing data (null
+    values) should be explicitly specified.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**gridded data** - \(n_x \times n_y\) comma delimited files representing a
+    regular grid of values for a single features, e.g., a map in space or a model
+    predicting over a regular set of intervals for 2 predictor features. Multiple
+    features usually requires one feature per file.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For plotting I cover:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**location maps** for plotting tabular spatial data, data points over locations
+    or in feature space with one or more features shown as colors and or marker shapes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**pixel plots** for plotting gridded, exhaustive spatial data and models with
+    one or more features'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lecture on [Displaying Data](https://youtu.be/TbqaMXdSV4I?si=UwGH-iRc7V962yNF),
+    see the first part of this larger lecture on univariate distributions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries. We include GeostatsPy for some
+    super compact, nice location map and pixel plot functions based on matplotlib.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Define Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is a convenience function to add major and minor gridlines to improve plot
+    interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Make Custom Colorbar
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We make this colorbar to display our categorical, sand and shale facies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Custom color maps are a great way to improve our plots! We can easily modify
+    color maps are make new ones like this.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: X and Y coordinates (\(m\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (fraction)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^3\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: facies 0 and 1
+  prefs:
+  - PREF_UL
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | X | Y | Por | Perm | AI | Facies |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 180.0 | 769.0 | 13.770949 | 446.436677 | 3445.418690 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 530.0 | 259.0 | 13.974270 | 216.593948 | 3159.935063 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 470.0 | 139.0 | 6.031127 | 0.000000 | 5799.299877 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 250.0 | 179.0 | 5.158305 | 129.285485 | 5656.422332 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 960.0 | 169.0 | 5.553232 | 370.191342 | 6354.235120 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: Set Metadata
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There is always important metadata to include with our data that is essential
+    for our workflows and our plots. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: feature names, proper name for plotting and units
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I like to compactly and consistently set and store my metadata to generalize
+    and streamline my workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I can easily load a new dataset, update the metadata and rerun my workflow.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I avoid hard coding my workflows by using elements from lists for my features
+    and plot labels rather than the actual strings. It is easier to update this block
+    below than every workflow step and plot!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s look at summary statistics for all the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| X | 720.0 | 479.395833 | 289.337554 | 0.000000 | 225.000000 | 460.000000
+    | 730.000000 | 990.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Y | 720.0 | 525.572222 | 268.797902 | 9.000000 | 325.000000 | 525.000000
+    | 749.000000 | 999.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 720.0 | 13.154504 | 4.921139 | 3.113721 | 8.140312 | 14.192083 | 16.852002
+    | 22.801310 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 720.0 | 462.242089 | 325.040727 | 0.000000 | 195.268277 | 453.089288
+    | 704.256901 | 1525.989345 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 720.0 | 3915.972800 | 1292.243819 | 2555.187875 | 2974.530389 | 3224.863572
+    | 5381.452060 | 7400.229415 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Facies | 720.0 | 0.691667 | 0.462126 | 0.000000 | 0.000000 | 1.000000 | 1.000000
+    | 1.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: Specify the Area of Interest / Grid and Feature Limits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s specify a reasonable extents for our grid and features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: we do this so we have consistent plots for comparison.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We could use commands like this one to find the minimum value of coordinate
+    like the X:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: But, it is better to manually set the ranges for clean and clear plots. e.g.
+    do you want your location map plot to go from 0.05887 to 998.24230 exactly?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Select a Feature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s select a feature to work with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: X
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Y
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Porosity
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Permeability
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Facies
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualizing Tabular Data with Location Maps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s try out locmap. This is a reimplementation of GSLIB’s locmap program
+    that uses matplotlib. I hope you find it simpler than matplotlib, if you want
+    to get more advanced and build custom plots lock at the source. If you improve
+    it, send me the new code. Any help is appreciated. To see the parameters, just
+    type the command name:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s add the plotting parameters and make a location map plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fd592306b7ea484e71b9aedd57e9ba5041cb2b13a7115714cdd464d53769fac5.png](../Images/673186706cb7d03a6724657d2c4f44dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Maybe we can tighten up the color bar to see more details? and add some gridlines?
+  prefs: []
+  type: TYPE_NORMAL
+- en: we craft our data and model plots to best communicate to our audience. It’s
+    fun to make great data and model plots!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/62106cc1733379dbc691d097e9aea1d92c292b20f9951ba85fdc4bbb366cb7c1.png](../Images/b0858d716ee97e947d7f73ee4aec9a0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s add the other properties into a composite figure with all the plots as
+    subplots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do this we use the subplot command, in matplotlib package to prior to the
+    figure command to indicate that the following figure is part of a subplot and
+    we use subplots_adjust at the end to get the scaling right.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can save our fancy figure to an image file with the file format and resolution
+    that we need.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is great for writing reports, papers and making great looking update presentations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, in GeostatsPy, I provide additional plotting methods with and without
+    ‘_st’ in the name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: with ‘_st’ functions to ‘stack’ images in a composite figure.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: without ‘_st’ functions to produce a single image and simultaneously make a
+    file
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can also just make a file after we make our composite plot, see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/de38328c5f31fd4835c6e55418871df7a7ca7913d7ea0966b03c6e7442c19d27.png](../Images/6039f0b690ee027759b64f32fc5b3c78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Looks pretty good, eh? (yes, I am Canadian).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Did you notice the custom color map for facies? We could actually update the
+    tick marks on the colorbar, this could be improved and we will address this shortly.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Location Maps with Matplotlib
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s how you can make the same location map with Matplotlib.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, GeostatsPy is actually using Matplotlib for plotting and the plotting
+    functions are for convenient, compact code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/714347c9df941a9f6628af4094335738698fa1579208d8855a1ac96dde21a310.png](../Images/72c9519f989d4609563cc6603027aec7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Yes, I like to make location maps with 1 line of code and when we work directly
+    with Matplotlib we write quite a few lines of code for a reasonable location map.
+    Also, many folks are familiar with the parameterization of the locmap function
+    from GSLIB, so I used the same parameters in my function in GeostatsPy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we are making our own location map plot, let’s repeat the facies location
+    map and remove the colorbar and replace it with a legend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this works quite well for categorical information
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if we just added a label to our feature, we only get one entry in the legend
+    for all categories
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I wrote some code to find all the unique categories’ integers from the categorical
+    feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then I make 1 data point outside the plot area for each category to inform the
+    legend
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ba4f7e96eac3b5aa50a7ec154bea9853a652a9fb2164304dfdf29abc401e85bd.png](../Images/fb61a4e87e3425a0e6a2210b90c18564.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That is enough customizing location maps for now. There is a lot we can do to
+    customize and improve our plots with matplotlib.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Gridded Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s load and visualize the gridded, exhaustive seismic data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the data is a 2D map in X and Y, plan view.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the data file is stored as an common delimited ASCII file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The file looks like this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.499406970376157915e+03,3.485861232441123320e+03,3.358157676165383236e+03,3.212598229839397845e+03,2.969960100495822189e+03,
+    \(\dots\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first row in file is the top y row (\(iy = 0\)) in the map. There are \(ix
+    = 1,\ldots,n_x\) values separated by comas and then a end of line. The next line
+    of data is the row below the previous row (\(iy = 1\)) in this case and so forth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: NumPy arrays are indexed from top to bottom and left to right.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In array notation, a location is denoted as:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note, this is the opposite of many arrays that start at the bottom left corner
+    (instead of top left corner) and order the indices ix,iy (instead of iy,ix).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ok, we are ready to load our gridded seismic map data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again, no errors, a good sign. Let’s see what we loaded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is an NumPy ndarray - an array of values. Good!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get more specific. We can use the ‘type’ command to find out what any
+    object is and we can use the shape member of ndarray to get the size of the array
+    (ny, nx).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualizing Gridded Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have a 100 cells in y and 100 cells in x grid but we need more information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the origin, units, orientation and the cell size?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This file format does not include that information so I’ll give it to you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: cell size is 10m isotropic (same in x and y)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: grid goes from 0 to 1000m in x and y (origin is at 0,0)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: grid orientation is aligned with x and y (Eastings and Northings, without any
+    rotation).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We need to add the grid cell size, because we already have the grid extents
+    (xmin, xmax, ymin and ymax) above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will use the pixelplt command reimplemented form GSLIB. To see the parameters
+    type the name and run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/33c27529a55cc4bc12900b42bc992bcbac8cabf26e7a9223b79faf5a4f5d7e41.png](../Images/496c2d3d46de0b2d8b328043d027a39c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interesting, there are a lot of local variations in our subsurface unit in acoustic
+    impedance. If acoustic impedance is well correlated to petrophysical properties
+    then there is a lot of good information here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing Tabular and Gridded Data Together
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You may be concerned about the consistency between the tabular acoustic impedance
+    samples and the gridded acoustic impedance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is possible the data table was extracted from the gridded data or that there
+    was a feature available or derived from the tabular data, regardless it is important
+    that it is consistent.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is a good check to plot them together.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: GeostatsPy’s locpix is a function to plot tabular and gridded data together.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/325c31fff734df3f75ee049ffd10eac5a098a5697763461ef43c817f8361d84b.png](../Images/f3c7ac5a26fdb0f69c818219a42f561a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Other Ideas for Interrogating Spatial Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Looks good. There is so much more that we can do to display our spatial data
+    to learn form it. For example, what if we want to separate low and high porosity?
+    Try this, make a new property in the DataFrame with 0 for low porosity and 1 for
+    high porosity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c846168417b632579a4abb74b156b6cce31ea2fd7ad6ee13472f2d6dc75646ac.png](../Images/4fe9c28cac58ce3bda91218658ff2ff6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Making Your Own Plots from Scratch
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Sometimes I make my custom plots from scratch actually working with lines,
+    shapes and text! If you want to see some of my examples check out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Principal Component Loadings](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_PCA_Eigen.ipynb)
+    - for the interactive PCA principal component dashboard I made the component loading
+    display in the lower right.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Bayesian Updating](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Bayesian_Updating.ipynb)
+    - I wrote out the Bayesian updating equation, added interactive labels and a line
+    plot with prior, likelihood and posterior on probability axis.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I actually do this often to maximize the creativity in my data and model plotting
+    for great communication.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of data loading and visualization. Much more could
+    be done and discussed, I have many more resources. Check out my [shared resource
+    inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture links
+    at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PIs including Profs. Foster,
+    Torres-Verdin and van Oort)? My research combines data analytics, stochastic modeling
+    and machine learning theory with practice to develop novel methods and workflows
+    to add value. We are solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries. We include GeostatsPy for some
+    super compact, nice location map and pixel plot functions based on matplotlib.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Define Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is a convenience function to add major and minor gridlines to improve plot
+    interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Make Custom Colorbar
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We make this colorbar to display our categorical, sand and shale facies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Custom color maps are a great way to improve our plots! We can easily modify
+    color maps are make new ones like this.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: X and Y coordinates (\(m\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (fraction)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^3\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: facies 0 and 1
+  prefs:
+  - PREF_UL
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | X | Y | Por | Perm | AI | Facies |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 180.0 | 769.0 | 13.770949 | 446.436677 | 3445.418690 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 530.0 | 259.0 | 13.974270 | 216.593948 | 3159.935063 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 470.0 | 139.0 | 6.031127 | 0.000000 | 5799.299877 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 250.0 | 179.0 | 5.158305 | 129.285485 | 5656.422332 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 960.0 | 169.0 | 5.553232 | 370.191342 | 6354.235120 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: Set Metadata
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There is always important metadata to include with our data that is essential
+    for our workflows and our plots. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: feature names, proper name for plotting and units
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I like to compactly and consistently set and store my metadata to generalize
+    and streamline my workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I can easily load a new dataset, update the metadata and rerun my workflow.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I avoid hard coding my workflows by using elements from lists for my features
+    and plot labels rather than the actual strings. It is easier to update this block
+    below than every workflow step and plot!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s look at summary statistics for all the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| X | 720.0 | 479.395833 | 289.337554 | 0.000000 | 225.000000 | 460.000000
+    | 730.000000 | 990.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Y | 720.0 | 525.572222 | 268.797902 | 9.000000 | 325.000000 | 525.000000
+    | 749.000000 | 999.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 720.0 | 13.154504 | 4.921139 | 3.113721 | 8.140312 | 14.192083 | 16.852002
+    | 22.801310 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 720.0 | 462.242089 | 325.040727 | 0.000000 | 195.268277 | 453.089288
+    | 704.256901 | 1525.989345 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 720.0 | 3915.972800 | 1292.243819 | 2555.187875 | 2974.530389 | 3224.863572
+    | 5381.452060 | 7400.229415 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Facies | 720.0 | 0.691667 | 0.462126 | 0.000000 | 0.000000 | 1.000000 | 1.000000
+    | 1.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: Specify the Area of Interest / Grid and Feature Limits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s specify a reasonable extents for our grid and features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: we do this so we have consistent plots for comparison.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We could use commands like this one to find the minimum value of coordinate
+    like the X:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: But, it is better to manually set the ranges for clean and clear plots. e.g.
+    do you want your location map plot to go from 0.05887 to 998.24230 exactly?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: Select a Feature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s select a feature to work with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: X
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Y
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Porosity
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Permeability
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Facies
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualizing Tabular Data with Location Maps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s try out locmap. This is a reimplementation of GSLIB’s locmap program
+    that uses matplotlib. I hope you find it simpler than matplotlib, if you want
+    to get more advanced and build custom plots lock at the source. If you improve
+    it, send me the new code. Any help is appreciated. To see the parameters, just
+    type the command name:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s add the plotting parameters and make a location map plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fd592306b7ea484e71b9aedd57e9ba5041cb2b13a7115714cdd464d53769fac5.png](../Images/673186706cb7d03a6724657d2c4f44dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Maybe we can tighten up the color bar to see more details? and add some gridlines?
+  prefs: []
+  type: TYPE_NORMAL
+- en: we craft our data and model plots to best communicate to our audience. It’s
+    fun to make great data and model plots!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/62106cc1733379dbc691d097e9aea1d92c292b20f9951ba85fdc4bbb366cb7c1.png](../Images/b0858d716ee97e947d7f73ee4aec9a0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s add the other properties into a composite figure with all the plots as
+    subplots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do this we use the subplot command, in matplotlib package to prior to the
+    figure command to indicate that the following figure is part of a subplot and
+    we use subplots_adjust at the end to get the scaling right.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can save our fancy figure to an image file with the file format and resolution
+    that we need.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is great for writing reports, papers and making great looking update presentations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, in GeostatsPy, I provide additional plotting methods with and without
+    ‘_st’ in the name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: with ‘_st’ functions to ‘stack’ images in a composite figure.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: without ‘_st’ functions to produce a single image and simultaneously make a
+    file
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can also just make a file after we make our composite plot, see below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/de38328c5f31fd4835c6e55418871df7a7ca7913d7ea0966b03c6e7442c19d27.png](../Images/6039f0b690ee027759b64f32fc5b3c78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Looks pretty good, eh? (yes, I am Canadian).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Did you notice the custom color map for facies? We could actually update the
+    tick marks on the colorbar, this could be improved and we will address this shortly.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Location Maps with Matplotlib
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s how you can make the same location map with Matplotlib.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, GeostatsPy is actually using Matplotlib for plotting and the plotting
+    functions are for convenient, compact code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/714347c9df941a9f6628af4094335738698fa1579208d8855a1ac96dde21a310.png](../Images/72c9519f989d4609563cc6603027aec7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Yes, I like to make location maps with 1 line of code and when we work directly
+    with Matplotlib we write quite a few lines of code for a reasonable location map.
+    Also, many folks are familiar with the parameterization of the locmap function
+    from GSLIB, so I used the same parameters in my function in GeostatsPy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we are making our own location map plot, let’s repeat the facies location
+    map and remove the colorbar and replace it with a legend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this works quite well for categorical information
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if we just added a label to our feature, we only get one entry in the legend
+    for all categories
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I wrote some code to find all the unique categories’ integers from the categorical
+    feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then I make 1 data point outside the plot area for each category to inform the
+    legend
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ba4f7e96eac3b5aa50a7ec154bea9853a652a9fb2164304dfdf29abc401e85bd.png](../Images/fb61a4e87e3425a0e6a2210b90c18564.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That is enough customizing location maps for now. There is a lot we can do to
+    customize and improve our plots with matplotlib.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Gridded Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s load and visualize the gridded, exhaustive seismic data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the data is a 2D map in X and Y, plan view.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the data file is stored as an common delimited ASCII file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The file looks like this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.499406970376157915e+03,3.485861232441123320e+03,3.358157676165383236e+03,3.212598229839397845e+03,2.969960100495822189e+03,
+    \(\dots\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first row in file is the top y row (\(iy = 0\)) in the map. There are \(ix
+    = 1,\ldots,n_x\) values separated by comas and then a end of line. The next line
+    of data is the row below the previous row (\(iy = 1\)) in this case and so forth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: NumPy arrays are indexed from top to bottom and left to right.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In array notation, a location is denoted as:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note, this is the opposite of many arrays that start at the bottom left corner
+    (instead of top left corner) and order the indices ix,iy (instead of iy,ix).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ok, we are ready to load our gridded seismic map data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again, no errors, a good sign. Let’s see what we loaded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is an NumPy ndarray - an array of values. Good!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get more specific. We can use the ‘type’ command to find out what any
+    object is and we can use the shape member of ndarray to get the size of the array
+    (ny, nx).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualizing Gridded Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have a 100 cells in y and 100 cells in x grid but we need more information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the origin, units, orientation and the cell size?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This file format does not include that information so I’ll give it to you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: cell size is 10m isotropic (same in x and y)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: grid goes from 0 to 1000m in x and y (origin is at 0,0)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: grid orientation is aligned with x and y (Eastings and Northings, without any
+    rotation).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We need to add the grid cell size, because we already have the grid extents
+    (xmin, xmax, ymin and ymax) above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will use the pixelplt command reimplemented form GSLIB. To see the parameters
+    type the name and run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/33c27529a55cc4bc12900b42bc992bcbac8cabf26e7a9223b79faf5a4f5d7e41.png](../Images/496c2d3d46de0b2d8b328043d027a39c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interesting, there are a lot of local variations in our subsurface unit in acoustic
+    impedance. If acoustic impedance is well correlated to petrophysical properties
+    then there is a lot of good information here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing Tabular and Gridded Data Together
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You may be concerned about the consistency between the tabular acoustic impedance
+    samples and the gridded acoustic impedance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is possible the data table was extracted from the gridded data or that there
+    was a feature available or derived from the tabular data, regardless it is important
+    that it is consistent.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is a good check to plot them together.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: GeostatsPy’s locpix is a function to plot tabular and gridded data together.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/325c31fff734df3f75ee049ffd10eac5a098a5697763461ef43c817f8361d84b.png](../Images/f3c7ac5a26fdb0f69c818219a42f561a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Other Ideas for Interrogating Spatial Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Looks good. There is so much more that we can do to display our spatial data
+    to learn form it. For example, what if we want to separate low and high porosity?
+    Try this, make a new property in the DataFrame with 0 for low porosity and 1 for
+    high porosity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c846168417b632579a4abb74b156b6cce31ea2fd7ad6ee13472f2d6dc75646ac.png](../Images/4fe9c28cac58ce3bda91218658ff2ff6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Making Your Own Plots from Scratch
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Sometimes I make my custom plots from scratch actually working with lines,
+    shapes and text! If you want to see some of my examples check out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Principal Component Loadings](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_PCA_Eigen.ipynb)
+    - for the interactive PCA principal component dashboard I made the component loading
+    display in the lower right.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Bayesian Updating](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Bayesian_Updating.ipynb)
+    - I wrote out the Bayesian updating equation, added interactive labels and a line
+    plot with prior, likelihood and posterior on probability axis.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I actually do this often to maximize the creativity in my data and model plotting
+    for great communication.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of data loading and visualization. Much more could
+    be done and discussed, I have many more resources. Check out my [shared resource
+    inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture links
+    at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PIs including Profs. Foster,
+    Torres-Verdin and van Oort)? My research combines data analytics, stochastic modeling
+    and machine learning theory with practice to develop novel methods and workflows
+    to add value. We are solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL

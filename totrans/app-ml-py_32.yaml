@@ -1,0 +1,3047 @@
+- en: Convolutional Neural Networks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_CNN.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_CNN.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Convolutional Neural Networks**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Artificial Neural Networks](https://youtu.be/A9PiCMY_6nM?si=NxWSU_5RgQ4w55EL)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Convolutional Neural Networks](https://youtu.be/za2my_XDoOs?si=LeHU6p2_fc9dX4Yt)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Convolutional neural networks are very powerful, nature inspired computing deep
+    learning method based on an analogy of visual cortex extending the ability of
+    our artificial neural networks to better work with images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nature inspired computing is looking to nature for inspiration to develop novel
+    problem-solving methods,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**artificial neural networks** are inspired by biological neural networks'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**nodes** in our model are artificial neurons, simple processors'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**connections** between nodes are artificial synapses'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**perceptive fields** regularization to improve generalization and efficiency'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: intelligence emerges from many connected simple processors. For the remainder
+    of this chapter, I will used the terms nodes and connections to describe our convolutional
+    neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concepts in Common with Artificial Neural Networks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here are some key aspects of artificial neural networks (ANNs),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Basic Design** - *“…a computing system made up of a number of simple, highly
+    interconnected processing elements, which process information by their dynamic
+    state response to external inputs.”* Caudill (1989).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Still a Prediction Model** - while these models may be quite complicated
+    with even millions of trainable model parameters, weights and biases, they are
+    still a function that maps from predictor features to response features,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y=f(X)+\epsilon \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Supervised learning** – we provide training data with predictor features,
+    \(X_1,\ldots,𝑋_𝑚\) and response feature(s), \(𝑌_1,\ldots,𝑌_K\), with the expectation
+    of some model prediction error, \(\epsilon\).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nonlinearity** - nonlinearity is imparted to the system through the application
+    of nonlinear activation functions to model nonlinear relationships'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Universal Function Approximator (Universal Approximation Theorem)** - artificial
+    neural networks have the ability to learn any possible function shape of \(f\)
+    over an interval, for an arbitrary wide (single hidden layer) by Cybenko (1989)
+    and arbitrary depth by Lu and others (2017)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For brevity, I will not repeat all the fundamental concepts from the artificial
+    neural network chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: it may be a good idea to review that chapter before starting with this one
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Convolutional Neural Networks Concepts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Regularization** - artificial neural networks are prone to overfitting; therefore,
+    we need a form of regularization to prevent this'
+  prefs: []
+  type: TYPE_NORMAL
+- en: for example, ridge and LASSO integrate regularization into the loss function
+    through the shrinkage term to reduce overfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With convolutional neural networks we take a different approach to regularization,
+  prefs: []
+  type: TYPE_NORMAL
+- en: with image data we have an implicit hierarchy / proximity and relative position
+    of pixels, flattening our 2D images into 1D vectors to pass through multiple fully
+    connected artificial neural network layers would destroy this information
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: so we remove, regularize to 0.0, all connections outside of perceptive fields
+    to preserve proximity and relative position of pixels information while avoiding
+    overfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: these perceptive fields are regularization through extraction of smaller pixel
+    subsets and simpler patterns from the images
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, we also include dropout, random removal of connections, as another form
+    of regularization
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image Data with Artificial Neural Networks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We could use image data with our artificial neural networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a7d555024d6a9f3a61c7fd816bd8bf6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of artificial neural network to classify an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the issue with this approach?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Massive number of model parameters** - the model will likely be difficult
+    to train and overfit.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Very sensitive to location** - we would like to learn from our images with
+    location invariance, i.e., for the example above the location of the channels
+    should not matter.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Flattening the image to a vector** - this is required by a artificial neural
+    network, but if we first flatten our images to a vector we lose important information
+    about the inter-pixel patterns, ordering, adjacency, etc.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In summary, artificial neural networks are very inefficient for images and overfit
+    and don’t generalize well! Instead, let’s be inspired by our visual cortex, with
+    our vision we do not perceive all ‘pixels’, instead we segment the field of view
+    into receptive fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we extraction of features of interest from overlapping receptive fields, over
+    a hierarchy (not shown) and then recompose the whole image, our perception.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we don’t perceive all the ‘pixels’ that would be exhausting for our brains,
+    instead our visual cortex interprets and summarizes patterns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/57787e99367cbd5272ad8414cd3bfe82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of overlapping receptive fields to break up a field of view, summarize
+    each part and recombine into our perception.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s compare artificial neural networks and convolutional neural networks
+    with this concept of receptive fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fully Connected, Feed Forward Artificial Neural Network
+  prefs: []
+  type: TYPE_NORMAL
+- en: nodes in the next layer are connected to all nodes of the previous layer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: spatial information is lost, the image data is immediately flattened to a 1D
+    vector and adjacency / ordering information is lost
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Regularized with Receptive Fields Convolutional Neural Networks
+  prefs: []
+  type: TYPE_NORMAL
+- en: nodes in the next layer are mapped to specific regions of the previous layer,
+    an image or feature map
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: spatial information is preserved, data retains the original image 2D or 3D dimensionality
+    in each layer, called feature maps.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b56850a29d24dbccae1cabcfbdc9e7e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of overlapping receptive fields to break up a field of view, summarize
+    each part and recombine into our perception.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regularization for CNNs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s do a quick recall on the concept of regularization for predictive machine
+    learning models,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regularization** - a constraint to reduce the sensitivity of the model to
+    the data, i.e., to reduce model variance'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regularization with Receptive Fields** - the use of receptive fields is a
+    form of regularization, resulting in,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: massive reduction in connections, weights / model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: effectively shrinking these potential weights to zero
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While integrating / focusing on pixel patterns!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regularization with Dropout** - during training epochs, randomly ignore or
+    “drop out” a proportion of nodes. Each training epoch sees a different version
+    / subset of the network'
+  prefs: []
+  type: TYPE_NORMAL
+- en: an additional form of regularization for CNN to prevent specific nodes from
+    dominating the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: simulates training multiple models and averaging like ensemble learning. Note,
+    it is generally not feasible to train multiple networks in parallel to apply the
+    ensemble to calculate the prediction (like random forest) and after training all
+    nodes are used.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/2078f41aac92afeb57f8fdc28528b873.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of dropout to remove random connects from receptive field to nodes
+    in the feature map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Batch Normalization** - standardize the nodes’ inputs / weights over a layer
+    to center and rescale (mean of 0 and variance of 1) to optimize activation function
+    sensitivity and model parameter training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{x}_i \leftarrow \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we add 2 model parameters, layer standard deviation, \(\gamma\), and mean,
+    \(\beta\), to add control to improve the optimality of the train individual weights
+    in the next layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y_i \leftarrow \gamma \hat{x}_i + \beta \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building Blocks for CNNs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have various operators to move from layer to layer (feature maps to feature
+    maps) in our convolutional neural networks. The common operators include,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Convolution** – a weighting window, kernel / filter designed to extract spatial
+    information'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Pooling** – reduction in dimensionality, increase local translation invariance'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Depth-wise Pooling, Down Sampling** – 1x1 filter that combine channels /
+    feature maps to learn over multiple kernels'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Activation** – use of an activation function to apply a nonlinear transformation
+    to impart nonlinearity to the system and to prevent collapse of the system to
+    a simple linear model'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Full-connected, Feed Forward** – see previous lecture on artificial neural
+    networks'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now we will describe, interpret and demonstrate these operators.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Convolution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Convolution is the integral product of two functions, after one is reversed
+    and shifted by \(\Delta\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: one interpretation is smoothing a function with weighting function, \(𝑓(\Delta)\),
+    is applied to calculate the weighted average of function, \(𝑔(x)\),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x) = \int_{-\infty}^{\infty} f(\Delta) g(x - \Delta) \, d\Delta \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: this easily extends into any dimensionality, for example 2D for images,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x, y) = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} f(\Delta_x,
+    \Delta_y) g(x - \Delta_x, y - \Delta_y) \, d\Delta_x \, d\Delta_y \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The choice of which function is shifted before integration does not change the
+    result, the convolution operator has commutativity,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x) = \int_{-\infty}^{\infty} f(\Delta) g(x - \Delta) \, d\Delta \]\[
+    (f * g)(x) = \int_{-\infty}^{\infty} f(x - \Delta) g(\Delta) \, d\Delta \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: if either function is reflected then convolution is equivalent to cross-correlation,
+    measure of similarity between 2 signals as a function of displacement.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To demonstrate convolution with an exhaustive \(g(x)\) and sparsely sampled
+    \(g(x)\) I built out an [interactive Python convolution dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Convolution_kNearest.ipynb),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f55c37e0f7da98a233affd5fbd5ba38c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard to demonstrate convolution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For convolution operations, a trainable weighting function, \(g(\Tau)\), is
+    learned during model training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Filter/Kernel** – the weights assigned over the convolution window to calculate
+    the next feature map. By training the weights the filter(s) may extract specific
+    spatial features.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1955083a83351548602c54c6f2f6d86b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two examples of convolution calculations. .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at a specific kernel form, the blur filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the next feature map receives the local averages over the previous feature map
+    or image.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/f41a6a56aa0cf6c53667cad2b0ae52c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example filter, the blur / local average filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some observations about the filters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: size of the filter is related to the scale of the features that we are extracting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: larger kernels increase the number of connections, model weights and ultimately
+    the computational complexity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: odd numbers for kernel size to avoid distortion, asymmetric kernels are possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: sum to one prevent bias (shifting in the mean from one image or feature map
+    to another feature map
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Padding** - our next feature map has a reduced size by 1 on all the edges
+    to avoid the overlapping outside the feature map, i.e., no padding, while padding
+    extrapolates outside the feature map or image, preventing reduction in size of
+    the next feature map.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are varirous methods for padding, including assuming zero, constant value,
+    and nearest value in feature map.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/58368b8a8cebacdde3ae4116d6462f35.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convolution without padding, resulting in feature map size reduction (above)
+    and convolution with padding (assuming 0 outside the feature map) for no feature
+    map size reduction (below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Stride** - the steps of the convolution filter / kernel through the previous
+    feature map.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: for a stride of 1 there is no implicit reduction in feature map size.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for a stride of > 2 there is a reduction in feature map size.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/58300f18f8744327620c90fcc1cc392f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convolution with stride of 1 (above) and convolution with a stride of 2 (below)
+    with a reduction in feature map size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Size of Next Feature Map** - the next feature map size is determined by the
+    hyperparameters, previous feature map size, \(n_{in}\), convolution kernel size,
+    \(k\), convolution padding size, \(p\) and convolution stride size, \(s\), by
+    this equation,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ n_{\text{out}} = \left\lfloor \frac{n_{\text{in}} + 2p - k}{s} \right\rfloor
+    + 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(n_{in} = 4\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(k = 2\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(p = 0\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(s = 1\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we can substitute into the equation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ n_{\text{out}} = \left\lfloor \frac{4 + 2(0) - 2}{1} \right\rfloor + 1 =
+    3 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now compare this to a visualization of this example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ad9c65a10c9c4afb28b77bd7cbfc6017.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example kernel, input and output feature maps for the example above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We calculate the next feature map size as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ n_{\text{out}} = \left\lfloor \frac{4 + 2(0) - 2}{1} \right\rfloor + 1 =
+    3 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Filter / Kernel Design** – by training the weights the filter may extract
+    specific features. Consider these example filter types with simple 1D examples
+    of input and output feature ‘maps’.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/363089e3910cc726998fcf261fba68ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Filters (above, and 1D illustrations of convolution, original function (black)
+    and convolution (red) (below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Multiple Filters / Kernels** - typically multiple filters, \(n_k\), are trained
+    on each convolutional layer to extract various structures from the image.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: this increases feature map depth or channels, \(n_k\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/401b5ed57a2efd08be6f224d335f76da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feature map has a depth, also known as number of channels, $n_k$ due to application
+    of more than 1 filter to the previous image or feature map. .
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, the original image may have multiple channels, depth > 1, for example,
+    a RGB image with 3 channels, one for each red, blue and green.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally here are some examples of convolution filters applied to an image of
+    a brick wall on The University of Texas at Austin, codes are available at [SubsurfaceDataAnalytics_Convolution_Operators.ipynb.](https://github.com/GeostatsGuy/PythonNumericalDemos/blob/master/SubsurfaceDataAnalytics_Convolution_Operators.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48b85ce0016245754f632d2d7034335d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convolution examples from a brick wall on the campus of The University of Texas
+    at Austin. .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Activation Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: See the artificial neural network chapter for more details, but for a reminder
+    considerations for selecting activation functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nonlinear** – required to impose nonlinearity into the predictor. Proved
+    to be a universal function approximator if at least 1 hidden layer (Cybenko, 1989).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Range** – finite for more stability gradient-based learning, infinite for
+    more efficient training (but requires a slower learning rate)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Continuously Differentiable** – required for stable gradient-based optimization'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Smooth functions with Monotonic Derivative** – may generalize better'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Monotonic** – guaranteed convexity of error surface of a single layer model
+    (global minimum for loss function)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Approximates Identity at the Origin** – well learn efficiently with the weights
+    initialized with small random values'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/cb1d19a7978ea9f1f58b12b229835dcc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convolution examples from a brick wall on the campus of The University of Texas
+    at Austin. .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pooling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Summarization over a filter / kernel with a single value. The impact of pooling
+    includes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: down sample the detection of features in feature maps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reduces the dimensionality of the feature map
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: integrate translation invariance, pattern detection insensitive to location
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Two common pooling methods are average and max pooling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b2fd11462cbb82e0cb09ac3e2d938ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schematic of pooling operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s an example of pooling with a 2x2 filter and a stride of 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/81532b0b04b5a5af52f9b81557967b34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of pooling operation for reducing the extent of the feature map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: with 2 x 2 filter, stride of 2 the dimension is reduced ½ per axis, ¼ for 2D
+    images.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for example, the value of 16 is location independent within the filter. This
+    introduces translational invariance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a3f5e46b161a0d2f7e0f99574f3db593.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Max and average pooling examples from a brick wall on the campus of The University
+    of Texas at Austin..
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depth-wise Pooling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Summarization over feature maps with a single value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: down sample the detection over feature maps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: combine information learned from multiple kernels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reduces the depth of the feature map, next layer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Two common pooling methods are average and max pooling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1786e9cb04c2dac2297ddc607d4b0649.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schematic of depthwise pooling operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Common CNN Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following is a common workflow for convolutional neural networks,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fcb53216a4534c9da9053f990e48aa90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The common CNN workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can illustrate this common workflow with an illustration of the common architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/618c123a572e16a0e12819e75b283099.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The common CNN architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By-Hand CNN Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Just like the artificial neural network chapter, I build a simple convolutional
+    neural network by-hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For simplicity and brevity, I have made the following architectural choices,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1D images with height of 5
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1 convolutional layer with 1 kernel of size 3
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: activation with sigmoid
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: stride of 1 and no padding so the feature map has a size of 3
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: artificial neural network from feature map immediately to output node with linear
+    activation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This minimalist architecture demonstrates many of the salient concepts for convolutional
+    neural networks while being very easy to visualize and very fast to train.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c18c0d3da8b925d617dbd7cad6b9d1fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schematic illustration of our by-hand CNN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we convert this schematic of our by-hand CNN to a diagram of the actual
+    nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aaaec452d8f375bf00b4df41c281e46c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Architecture of our by-hand CNN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To demonstrate the practicality of working with this architecture, let’s add
+    the labels of the model parameters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: kernel weights, \(\lambda_6\), \(\lambda_7\), and \(\lambda_8\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: kernel bias, \(b_{conv}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: artificial neural network weights, \(\lambda_{9,12}\), \(\lambda_{10,12}\),
+    and \(\lambda_{11,12}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: artificial neural network bias, \(b_{12}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/11f0651d909bf7e40e4ebdeca86bab61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Architecture of our by-hand CNN with all trainable model parameters. Note, kernel
+    weights are only shown in the first kernel position to avoid clutter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training Model Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Training a convolutional neural network proceeds iteratively by these steps,
+    the same as discussed in the artificial neural network chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3a5bc8956f8ceda05ddf9b582cd141d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training an artificial neural network proceeds iteratively by, 1\. forward pass
+    to make a prediction, 2\. calculate the error derivative based on the prediction
+    and truth over training data, 3\. backpropagate the error derivative back through
+    the artificial neural network to calculate the derivatives of the error over all
+    the model weights and biases parameters, 4\. update the model parameters based
+    on the derivatives and learning rates, 5\. repeat until convergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s some details on each step with a focus on differences from artificial
+    neural networks, for more details see the artificial neural network chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Initializing the Model Parameters** - initialize all model parameters with
+    typically small (near zero) random values. Here’s a couple common methods,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Xavier Glorot Uniform Initialization** - for Tanh and sigmoid activation,
+    random realizations from uniform distributions specified by \(U[\text{min}, \text{max}]\),'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda_i = F_U\left[-\sqrt{\frac{6}{n_{\text{in}} + n_{\text{out}}}},\ \sqrt{\frac{6}{n_{\text{in}}
+    + n_{\text{out}}}}\right]^{-1}(p^\ell) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(F^{-1}_U\) is the inverse of the CDF, \(p\) is the number of inputs,
+    and \(p^{\ell}\) is a random cumulative probability value drawn from the uniform
+    distribution, \(U[0,1]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, given a \(3 \times 3\) kernel with 1 channel in and 9 channel out,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ n_{in} = k \times k \times C = 3 \times 3 \times 1 \]\[ n_out = k \times
+    k \times C = 3 \times 3 \times 9 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**He Kaiming Weight Initialization** - for ReLU and leaky ReLU activation,
+    random realizations from uniform distributions specified by \(U[\text{min}, \text{max}]\),'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda_i = F_U\left[-\sqrt{\frac{6}{n_{\text{in}}}},\ \sqrt{\frac{6}{n_{\text{in}}}}\right]^{-1}(p^\ell)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(F^{-1}_U\) is the inverse of the CDF, \(p\) is the number of inputs,
+    \(k\) is the number of outputs, and \(p^{\ell}\) is a random cumulative probability
+    value drawn from the uniform distribution, \(U[0,1]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Forward Pass** - to make a prediction, \(\hat{y}\). Initial predictions will
+    be random for the first iteration, but will improve.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/08556ecbd47d143019d0163dc95761cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction with our artificial neural network initialized with random model
+    parameters, weights and biases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Calculate the Error Derivative** - given a loss of, \(P = \frac{1}{2} \left(\hat{y}
+    - y \right)^2\), the error derivative, i.e., rate of change of in error given
+    a change in model estimate is \(\frac{\partial P}{\partial \hat{y}} = \hat{Y}
+    - Y\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For now, let’s only consider a single estimate, and we will address more than
+    1 training data later.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Backpropagate the Error Derivative** - we shift back through the artificial
+    neural network to calculate the derivatives of the error over all the model weights
+    and biases parameters, to accomplish this we use the chain rule,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial}{\partial x} f(g(h(x))) = \frac{\partial f}{\partial g} \cdot
+    \frac{\partial g}{\partial h} \cdot \frac{\partial h}{\partial x} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Update the Model Parameters** - based on the derivatives, \frac{\partial
+    P}{\partial \lambda_{i,j}} and learning rates, \(\eta\), like this,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \lambda_{i,j}^{\ell} = \lambda_{i,j}^{\ell - 1} + \eta \cdot \frac{\partial
+    P}{\partial \lambda_{i,j}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Repeat Until Convergence** - return to step 1\. until the error, \(P\), is
+    reduced to an acceptable level, i.e., model convergence is the condition to stop
+    the iterations'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Backpropagation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For brevity, I refer you to the artificial neural network chapter for a walkthrough
+    of backpropagating the error gradient through a neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Updating Model Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The derivatives for each of the model parameters are the error gradients, so
+    we are ready to use gradient descent optimization with the addition of,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**learning rate** - to scale the rate of change of the model updates we assign
+    a learning rate, \(\eta\). For our model parameter examples from above,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda_{9,12}^{\ell} = \lambda_{9,12}^{\ell - 1} - \eta \cdot \frac{\partial
+    P}{\partial \lambda_{9,12}} \]\[ \lambda_{10,12}^{\ell} = \lambda_{10,12}^{\ell
+    - 1} - \eta \cdot \frac{\partial P}{\partial \lambda_{10,12}} \]\[ b_{12}^{\ell}
+    = b_{12}^{\ell - 1} + \eta \cdot \frac{\partial P}{\partial b_{12}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall, this process of gradient calculation and model parameters, weights and
+    biases, updating is iterated and is known as gradient descent optimization.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the goal is to explore the loss hypersurface, avoiding and escaping local minimums
+    and ultimately finding the global minimum.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: learning rate, also known as step size is commonly set between 0.0 and 1.0,
+    note 0.01 is the default in Keras module of TensorFlow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Low Learning Rate** – more stable, but a slower solution, may get stuck in
+    a local minimum'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**High Learning Rate** – may be unstable, but perhaps a faster solution, may
+    diverge out of the global minimum'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One strategy is to start with a high learning rate and then to decrease the
+    learning rate over the iterations
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Learning Rate Decay** - set as > 0 to avoid mitigate oscillations,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training Epochs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is a good time to talk about stochastic gradient descent optimization,
+    first let’s define some common terms,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Batch Gradient Descent** - updates the model parameters after passing through
+    all of the data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Stochastic Gradient Descent** - updates the model parameters over each sample
+    data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Mini-batch Gradient Descent** - updates the model parameter after passing
+    through a single batch'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With mini-batch gradient descent stochasticity is introduced through the use
+    of subsets of the data, known as batches,
+  prefs: []
+  type: TYPE_NORMAL
+- en: for example, if we divide our 100 samples into 4 batches, then we iterate over
+    each batch separately
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we speed up the individual updates, fewer data are faster to calculate, but
+    we introduce more error
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this often helps the training explore for the global minimum and avoid getting
+    stuck in local minimums and along ridges in the loss hypersurface
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally our last definition here,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**epoch** - is one pass over all of the data, so that would be 4 iterations
+    of updating the model parameters if we have 4 mini-batches'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are many other considerations that I will add later including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: momentum
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: adaptive optimization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s build the above artificial neural network by-hand and visualize the
+    solution!
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is by-hand so that you can see every calculation. I intentionally avoided
+    using TensorFlow or PyTorch.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training with Multiple Training Images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The backpropagation is based on a single sample, i.e., training image and paired
+    response feature value; therefore, to train over multiple images we must cycle
+    over the,
+  prefs: []
+  type: TYPE_NORMAL
+- en: forward pass
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate error derivative
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: back propagate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/911e3eed1fd228a0da4716b460c82d38.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Batch training process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each image the weights and biases gradients are stored. Then the gradients
+    are summed over the images in the batch and this sum is applied with the learning
+    rate to update the weights and biases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forward Pass
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For clarity, let’s walk through the convolutional neural network, starting with
+    image input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The input nodes receives the input from the image in to the convolution layer,
+  prefs: []
+  type: TYPE_NORMAL
+- en: node order is retained to preserve spatial, location information from the image
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For continuous feature images,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the continuous predictor feature values are normalized to a min / max of [0,1]
+    or [-1,1] to improve sensitivity for the specific activation function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for color images, the RGB channels may be each normalized and included as 3
+    input channels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For categorical feature images,
+  prefs: []
+  type: TYPE_NORMAL
+- en: for binary, cardinality of 2, the values may be reassigned by indicator transform
+    to 0 or 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for cardinality > 2, one-hot-encoding may be applied resulting in \(k\) input
+    channels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See the feature transformation chapter for more details about these transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we pass through a convolution layer, with convolution and activation, resulting
+    in a new feature map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02745c4fdecaad32e59683bafa3d0820.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Walk-through of our by-hand convolutional neural network, through the convolution
+    layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: take linearly weighted combinations based on the kernel(s) of input image or
+    previous feature map, add a bias term and then nonlinearly transform the result,
+    this transform is call the activation function, \(\alpha\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ C_{j_{\text{in}}} = \sum_{i=1}^{n} \left( K_{i+5} \cdot I_{j-8} \right) +
+    b_{conv} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where, \(K_6\), \(K_7\) and \(K_8\) are kernel weights, \(b_{conv}\) is the
+    kernel bias, and the \(I\) are the input nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please, excuse the strange indices in the equation, I like using unique node
+    integers for every node to avoid mixing up nodes in my notes and codes, but this
+    does complicate the index assignments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ C_{9_{\text{in}}} = I_1 \cdot K_6 + I_2 \cdot K_7 + I_3 \cdot K_8 + b_{\text{conv}}
+    \]\[ C_{10_{\text{in}}} = I_2 \cdot K_6 + I_3 \cdot K_7 + I_4 \cdot K_8 + b_{\text{conv}}
+    \]\[ C_{11_{\text{in}}} = I_3 \cdot K_6 + I_4 \cdot K_7 + I_5 \cdot K_8 + b_{\text{conv}}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: then nonlinear activation is applied to each,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ C_j = \alpha \left( C_{j_{in}} \right) \quad j = 9, \ldots 11 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we proceed from the feature map through the artificial neural network to
+    the output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is just a standard artificial neural network that takes the feature map
+    flattened and moves it to the output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: in this example for brevity we show the simplest possible artificial neural
+    network, i.e., the next layer after the feature map is the output. More complicated
+    architectures with hidden layers are often applied.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, since our images are 1D we do not require a flattening step
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The output node is a standard output node from an artificial neural network,
+  prefs: []
+  type: TYPE_NORMAL
+- en: input is a linear combination of the nodes from the previous layer with an added
+    bias term.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ O_{j_{\text{in}}} = \sum_{j=1}^{m} \left( \lambda_{i,j} \cdot H_i \right)
+    + b_j \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and then an activation is applied,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ O_j = \alpha \left( O_{j_{in}} \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the case of a regression model, with continuous response feature, linear
+    or identity activation is applied,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ O_j = \alpha \left( O_{j_{in}} \right) = O_{j_{in}} \]![](../Images/3becddf21de74c01ec2c585108079e0e.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Walk-through of our by-hand convolutional neural network, from feature map to
+    the output for continuous output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and for the case of a classification model, with categorical response feature,
+    softmax activation is applied over \(K\) nodes equal to the cardinality of the
+    response feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the output is a probability for each category that honors non-negativity and
+    closure constraints
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/439615adbac8db26678e58e258f9105f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Walk-through of our by-hand convolutional neural network, from feature map to
+    the output for categorical output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ O_j = g_k(O_{j_{\text{in}}}) = \frac{e^{O_{j_{\text{in}}}}}{\sum_{\iota=1}^{K}
+    e^{O_{\iota_{\text{in}}}}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Import Required Packages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall our goal is to build a convolutional neural network by-hand with only
+    basic math and array operations, so we only need NumPy along with matplotlib for
+    plotting.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the functions to make, train and visualize our convoluational neural
+    network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Simple By-hand CNN
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I wrote this code to specify a simple CNN,
+  prefs: []
+  type: TYPE_NORMAL
+- en: five input nodes, 1 convolution layer with a kernel of 3 resulting in a 3 nodes
+    in the feature map and 1 output node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'and to train the CNN by iteratively performing the forward calculation and
+    backpropagation. I calculate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the error and then propagate it to each node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: solve for the partial derivatives of the error with respect to each weight and
+    bias
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: all weights, biases and partial derivatives for all epoch are recorded in vectors
+    for plotting
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize By-hand CNN
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s visualize our convolutional neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, I will used this code latter to make interactive dashboards.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/bd6f0d76fef9a0c1d4062d2fed4028a098a6ba3f59c0dff50e67370b90502ba7.png](../Images/0b3e6b1109144cd7a0b01bc9d699e751.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: and now we can visualize the model training results including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: weights and biases vs. training epochs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: CNN prediction vs. training epochs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4cea6b946d67f8e2cb6605415803c148ac63ebfb43f8034a7285880405bb88d3.png](../Images/7dcc0007f13a7312fec3085ca24fbf79.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Of course, the results above are not very practical, in fact we need our convolutional
+    neural network to generalize by learning over many images, not just 1 as demonstrated
+    above. Let’s,
+  prefs: []
+  type: TYPE_NORMAL
+- en: make a suite of synthetic image data with labels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: apply the batch training method to train on this ensemble of training images.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Make Synthetic Training Images with Label
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code makes random configurations of 5 points with variable slope
+    and additive noise and then retains the slope linear regression model of the data
+    as the label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The workflow inludes these steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: draw a random slope, \(m^{\ell} \sim U\left[-2.0,2.0\right]\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: sample 5 values on this slope centered at the middle of the values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ Z^{\ell} = \left(x-2.5\right)*m^{\ell} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: add a random errror to the values, \(\epsilon \sim U\left[-\Delta,\Delta\right]\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ Z_{\epsilon}^{\ell} = \left(x-2.5\right)*m^{\ell} + U^{-1}\left[-\Delta,\Delta\right](p^{\ell})
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: calculate the linear regression model slope to retain as the response feature
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ m = \frac{<Z_{\epsilon}^{\ell} \cdot x>}{<x \cdot x>} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/60bea9aeec98af43e38abc10f6ce1302ee8c10ff095a8bfdef8fb4231fc1be32.png](../Images/e763c68a0e61054a9b3854f895c7ec02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training the Simple CNN on Many Training Images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I modified the code above to loops over the batch of training images, sums the
+    error gradients and updates over all the weights and biases for each training
+    epoch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now again we can visualize the model performance,
+  prefs: []
+  type: TYPE_NORMAL
+- en: predictions over all training images vs. training epochs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model weights and biases vs. training epochs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ba623428124e0113a09fcf1b71bb1dacaf21bee4f296116c527e30bf0e957edb.png](../Images/e175db3feac32085e697870180f28aab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of convolutional neural networks. Much more could
+    be done and discussed, I have many more resources. Check out my [shared resource
+    inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture links
+    at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Convolutional neural networks are very powerful, nature inspired computing deep
+    learning method based on an analogy of visual cortex extending the ability of
+    our artificial neural networks to better work with images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nature inspired computing is looking to nature for inspiration to develop novel
+    problem-solving methods,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**artificial neural networks** are inspired by biological neural networks'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**nodes** in our model are artificial neurons, simple processors'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**connections** between nodes are artificial synapses'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**perceptive fields** regularization to improve generalization and efficiency'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: intelligence emerges from many connected simple processors. For the remainder
+    of this chapter, I will used the terms nodes and connections to describe our convolutional
+    neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concepts in Common with Artificial Neural Networks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here are some key aspects of artificial neural networks (ANNs),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Basic Design** - *“…a computing system made up of a number of simple, highly
+    interconnected processing elements, which process information by their dynamic
+    state response to external inputs.”* Caudill (1989).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Still a Prediction Model** - while these models may be quite complicated
+    with even millions of trainable model parameters, weights and biases, they are
+    still a function that maps from predictor features to response features,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y=f(X)+\epsilon \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Supervised learning** – we provide training data with predictor features,
+    \(X_1,\ldots,𝑋_𝑚\) and response feature(s), \(𝑌_1,\ldots,𝑌_K\), with the expectation
+    of some model prediction error, \(\epsilon\).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nonlinearity** - nonlinearity is imparted to the system through the application
+    of nonlinear activation functions to model nonlinear relationships'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Universal Function Approximator (Universal Approximation Theorem)** - artificial
+    neural networks have the ability to learn any possible function shape of \(f\)
+    over an interval, for an arbitrary wide (single hidden layer) by Cybenko (1989)
+    and arbitrary depth by Lu and others (2017)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For brevity, I will not repeat all the fundamental concepts from the artificial
+    neural network chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: it may be a good idea to review that chapter before starting with this one
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Convolutional Neural Networks Concepts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Regularization** - artificial neural networks are prone to overfitting; therefore,
+    we need a form of regularization to prevent this'
+  prefs: []
+  type: TYPE_NORMAL
+- en: for example, ridge and LASSO integrate regularization into the loss function
+    through the shrinkage term to reduce overfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With convolutional neural networks we take a different approach to regularization,
+  prefs: []
+  type: TYPE_NORMAL
+- en: with image data we have an implicit hierarchy / proximity and relative position
+    of pixels, flattening our 2D images into 1D vectors to pass through multiple fully
+    connected artificial neural network layers would destroy this information
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: so we remove, regularize to 0.0, all connections outside of perceptive fields
+    to preserve proximity and relative position of pixels information while avoiding
+    overfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: these perceptive fields are regularization through extraction of smaller pixel
+    subsets and simpler patterns from the images
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, we also include dropout, random removal of connections, as another form
+    of regularization
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image Data with Artificial Neural Networks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We could use image data with our artificial neural networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a7d555024d6a9f3a61c7fd816bd8bf6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of artificial neural network to classify an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the issue with this approach?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Massive number of model parameters** - the model will likely be difficult
+    to train and overfit.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Very sensitive to location** - we would like to learn from our images with
+    location invariance, i.e., for the example above the location of the channels
+    should not matter.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Flattening the image to a vector** - this is required by a artificial neural
+    network, but if we first flatten our images to a vector we lose important information
+    about the inter-pixel patterns, ordering, adjacency, etc.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In summary, artificial neural networks are very inefficient for images and overfit
+    and don’t generalize well! Instead, let’s be inspired by our visual cortex, with
+    our vision we do not perceive all ‘pixels’, instead we segment the field of view
+    into receptive fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we extraction of features of interest from overlapping receptive fields, over
+    a hierarchy (not shown) and then recompose the whole image, our perception.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we don’t perceive all the ‘pixels’ that would be exhausting for our brains,
+    instead our visual cortex interprets and summarizes patterns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/57787e99367cbd5272ad8414cd3bfe82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of overlapping receptive fields to break up a field of view, summarize
+    each part and recombine into our perception.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s compare artificial neural networks and convolutional neural networks
+    with this concept of receptive fields.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fully Connected, Feed Forward Artificial Neural Network
+  prefs: []
+  type: TYPE_NORMAL
+- en: nodes in the next layer are connected to all nodes of the previous layer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: spatial information is lost, the image data is immediately flattened to a 1D
+    vector and adjacency / ordering information is lost
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Regularized with Receptive Fields Convolutional Neural Networks
+  prefs: []
+  type: TYPE_NORMAL
+- en: nodes in the next layer are mapped to specific regions of the previous layer,
+    an image or feature map
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: spatial information is preserved, data retains the original image 2D or 3D dimensionality
+    in each layer, called feature maps.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b56850a29d24dbccae1cabcfbdc9e7e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of overlapping receptive fields to break up a field of view, summarize
+    each part and recombine into our perception.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regularization for CNNs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s do a quick recall on the concept of regularization for predictive machine
+    learning models,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regularization** - a constraint to reduce the sensitivity of the model to
+    the data, i.e., to reduce model variance'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regularization with Receptive Fields** - the use of receptive fields is a
+    form of regularization, resulting in,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: massive reduction in connections, weights / model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: effectively shrinking these potential weights to zero
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While integrating / focusing on pixel patterns!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regularization with Dropout** - during training epochs, randomly ignore or
+    “drop out” a proportion of nodes. Each training epoch sees a different version
+    / subset of the network'
+  prefs: []
+  type: TYPE_NORMAL
+- en: an additional form of regularization for CNN to prevent specific nodes from
+    dominating the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: simulates training multiple models and averaging like ensemble learning. Note,
+    it is generally not feasible to train multiple networks in parallel to apply the
+    ensemble to calculate the prediction (like random forest) and after training all
+    nodes are used.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/2078f41aac92afeb57f8fdc28528b873.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of dropout to remove random connects from receptive field to nodes
+    in the feature map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Batch Normalization** - standardize the nodes’ inputs / weights over a layer
+    to center and rescale (mean of 0 and variance of 1) to optimize activation function
+    sensitivity and model parameter training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{x}_i \leftarrow \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we add 2 model parameters, layer standard deviation, \(\gamma\), and mean,
+    \(\beta\), to add control to improve the optimality of the train individual weights
+    in the next layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y_i \leftarrow \gamma \hat{x}_i + \beta \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building Blocks for CNNs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have various operators to move from layer to layer (feature maps to feature
+    maps) in our convolutional neural networks. The common operators include,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Convolution** – a weighting window, kernel / filter designed to extract spatial
+    information'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Pooling** – reduction in dimensionality, increase local translation invariance'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Depth-wise Pooling, Down Sampling** – 1x1 filter that combine channels /
+    feature maps to learn over multiple kernels'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Activation** – use of an activation function to apply a nonlinear transformation
+    to impart nonlinearity to the system and to prevent collapse of the system to
+    a simple linear model'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Full-connected, Feed Forward** – see previous lecture on artificial neural
+    networks'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now we will describe, interpret and demonstrate these operators.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Convolution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Convolution is the integral product of two functions, after one is reversed
+    and shifted by \(\Delta\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: one interpretation is smoothing a function with weighting function, \(𝑓(\Delta)\),
+    is applied to calculate the weighted average of function, \(𝑔(x)\),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x) = \int_{-\infty}^{\infty} f(\Delta) g(x - \Delta) \, d\Delta \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: this easily extends into any dimensionality, for example 2D for images,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x, y) = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} f(\Delta_x,
+    \Delta_y) g(x - \Delta_x, y - \Delta_y) \, d\Delta_x \, d\Delta_y \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The choice of which function is shifted before integration does not change the
+    result, the convolution operator has commutativity,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x) = \int_{-\infty}^{\infty} f(\Delta) g(x - \Delta) \, d\Delta \]\[
+    (f * g)(x) = \int_{-\infty}^{\infty} f(x - \Delta) g(\Delta) \, d\Delta \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: if either function is reflected then convolution is equivalent to cross-correlation,
+    measure of similarity between 2 signals as a function of displacement.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To demonstrate convolution with an exhaustive \(g(x)\) and sparsely sampled
+    \(g(x)\) I built out an [interactive Python convolution dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Convolution_kNearest.ipynb),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f55c37e0f7da98a233affd5fbd5ba38c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard to demonstrate convolution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For convolution operations, a trainable weighting function, \(g(\Tau)\), is
+    learned during model training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Filter/Kernel** – the weights assigned over the convolution window to calculate
+    the next feature map. By training the weights the filter(s) may extract specific
+    spatial features.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1955083a83351548602c54c6f2f6d86b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two examples of convolution calculations. .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at a specific kernel form, the blur filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the next feature map receives the local averages over the previous feature map
+    or image.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/f41a6a56aa0cf6c53667cad2b0ae52c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example filter, the blur / local average filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some observations about the filters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: size of the filter is related to the scale of the features that we are extracting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: larger kernels increase the number of connections, model weights and ultimately
+    the computational complexity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: odd numbers for kernel size to avoid distortion, asymmetric kernels are possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: sum to one prevent bias (shifting in the mean from one image or feature map
+    to another feature map
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Padding** - our next feature map has a reduced size by 1 on all the edges
+    to avoid the overlapping outside the feature map, i.e., no padding, while padding
+    extrapolates outside the feature map or image, preventing reduction in size of
+    the next feature map.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are varirous methods for padding, including assuming zero, constant value,
+    and nearest value in feature map.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/58368b8a8cebacdde3ae4116d6462f35.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convolution without padding, resulting in feature map size reduction (above)
+    and convolution with padding (assuming 0 outside the feature map) for no feature
+    map size reduction (below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Stride** - the steps of the convolution filter / kernel through the previous
+    feature map.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: for a stride of 1 there is no implicit reduction in feature map size.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for a stride of > 2 there is a reduction in feature map size.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/58300f18f8744327620c90fcc1cc392f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convolution with stride of 1 (above) and convolution with a stride of 2 (below)
+    with a reduction in feature map size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Size of Next Feature Map** - the next feature map size is determined by the
+    hyperparameters, previous feature map size, \(n_{in}\), convolution kernel size,
+    \(k\), convolution padding size, \(p\) and convolution stride size, \(s\), by
+    this equation,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ n_{\text{out}} = \left\lfloor \frac{n_{\text{in}} + 2p - k}{s} \right\rfloor
+    + 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(n_{in} = 4\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(k = 2\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(p = 0\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(s = 1\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we can substitute into the equation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ n_{\text{out}} = \left\lfloor \frac{4 + 2(0) - 2}{1} \right\rfloor + 1 =
+    3 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now compare this to a visualization of this example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ad9c65a10c9c4afb28b77bd7cbfc6017.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example kernel, input and output feature maps for the example above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We calculate the next feature map size as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ n_{\text{out}} = \left\lfloor \frac{4 + 2(0) - 2}{1} \right\rfloor + 1 =
+    3 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Filter / Kernel Design** – by training the weights the filter may extract
+    specific features. Consider these example filter types with simple 1D examples
+    of input and output feature ‘maps’.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/363089e3910cc726998fcf261fba68ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Filters (above, and 1D illustrations of convolution, original function (black)
+    and convolution (red) (below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Multiple Filters / Kernels** - typically multiple filters, \(n_k\), are trained
+    on each convolutional layer to extract various structures from the image.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: this increases feature map depth or channels, \(n_k\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/401b5ed57a2efd08be6f224d335f76da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feature map has a depth, also known as number of channels, $n_k$ due to application
+    of more than 1 filter to the previous image or feature map. .
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, the original image may have multiple channels, depth > 1, for example,
+    a RGB image with 3 channels, one for each red, blue and green.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally here are some examples of convolution filters applied to an image of
+    a brick wall on The University of Texas at Austin, codes are available at [SubsurfaceDataAnalytics_Convolution_Operators.ipynb.](https://github.com/GeostatsGuy/PythonNumericalDemos/blob/master/SubsurfaceDataAnalytics_Convolution_Operators.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48b85ce0016245754f632d2d7034335d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convolution examples from a brick wall on the campus of The University of Texas
+    at Austin. .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Activation Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: See the artificial neural network chapter for more details, but for a reminder
+    considerations for selecting activation functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nonlinear** – required to impose nonlinearity into the predictor. Proved
+    to be a universal function approximator if at least 1 hidden layer (Cybenko, 1989).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Range** – finite for more stability gradient-based learning, infinite for
+    more efficient training (but requires a slower learning rate)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Continuously Differentiable** – required for stable gradient-based optimization'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Smooth functions with Monotonic Derivative** – may generalize better'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Monotonic** – guaranteed convexity of error surface of a single layer model
+    (global minimum for loss function)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Approximates Identity at the Origin** – well learn efficiently with the weights
+    initialized with small random values'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/cb1d19a7978ea9f1f58b12b229835dcc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Convolution examples from a brick wall on the campus of The University of Texas
+    at Austin. .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pooling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Summarization over a filter / kernel with a single value. The impact of pooling
+    includes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: down sample the detection of features in feature maps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reduces the dimensionality of the feature map
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: integrate translation invariance, pattern detection insensitive to location
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Two common pooling methods are average and max pooling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b2fd11462cbb82e0cb09ac3e2d938ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schematic of pooling operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s an example of pooling with a 2x2 filter and a stride of 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/81532b0b04b5a5af52f9b81557967b34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of pooling operation for reducing the extent of the feature map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: with 2 x 2 filter, stride of 2 the dimension is reduced ½ per axis, ¼ for 2D
+    images.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for example, the value of 16 is location independent within the filter. This
+    introduces translational invariance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a3f5e46b161a0d2f7e0f99574f3db593.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Max and average pooling examples from a brick wall on the campus of The University
+    of Texas at Austin..
+  prefs: []
+  type: TYPE_NORMAL
+- en: Depth-wise Pooling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Summarization over feature maps with a single value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: down sample the detection over feature maps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: combine information learned from multiple kernels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reduces the depth of the feature map, next layer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Two common pooling methods are average and max pooling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1786e9cb04c2dac2297ddc607d4b0649.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schematic of depthwise pooling operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Common CNN Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following is a common workflow for convolutional neural networks,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fcb53216a4534c9da9053f990e48aa90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The common CNN workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can illustrate this common workflow with an illustration of the common architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/618c123a572e16a0e12819e75b283099.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The common CNN architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By-Hand CNN Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Just like the artificial neural network chapter, I build a simple convolutional
+    neural network by-hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For simplicity and brevity, I have made the following architectural choices,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1D images with height of 5
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1 convolutional layer with 1 kernel of size 3
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: activation with sigmoid
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: stride of 1 and no padding so the feature map has a size of 3
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: artificial neural network from feature map immediately to output node with linear
+    activation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This minimalist architecture demonstrates many of the salient concepts for convolutional
+    neural networks while being very easy to visualize and very fast to train.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c18c0d3da8b925d617dbd7cad6b9d1fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Schematic illustration of our by-hand CNN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we convert this schematic of our by-hand CNN to a diagram of the actual
+    nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aaaec452d8f375bf00b4df41c281e46c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Architecture of our by-hand CNN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To demonstrate the practicality of working with this architecture, let’s add
+    the labels of the model parameters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: kernel weights, \(\lambda_6\), \(\lambda_7\), and \(\lambda_8\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: kernel bias, \(b_{conv}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: artificial neural network weights, \(\lambda_{9,12}\), \(\lambda_{10,12}\),
+    and \(\lambda_{11,12}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: artificial neural network bias, \(b_{12}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/11f0651d909bf7e40e4ebdeca86bab61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Architecture of our by-hand CNN with all trainable model parameters. Note, kernel
+    weights are only shown in the first kernel position to avoid clutter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training Model Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Training a convolutional neural network proceeds iteratively by these steps,
+    the same as discussed in the artificial neural network chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3a5bc8956f8ceda05ddf9b582cd141d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training an artificial neural network proceeds iteratively by, 1\. forward pass
+    to make a prediction, 2\. calculate the error derivative based on the prediction
+    and truth over training data, 3\. backpropagate the error derivative back through
+    the artificial neural network to calculate the derivatives of the error over all
+    the model weights and biases parameters, 4\. update the model parameters based
+    on the derivatives and learning rates, 5\. repeat until convergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s some details on each step with a focus on differences from artificial
+    neural networks, for more details see the artificial neural network chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Initializing the Model Parameters** - initialize all model parameters with
+    typically small (near zero) random values. Here’s a couple common methods,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Xavier Glorot Uniform Initialization** - for Tanh and sigmoid activation,
+    random realizations from uniform distributions specified by \(U[\text{min}, \text{max}]\),'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda_i = F_U\left[-\sqrt{\frac{6}{n_{\text{in}} + n_{\text{out}}}},\ \sqrt{\frac{6}{n_{\text{in}}
+    + n_{\text{out}}}}\right]^{-1}(p^\ell) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(F^{-1}_U\) is the inverse of the CDF, \(p\) is the number of inputs,
+    and \(p^{\ell}\) is a random cumulative probability value drawn from the uniform
+    distribution, \(U[0,1]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, given a \(3 \times 3\) kernel with 1 channel in and 9 channel out,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ n_{in} = k \times k \times C = 3 \times 3 \times 1 \]\[ n_out = k \times
+    k \times C = 3 \times 3 \times 9 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**He Kaiming Weight Initialization** - for ReLU and leaky ReLU activation,
+    random realizations from uniform distributions specified by \(U[\text{min}, \text{max}]\),'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda_i = F_U\left[-\sqrt{\frac{6}{n_{\text{in}}}},\ \sqrt{\frac{6}{n_{\text{in}}}}\right]^{-1}(p^\ell)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(F^{-1}_U\) is the inverse of the CDF, \(p\) is the number of inputs,
+    \(k\) is the number of outputs, and \(p^{\ell}\) is a random cumulative probability
+    value drawn from the uniform distribution, \(U[0,1]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Forward Pass** - to make a prediction, \(\hat{y}\). Initial predictions will
+    be random for the first iteration, but will improve.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/08556ecbd47d143019d0163dc95761cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction with our artificial neural network initialized with random model
+    parameters, weights and biases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Calculate the Error Derivative** - given a loss of, \(P = \frac{1}{2} \left(\hat{y}
+    - y \right)^2\), the error derivative, i.e., rate of change of in error given
+    a change in model estimate is \(\frac{\partial P}{\partial \hat{y}} = \hat{Y}
+    - Y\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For now, let’s only consider a single estimate, and we will address more than
+    1 training data later.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Backpropagate the Error Derivative** - we shift back through the artificial
+    neural network to calculate the derivatives of the error over all the model weights
+    and biases parameters, to accomplish this we use the chain rule,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial}{\partial x} f(g(h(x))) = \frac{\partial f}{\partial g} \cdot
+    \frac{\partial g}{\partial h} \cdot \frac{\partial h}{\partial x} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Update the Model Parameters** - based on the derivatives, \frac{\partial
+    P}{\partial \lambda_{i,j}} and learning rates, \(\eta\), like this,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \lambda_{i,j}^{\ell} = \lambda_{i,j}^{\ell - 1} + \eta \cdot \frac{\partial
+    P}{\partial \lambda_{i,j}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Repeat Until Convergence** - return to step 1\. until the error, \(P\), is
+    reduced to an acceptable level, i.e., model convergence is the condition to stop
+    the iterations'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Backpropagation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For brevity, I refer you to the artificial neural network chapter for a walkthrough
+    of backpropagating the error gradient through a neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Updating Model Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The derivatives for each of the model parameters are the error gradients, so
+    we are ready to use gradient descent optimization with the addition of,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**learning rate** - to scale the rate of change of the model updates we assign
+    a learning rate, \(\eta\). For our model parameter examples from above,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda_{9,12}^{\ell} = \lambda_{9,12}^{\ell - 1} - \eta \cdot \frac{\partial
+    P}{\partial \lambda_{9,12}} \]\[ \lambda_{10,12}^{\ell} = \lambda_{10,12}^{\ell
+    - 1} - \eta \cdot \frac{\partial P}{\partial \lambda_{10,12}} \]\[ b_{12}^{\ell}
+    = b_{12}^{\ell - 1} + \eta \cdot \frac{\partial P}{\partial b_{12}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall, this process of gradient calculation and model parameters, weights and
+    biases, updating is iterated and is known as gradient descent optimization.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the goal is to explore the loss hypersurface, avoiding and escaping local minimums
+    and ultimately finding the global minimum.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: learning rate, also known as step size is commonly set between 0.0 and 1.0,
+    note 0.01 is the default in Keras module of TensorFlow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Low Learning Rate** – more stable, but a slower solution, may get stuck in
+    a local minimum'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**High Learning Rate** – may be unstable, but perhaps a faster solution, may
+    diverge out of the global minimum'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One strategy is to start with a high learning rate and then to decrease the
+    learning rate over the iterations
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Learning Rate Decay** - set as > 0 to avoid mitigate oscillations,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training Epochs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is a good time to talk about stochastic gradient descent optimization,
+    first let’s define some common terms,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Batch Gradient Descent** - updates the model parameters after passing through
+    all of the data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Stochastic Gradient Descent** - updates the model parameters over each sample
+    data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Mini-batch Gradient Descent** - updates the model parameter after passing
+    through a single batch'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With mini-batch gradient descent stochasticity is introduced through the use
+    of subsets of the data, known as batches,
+  prefs: []
+  type: TYPE_NORMAL
+- en: for example, if we divide our 100 samples into 4 batches, then we iterate over
+    each batch separately
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we speed up the individual updates, fewer data are faster to calculate, but
+    we introduce more error
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this often helps the training explore for the global minimum and avoid getting
+    stuck in local minimums and along ridges in the loss hypersurface
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally our last definition here,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**epoch** - is one pass over all of the data, so that would be 4 iterations
+    of updating the model parameters if we have 4 mini-batches'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are many other considerations that I will add later including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: momentum
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: adaptive optimization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s build the above artificial neural network by-hand and visualize the
+    solution!
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is by-hand so that you can see every calculation. I intentionally avoided
+    using TensorFlow or PyTorch.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training with Multiple Training Images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The backpropagation is based on a single sample, i.e., training image and paired
+    response feature value; therefore, to train over multiple images we must cycle
+    over the,
+  prefs: []
+  type: TYPE_NORMAL
+- en: forward pass
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate error derivative
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: back propagate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/911e3eed1fd228a0da4716b460c82d38.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Batch training process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each image the weights and biases gradients are stored. Then the gradients
+    are summed over the images in the batch and this sum is applied with the learning
+    rate to update the weights and biases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forward Pass
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For clarity, let’s walk through the convolutional neural network, starting with
+    image input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The input nodes receives the input from the image in to the convolution layer,
+  prefs: []
+  type: TYPE_NORMAL
+- en: node order is retained to preserve spatial, location information from the image
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For continuous feature images,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the continuous predictor feature values are normalized to a min / max of [0,1]
+    or [-1,1] to improve sensitivity for the specific activation function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for color images, the RGB channels may be each normalized and included as 3
+    input channels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For categorical feature images,
+  prefs: []
+  type: TYPE_NORMAL
+- en: for binary, cardinality of 2, the values may be reassigned by indicator transform
+    to 0 or 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for cardinality > 2, one-hot-encoding may be applied resulting in \(k\) input
+    channels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See the feature transformation chapter for more details about these transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we pass through a convolution layer, with convolution and activation, resulting
+    in a new feature map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02745c4fdecaad32e59683bafa3d0820.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Walk-through of our by-hand convolutional neural network, through the convolution
+    layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: take linearly weighted combinations based on the kernel(s) of input image or
+    previous feature map, add a bias term and then nonlinearly transform the result,
+    this transform is call the activation function, \(\alpha\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ C_{j_{\text{in}}} = \sum_{i=1}^{n} \left( K_{i+5} \cdot I_{j-8} \right) +
+    b_{conv} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where, \(K_6\), \(K_7\) and \(K_8\) are kernel weights, \(b_{conv}\) is the
+    kernel bias, and the \(I\) are the input nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please, excuse the strange indices in the equation, I like using unique node
+    integers for every node to avoid mixing up nodes in my notes and codes, but this
+    does complicate the index assignments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ C_{9_{\text{in}}} = I_1 \cdot K_6 + I_2 \cdot K_7 + I_3 \cdot K_8 + b_{\text{conv}}
+    \]\[ C_{10_{\text{in}}} = I_2 \cdot K_6 + I_3 \cdot K_7 + I_4 \cdot K_8 + b_{\text{conv}}
+    \]\[ C_{11_{\text{in}}} = I_3 \cdot K_6 + I_4 \cdot K_7 + I_5 \cdot K_8 + b_{\text{conv}}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: then nonlinear activation is applied to each,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ C_j = \alpha \left( C_{j_{in}} \right) \quad j = 9, \ldots 11 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we proceed from the feature map through the artificial neural network to
+    the output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is just a standard artificial neural network that takes the feature map
+    flattened and moves it to the output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: in this example for brevity we show the simplest possible artificial neural
+    network, i.e., the next layer after the feature map is the output. More complicated
+    architectures with hidden layers are often applied.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, since our images are 1D we do not require a flattening step
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The output node is a standard output node from an artificial neural network,
+  prefs: []
+  type: TYPE_NORMAL
+- en: input is a linear combination of the nodes from the previous layer with an added
+    bias term.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ O_{j_{\text{in}}} = \sum_{j=1}^{m} \left( \lambda_{i,j} \cdot H_i \right)
+    + b_j \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and then an activation is applied,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ O_j = \alpha \left( O_{j_{in}} \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the case of a regression model, with continuous response feature, linear
+    or identity activation is applied,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ O_j = \alpha \left( O_{j_{in}} \right) = O_{j_{in}} \]![](../Images/3becddf21de74c01ec2c585108079e0e.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Walk-through of our by-hand convolutional neural network, from feature map to
+    the output for continuous output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and for the case of a classification model, with categorical response feature,
+    softmax activation is applied over \(K\) nodes equal to the cardinality of the
+    response feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the output is a probability for each category that honors non-negativity and
+    closure constraints
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/439615adbac8db26678e58e258f9105f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Walk-through of our by-hand convolutional neural network, from feature map to
+    the output for categorical output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ O_j = g_k(O_{j_{\text{in}}}) = \frac{e^{O_{j_{\text{in}}}}}{\sum_{\iota=1}^{K}
+    e^{O_{\iota_{\text{in}}}}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Import Required Packages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall our goal is to build a convolutional neural network by-hand with only
+    basic math and array operations, so we only need NumPy along with matplotlib for
+    plotting.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the functions to make, train and visualize our convoluational neural
+    network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Simple By-hand CNN
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I wrote this code to specify a simple CNN,
+  prefs: []
+  type: TYPE_NORMAL
+- en: five input nodes, 1 convolution layer with a kernel of 3 resulting in a 3 nodes
+    in the feature map and 1 output node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'and to train the CNN by iteratively performing the forward calculation and
+    backpropagation. I calculate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the error and then propagate it to each node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: solve for the partial derivatives of the error with respect to each weight and
+    bias
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: all weights, biases and partial derivatives for all epoch are recorded in vectors
+    for plotting
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize By-hand CNN
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s visualize our convolutional neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, I will used this code latter to make interactive dashboards.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/bd6f0d76fef9a0c1d4062d2fed4028a098a6ba3f59c0dff50e67370b90502ba7.png](../Images/0b3e6b1109144cd7a0b01bc9d699e751.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: and now we can visualize the model training results including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: weights and biases vs. training epochs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: CNN prediction vs. training epochs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4cea6b946d67f8e2cb6605415803c148ac63ebfb43f8034a7285880405bb88d3.png](../Images/7dcc0007f13a7312fec3085ca24fbf79.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Of course, the results above are not very practical, in fact we need our convolutional
+    neural network to generalize by learning over many images, not just 1 as demonstrated
+    above. Let’s,
+  prefs: []
+  type: TYPE_NORMAL
+- en: make a suite of synthetic image data with labels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: apply the batch training method to train on this ensemble of training images.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Make Synthetic Training Images with Label
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code makes random configurations of 5 points with variable slope
+    and additive noise and then retains the slope linear regression model of the data
+    as the label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The workflow inludes these steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: draw a random slope, \(m^{\ell} \sim U\left[-2.0,2.0\right]\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: sample 5 values on this slope centered at the middle of the values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ Z^{\ell} = \left(x-2.5\right)*m^{\ell} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: add a random errror to the values, \(\epsilon \sim U\left[-\Delta,\Delta\right]\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ Z_{\epsilon}^{\ell} = \left(x-2.5\right)*m^{\ell} + U^{-1}\left[-\Delta,\Delta\right](p^{\ell})
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: calculate the linear regression model slope to retain as the response feature
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ m = \frac{<Z_{\epsilon}^{\ell} \cdot x>}{<x \cdot x>} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/60bea9aeec98af43e38abc10f6ce1302ee8c10ff095a8bfdef8fb4231fc1be32.png](../Images/e763c68a0e61054a9b3854f895c7ec02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training the Simple CNN on Many Training Images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I modified the code above to loops over the batch of training images, sums the
+    error gradients and updates over all the weights and biases for each training
+    epoch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now again we can visualize the model performance,
+  prefs: []
+  type: TYPE_NORMAL
+- en: predictions over all training images vs. training epochs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model weights and biases vs. training epochs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ba623428124e0113a09fcf1b71bb1dacaf21bee4f296116c527e30bf0e957edb.png](../Images/e175db3feac32085e697870180f28aab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of convolutional neural networks. Much more could
+    be done and discussed, I have many more resources. Check out my [shared resource
+    inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture links
+    at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

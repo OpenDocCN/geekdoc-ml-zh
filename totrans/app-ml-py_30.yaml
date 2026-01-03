@@ -1,0 +1,936 @@
+- en: Neural Network Activation Functions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_activation_functions.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_activation_functions.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Neural Networks Activation
+    Functions**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Artificial Neural Networks](https://youtu.be/A9PiCMY_6nM?si=NxWSU_5RgQ4w55EL)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Convolutional Neural Networks](https://youtu.be/za2my_XDoOs?si=LeHU6p2_fc9dX4Yt)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Activation functions are a critical component of any neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we apply activation functions and their associated derivatives throughout the
+    deep learning chapters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So let’s visualize the common activation functions and their derrivatives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Activation Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In neural networks, an activation function is a transformation of the linear
+    combination of the weighted node inputs plus the node bias term applied in a network
+    node. In general activation is nonlinear to,
+  prefs: []
+  type: TYPE_NORMAL
+- en: introduce non-linear properties to the network
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: prevent the network from collapsing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Without the nonlinear activation function we would have linear regression, i.e.,
+    the entire system collapses to a linear combination of the inputs!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do demonstrate this, let’s take our example network and remove the activation
+    functions, or assuming a linear transformation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f6783045ad88a2dca69e179cc4197e98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our simple artificial neural network with connections and model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can calculate the prediction ignoring activation, since it is identity
+    or a linear scaling as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y_1 = \lambda_{4,6} \cdot \left( \lambda_{1,4} \cdot X_1 + \lambda_{2,4}
+    \cdot X_2 + \lambda_{3,4} \cdot X_3 + b_{H_4} \right) + \lambda_{5,6} \cdot \left(
+    \lambda_{1,5} \cdot X_1 + \lambda_{2,5} \cdot X_2 + \lambda_{3,5} \cdot X_3 +
+    b_{H_5} \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can group the like terms,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y_1 = (\lambda_{4,6} \cdot \lambda_{1,4} + \lambda_{5,6} \cdot \lambda_{1,5})
+    \cdot X_1 + (\lambda_{4,6} \cdot \lambda_{2,4} + \lambda_{5,6} \cdot \lambda_{2,5})
+    \cdot X_2 + (\lambda_{4,6} \cdot \lambda_{3,4} + \lambda_{5,6} \cdot \lambda_{3,5})
+    \cdot X_3 + (\lambda_{4,6} \cdot b_{H_4} + \lambda_{5,6} \cdot b_{H_5}) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and finally, we can group the summed model parameters and replace them with
+    recognizable coefficients,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y_1 = b_1 \cdot X_1 + b_2 \cdot X_2 + b_3 \cdot X_3 + b_0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: et voilà! We have linear regression, an artificial neural network without activation
+    collapses to linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have demonstrated the necessity of nonlinear activation, here’s
+    some common activation functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2a039942e953289781fc523aeafd83c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Some common activation functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the notation in the figure above,
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the activation functions, the x-axis is the pre-activation value, \(x_{in}\),
+    and the y-axis is the post-activation values, \(x_{out}\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for the activation function derivatives, the x-axis is the post-activation value,
+    \(x_{out}\), and the y-axis is the associated activation function derrivative.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The derivative is defined and derived like this to simplify the back propagation
+    process, i.e., use the output from a neural network node to back-propagate through
+    the node!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s list, define some activation functions, here are the equations and some
+    comments for each,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sigmoid** - also known as logistic has the following expression and derivative.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_{out} = \alpha(x_{in}) = \frac{1}{1 + e^{-x_{in}}} \]\[ \alpha^{\prime}(x_{in})
+    = x_{out} \cdot (1 - x_{out}) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\quad\) Note, very efficient derivative, but not zero-centered, which can
+    slow down training due to zigzagging gradients, and suffers from vanishing gradients
+    when input values are far from 0 (saturates near 0 or 1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Tanh** – hyperbolic tangent has the following expression and derivative.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_{out} = \alpha(x_{in}) = \frac{e^{x_{in}} - e^{-x_{in}}}{e^{x_{in}} + e^{-{x_{in}}}}
+    \]\[ \alpha^{\prime}(x_{in}) = 1 - x_{out}^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\quad\) Note, Tanh suffers from vanishing gradients for large input values,
+    like sigmoid activation, but generally performs better than sigmoid in practice
+    due to its centered output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**ReLU** – rectified linear units has the following expression and derivative.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_{out} = \alpha(x_{in}) = \max(0, x) \]\[\begin{split} \alpha^{\prime}(x_{in})
+    = \begin{cases} 1 & \text{if } x_{out} > 0 \\ 0 & \text{if } x_{out} \leq 0 \end{cases}
+    \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\quad\) Note, ReLU encourages sparse activation, i.e., only some neurons are
+    on, but can suffer from the dying ReLU problem if too many activations are 0.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Linear** – linear activation simply returns the input'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_{\text{out}} = \alpha(x_{\text{in}}) = x_{\text{in}} \]\[ \alpha^{\prime}(x_{\text{in}})
+    = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\quad\) Note, linear activation is only used in output layers for regression,
+    it does not help capture non-linear patterns and if only linear activation is
+    applied the network collapses to linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Binary Step** – outputs 0 or 1 depending on input sign'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[\begin{split} x_{\text{out}} = \alpha(x_{\text{in}}) = \begin{cases} 1 & \text{if
+    } x_{\text{in}} > 0 \\ 0 & \text{if } x_{\text{in}} \leq 0 \end{cases} \end{split}\]\[
+    \alpha^{\prime}(x_{\text{in}}) = 0 \quad \text{(undefined at } x_{\text{in}} =
+    0\text{)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\quad\) Note, binary step is non-differentiable and not suitable for gradient
+    descent, but was historically used in perceptrons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Selecting an Activation Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How do we select our activation functions? Considerations these criteria for
+    selecting activation functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nonlinear** – required to impose nonlinearity into the prediction model (e.g.,
+    sigmoid, tanh and ReLU are nonlinear).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Range** – finite for more stability gradient-based learning, infinite for
+    more efficient training, but requires a slower learning rate (e.g., sigmoid \([0,\infty]\),
+    tanh \([-1,1]\) and ReLU \([0,\infty]\)).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Continuously Differentiable** – required for stable gradient-based optimization
+    (e.g., sigmoid, tanh and ReLU \(\ne 0.0\))'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Fast Calculation of Derivative** - the derivative calculation has low calculation
+    complexity for efficient training (e.g., sigmoid and ReLU)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Smooth functions with Monotonic Derivative** – may generalize better (e.g.,
+    sigmoid, tanh and ReLU)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Monotonic** – guaranteed convexity of error surface of a single layer model,
+    global minimum for loss function (e.g., sigmoid, tanh and ReLU)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Approximates Identity at the Origin**, \((𝑓(0) = 0)\) – learns efficiently
+    with the weights initialized as small random values (e.g., ReLU and tanh)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s a table summarizing these criteria for the discussed activation functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Property** | **Sigmoid** | **Tanh** | **ReLU** | **Linear** | **Binary
+    Step** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Nonlinear** | ✅ | ✅ | ✅ | ❌ | ✅ |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Range** | (0, 1) | (–1, 1) | [0, ∞) | (–∞, ∞) | {0, 1} |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Continuously Differentiable** | ✅ | ✅ | ❌ (not at 0) | ✅ | ❌ (discontinuous)
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Fast Derivative Calculation** | ✅ | ⚠️ (slower) | ✅ | ✅ | ✅ (discrete case)
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Smooth with Monotonic Derivative** | ✅ | ✅ | ⚠️ (not smooth) | ✅ | ❌ |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Monotonic Function** | ✅ | ✅ | ✅ | ✅ | ✅ |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Approximates Identity at Origin** | ✅ (≈0.5 slope) | ✅ (slope ≈ 1) | ✅
+    (slope = 1) | ✅ | ❌ |'
+  prefs: []
+  type: TYPE_TB
+- en: Below we will visualize the activation functions and their associated derivatives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Import Required Packages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I just added a convenience function for adding major and minor gridlines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Activation Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following calculations and plots provide the functions and derivatives
+    for the following activation functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sigmoid / Logistic
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tanh
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ReLU
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/5e658d6b1fddcfe04aedb721d1ef91e9000ddc1262a9c53d77f0c8e05daca11e.png](../Images/28f0be740f77f351770dd1885fef5f2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Other Loss Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following calculations and plots provide the functions and derivatives
+    for the following activation functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Binary Step
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a8d89ef0c64202d659cab7b3f86e1bee7084b18e0b805ecef8b09ed45fbedd93.png](../Images/947034fb2c8185151bde2a2cd9a1638e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of activation functions for neural networks. Much
+    more could be done and discussed, I have many more resources. Check out my [shared
+    resource inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture
+    links at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Activation functions are a critical component of any neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we apply activation functions and their associated derivatives throughout the
+    deep learning chapters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So let’s visualize the common activation functions and their derrivatives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Activation Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In neural networks, an activation function is a transformation of the linear
+    combination of the weighted node inputs plus the node bias term applied in a network
+    node. In general activation is nonlinear to,
+  prefs: []
+  type: TYPE_NORMAL
+- en: introduce non-linear properties to the network
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: prevent the network from collapsing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Without the nonlinear activation function we would have linear regression, i.e.,
+    the entire system collapses to a linear combination of the inputs!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do demonstrate this, let’s take our example network and remove the activation
+    functions, or assuming a linear transformation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f6783045ad88a2dca69e179cc4197e98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our simple artificial neural network with connections and model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can calculate the prediction ignoring activation, since it is identity
+    or a linear scaling as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y_1 = \lambda_{4,6} \cdot \left( \lambda_{1,4} \cdot X_1 + \lambda_{2,4}
+    \cdot X_2 + \lambda_{3,4} \cdot X_3 + b_{H_4} \right) + \lambda_{5,6} \cdot \left(
+    \lambda_{1,5} \cdot X_1 + \lambda_{2,5} \cdot X_2 + \lambda_{3,5} \cdot X_3 +
+    b_{H_5} \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can group the like terms,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y_1 = (\lambda_{4,6} \cdot \lambda_{1,4} + \lambda_{5,6} \cdot \lambda_{1,5})
+    \cdot X_1 + (\lambda_{4,6} \cdot \lambda_{2,4} + \lambda_{5,6} \cdot \lambda_{2,5})
+    \cdot X_2 + (\lambda_{4,6} \cdot \lambda_{3,4} + \lambda_{5,6} \cdot \lambda_{3,5})
+    \cdot X_3 + (\lambda_{4,6} \cdot b_{H_4} + \lambda_{5,6} \cdot b_{H_5}) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and finally, we can group the summed model parameters and replace them with
+    recognizable coefficients,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y_1 = b_1 \cdot X_1 + b_2 \cdot X_2 + b_3 \cdot X_3 + b_0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: et voilà! We have linear regression, an artificial neural network without activation
+    collapses to linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have demonstrated the necessity of nonlinear activation, here’s
+    some common activation functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a2a039942e953289781fc523aeafd83c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Some common activation functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the notation in the figure above,
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the activation functions, the x-axis is the pre-activation value, \(x_{in}\),
+    and the y-axis is the post-activation values, \(x_{out}\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for the activation function derivatives, the x-axis is the post-activation value,
+    \(x_{out}\), and the y-axis is the associated activation function derrivative.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The derivative is defined and derived like this to simplify the back propagation
+    process, i.e., use the output from a neural network node to back-propagate through
+    the node!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s list, define some activation functions, here are the equations and some
+    comments for each,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sigmoid** - also known as logistic has the following expression and derivative.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_{out} = \alpha(x_{in}) = \frac{1}{1 + e^{-x_{in}}} \]\[ \alpha^{\prime}(x_{in})
+    = x_{out} \cdot (1 - x_{out}) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\quad\) Note, very efficient derivative, but not zero-centered, which can
+    slow down training due to zigzagging gradients, and suffers from vanishing gradients
+    when input values are far from 0 (saturates near 0 or 1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Tanh** – hyperbolic tangent has the following expression and derivative.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_{out} = \alpha(x_{in}) = \frac{e^{x_{in}} - e^{-x_{in}}}{e^{x_{in}} + e^{-{x_{in}}}}
+    \]\[ \alpha^{\prime}(x_{in}) = 1 - x_{out}^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\quad\) Note, Tanh suffers from vanishing gradients for large input values,
+    like sigmoid activation, but generally performs better than sigmoid in practice
+    due to its centered output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**ReLU** – rectified linear units has the following expression and derivative.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_{out} = \alpha(x_{in}) = \max(0, x) \]\[\begin{split} \alpha^{\prime}(x_{in})
+    = \begin{cases} 1 & \text{if } x_{out} > 0 \\ 0 & \text{if } x_{out} \leq 0 \end{cases}
+    \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\quad\) Note, ReLU encourages sparse activation, i.e., only some neurons are
+    on, but can suffer from the dying ReLU problem if too many activations are 0.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Linear** – linear activation simply returns the input'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_{\text{out}} = \alpha(x_{\text{in}}) = x_{\text{in}} \]\[ \alpha^{\prime}(x_{\text{in}})
+    = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\quad\) Note, linear activation is only used in output layers for regression,
+    it does not help capture non-linear patterns and if only linear activation is
+    applied the network collapses to linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Binary Step** – outputs 0 or 1 depending on input sign'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[\begin{split} x_{\text{out}} = \alpha(x_{\text{in}}) = \begin{cases} 1 & \text{if
+    } x_{\text{in}} > 0 \\ 0 & \text{if } x_{\text{in}} \leq 0 \end{cases} \end{split}\]\[
+    \alpha^{\prime}(x_{\text{in}}) = 0 \quad \text{(undefined at } x_{\text{in}} =
+    0\text{)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\quad\) Note, binary step is non-differentiable and not suitable for gradient
+    descent, but was historically used in perceptrons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Selecting an Activation Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How do we select our activation functions? Considerations these criteria for
+    selecting activation functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nonlinear** – required to impose nonlinearity into the prediction model (e.g.,
+    sigmoid, tanh and ReLU are nonlinear).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Range** – finite for more stability gradient-based learning, infinite for
+    more efficient training, but requires a slower learning rate (e.g., sigmoid \([0,\infty]\),
+    tanh \([-1,1]\) and ReLU \([0,\infty]\)).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Continuously Differentiable** – required for stable gradient-based optimization
+    (e.g., sigmoid, tanh and ReLU \(\ne 0.0\))'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Fast Calculation of Derivative** - the derivative calculation has low calculation
+    complexity for efficient training (e.g., sigmoid and ReLU)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Smooth functions with Monotonic Derivative** – may generalize better (e.g.,
+    sigmoid, tanh and ReLU)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Monotonic** – guaranteed convexity of error surface of a single layer model,
+    global minimum for loss function (e.g., sigmoid, tanh and ReLU)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Approximates Identity at the Origin**, \((𝑓(0) = 0)\) – learns efficiently
+    with the weights initialized as small random values (e.g., ReLU and tanh)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s a table summarizing these criteria for the discussed activation functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| **Property** | **Sigmoid** | **Tanh** | **ReLU** | **Linear** | **Binary
+    Step** |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Nonlinear** | ✅ | ✅ | ✅ | ❌ | ✅ |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Range** | (0, 1) | (–1, 1) | [0, ∞) | (–∞, ∞) | {0, 1} |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Continuously Differentiable** | ✅ | ✅ | ❌ (not at 0) | ✅ | ❌ (discontinuous)
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Fast Derivative Calculation** | ✅ | ⚠️ (slower) | ✅ | ✅ | ✅ (discrete case)
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Smooth with Monotonic Derivative** | ✅ | ✅ | ⚠️ (not smooth) | ✅ | ❌ |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Monotonic Function** | ✅ | ✅ | ✅ | ✅ | ✅ |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Approximates Identity at Origin** | ✅ (≈0.5 slope) | ✅ (slope ≈ 1) | ✅
+    (slope = 1) | ✅ | ❌ |'
+  prefs: []
+  type: TYPE_TB
+- en: Below we will visualize the activation functions and their associated derivatives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Import Required Packages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I just added a convenience function for adding major and minor gridlines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Activation Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following calculations and plots provide the functions and derivatives
+    for the following activation functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sigmoid / Logistic
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tanh
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ReLU
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/5e658d6b1fddcfe04aedb721d1ef91e9000ddc1262a9c53d77f0c8e05daca11e.png](../Images/28f0be740f77f351770dd1885fef5f2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Other Loss Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following calculations and plots provide the functions and derivatives
+    for the following activation functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Binary Step
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a8d89ef0c64202d659cab7b3f86e1bee7084b18e0b805ecef8b09ed45fbedd93.png](../Images/947034fb2c8185151bde2a2cd9a1638e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of activation functions for neural networks. Much
+    more could be done and discussed, I have many more resources. Check out my [shared
+    resource inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture
+    links at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

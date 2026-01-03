@@ -1,0 +1,2287 @@
+- en: Time Series Analysis and Modeling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_time_series.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_time_series.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **time series analysis and
+    modeling**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Time Series Analysis](https://youtu.be/nxY1HS3SrQ4?si=VSYYO2bqBd_ftb4u)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Time Series Analysis and Modeling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Time series data is typically 1D over time. This data may be univariate, bivariate
+    or multivariate. So why not just apply regular machine learning methods in 1D?
+    There are many unique aspects for time series analysis and modeling that preclude
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: time series phenomenon are often highly nonstationary with trends and cyclicity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: time series models are often focused on forecasting, i.e., significant extrapolation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: over the observed time interval the data is usually dense, and often exhaustive
+    with sampling at the same rate as applied in the trained model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As result, we need a unique set of tools, analysis and models to address time
+    series phenomenon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time Series Analysis and Modeling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Time series analysis for learning from time series data. Here are some key aspects
+    of time series analysis and modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**One Dimensional**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: whereas spatial data is typically over 2 or 3 dimensions and multivariate data
+    may have any dimension in feature space, time series data is fundamentally a 1D
+    dataset with measures over \(y(\bf{t_{\alpha}})\), for \(\alpha = 1, \dots, n\)
+    samples typically observed at a constant rate.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Compositional**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: time series data may often be decomposed into separate additive or multiplicative
+    trend, seasonal and residual components.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: any model will need to account for each of these components
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Autocorrelation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the autocorrelation is commonly applied to quantify the degree information shared
+    over intervals of time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: note autocorrelation is known as the correlogram in geostatistics and the principals,
+    calculation and modeling procedures are the same.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Nonstationary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: time series data are often nonstationary and are commonly evaluated with moving
+    window statistics to characterize and model changes over time
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the choice of moving window size is analogous (although not exactly equivalent)
+    to the k hyperparameter for k-nearest neighbour models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Examples of Time Series Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are many well-known, important examples of time series analysis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: local and global CO2 emisions that are applied to model and forecast climate
+    change
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: mill efficiency measured as recover rate of mineral extraction from the plan
+    feed to forecast mineral production
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: rate of natural gas production for a well in a specific reservoir to determine
+    the number of well needed to meet local energy needs
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In addition, there are many systems with mixed multivariate with time series
+    phenomenon. For the above,
+  prefs: []
+  type: TYPE_NORMAL
+- en: inclusion of population, GDP and efficiency measures to improve the CO2 emission
+    forecasts
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: inclusion of mineral grades, mining schedule and plant down time to improve
+    mill mineral production forecasts
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: inclusion of local models of facies, porosity and permeability models to improve
+    well natural gas production forecasts.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While multivariate is important, for this brevity I only cover univariate time
+    series analysis and modeling here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What Do I Cover?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For time series analysis, modeling and prediction the following is included:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formatting time series dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Basic time series visualization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Autocorrelation analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Trend modeling and differencing for detrending
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Time Series Decomposition with ARIMA modeling and forecasting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the required libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices
+    and visualization of a decision tree regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Generating a Synthetic Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will build a simple time series representing production at an hypothetical
+    lithium (Li) mine, where we have daily measurements of lithium recovery in tonnes
+    per day.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use an additive model with trend, cycles and stochastic noise (short
+    scale continuity) features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I have left the synthetic data generation workflow here, instead of just putting
+    the resulting dataset on GitHub, to allow you to change the synthetic dataset
+    and experiment with the following time series analysis and modeling workflow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8eaacb8be90267349d2927db867f7572d8f7f3309f55fbd017ac128c820ad744.png](../Images/f9e6d5d99298bb06b9335a9c1cf1f8cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Time Series DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s make a pandas DataFrame with the lithium production data indexed by date
+    of the production. We utilize the useful functionality with Pandas’ DataFrames
+    to work with time series data, this includes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the ability to use various time formats for display
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: to do calculations in time, like the number of day between to 2 dates in year,
+    month and day of the month, i.e., Pandas knows the calendar!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To do this we make date index parameterized by a start date, the number of periods
+    (number of values in our model above, nx) and the sampling frequency ‘D’ indicating
+    daily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we set this as the data field for the DataFrame and set this to be the DataFrame’s
+    index.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can take advantage of the ability to easily work with and plot time series
+    data with pandas DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we added some improved formatting, including custom date intervals and labels
+    on the x axis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9e25d86a0fdea89ff11a7de4580eff760df12ab968b6b2f3c20c51d909258486.png](../Images/694bb9b0dd890d4eb3aa5efa14cb234c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That’s a good plot for time series data. Now let’s start doing analysis with
+    our lithium production data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autocorrelation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Autocorrelation is applied in time series analysis to detect relationships over
+    lags in time. The autocorrelation is the correlogram (standardized covariance
+    function) commonly used in geostatistics applied to the one dimensional time series
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, for the calculation of a predictive model we often check for the presence
+    of autocorrelation between error residual values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will use the autocorrelation and partial autocorrelation of our residual
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The partial autocorrelation provides a measure of the correlation after removal
+    of differences observed in previous lags
+  prefs: []
+  type: TYPE_NORMAL
+- en: measure of correlation at lag \( = n\), after removing the effects explained
+    over lags \( 1, \ldots, n-1\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6d45f0eabb836924372dcb385861ed9d29dab4bc6ed4806234ea5d7b6d832c24.png](../Images/72dd0f4c8b3faee78bf66928f236029b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Test for Stationarity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Is this dataset stationary? Does the mean change locally? We use the Dickey-Fuller
+    Test to test for stationarity of our time series with the following hypotheses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(H_0 =\) time series is non-stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(H_1 =\) time series is stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the **Test Statistic** is less then the **Critical Value** at an alpha level
+    (1 - significance level) then we reject the null hypothesis and state that the
+    time series is stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since the test statistic within the +/- the critical value interval (at 5%)
+    and the p-value is > 5% we would fail to reject the null hypothesis that the dataset
+    is stationary, we assume it is nonstationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What do we need to do about our nonstationary time series data?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Stationarity Transformations for Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Most time series models (like spatial models) require a stationarity assumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To transform time series to stationary we must model and remove:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: trends - locally variable mean over the domain of the time series
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: seasonality - repeating cycles with a specific wavelength
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Rolling, Moving Window Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We calculate moving window statistics to evaluate the local change in these
+    statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: visually observe the local changes continuously over the time series
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: can be calculated on a wide range of statistics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We evaluate the moving window mean and sample standard deviation over a window
+    of 20 days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: assuming a uniform weighting of the statistics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: could consider triangular and Gaussian weighting templates for smoother results
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ebd01cd4f074263672a8d1dad448eac53fe00c2e03f52c0a01abb2ed94f3bc21.png](../Images/23817cbd2c8216f20891b70b7a7fcbac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Working with Residuals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s remove (subtract) the moving window average from the original production
+    time series and calculate the residual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | production | rolling_mean | rolling_std | rolling_lower | rolling_upper
+    | residual |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| date |  |  |  |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-06 | 84.041801 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-07 | 82.224334 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-08 | 80.794563 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-09 | 80.045364 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-10 | 80.389419 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-11 | 82.188769 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-12 | 85.573237 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-13 | 90.404332 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: We have some ‘NaN’, missing values because the moving window does not calculate
+    values when the window overlaps with the edge of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will have to deal with these in the following workflow.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s plot and visualize the residual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It should be more stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9ce3c71d560b0f9a1c7e48b18377b17c68c5db0a0b3b80a1c532ab4ec60c2ae0.png](../Images/d8c6125fd07b146e72271820cf73a380.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The residual after we remove the trend is more stationary as anticipated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try a variety of window sizes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 20 days
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 40 days
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 100 days
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/f8caff768dda3c4519ca9a6e8f0edc6e39ce2a61832a0d807e92e09aee275a56.png](../Images/a6bbb9fc308febc4dc8321f2016b765c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Additivity of Variance Trend and Residual Components and Residual Distribution
+    Checks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When we work with a trend and residual model we are decomposing the temporal
+    phenomenon into:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: deterministic trend - known
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: stochastic residual - unknown
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'We will calculated the proportion of variance in the trend and the residual.
+    This includes the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: calculate the representative weighted standard deviation of the original data,
+    convert to variance, \(\sigma\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate the standard deviation of the trend model, convert to variance, \(\sigma_t\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate the variance of the residual at the data locations, \(\sigma_r\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'back calculate the covariance form the relationship:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \sigma^2 = \sigma^2_t + \sigma^2_r + 2 \times C_{tr} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We also check the residual univariate distribution. We are checking for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: residual mean close to zero
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: minimum and maximum residual for extreme values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: monomodal, symmetric distribution shape
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9625079434c189f991745e5bea6b99ea5186f177353acf52f8da72e4e87dae61.png](../Images/db74416a3a6fe471686fc6bcb1772c2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Test for Stationarity on the De-trended Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We use the Dickey-Fuller Test to test for stationarity of our detrened time
+    series
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(H_0 =\) time series is non-stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(H_1 =\) time series is stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the **Test Statistic** is less then the **Critical Value** at an alpha level
+    (1 - significance level) then we reject the null hypothesis and state that the
+    time series is stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we reject the null hypothesis, \(H_0\), and state that the detrended time
+    series is stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Differencing to Remove Nonstationarity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Differencing is a common approach applied to tine series to remove nonstationarity.
+    Differencing proceeds as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(y(\bf{u_i}) = z(\bf{u}_{i+1}) - z(\bf{u}_i)\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(z(\bf{u}_{i+1}) - z(\bf{u}_i)\) is the difference between the current
+    and the next value in the time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: NumPy has a function for differencing ndarrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Comments on differencing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: if the series is already stationary then there is no need to apply differencing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the order of differencing is the number of differencing operations applied in
+    sequence.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: first order is \(y_1(\bf{u_i}) = z(\bf{u_{i+1}}) - z(\bf{u_i})\)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: second order is \(y_2(\bf{u_i}) = y_1(\bf{u_{i+1}}) - y_1(\bf{u_i})\)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: third order is \(y_3(\bf{u_i}) = y_2(\bf{u_{i+1}}) - y_2(\bf{u_i})\)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We demonstrate differencing on our production dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will plot the autocorrelation of the result to demonstrate that we have actually
+    removed the trend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: trend structure in autocorrelation is a linear shift over lag distances downward
+    toward 0.0 and beyond into negative values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | production | rolling_mean | rolling_std | rolling_lower | rolling_upper
+    | residual | rolling_mean_20 | rolling_res_20 | rolling_mean_40 | rolling_res_40
+    | rolling_mean_100 | rolling_res_100 | first_difference | second_difference |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| date |  |  |  |  |  |  |  |  |  |  |  |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -0.129910 | -1.403020 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -1.532930 | -0.656781 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.189710 | -0.084540 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.274251 | 0.186395 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.087856 | 0.270389 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Now let’s plot the:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: original
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: first order
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: second order
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/76c2c1539d096bd5ed76cd73c18d1b0eaa89dd3586006f78e3617d98f703b532.png](../Images/4090c0ae317b920d7fdb77ad60d60fbd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Observe that the result becomes more stationary as we mover from original production
+    to first difference and then to second difference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The autocorrelation indicates that the temporal correlation is also removed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Test for Stationarity on the First and Second Differenced Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We use the Dickey-Fuller Test for stationarity of our first and second difference
+    of our production time series
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(H_0 =\) time series is non-stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(H_1 =\) time series is stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the **Test Statistic** is less than the **Critical Value** at an alpha level
+    (1 - significance level) then we reject the null hypothesis and state that the
+    time series is stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Both the local moving window and differencing methods have demonstrated the
+    ability to remove the trend in the production mean and provide a stationary dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In general, any predictive model will:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: require a stationary time series dataset (assumes stationarity)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: first model and remove a nonstationary component and then work with the stationary
+    residual or transform
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Time Series Decomposition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s demonstrate an automated method to decompose a time series into multiple
+    components. With time series decomposition we will decompose the time series into
+    the following components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: trend
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: seasonality
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: noise / residual
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will use the [StatsModels](https://www.statsmodels.org/stable/index.html)
+    package for statistical modeling in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a3e165bfa639408cfaef2dbf2d4803e515498da32ae0a8ab59eb539d79b4aa60.png](../Images/257ba56c0d6d741261e4f9f46dad7f36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s also check the variance components, were \(t\) is trend, \(s\) is seasonal
+    and \(r\) is residual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sigma^2 = \sigma^2_{t} + \sigma^2_{s} + \sigma^2_{r} + 2 \times C_{t,s}
+    + 2 \times C_{s,r} + 2 \times C_{t,r} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to the covariance terms, we cannot assume that the sum of the variance of
+    the 3 decomposed components will be the original variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for simplicity, we will ignore the covariance terms and plot the proportions
+    of the sum of variances of trend, seasonal and residual components.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/52ac6dc6b4820ea1432545ce5c7276cae52d7522e1ce0bbf71c4e8bd3fec1558.png](../Images/ddd0ddcbee1016004a500b4fd5be5fca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note, that our model sees the cyclicity that we added to the synthetic data
+    as the trend component and found a higher frequency, lower amplitude cyclicity
+    as the seasonal component and the remaining noise residual component has an amplitude
+    about twice the amplitude of the seasonal and about one fifth the trend amplitude.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s check for stationarity of the residual component from the above decomposition.
+    We do this to confirm that we have removed the nonstationarity through removal
+    of the seasonal and trend components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again we reject the null hypothesis, \(H_0\), and state that the detrended
+    time series is stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the time series decomposition method has successfully removed the non-stationarity
+    in the mean of the time series
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s confirm that the trend has been removed with the autocorrelation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8138b13030257a1c90aeb7b070fdcbaacf8e0418807041092b342dd662480eef.png](../Images/1aa2ae1252a319119d0f115eaa0e864c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From these plots we can determine that there is no autocorrelation nor partial
+    autocorrelation over any lag
+  prefs: []
+  type: TYPE_NORMAL
+- en: the plot crosses the upper confidence interval for zero autocorrelation at lag
+    = 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What have we learned about our production data so far?
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is a significant trend that can be removed with a moving window or first
+    difference
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: there is no significant autocorrelation of the
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s split the data with train and test and attempt time series forecasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: ARIMA (Auto-Regressive Integrated Moving Average) Model for Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The ARIMA model is based on the following parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: number of auto-regressive terms (p) is the number of lags for autocorrelation
+    - we find this from the number of significant lags in the partial autocorrelation.
+    There was only one lag (see above). \(p=1\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: number of moving average terms (q) is the number of differencing required remove
+    the trend. From above we demonstrated that we had a stationary dataset after the
+    first difference, but we improved the removal of the cycles after the second difference,
+    let’s use second difference. \(q = 2\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: number of non-seasonal differences (d) is the seasonal effect, our dataset did
+    not show any significant seasonal cyclicity in the decomposition above, so we
+    will just set it to one. \(d=1\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here’s what we can interpret from above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the coefficients AR.1, MA.1 and MA.2 are all significant, the model based on
+    trend and autocorrelation is significant
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the constant is not significantly different from zero
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note the AIC is the Akaike Information Criteria (AIC) that quantifies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the goodness of fit
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the simplicity / parsimony
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The lower the AIC the better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s plot the residuals from our model to check for a constant mean (near zero)
+    and variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/863c09d404d499b67217b911f1e3586c5a4d3471981ff76b8636995108bdd134.png](../Images/4d4925e7b85076760e57bfefe6fefcef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s look at the predictions from our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is the predictions our model would make if we trained with \(y(\bf{u_{\alpha}})\),
+    for \(\alpha = 1, \dots, i-1\), to predict at \(y(\bf{u_i})\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/13aa79d2f8da832d631685229be46fab79c1163ebef3251aad4a0266240d4660.png](../Images/3c025647f72ffba94e011821bf8dab17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Some observations about our ability to forecast:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the general linear trend with increasing production was captured by the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the short term forecast is quite good, but fails to capture the cycles, we could
+    increase the number of periods in the seasons, but that dramatically increases
+    the run time and was impractical with this e-book.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could have improved model performance by manually removing the trend and
+    cycle and modeling the residual. Also, more could be done with Python packages
+    for autotuning ARIMA models (e.g., pmdarima package).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time Series Analysis and Modeling Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here’s some observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to check time series data for stationarity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If time series are nonstationary we should mitigate this with trend removal
+    or differencing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can measure the degree of temporal correlation and see nonstationarity or
+    trend structures with autocorrelation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ARIMA models allow us to simultaneously capture trend, seasonality and residual
+    components in a single model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Much more could be done and discussed, I have many more resources. Check out
+    my [shared resource inventory](https://michaelpyrcz.com/my-resources).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this was helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Author:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Professor, The University of Texas at Austin *Novel Data Analytics,
+    Geostatistics and Machine Learning Subsurface Solutions*
+  prefs: []
+  type: TYPE_NORMAL
+- en: With over 17 years of experience in subsurface consulting, research and development,
+    Michael has returned to academia driven by his passion for teaching and enthusiasm
+    for enhancing engineers’ and geoscientists’ impact in subsurface resource development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For more about Michael check out these links:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Motivation for Time Series Analysis and Modeling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Time series data is typically 1D over time. This data may be univariate, bivariate
+    or multivariate. So why not just apply regular machine learning methods in 1D?
+    There are many unique aspects for time series analysis and modeling that preclude
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: time series phenomenon are often highly nonstationary with trends and cyclicity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: time series models are often focused on forecasting, i.e., significant extrapolation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: over the observed time interval the data is usually dense, and often exhaustive
+    with sampling at the same rate as applied in the trained model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As result, we need a unique set of tools, analysis and models to address time
+    series phenomenon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time Series Analysis and Modeling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Time series analysis for learning from time series data. Here are some key aspects
+    of time series analysis and modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**One Dimensional**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: whereas spatial data is typically over 2 or 3 dimensions and multivariate data
+    may have any dimension in feature space, time series data is fundamentally a 1D
+    dataset with measures over \(y(\bf{t_{\alpha}})\), for \(\alpha = 1, \dots, n\)
+    samples typically observed at a constant rate.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Compositional**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: time series data may often be decomposed into separate additive or multiplicative
+    trend, seasonal and residual components.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: any model will need to account for each of these components
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Autocorrelation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the autocorrelation is commonly applied to quantify the degree information shared
+    over intervals of time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: note autocorrelation is known as the correlogram in geostatistics and the principals,
+    calculation and modeling procedures are the same.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Nonstationary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: time series data are often nonstationary and are commonly evaluated with moving
+    window statistics to characterize and model changes over time
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the choice of moving window size is analogous (although not exactly equivalent)
+    to the k hyperparameter for k-nearest neighbour models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Examples of Time Series Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are many well-known, important examples of time series analysis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: local and global CO2 emisions that are applied to model and forecast climate
+    change
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: mill efficiency measured as recover rate of mineral extraction from the plan
+    feed to forecast mineral production
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: rate of natural gas production for a well in a specific reservoir to determine
+    the number of well needed to meet local energy needs
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In addition, there are many systems with mixed multivariate with time series
+    phenomenon. For the above,
+  prefs: []
+  type: TYPE_NORMAL
+- en: inclusion of population, GDP and efficiency measures to improve the CO2 emission
+    forecasts
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: inclusion of mineral grades, mining schedule and plant down time to improve
+    mill mineral production forecasts
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: inclusion of local models of facies, porosity and permeability models to improve
+    well natural gas production forecasts.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While multivariate is important, for this brevity I only cover univariate time
+    series analysis and modeling here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What Do I Cover?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For time series analysis, modeling and prediction the following is included:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formatting time series dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Basic time series visualization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Autocorrelation analysis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Trend modeling and differencing for detrending
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Time Series Decomposition with ARIMA modeling and forecasting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the required libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices
+    and visualization of a decision tree regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: Generating a Synthetic Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will build a simple time series representing production at an hypothetical
+    lithium (Li) mine, where we have daily measurements of lithium recovery in tonnes
+    per day.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use an additive model with trend, cycles and stochastic noise (short
+    scale continuity) features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I have left the synthetic data generation workflow here, instead of just putting
+    the resulting dataset on GitHub, to allow you to change the synthetic dataset
+    and experiment with the following time series analysis and modeling workflow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8eaacb8be90267349d2927db867f7572d8f7f3309f55fbd017ac128c820ad744.png](../Images/f9e6d5d99298bb06b9335a9c1cf1f8cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Time Series DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s make a pandas DataFrame with the lithium production data indexed by date
+    of the production. We utilize the useful functionality with Pandas’ DataFrames
+    to work with time series data, this includes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the ability to use various time formats for display
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: to do calculations in time, like the number of day between to 2 dates in year,
+    month and day of the month, i.e., Pandas knows the calendar!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To do this we make date index parameterized by a start date, the number of periods
+    (number of values in our model above, nx) and the sampling frequency ‘D’ indicating
+    daily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we set this as the data field for the DataFrame and set this to be the DataFrame’s
+    index.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can take advantage of the ability to easily work with and plot time series
+    data with pandas DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we added some improved formatting, including custom date intervals and labels
+    on the x axis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9e25d86a0fdea89ff11a7de4580eff760df12ab968b6b2f3c20c51d909258486.png](../Images/694bb9b0dd890d4eb3aa5efa14cb234c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That’s a good plot for time series data. Now let’s start doing analysis with
+    our lithium production data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autocorrelation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Autocorrelation is applied in time series analysis to detect relationships over
+    lags in time. The autocorrelation is the correlogram (standardized covariance
+    function) commonly used in geostatistics applied to the one dimensional time series
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, for the calculation of a predictive model we often check for the presence
+    of autocorrelation between error residual values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will use the autocorrelation and partial autocorrelation of our residual
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The partial autocorrelation provides a measure of the correlation after removal
+    of differences observed in previous lags
+  prefs: []
+  type: TYPE_NORMAL
+- en: measure of correlation at lag \( = n\), after removing the effects explained
+    over lags \( 1, \ldots, n-1\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6d45f0eabb836924372dcb385861ed9d29dab4bc6ed4806234ea5d7b6d832c24.png](../Images/72dd0f4c8b3faee78bf66928f236029b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Test for Stationarity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Is this dataset stationary? Does the mean change locally? We use the Dickey-Fuller
+    Test to test for stationarity of our time series with the following hypotheses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(H_0 =\) time series is non-stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(H_1 =\) time series is stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the **Test Statistic** is less then the **Critical Value** at an alpha level
+    (1 - significance level) then we reject the null hypothesis and state that the
+    time series is stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since the test statistic within the +/- the critical value interval (at 5%)
+    and the p-value is > 5% we would fail to reject the null hypothesis that the dataset
+    is stationary, we assume it is nonstationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What do we need to do about our nonstationary time series data?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Stationarity Transformations for Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Most time series models (like spatial models) require a stationarity assumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To transform time series to stationary we must model and remove:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: trends - locally variable mean over the domain of the time series
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: seasonality - repeating cycles with a specific wavelength
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Rolling, Moving Window Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We calculate moving window statistics to evaluate the local change in these
+    statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: visually observe the local changes continuously over the time series
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: can be calculated on a wide range of statistics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We evaluate the moving window mean and sample standard deviation over a window
+    of 20 days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: assuming a uniform weighting of the statistics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: could consider triangular and Gaussian weighting templates for smoother results
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ebd01cd4f074263672a8d1dad448eac53fe00c2e03f52c0a01abb2ed94f3bc21.png](../Images/23817cbd2c8216f20891b70b7a7fcbac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Working with Residuals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s remove (subtract) the moving window average from the original production
+    time series and calculate the residual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | production | rolling_mean | rolling_std | rolling_lower | rolling_upper
+    | residual |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| date |  |  |  |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-06 | 84.041801 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-07 | 82.224334 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-08 | 80.794563 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-09 | 80.045364 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-10 | 80.389419 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-11 | 82.188769 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-12 | 85.573237 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-13 | 90.404332 | NaN | NaN | NaN | NaN | NaN |'
+  prefs: []
+  type: TYPE_TB
+- en: We have some ‘NaN’, missing values because the moving window does not calculate
+    values when the window overlaps with the edge of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will have to deal with these in the following workflow.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s plot and visualize the residual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It should be more stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9ce3c71d560b0f9a1c7e48b18377b17c68c5db0a0b3b80a1c532ab4ec60c2ae0.png](../Images/d8c6125fd07b146e72271820cf73a380.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The residual after we remove the trend is more stationary as anticipated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try a variety of window sizes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 20 days
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 40 days
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 100 days
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/f8caff768dda3c4519ca9a6e8f0edc6e39ce2a61832a0d807e92e09aee275a56.png](../Images/a6bbb9fc308febc4dc8321f2016b765c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Additivity of Variance Trend and Residual Components and Residual Distribution
+    Checks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When we work with a trend and residual model we are decomposing the temporal
+    phenomenon into:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: deterministic trend - known
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: stochastic residual - unknown
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'We will calculated the proportion of variance in the trend and the residual.
+    This includes the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: calculate the representative weighted standard deviation of the original data,
+    convert to variance, \(\sigma\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate the standard deviation of the trend model, convert to variance, \(\sigma_t\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate the variance of the residual at the data locations, \(\sigma_r\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'back calculate the covariance form the relationship:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \sigma^2 = \sigma^2_t + \sigma^2_r + 2 \times C_{tr} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We also check the residual univariate distribution. We are checking for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: residual mean close to zero
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: minimum and maximum residual for extreme values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: monomodal, symmetric distribution shape
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9625079434c189f991745e5bea6b99ea5186f177353acf52f8da72e4e87dae61.png](../Images/db74416a3a6fe471686fc6bcb1772c2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Test for Stationarity on the De-trended Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We use the Dickey-Fuller Test to test for stationarity of our detrened time
+    series
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(H_0 =\) time series is non-stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(H_1 =\) time series is stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the **Test Statistic** is less then the **Critical Value** at an alpha level
+    (1 - significance level) then we reject the null hypothesis and state that the
+    time series is stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we reject the null hypothesis, \(H_0\), and state that the detrended time
+    series is stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Differencing to Remove Nonstationarity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Differencing is a common approach applied to tine series to remove nonstationarity.
+    Differencing proceeds as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(y(\bf{u_i}) = z(\bf{u}_{i+1}) - z(\bf{u}_i)\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(z(\bf{u}_{i+1}) - z(\bf{u}_i)\) is the difference between the current
+    and the next value in the time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: NumPy has a function for differencing ndarrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Comments on differencing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: if the series is already stationary then there is no need to apply differencing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the order of differencing is the number of differencing operations applied in
+    sequence.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: first order is \(y_1(\bf{u_i}) = z(\bf{u_{i+1}}) - z(\bf{u_i})\)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: second order is \(y_2(\bf{u_i}) = y_1(\bf{u_{i+1}}) - y_1(\bf{u_i})\)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: third order is \(y_3(\bf{u_i}) = y_2(\bf{u_{i+1}}) - y_2(\bf{u_i})\)
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We demonstrate differencing on our production dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will plot the autocorrelation of the result to demonstrate that we have actually
+    removed the trend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: trend structure in autocorrelation is a linear shift over lag distances downward
+    toward 0.0 and beyond into negative values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | production | rolling_mean | rolling_std | rolling_lower | rolling_upper
+    | residual | rolling_mean_20 | rolling_res_20 | rolling_mean_40 | rolling_res_40
+    | rolling_mean_100 | rolling_res_100 | first_difference | second_difference |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| date |  |  |  |  |  |  |  |  |  |  |  |  |  |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-01 | 92.256458 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -0.129910 | -1.403020 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-02 | 92.126548 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -1.532930 | -0.656781 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-03 | 90.593619 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.189710 | -0.084540 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-04 | 88.403908 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.274251 | 0.186395 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2016-01-05 | 86.129658 | NaN | NaN | NaN | NaN | NaN | NaN | NaN | NaN |
+    NaN | NaN | NaN | -2.087856 | 0.270389 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Now let’s plot the:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: original
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: first order
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: second order
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/76c2c1539d096bd5ed76cd73c18d1b0eaa89dd3586006f78e3617d98f703b532.png](../Images/4090c0ae317b920d7fdb77ad60d60fbd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Observe that the result becomes more stationary as we mover from original production
+    to first difference and then to second difference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The autocorrelation indicates that the temporal correlation is also removed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Test for Stationarity on the First and Second Differenced Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We use the Dickey-Fuller Test for stationarity of our first and second difference
+    of our production time series
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(H_0 =\) time series is non-stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(H_1 =\) time series is stationary
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the **Test Statistic** is less than the **Critical Value** at an alpha level
+    (1 - significance level) then we reject the null hypothesis and state that the
+    time series is stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: Both the local moving window and differencing methods have demonstrated the
+    ability to remove the trend in the production mean and provide a stationary dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In general, any predictive model will:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: require a stationary time series dataset (assumes stationarity)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: first model and remove a nonstationary component and then work with the stationary
+    residual or transform
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Time Series Decomposition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s demonstrate an automated method to decompose a time series into multiple
+    components. With time series decomposition we will decompose the time series into
+    the following components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: trend
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: seasonality
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: noise / residual
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will use the [StatsModels](https://www.statsmodels.org/stable/index.html)
+    package for statistical modeling in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a3e165bfa639408cfaef2dbf2d4803e515498da32ae0a8ab59eb539d79b4aa60.png](../Images/257ba56c0d6d741261e4f9f46dad7f36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s also check the variance components, were \(t\) is trend, \(s\) is seasonal
+    and \(r\) is residual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sigma^2 = \sigma^2_{t} + \sigma^2_{s} + \sigma^2_{r} + 2 \times C_{t,s}
+    + 2 \times C_{s,r} + 2 \times C_{t,r} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to the covariance terms, we cannot assume that the sum of the variance of
+    the 3 decomposed components will be the original variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for simplicity, we will ignore the covariance terms and plot the proportions
+    of the sum of variances of trend, seasonal and residual components.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/52ac6dc6b4820ea1432545ce5c7276cae52d7522e1ce0bbf71c4e8bd3fec1558.png](../Images/ddd0ddcbee1016004a500b4fd5be5fca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note, that our model sees the cyclicity that we added to the synthetic data
+    as the trend component and found a higher frequency, lower amplitude cyclicity
+    as the seasonal component and the remaining noise residual component has an amplitude
+    about twice the amplitude of the seasonal and about one fifth the trend amplitude.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s check for stationarity of the residual component from the above decomposition.
+    We do this to confirm that we have removed the nonstationarity through removal
+    of the seasonal and trend components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again we reject the null hypothesis, \(H_0\), and state that the detrended
+    time series is stationary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the time series decomposition method has successfully removed the non-stationarity
+    in the mean of the time series
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s confirm that the trend has been removed with the autocorrelation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8138b13030257a1c90aeb7b070fdcbaacf8e0418807041092b342dd662480eef.png](../Images/1aa2ae1252a319119d0f115eaa0e864c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From these plots we can determine that there is no autocorrelation nor partial
+    autocorrelation over any lag
+  prefs: []
+  type: TYPE_NORMAL
+- en: the plot crosses the upper confidence interval for zero autocorrelation at lag
+    = 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What have we learned about our production data so far?
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is a significant trend that can be removed with a moving window or first
+    difference
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: there is no significant autocorrelation of the
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s split the data with train and test and attempt time series forecasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: ARIMA (Auto-Regressive Integrated Moving Average) Model for Time Series
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The ARIMA model is based on the following parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: number of auto-regressive terms (p) is the number of lags for autocorrelation
+    - we find this from the number of significant lags in the partial autocorrelation.
+    There was only one lag (see above). \(p=1\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: number of moving average terms (q) is the number of differencing required remove
+    the trend. From above we demonstrated that we had a stationary dataset after the
+    first difference, but we improved the removal of the cycles after the second difference,
+    let’s use second difference. \(q = 2\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: number of non-seasonal differences (d) is the seasonal effect, our dataset did
+    not show any significant seasonal cyclicity in the decomposition above, so we
+    will just set it to one. \(d=1\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here’s what we can interpret from above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the coefficients AR.1, MA.1 and MA.2 are all significant, the model based on
+    trend and autocorrelation is significant
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the constant is not significantly different from zero
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note the AIC is the Akaike Information Criteria (AIC) that quantifies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the goodness of fit
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the simplicity / parsimony
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The lower the AIC the better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s plot the residuals from our model to check for a constant mean (near zero)
+    and variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/863c09d404d499b67217b911f1e3586c5a4d3471981ff76b8636995108bdd134.png](../Images/4d4925e7b85076760e57bfefe6fefcef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s look at the predictions from our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is the predictions our model would make if we trained with \(y(\bf{u_{\alpha}})\),
+    for \(\alpha = 1, \dots, i-1\), to predict at \(y(\bf{u_i})\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/13aa79d2f8da832d631685229be46fab79c1163ebef3251aad4a0266240d4660.png](../Images/3c025647f72ffba94e011821bf8dab17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Some observations about our ability to forecast:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the general linear trend with increasing production was captured by the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the short term forecast is quite good, but fails to capture the cycles, we could
+    increase the number of periods in the seasons, but that dramatically increases
+    the run time and was impractical with this e-book.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could have improved model performance by manually removing the trend and
+    cycle and modeling the residual. Also, more could be done with Python packages
+    for autotuning ARIMA models (e.g., pmdarima package).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time Series Analysis and Modeling Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here’s some observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to check time series data for stationarity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If time series are nonstationary we should mitigate this with trend removal
+    or differencing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can measure the degree of temporal correlation and see nonstationarity or
+    trend structures with autocorrelation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ARIMA models allow us to simultaneously capture trend, seasonality and residual
+    components in a single model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Much more could be done and discussed, I have many more resources. Check out
+    my [shared resource inventory](https://michaelpyrcz.com/my-resources).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this was helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Author:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Professor, The University of Texas at Austin *Novel Data Analytics,
+    Geostatistics and Machine Learning Subsurface Solutions*
+  prefs: []
+  type: TYPE_NORMAL
+- en: With over 17 years of experience in subsurface consulting, research and development,
+    Michael has returned to academia driven by his passion for teaching and enthusiasm
+    for enhancing engineers’ and geoscientists’ impact in subsurface resource development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For more about Michael check out these links:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL

@@ -1,0 +1,1822 @@
+- en: Bayesian Linear Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_Bayesian_linear_regression.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_Bayesian_linear_regression.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Bayesian Linear Regression**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Linear Regression](https://youtu.be/0fzbyhWiP84)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Ridge Regression](https://youtu.be/pMGO40yXZ5Y?si=ygJAheyX-v2BmSiR)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Bayesian Probability](https://www.youtube.com/watch?v=Ppwfr8H177M&list=PLG19vXLQHvSB-D4XKYieEku9GQMQyAzjJ&index=6)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Bayesian Linear Regression](https://youtu.be/LzZ5b3wdZQk?si=DkhYrgmDXzrPFQyr)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Naive Bayes Classifier](https://youtu.be/BDvyLrH3cLI?si=D6boOpoVpyo-6TqK)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for Bayesian Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Bayesian machine learning methods apply probability to make predictions with
+    an intrinsic uncertainty model. In addition, the Bayesian methods integrate the
+    concept of Bayesian updating, a prior model updated with a likelihood model from
+    data to calculate a posterior model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are additional complexities with model training due to working with these
+    probabilities, represented by continuous probability density functions. Due to
+    the resulting high complexity, we can’t solve for the model parameters directly,
+    instead we must apply a sampling method such as Markov Chain Monte Carlo (MCMC)
+    simulation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a simple, very accessible demonstration of Bayesian linear regression
+    with McMC Metropolis-Hastings sampling. My students struggled with these concepts
+    so I challenged myself to built a workflow from scratch with all details explained
+    clearly. Let’s explain the critical prerequisites, starting with Bayesian updating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start by recalling the salient points for linear regression for prediction,
+    let’s start by looking at a linear model fit to a set of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/806bf5f702f9bb5a63e30d6e1f7969d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example linear regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parametric Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a parametric predictive machine learning model, we accept an a prior
+    assumption of linearity and then gain a very low parametric representation that
+    is easy to train without a onerous amount of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the fit model is a simple weighted linear additive model based on all the available
+    features, \(x_1,\ldots,x_m\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'the parametric model takes the form of:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ y = \sum_{\alpha = 1}^m b_{\alpha} x_{\alpha} + b_0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the visualization of the linear model parameters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ada2fcc2740c48478e79404563c91061.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Least Squares**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The analytical solution for the model parameters, \(b_1,\ldots,b_m,b_0\), is
+    available for the L2 norm loss function, the errors are summed and squared known
+    a least squares.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'we minimize the error, residual sum of squares (RSS) over the training data:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ RSS = \sum_{i=1}^n \left(y_i - (\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha,i}
+    + b_0) \right)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(y_i\) is the actual response feature values and \(\sum_{\alpha = 1}^m
+    b_{\alpha} x_{\alpha} + b_0\) are the model predictions, over the \(\alpha = 1,\ldots,n\)
+    training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a visualization of the L2 norm loss function, MSE,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/835541b16e1038a4606f7d97b628c4f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear model loss function, mean square error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this may be simplified as the sum of square error over the training data,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \begin{equation} \sum_{i=1}^n (\Delta y_i)^2 \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\Delta y_i\) is actual response feature observation \(y_i\) minus the
+    model prediction \(\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha} + b_0\), over the
+    \(i = 1,\ldots,n\) training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Assumptions**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are important assumption with our linear regression model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Error-free** - predictor variables are error free, not random variables'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Linearity** - response is linear combination of feature(s)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Constant Variance** - error in response is constant over predictor(s) value'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Independence of Error** - error in response are uncorrelated with each other'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**No multicollinearity** - none of the features are redundant with other features'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now’s let’s recall Bayesian updating and then update our linear regression model
+    to Bayesian linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Updating
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Bayesian approach for probabilities is based on a degree of belief (expert
+    experience) in an event updated as new information is available
+  prefs: []
+  type: TYPE_NORMAL
+- en: this approach to probability is powerful and can be applied to solve problems
+    that we cannot be solved with the frequentist approach to probability
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bayesian updating is represented by Bayes’ Theorem,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(P(A)\) is the prior, \(P(B|A)\) is the likelihood, \(P(B)\) is the evidence
+    term that is responsible for probability closure, and \(P(A|B)\) is the posterior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The frequentist formulation of the linear regression model is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = b_1 \times x + b_0 + \sigma \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(x\) is the predictor feature, \(b_1\) is the slope parameter, \(b_0\)
+    is the intercept parameter and \(\sigma\) is the error or noise. There is an analytical
+    form for the ordinary least squares solution to fit the available data while minimizing
+    the L2 norm of the data error vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can represent the multilinear regression model with matrix notation as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = \beta^{T} X + \sigma \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\beta\) is a vector of model parameters, \(\beta_1,\ldots,\beta_m\).
+    We can add another term \(\beta_0\) to the vector for the model intercept.
+  prefs: []
+  type: TYPE_NORMAL
+- en: when \(\beta_0\) is added, we also add a column of \(1\)s to the data \(X\)
+    matrix
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For the Bayesian formulation of linear regression is we pose the model as a
+    prediction of the distribution of the response, \(Y\), now a random variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y \sim N(\beta^{T}X, \sigma^{2} I) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We estimate the model parameter distributions through Bayesian updating for
+    inferring the model parameters from a prior and likelihood from training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(\beta | y, X) = \frac{p(y,X| \beta) p(\beta)}{p(y,X)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s talk about each term,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prior, \(𝑃(\beta)\) - initial, prior to new data, inference of the model parameters
+    over the predictor features based on,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: expert knowledge
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: naïve prior, in the case of non-informative priors the likelihood will dominate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: informative prior, in the case of a low uncertainty prior the prior will dominate
+    the likelihood
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: cannot include the new training data, prior to integration of the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Likelihood, \(𝑃(𝑦,𝑋│\beta)\) - conditional distribution of the training data
+    given assumed model parameters based on,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the new data, data-driven
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as the number of sample data increases the likelihood overwhelms the prior distribution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evidence, \(P(y,X)\) - normalization constant to ensure probability closure,
+    i.e., a valid posterior probability density function
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: independent of the model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: solved by marginalization of the numerator, collapses by integrating over all
+    possible model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for some solution methods, e.g., MCMC Metropolis-Hastings the evidence term
+    cancels out
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Posterior, \(P(\beta│y,X)\) - conditional distribution of the model parameters
+    given the data-driven likelihood and prior based on expert knowledge and belief
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: as the number of data, \(𝑛 \rightarrow \infty\), the model parameters, \(\beta\),
+    converge to ordinary least squares linear regression, the prior is overwhelmed
+    by the data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In general for continuous features we are not able to directly calculate the
+    posterior and we must use a sampling method, such as Markov chain Monte Carlo
+    (McMC) to sample the posterior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a McMC Metropolis Hastings workflow and more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Markov Chain Monte Carlo (MCMC)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Is a set of algorithms to sample from a probability distribution such that the
+    samples match the distribution statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Markov** - screening assumption, the next sample is only dependent on the
+    previous sample'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Chain** - the samples form a sequence often demonstrating a transition from
+    burn-in chain with inaccurate statistics and equilibrium chain with accurate statistics'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Monte Carlo** - use of Monte Carlo simulation, random sampling from a statistical
+    distribution'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why is this useful?
+  prefs: []
+  type: TYPE_NORMAL
+- en: we often don’t have the target distribution, it is unknown
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: but we can sample with the correct frequencies with other form of information
+    such as conditional probability density functions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bayesian Linear Regression with the Metropolis-Hastings Sampler
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here’s the basic steps of the Metropolis-Hastings MCMC Sampler:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For \(\ell = 1, \ldots, L\):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assign random values for the initial sample of model parameters, \(\beta(\ell
+    = 1) = b_1(\ell = 1)\), \(b_0(\ell = 1)\) and \(\sigma^2(\ell = 1)\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Propose new model parameters based on a proposal function, \(\beta^{\prime}
+    = b_1\), \(b_0\) and \(\sigma^2\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate probability of acceptance of the new proposal, as the ratio of the
+    posterior probability of the new model parameters given the data to the previous
+    model parameters given the data multiplied by the probability of the old step
+    given the new step divided by the probability of the new step given the old.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ P(\beta \rightarrow \beta^{\prime}) = min\left(\frac{p(\beta^{\prime}|y,X)
+    }{ p(\beta | y,X)} \cdot \frac{p(\beta^{\prime}|\beta) }{ p(\beta | \beta^{\prime})},1\right)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply Monte Carlo simulation to conditionally accept the proposal, if accepted,
+    \(\ell = \ell + 1\), and sample \(\beta(\ell) = \beta^{\prime}\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Go to step 2.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let’s talk about this system. First the left hand side:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{p(\beta^{\prime}|y,X) }{ p(\beta | y,X)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are calculating the ratio of the posterior probability (likelihood times
+    prior) of the model parameters given the data and prior model for proposed sample
+    over the current sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you will see below it is quite practical to calculate this ratio.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the proposed sampled is more likely than the current sample, we will have
+    a value greater than 1.0, it will truncate to 1.0 and we accept the proposed sample.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the proposed sample is less likely than the current sample, we will have
+    a value less than 1.0, then we will use Monte Carlo sampling to randomly choice
+    the proposed sample with this probability of acceptance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This procedure allows us to walk through the model parameter space and sample
+    the parameters with the current rates, after the burn-in chain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, what about this part of the equation?
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{p(\beta^{\prime}|\beta) }{ p(\beta | \beta^{\prime})} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a problem with this procedure if we use asymmetric probability distributions
+    for the model parameters!
+  prefs: []
+  type: TYPE_NORMAL
+- en: E.g. for example, if we use a positively skewed distribution (e.g., log normal)
+    then we are more likely to step to larger values due to this distribution, and
+    not due to the prior nor the likelihood.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This term removes this bias, so that we have fair samples!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You will see below that we remove this issue by assuming symmetric model parameter
+    distributions, even though many use an asymmetric gamma distribution for sigma,
+    given it cannot have negative values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: My goal is the simplest possible demonstration.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our Simplified Demonstration Metropolis Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s further specify this workflow for our simple demonstration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have assumed a Gaussian, symmetric distribution for all model parameters as
+    a result this relationship holds for all possible model parameter, current and
+    proposed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \frac{p(\beta^{\prime}|\beta) }{ p(\beta | \beta^{\prime})} = 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we now have this simplified probability of proposal acceptance, note this
+    is know as Metropolis Sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(\beta \rightarrow \beta^{\prime}) = min \left( \frac{p(\beta^{\prime}|y,X)
+    }{ p(\beta | y,X)},1 \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s substitute our Bayesian formulation for our Bayesian linear regression
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(\beta^{\prime} | y, X) = \frac{p(y,X| \beta^{\prime}) p(\beta^{\prime})}{p(y,X)}
+    \quad \text{ and } \quad p(\beta | y, X) = \frac{p(y,X| \beta) p(\beta)}{p(y,X)}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we substitute these into our probability of acceptance above we get this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(\beta \rightarrow \beta^{\prime}) = min \left( \frac{p(\beta^{\prime}|y,X)
+    }{ p(\beta | y,X)},1 \right) = min \left( \frac{ \left( \frac{p(y,X| \beta_{new})
+    p(\beta_{new}) } {p(y,X)} \right) }{ \left( \frac{ p(y,X| \beta) p(\beta)}{p(y,X)}
+    \right) },1 \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the evidence terms cancel out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(\beta \rightarrow \beta^{\prime}) = min \left( \frac{ p(y,X| \beta_{new})
+    p(\beta_{new}) }{ p(y,X| \beta) p(\beta)},1 \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we are working with a likelihood ratio, we can work with densities instead
+    of probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(\beta \rightarrow \beta^{\prime}) = min \left( \frac{ f(y,X| \beta_{new})
+    f(\beta_{new}) }{ f(y,X| \beta) f(\beta) } ,1 \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally for improved solution stability we can calculate the natural log ratio:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ ln(P(\beta \rightarrow \beta^{\prime})) = min \left( ln \left[ \frac{ f(y,X|
+    \beta_{new}) f(\beta_{new}) }{ f(y,X| \beta) f(\beta) } \right],0 \right) \]\[
+    = min \left( \left[ln(f(y,X| \beta_{new})) + ln(f(\beta_{new})) \right] - \left[
+    ln(f(y,X| \beta)) + ln(f(\beta)) \right],0 \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We calculate probability of proposal acceptance, as exponentiation of the above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we calculate the likelihood density? If we assume independence between
+    all of the data we can take the product sum of the probabilities (densities) of
+    all the response values given the predictor and model parameter sample! Given,
+    the Gaussian assumption for the response feature, we can calculate the densities
+    for each data from the Gaussian PDF.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f_{y,X | \beta}(y) \sim N [ b_1 \cdot X + b_0, \sigma ] \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and under the assumption of independence we can take the produce sum over all
+    training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f(y,X| \beta) = \prod_{\alpha = 1}^{n} f_{y,X | \beta}(y_{\alpha}) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note, this workflow was developed with assistance from Fortunato Nucera’s Medium
+    Article [Mastering Bayesian Linear Regression from Scratch: A Metropolis-Hastings
+    Implementation in Python](https://medium.com/@tinonucera/bayesian-linear-regression-from-scratch-a-metropolis-hastings-implementation-63526857f191).
+    I highly recommend this accessible description and demonstration. Thank you, Fortunato.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following functions include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**next_proposal** - propose a next model parameters from previous model parameters,
+    this is the proposal method, parameterized by step standard deviation and Gaussian
+    distribution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**likelihood_density** - calculate the product of all the densities for all
+    the data given the model parameters. Since we are working with the log densities,
+    we sum over all the data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**prior_density** - calculate the product of the densities for all the model
+    parameters given the prior model. Since we are working with the log densities,
+    we sum over all the model parameters. This is an assumption of independence.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**add_grid** - improved grid for the plotting.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Build a Synthetic Dataset with Known Truth Linear Regression Model Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s build a simple dataset with known linear regression model parameters,
+    \(b_1\) is the slope parameter, \(b_0\) is the intercept parameter and \(\sigma\)
+    is the error or noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we build the data based on these parameters, and then we train a linear regression
+    model and show that we get the correct slope and intercept model parameters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/03c99522c28b8cb2d8c756010b591bc0e06d3cc724b73a2cbcaa5331a9f072ea.png](../Images/a8e886d92fdcac447a29e1df3ac8e5e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear regression model parameters are quite close to the coefficients used
+    to make the synthetic data. Now let’s train an Bayesian linear regression model
+    with MCMC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It all begins with a prior model, for that we assume a reasonable prior model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assume the Prior Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We assume a multivariate Gaussian distribution for the slope and intercept parameters,
+    \(f_{b_1,b_0,\sigma}(b_1,b_0,\sigma)\) with independence between \(b_1\), \(b_0\),
+    and \(\sigma\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a naive prior assume a very large standard deviation. We will work in log
+    probability and log density to improve stability of the system.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We want to avoid product sums of a many values near zero as the probabilities
+    will disappear due to computer floating point precision.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In log space, we can add calculate probabilities of independent events by summing
+    (instead of multiplication) these negative values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1d26923084d95d772b3d02c1f620108104eaf5c01869ff2ab96e4107777052fb.png](../Images/d6b7bfe8279df066ea241de8c0e3a483.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayesian Linear Regression with MCMC Metropolis-Hastings
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The Bayesian linear regression with MCMC Metropolis-Hastings workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: assign an random initial set of model parameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: apply a proposal rule to assign a new set of model parameters given the previous
+    set of model parameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: calculate the ratio of the likelihood of the new model parameters over the previous
+    model parameters given the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: conditionally accept the proposal based on this ratio, i.e., if proposal is
+    more like accept it, if less likely with a probability based on the ratio.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: return to step 2.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the Results
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s visualize the McMC Metropolis sample chain for each of the model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the burn-in and equilibrium chains.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compare the slope and intercept model parameters to the frequentist, linear
+    regression solution, based only on the ordinary least squares solution, minimizing
+    the L2 norm of the error vector over all sample data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compare the noise parameter to the noise added to the synthetic data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c64bff7f86be7eccc60cf24f8bcafce02f0cc0fa8d1c2205137340aa80952f81.png](../Images/0afb4e1bf5f96613b6f86806ca52ebc3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualize the Chain in the Model Parameter Space
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Set the burn-in chain as the accepted sample at the end of the burn in chain
+    and observed the McMC sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7956369297e5fe6373b84e65821f1987b9d1cad30cf5f2b36ba27aed63f9f0c7.png](../Images/ad916426750d37902655104ee4efeeb0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of Bayesian linear regression. Much more could be
+    done and discussed, I have many more resources. Check out my [shared resource
+    inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture links
+    at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for Bayesian Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Bayesian machine learning methods apply probability to make predictions with
+    an intrinsic uncertainty model. In addition, the Bayesian methods integrate the
+    concept of Bayesian updating, a prior model updated with a likelihood model from
+    data to calculate a posterior model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are additional complexities with model training due to working with these
+    probabilities, represented by continuous probability density functions. Due to
+    the resulting high complexity, we can’t solve for the model parameters directly,
+    instead we must apply a sampling method such as Markov Chain Monte Carlo (MCMC)
+    simulation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a simple, very accessible demonstration of Bayesian linear regression
+    with McMC Metropolis-Hastings sampling. My students struggled with these concepts
+    so I challenged myself to built a workflow from scratch with all details explained
+    clearly. Let’s explain the critical prerequisites, starting with Bayesian updating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start by recalling the salient points for linear regression for prediction,
+    let’s start by looking at a linear model fit to a set of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/806bf5f702f9bb5a63e30d6e1f7969d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example linear regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parametric Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a parametric predictive machine learning model, we accept an a prior
+    assumption of linearity and then gain a very low parametric representation that
+    is easy to train without a onerous amount of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the fit model is a simple weighted linear additive model based on all the available
+    features, \(x_1,\ldots,x_m\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'the parametric model takes the form of:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ y = \sum_{\alpha = 1}^m b_{\alpha} x_{\alpha} + b_0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the visualization of the linear model parameters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ada2fcc2740c48478e79404563c91061.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Least Squares**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The analytical solution for the model parameters, \(b_1,\ldots,b_m,b_0\), is
+    available for the L2 norm loss function, the errors are summed and squared known
+    a least squares.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'we minimize the error, residual sum of squares (RSS) over the training data:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ RSS = \sum_{i=1}^n \left(y_i - (\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha,i}
+    + b_0) \right)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(y_i\) is the actual response feature values and \(\sum_{\alpha = 1}^m
+    b_{\alpha} x_{\alpha} + b_0\) are the model predictions, over the \(\alpha = 1,\ldots,n\)
+    training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a visualization of the L2 norm loss function, MSE,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/835541b16e1038a4606f7d97b628c4f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear model loss function, mean square error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this may be simplified as the sum of square error over the training data,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \begin{equation} \sum_{i=1}^n (\Delta y_i)^2 \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\Delta y_i\) is actual response feature observation \(y_i\) minus the
+    model prediction \(\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha} + b_0\), over the
+    \(i = 1,\ldots,n\) training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Assumptions**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are important assumption with our linear regression model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Error-free** - predictor variables are error free, not random variables'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Linearity** - response is linear combination of feature(s)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Constant Variance** - error in response is constant over predictor(s) value'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Independence of Error** - error in response are uncorrelated with each other'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**No multicollinearity** - none of the features are redundant with other features'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now’s let’s recall Bayesian updating and then update our linear regression model
+    to Bayesian linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Updating
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Bayesian approach for probabilities is based on a degree of belief (expert
+    experience) in an event updated as new information is available
+  prefs: []
+  type: TYPE_NORMAL
+- en: this approach to probability is powerful and can be applied to solve problems
+    that we cannot be solved with the frequentist approach to probability
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bayesian updating is represented by Bayes’ Theorem,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(P(A)\) is the prior, \(P(B|A)\) is the likelihood, \(P(B)\) is the evidence
+    term that is responsible for probability closure, and \(P(A|B)\) is the posterior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The frequentist formulation of the linear regression model is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = b_1 \times x + b_0 + \sigma \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(x\) is the predictor feature, \(b_1\) is the slope parameter, \(b_0\)
+    is the intercept parameter and \(\sigma\) is the error or noise. There is an analytical
+    form for the ordinary least squares solution to fit the available data while minimizing
+    the L2 norm of the data error vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can represent the multilinear regression model with matrix notation as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = \beta^{T} X + \sigma \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\beta\) is a vector of model parameters, \(\beta_1,\ldots,\beta_m\).
+    We can add another term \(\beta_0\) to the vector for the model intercept.
+  prefs: []
+  type: TYPE_NORMAL
+- en: when \(\beta_0\) is added, we also add a column of \(1\)s to the data \(X\)
+    matrix
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For the Bayesian formulation of linear regression is we pose the model as a
+    prediction of the distribution of the response, \(Y\), now a random variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y \sim N(\beta^{T}X, \sigma^{2} I) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We estimate the model parameter distributions through Bayesian updating for
+    inferring the model parameters from a prior and likelihood from training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(\beta | y, X) = \frac{p(y,X| \beta) p(\beta)}{p(y,X)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s talk about each term,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prior, \(𝑃(\beta)\) - initial, prior to new data, inference of the model parameters
+    over the predictor features based on,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: expert knowledge
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: naïve prior, in the case of non-informative priors the likelihood will dominate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: informative prior, in the case of a low uncertainty prior the prior will dominate
+    the likelihood
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: cannot include the new training data, prior to integration of the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Likelihood, \(𝑃(𝑦,𝑋│\beta)\) - conditional distribution of the training data
+    given assumed model parameters based on,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the new data, data-driven
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as the number of sample data increases the likelihood overwhelms the prior distribution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evidence, \(P(y,X)\) - normalization constant to ensure probability closure,
+    i.e., a valid posterior probability density function
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: independent of the model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: solved by marginalization of the numerator, collapses by integrating over all
+    possible model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for some solution methods, e.g., MCMC Metropolis-Hastings the evidence term
+    cancels out
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Posterior, \(P(\beta│y,X)\) - conditional distribution of the model parameters
+    given the data-driven likelihood and prior based on expert knowledge and belief
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: as the number of data, \(𝑛 \rightarrow \infty\), the model parameters, \(\beta\),
+    converge to ordinary least squares linear regression, the prior is overwhelmed
+    by the data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In general for continuous features we are not able to directly calculate the
+    posterior and we must use a sampling method, such as Markov chain Monte Carlo
+    (McMC) to sample the posterior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a McMC Metropolis Hastings workflow and more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Markov Chain Monte Carlo (MCMC)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Is a set of algorithms to sample from a probability distribution such that the
+    samples match the distribution statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Markov** - screening assumption, the next sample is only dependent on the
+    previous sample'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Chain** - the samples form a sequence often demonstrating a transition from
+    burn-in chain with inaccurate statistics and equilibrium chain with accurate statistics'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Monte Carlo** - use of Monte Carlo simulation, random sampling from a statistical
+    distribution'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why is this useful?
+  prefs: []
+  type: TYPE_NORMAL
+- en: we often don’t have the target distribution, it is unknown
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: but we can sample with the correct frequencies with other form of information
+    such as conditional probability density functions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bayesian Linear Regression with the Metropolis-Hastings Sampler
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here’s the basic steps of the Metropolis-Hastings MCMC Sampler:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For \(\ell = 1, \ldots, L\):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assign random values for the initial sample of model parameters, \(\beta(\ell
+    = 1) = b_1(\ell = 1)\), \(b_0(\ell = 1)\) and \(\sigma^2(\ell = 1)\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Propose new model parameters based on a proposal function, \(\beta^{\prime}
+    = b_1\), \(b_0\) and \(\sigma^2\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate probability of acceptance of the new proposal, as the ratio of the
+    posterior probability of the new model parameters given the data to the previous
+    model parameters given the data multiplied by the probability of the old step
+    given the new step divided by the probability of the new step given the old.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ P(\beta \rightarrow \beta^{\prime}) = min\left(\frac{p(\beta^{\prime}|y,X)
+    }{ p(\beta | y,X)} \cdot \frac{p(\beta^{\prime}|\beta) }{ p(\beta | \beta^{\prime})},1\right)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply Monte Carlo simulation to conditionally accept the proposal, if accepted,
+    \(\ell = \ell + 1\), and sample \(\beta(\ell) = \beta^{\prime}\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Go to step 2.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Let’s talk about this system. First the left hand side:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{p(\beta^{\prime}|y,X) }{ p(\beta | y,X)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are calculating the ratio of the posterior probability (likelihood times
+    prior) of the model parameters given the data and prior model for proposed sample
+    over the current sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you will see below it is quite practical to calculate this ratio.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the proposed sampled is more likely than the current sample, we will have
+    a value greater than 1.0, it will truncate to 1.0 and we accept the proposed sample.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the proposed sample is less likely than the current sample, we will have
+    a value less than 1.0, then we will use Monte Carlo sampling to randomly choice
+    the proposed sample with this probability of acceptance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This procedure allows us to walk through the model parameter space and sample
+    the parameters with the current rates, after the burn-in chain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, what about this part of the equation?
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{p(\beta^{\prime}|\beta) }{ p(\beta | \beta^{\prime})} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a problem with this procedure if we use asymmetric probability distributions
+    for the model parameters!
+  prefs: []
+  type: TYPE_NORMAL
+- en: E.g. for example, if we use a positively skewed distribution (e.g., log normal)
+    then we are more likely to step to larger values due to this distribution, and
+    not due to the prior nor the likelihood.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This term removes this bias, so that we have fair samples!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You will see below that we remove this issue by assuming symmetric model parameter
+    distributions, even though many use an asymmetric gamma distribution for sigma,
+    given it cannot have negative values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: My goal is the simplest possible demonstration.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our Simplified Demonstration Metropolis Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s further specify this workflow for our simple demonstration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have assumed a Gaussian, symmetric distribution for all model parameters as
+    a result this relationship holds for all possible model parameter, current and
+    proposed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \frac{p(\beta^{\prime}|\beta) }{ p(\beta | \beta^{\prime})} = 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we now have this simplified probability of proposal acceptance, note this
+    is know as Metropolis Sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(\beta \rightarrow \beta^{\prime}) = min \left( \frac{p(\beta^{\prime}|y,X)
+    }{ p(\beta | y,X)},1 \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s substitute our Bayesian formulation for our Bayesian linear regression
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(\beta^{\prime} | y, X) = \frac{p(y,X| \beta^{\prime}) p(\beta^{\prime})}{p(y,X)}
+    \quad \text{ and } \quad p(\beta | y, X) = \frac{p(y,X| \beta) p(\beta)}{p(y,X)}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we substitute these into our probability of acceptance above we get this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(\beta \rightarrow \beta^{\prime}) = min \left( \frac{p(\beta^{\prime}|y,X)
+    }{ p(\beta | y,X)},1 \right) = min \left( \frac{ \left( \frac{p(y,X| \beta_{new})
+    p(\beta_{new}) } {p(y,X)} \right) }{ \left( \frac{ p(y,X| \beta) p(\beta)}{p(y,X)}
+    \right) },1 \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the evidence terms cancel out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(\beta \rightarrow \beta^{\prime}) = min \left( \frac{ p(y,X| \beta_{new})
+    p(\beta_{new}) }{ p(y,X| \beta) p(\beta)},1 \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we are working with a likelihood ratio, we can work with densities instead
+    of probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(\beta \rightarrow \beta^{\prime}) = min \left( \frac{ f(y,X| \beta_{new})
+    f(\beta_{new}) }{ f(y,X| \beta) f(\beta) } ,1 \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally for improved solution stability we can calculate the natural log ratio:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ ln(P(\beta \rightarrow \beta^{\prime})) = min \left( ln \left[ \frac{ f(y,X|
+    \beta_{new}) f(\beta_{new}) }{ f(y,X| \beta) f(\beta) } \right],0 \right) \]\[
+    = min \left( \left[ln(f(y,X| \beta_{new})) + ln(f(\beta_{new})) \right] - \left[
+    ln(f(y,X| \beta)) + ln(f(\beta)) \right],0 \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We calculate probability of proposal acceptance, as exponentiation of the above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we calculate the likelihood density? If we assume independence between
+    all of the data we can take the product sum of the probabilities (densities) of
+    all the response values given the predictor and model parameter sample! Given,
+    the Gaussian assumption for the response feature, we can calculate the densities
+    for each data from the Gaussian PDF.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f_{y,X | \beta}(y) \sim N [ b_1 \cdot X + b_0, \sigma ] \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and under the assumption of independence we can take the produce sum over all
+    training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f(y,X| \beta) = \prod_{\alpha = 1}^{n} f_{y,X | \beta}(y_{\alpha}) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note, this workflow was developed with assistance from Fortunato Nucera’s Medium
+    Article [Mastering Bayesian Linear Regression from Scratch: A Metropolis-Hastings
+    Implementation in Python](https://medium.com/@tinonucera/bayesian-linear-regression-from-scratch-a-metropolis-hastings-implementation-63526857f191).
+    I highly recommend this accessible description and demonstration. Thank you, Fortunato.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following functions include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**next_proposal** - propose a next model parameters from previous model parameters,
+    this is the proposal method, parameterized by step standard deviation and Gaussian
+    distribution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**likelihood_density** - calculate the product of all the densities for all
+    the data given the model parameters. Since we are working with the log densities,
+    we sum over all the data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**prior_density** - calculate the product of the densities for all the model
+    parameters given the prior model. Since we are working with the log densities,
+    we sum over all the model parameters. This is an assumption of independence.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**add_grid** - improved grid for the plotting.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Build a Synthetic Dataset with Known Truth Linear Regression Model Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s build a simple dataset with known linear regression model parameters,
+    \(b_1\) is the slope parameter, \(b_0\) is the intercept parameter and \(\sigma\)
+    is the error or noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we build the data based on these parameters, and then we train a linear regression
+    model and show that we get the correct slope and intercept model parameters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/03c99522c28b8cb2d8c756010b591bc0e06d3cc724b73a2cbcaa5331a9f072ea.png](../Images/a8e886d92fdcac447a29e1df3ac8e5e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear regression model parameters are quite close to the coefficients used
+    to make the synthetic data. Now let’s train an Bayesian linear regression model
+    with MCMC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It all begins with a prior model, for that we assume a reasonable prior model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assume the Prior Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We assume a multivariate Gaussian distribution for the slope and intercept parameters,
+    \(f_{b_1,b_0,\sigma}(b_1,b_0,\sigma)\) with independence between \(b_1\), \(b_0\),
+    and \(\sigma\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a naive prior assume a very large standard deviation. We will work in log
+    probability and log density to improve stability of the system.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We want to avoid product sums of a many values near zero as the probabilities
+    will disappear due to computer floating point precision.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In log space, we can add calculate probabilities of independent events by summing
+    (instead of multiplication) these negative values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1d26923084d95d772b3d02c1f620108104eaf5c01869ff2ab96e4107777052fb.png](../Images/d6b7bfe8279df066ea241de8c0e3a483.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayesian Linear Regression with MCMC Metropolis-Hastings
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The Bayesian linear regression with MCMC Metropolis-Hastings workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: assign an random initial set of model parameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: apply a proposal rule to assign a new set of model parameters given the previous
+    set of model parameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: calculate the ratio of the likelihood of the new model parameters over the previous
+    model parameters given the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: conditionally accept the proposal based on this ratio, i.e., if proposal is
+    more like accept it, if less likely with a probability based on the ratio.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: return to step 2.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the Results
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s visualize the McMC Metropolis sample chain for each of the model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the burn-in and equilibrium chains.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compare the slope and intercept model parameters to the frequentist, linear
+    regression solution, based only on the ordinary least squares solution, minimizing
+    the L2 norm of the error vector over all sample data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compare the noise parameter to the noise added to the synthetic data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c64bff7f86be7eccc60cf24f8bcafce02f0cc0fa8d1c2205137340aa80952f81.png](../Images/0afb4e1bf5f96613b6f86806ca52ebc3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualize the Chain in the Model Parameter Space
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Set the burn-in chain as the accepted sample at the end of the burn in chain
+    and observed the McMC sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7956369297e5fe6373b84e65821f1987b9d1cad30cf5f2b36ba27aed63f9f0c7.png](../Images/ad916426750d37902655104ee4efeeb0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Assume the Prior Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We assume a multivariate Gaussian distribution for the slope and intercept parameters,
+    \(f_{b_1,b_0,\sigma}(b_1,b_0,\sigma)\) with independence between \(b_1\), \(b_0\),
+    and \(\sigma\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a naive prior assume a very large standard deviation. We will work in log
+    probability and log density to improve stability of the system.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We want to avoid product sums of a many values near zero as the probabilities
+    will disappear due to computer floating point precision.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In log space, we can add calculate probabilities of independent events by summing
+    (instead of multiplication) these negative values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1d26923084d95d772b3d02c1f620108104eaf5c01869ff2ab96e4107777052fb.png](../Images/d6b7bfe8279df066ea241de8c0e3a483.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayesian Linear Regression with MCMC Metropolis-Hastings
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The Bayesian linear regression with MCMC Metropolis-Hastings workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: assign an random initial set of model parameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: apply a proposal rule to assign a new set of model parameters given the previous
+    set of model parameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: calculate the ratio of the likelihood of the new model parameters over the previous
+    model parameters given the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: conditionally accept the proposal based on this ratio, i.e., if proposal is
+    more like accept it, if less likely with a probability based on the ratio.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: return to step 2.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the Results
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s visualize the McMC Metropolis sample chain for each of the model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the burn-in and equilibrium chains.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compare the slope and intercept model parameters to the frequentist, linear
+    regression solution, based only on the ordinary least squares solution, minimizing
+    the L2 norm of the error vector over all sample data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compare the noise parameter to the noise added to the synthetic data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c64bff7f86be7eccc60cf24f8bcafce02f0cc0fa8d1c2205137340aa80952f81.png](../Images/0afb4e1bf5f96613b6f86806ca52ebc3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualize the Chain in the Model Parameter Space
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Set the burn-in chain as the accepted sample at the end of the burn in chain
+    and observed the McMC sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7956369297e5fe6373b84e65821f1987b9d1cad30cf5f2b36ba27aed63f9f0c7.png](../Images/ad916426750d37902655104ee4efeeb0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of Bayesian linear regression. Much more could be
+    done and discussed, I have many more resources. Check out my [shared resource
+    inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture links
+    at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

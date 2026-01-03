@@ -1,0 +1,1707 @@
+- en: Naive Bayes Classifier
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_naive_Bayes.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_naive_Bayes.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Naive Bayes Classifier**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Linear Regression](https://youtu.be/0fzbyhWiP84)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Ridge Regression](https://youtu.be/pMGO40yXZ5Y?si=ygJAheyX-v2BmSiR)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Bayesian Probability](https://www.youtube.com/watch?v=Ppwfr8H177M&list=PLG19vXLQHvSB-D4XKYieEku9GQMQyAzjJ&index=6)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Bayesian Linear Regression](https://youtu.be/LzZ5b3wdZQk?si=DkhYrgmDXzrPFQyr)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Naive Bayes Classifier](https://youtu.be/BDvyLrH3cLI?si=D6boOpoVpyo-6TqK)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for Bayesian Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Bayesian machine learning methods apply probability to make predictions with
+    an intrinsic uncertainty model. In addition, the Bayesian methods integrate the
+    concept of Bayesian updating, a prior model updated with a likelihood model from
+    data to calculate a posterior model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are additional complexities with model training due to working with these
+    probabilities, represented by continuous probability density functions. Due to
+    the resulting high complexity, we have to make an assumption of conditional independence
+    resulting a practical classification model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a simple workflow, demonstration of naive Bayes classification for subsurface
+    modeling workflows. This should help you get started with building subsurface
+    models that with predictions based on multiple sources of information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This method is great as it builds directly on our knowledge Bayesian statistics
+    to provide a simple, but flexible classification method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Updating
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Bayesian approach for probabilities is based on a degree of belief (expert
+    experience) in an event updated as new information is available
+  prefs: []
+  type: TYPE_NORMAL
+- en: this approach to probability is powerful and can be applied to solve problems
+    that we cannot be solved with the frequentist approach to probability
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bayesian updating is represented by Bayes’ Theorem,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(P(A)\) is the prior, \(P(B|A)\) is the likelihood, \(P(B)\) is the evidence
+    term that is responsible for probability closure, and \(P(A|B)\) is the posterior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Updating for Classification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The naive Bayes classifier is based on the conditional probability of a category,
+    \(k\), given \(n\) features, \(x_1, \dots , x_n\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(C_k | x_1, \dots , x_n) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can solve for this posterior with Bayesian updating,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(C_k | x_1, \dots , x_n) = \frac{p(x_1, \dots , x_n | C_k) p(C_k)}{p(x_1,
+    \dots , x_n)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: let’s combine the likelihood and prior for the moment,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_1, \dots , x_n | C_k) p(C_k) = p(x_1, \dots , x_n, C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can expand the full joint distribution recursively as follows,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_1, \dots , x_n, C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: expansion of the joint with the conditional and prior,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_1 | x_2, \dots , x_n, C_k) p(x_2, \dots , x_n, C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: continue recursively expanding,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_1 | x_2, \dots , x_n, C_k) p(x_2 | x_3, \dots , x_n, C_k) p(x_3, \dots
+    , x_n, C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can generalize as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_1 | x_2, \dots , x_n, C_k) p(x_2 | x_3, \dots , x_n, C_k) p(x_3 | x_4,
+    \dots , x_n, C_k) \ldots (x_{n-1} | x_n, C_k) (x_{n} | C_k) p(C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive Bayes Approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The likelihood, conditional probability with the joint conditional is difficult,
+    likely impossible, to calculate. It requires information about the joint relationship
+    between \(x_1, \dots , x_n\) features. As \(n\) increases this requires a lot
+    of data to inform the joint distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the naive Bayes approach we make the ‘naive’ assumption that the features
+    are all **conditionally independent**. This entails,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_i | x_{i+1}, \ldots , x_n, C_k) = p(x_i | C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for all \(i = 1, \ldots, n\) features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can now solve for the needed conditional probability as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(C_k | x_1, \dots , x_n) = \frac{p(C_k) \prod_{i=1}^{n} p(x_i | C_k)}{p(x_1,
+    \dots , x_n)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We only need the prior, \(p(C_k)\), and a set of conditionals, \(p(x_i | C_k)\),
+    for all predictor features, \(i = 1,\ldots,n\) and all categories, \(k = 1,\ldots,K\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The evidence term, \(p(x_1, \dots , x_n)\), is only based on the features \(x_1,
+    \dots , x_n\); therefore, is a constant over the categories \(k = 1,\ldots,n\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: it ensures closure - probabilities over all categories sum to one
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we simply standardize the numerators to sum to one over the categories.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The naive Bayes approach is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: simple to understand, builds on fundamental Bayesian statistics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: practical even with small datasets since with the conditional independence we
+    only need to estimate simple conditional distributions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices
+    and visualization of a decision tree regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset [unconv_MV_v4.csv](https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/unconv_MV_v4.csv)
+    available in my GeoDataSet repo. It is a comma delimited file with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well index (integer)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^6\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial gas production (90 day average) (MCFPD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s make sure that we have selected reasonable features to build a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: the 2 predictor features are not collinear, as this would result in an unstable
+    prediction model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: each of the features are related to the response feature, the predictor features
+    inform the response
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the Correlation Matrix and Correlation with Response Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with correlation analysis. We can calculate it and view it in the
+    console with these commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation analysis is based on the assumption of linear relationships, but
+    it is a good start
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c1518c2aba2c3f97db3a5a6d2a31e0afa50a35e1219986c0a273acb3b7b84525.png](../Images/2368d8f1c85e72f9a6194c1649831a12.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This looks good. There is a mix of correlation magnitudes. Of course, correlation
+    coefficients are limited to degree of linear correlations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the matrix scatter plot to see the pairwise relationship between
+    the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/83c5de1598b49734fd9eb4bf488f0fa05e4e41fcd4b4b87cf4c0ad13de73c823.png](../Images/b475428df375407aeda73f509ef72a6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Production Truncation to Categorical Feature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s also make a categorical variable for production, based on a threshold
+    of 4,000 MCFPD.
+  prefs: []
+  type: TYPE_NORMAL
+- en: high production > 4,000 MCFPD, cprod = 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: low production <= 4,000 MCFPD, cprod = 0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s visualize the first several rows of our data stored in a DataFrame so
+    we can make sure we successfully loaded the data file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Production | cProduction |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 535.257367 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 3664.266856 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1759.441362 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 6219.824427 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5455.075177 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For convenience and simplicity we use scikit-learn’s random train and test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrames
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the train and test DataFrame is useful check before we build our
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Brittle | Production | cProduction |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 21 | 17.21 | 20.12 | 3682.419578 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 17 | 18.04 | 57.53 | 6847.702464 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 22 | 18.48 | 46.89 | 7004.402103 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 29 | 13.53 | 67.51 | 1906.299667 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 14.95 | 75.73 | 3065.623539 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Por | Brittle | Production | cProduction |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 24 | 18.96 | 29.28 | 4483.578476 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 18.10 | 56.09 | 6219.824427 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 28 | 13.37 | 52.23 | 4181.840761 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 13 | 13.58 | 52.16 | 3461.628938 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 27 | 16.61 | 60.13 | 4597.801586 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: It is good that we checked the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check out the range of values for each feature to set up and adjust plotting
+    limits. See above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Train and Test Splits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the consistency and coverage of training and testing with histograms
+    and scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check to make sure the train and test datasets cover the range of possible predictor
+    feature combinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ensure we are not extrapolating beyond the training data with the testing cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7764d1dd08fb24e785b08b58ee988d464d003ef20a13020c8f2c5211ea7a018e.png](../Images/5beb4e81b107e0ae5d2bfc58f78ad760.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This looks good,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the distributions are well behaved, we cannot observe obvious gaps, outliers
+    nor truncations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the test and train cases have similar coverage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Predictor Feature Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s build a simplified plot to visualize the 2D predictor feature space with
+    the train and test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we ask the question, will we be able to model the classification boundary? Is
+    there a lot of data overlap? Is the boundary simple (i.e., linear) or more complicated?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/16bd6f1bea4bb5305b2ff3f7e23c2b6d76d10103ec45b5888edbc092cae99578.png](../Images/937babe8a9ab243aa2de0382c15dbdb8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Instantiate, Fit and Predict with Naive Bayes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We use the naive Bayes classifier to calculate the classification, conditional
+    probability of each of our response feature categories
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(C_1|x_1,x_2) \propto P(x_1 | C_1) \cdot P(x_2 | C_1) \cdot P(C_1) \]\[
+    P(C_2|x_1,x_2) \propto P(x_1 | C_2) \cdot P(x_2 | C_2) \cdot P(C_2) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(x_1\) is the first predictor feature (porosity) and \(x_2\) is the second
+    predictor feature (brittleness) value
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: response feature category \(C_1\) is low production and \(C_2\) is high production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(P(x_1 | C_1) \cdot P(x_2 | C_1)\) is an approximation of the likelihood term
+    \(P(x_1,x_2 | C_1)\) under the assumption of conditional independence
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(P(C_1)\) and \(P(C_2)\) are the prior probabilities of each category, low
+    and high production, prior to integrating the new data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: due to probability closure \(P(C_1|x_1,x_2) + P(C_2|x_1,x_2) = 1.0\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gaussian Naive Bayes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We select the Gaussian model as it simplifies the inference problem to a small
+    number of parameters, the conditional means and variances given each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | \(X_1\) |  | \(X_2\) |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | \(C_1\) | \(C_2\) | \(C_1\) | \(C_2\) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Mean | $\overline{X}_{1 | C_1}$ | $\overline{X}_{1 | C_2}$ |'
+  prefs: []
+  type: TYPE_TB
+- en: '| St. Dev. | $\sigma_{X_{1 | C_1}}$ | $\sigma_{X_{1 | C_2}}$ |'
+  prefs: []
+  type: TYPE_TB
+- en: Recall we can set a prior probability of each response category
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should not use proportions from the dataset! This would be information leakage
+    as we are using the same data to inform the prior as the likelihood
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Another option would be to assume a naive, uniform prior, substitute the following:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note the prior is in a tuple ordered in the same order as the features in the
+    predictor feature DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s build our Gaussian naive Bayes model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: instantiate it with the priors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train with the training data, we use the standard fit function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s predict with our new model over the testing dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: test by predicting with the testing data, we use the standard prediction function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9c470d7e14b568fcdb545dbf88de3583bdc1bb9536121641543dbdada1d00843.png](../Images/698f563856b618261a1304af923cdcf0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model Checking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check our model. With scikit learn we have great built in tools to evaluate
+    our classification model. Let’s try the classification report first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: We get a table with summary metrics for model performance. The metrics include,
+    precision, recall and f1-score,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: \[ Precision_k = \frac{ n_{k,\text{true positives}} }{ n_{k,\text{true positives}}
+    + n_{k,\text{false positives}}} = \frac{ n_{k,\text{true positives}} }{ n_{k,
+    \text{all positives}} } \]\[ Recall_k = \frac{ n_{k, \text{true positives}} }{n_k}
+    \]\[ f1-score_k = \frac{2} { \frac{1}{Precision_k} + \frac{1}{Recall_k} } \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also useful to look at the confusion matrix, the frequencies of for the
+    combinatorial of true and predicted labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\hat{y}_{\alpha}\) - x axis is the prediction - category 0 or 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(y_{\alpha}\) - y axis is the truth - category 0 or 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s make a plot to conveniently visualize the classification report and confusion
+    matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/488e48fbe2c2dbe44babd3153cf986e9f5d15933b89b432427b78d19ec199f2d.png](../Images/d44b3c84b490d217c5a43eb292518ddb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From above we can observe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 9 low production wells classified correctly as low production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 0 high production well misclassified as low production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1 low production wells misclassified as high production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 5 high production wells classified correctly as high production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualizing the Classification Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s visualize the model over the entire feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: here’s the training data with the classification over the full range of predictor
+    features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: blue for low production and yellow for high production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note: naive Bayes provides the posterior probability of high and low production'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the classifications below are based on maximum a priori selection (MAPS), selecting
+    the category with the highest probability
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s visualize the classification model and training data (grey - low production,
+    yellow - high production) over the predictor feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/06e68428e426d2a19fc46fd738a1596dbf9639a934658f32817654c3fea7bc3f.png](../Images/228fd4c465519a1e528797cb6858e7fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We could also visualize the posterior probabilities of low and high production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: here’s the posterior probability of low and high production over the predictor
+    feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4593d5390964965177a9ff8671a7b1721a5bedadf4973ff1a0db0724f4fd9073.png](../Images/eda1d2ef23c319e96be8b33148dff009.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have a reasonable model to predict well production from porosity and brittleness
+    for an unconventional reservoir.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of naive Bayes classifier. Much more could be done
+    and discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for Bayesian Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Bayesian machine learning methods apply probability to make predictions with
+    an intrinsic uncertainty model. In addition, the Bayesian methods integrate the
+    concept of Bayesian updating, a prior model updated with a likelihood model from
+    data to calculate a posterior model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are additional complexities with model training due to working with these
+    probabilities, represented by continuous probability density functions. Due to
+    the resulting high complexity, we have to make an assumption of conditional independence
+    resulting a practical classification model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a simple workflow, demonstration of naive Bayes classification for subsurface
+    modeling workflows. This should help you get started with building subsurface
+    models that with predictions based on multiple sources of information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This method is great as it builds directly on our knowledge Bayesian statistics
+    to provide a simple, but flexible classification method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Updating
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Bayesian approach for probabilities is based on a degree of belief (expert
+    experience) in an event updated as new information is available
+  prefs: []
+  type: TYPE_NORMAL
+- en: this approach to probability is powerful and can be applied to solve problems
+    that we cannot be solved with the frequentist approach to probability
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bayesian updating is represented by Bayes’ Theorem,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(P(A)\) is the prior, \(P(B|A)\) is the likelihood, \(P(B)\) is the evidence
+    term that is responsible for probability closure, and \(P(A|B)\) is the posterior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Updating for Classification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The naive Bayes classifier is based on the conditional probability of a category,
+    \(k\), given \(n\) features, \(x_1, \dots , x_n\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(C_k | x_1, \dots , x_n) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can solve for this posterior with Bayesian updating,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(C_k | x_1, \dots , x_n) = \frac{p(x_1, \dots , x_n | C_k) p(C_k)}{p(x_1,
+    \dots , x_n)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: let’s combine the likelihood and prior for the moment,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_1, \dots , x_n | C_k) p(C_k) = p(x_1, \dots , x_n, C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can expand the full joint distribution recursively as follows,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_1, \dots , x_n, C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: expansion of the joint with the conditional and prior,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_1 | x_2, \dots , x_n, C_k) p(x_2, \dots , x_n, C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: continue recursively expanding,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_1 | x_2, \dots , x_n, C_k) p(x_2 | x_3, \dots , x_n, C_k) p(x_3, \dots
+    , x_n, C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can generalize as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_1 | x_2, \dots , x_n, C_k) p(x_2 | x_3, \dots , x_n, C_k) p(x_3 | x_4,
+    \dots , x_n, C_k) \ldots (x_{n-1} | x_n, C_k) (x_{n} | C_k) p(C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive Bayes Approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The likelihood, conditional probability with the joint conditional is difficult,
+    likely impossible, to calculate. It requires information about the joint relationship
+    between \(x_1, \dots , x_n\) features. As \(n\) increases this requires a lot
+    of data to inform the joint distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the naive Bayes approach we make the ‘naive’ assumption that the features
+    are all **conditionally independent**. This entails,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(x_i | x_{i+1}, \ldots , x_n, C_k) = p(x_i | C_k) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for all \(i = 1, \ldots, n\) features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can now solve for the needed conditional probability as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p(C_k | x_1, \dots , x_n) = \frac{p(C_k) \prod_{i=1}^{n} p(x_i | C_k)}{p(x_1,
+    \dots , x_n)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We only need the prior, \(p(C_k)\), and a set of conditionals, \(p(x_i | C_k)\),
+    for all predictor features, \(i = 1,\ldots,n\) and all categories, \(k = 1,\ldots,K\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The evidence term, \(p(x_1, \dots , x_n)\), is only based on the features \(x_1,
+    \dots , x_n\); therefore, is a constant over the categories \(k = 1,\ldots,n\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: it ensures closure - probabilities over all categories sum to one
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we simply standardize the numerators to sum to one over the categories.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The naive Bayes approach is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: simple to understand, builds on fundamental Bayesian statistics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: practical even with small datasets since with the conditional independence we
+    only need to estimate simple conditional distributions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices
+    and visualization of a decision tree regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset [unconv_MV_v4.csv](https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/unconv_MV_v4.csv)
+    available in my GeoDataSet repo. It is a comma delimited file with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well index (integer)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^6\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial gas production (90 day average) (MCFPD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s make sure that we have selected reasonable features to build a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: the 2 predictor features are not collinear, as this would result in an unstable
+    prediction model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: each of the features are related to the response feature, the predictor features
+    inform the response
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the Correlation Matrix and Correlation with Response Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with correlation analysis. We can calculate it and view it in the
+    console with these commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation analysis is based on the assumption of linear relationships, but
+    it is a good start
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c1518c2aba2c3f97db3a5a6d2a31e0afa50a35e1219986c0a273acb3b7b84525.png](../Images/2368d8f1c85e72f9a6194c1649831a12.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This looks good. There is a mix of correlation magnitudes. Of course, correlation
+    coefficients are limited to degree of linear correlations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the matrix scatter plot to see the pairwise relationship between
+    the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/83c5de1598b49734fd9eb4bf488f0fa05e4e41fcd4b4b87cf4c0ad13de73c823.png](../Images/b475428df375407aeda73f509ef72a6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Production Truncation to Categorical Feature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s also make a categorical variable for production, based on a threshold
+    of 4,000 MCFPD.
+  prefs: []
+  type: TYPE_NORMAL
+- en: high production > 4,000 MCFPD, cprod = 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: low production <= 4,000 MCFPD, cprod = 0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s visualize the first several rows of our data stored in a DataFrame so
+    we can make sure we successfully loaded the data file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Production | cProduction |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 535.257367 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 3664.266856 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1759.441362 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 6219.824427 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5455.075177 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For convenience and simplicity we use scikit-learn’s random train and test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrames
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the train and test DataFrame is useful check before we build our
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Brittle | Production | cProduction |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 21 | 17.21 | 20.12 | 3682.419578 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 17 | 18.04 | 57.53 | 6847.702464 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 22 | 18.48 | 46.89 | 7004.402103 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 29 | 13.53 | 67.51 | 1906.299667 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 14.95 | 75.73 | 3065.623539 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Por | Brittle | Production | cProduction |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 24 | 18.96 | 29.28 | 4483.578476 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 18.10 | 56.09 | 6219.824427 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 28 | 13.37 | 52.23 | 4181.840761 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 13 | 13.58 | 52.16 | 3461.628938 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 27 | 16.61 | 60.13 | 4597.801586 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: It is good that we checked the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check out the range of values for each feature to set up and adjust plotting
+    limits. See above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Train and Test Splits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the consistency and coverage of training and testing with histograms
+    and scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check to make sure the train and test datasets cover the range of possible predictor
+    feature combinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ensure we are not extrapolating beyond the training data with the testing cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7764d1dd08fb24e785b08b58ee988d464d003ef20a13020c8f2c5211ea7a018e.png](../Images/5beb4e81b107e0ae5d2bfc58f78ad760.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This looks good,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the distributions are well behaved, we cannot observe obvious gaps, outliers
+    nor truncations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the test and train cases have similar coverage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Predictor Feature Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s build a simplified plot to visualize the 2D predictor feature space with
+    the train and test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we ask the question, will we be able to model the classification boundary? Is
+    there a lot of data overlap? Is the boundary simple (i.e., linear) or more complicated?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/16bd6f1bea4bb5305b2ff3f7e23c2b6d76d10103ec45b5888edbc092cae99578.png](../Images/937babe8a9ab243aa2de0382c15dbdb8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Instantiate, Fit and Predict with Naive Bayes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We use the naive Bayes classifier to calculate the classification, conditional
+    probability of each of our response feature categories
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P(C_1|x_1,x_2) \propto P(x_1 | C_1) \cdot P(x_2 | C_1) \cdot P(C_1) \]\[
+    P(C_2|x_1,x_2) \propto P(x_1 | C_2) \cdot P(x_2 | C_2) \cdot P(C_2) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(x_1\) is the first predictor feature (porosity) and \(x_2\) is the second
+    predictor feature (brittleness) value
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: response feature category \(C_1\) is low production and \(C_2\) is high production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(P(x_1 | C_1) \cdot P(x_2 | C_1)\) is an approximation of the likelihood term
+    \(P(x_1,x_2 | C_1)\) under the assumption of conditional independence
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(P(C_1)\) and \(P(C_2)\) are the prior probabilities of each category, low
+    and high production, prior to integrating the new data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: due to probability closure \(P(C_1|x_1,x_2) + P(C_2|x_1,x_2) = 1.0\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gaussian Naive Bayes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We select the Gaussian model as it simplifies the inference problem to a small
+    number of parameters, the conditional means and variances given each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '|  | \(X_1\) |  | \(X_2\) |  |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | \(C_1\) | \(C_2\) | \(C_1\) | \(C_2\) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Mean | $\overline{X}_{1 | C_1}$ | $\overline{X}_{1 | C_2}$ |'
+  prefs: []
+  type: TYPE_TB
+- en: '| St. Dev. | $\sigma_{X_{1 | C_1}}$ | $\sigma_{X_{1 | C_2}}$ |'
+  prefs: []
+  type: TYPE_TB
+- en: Recall we can set a prior probability of each response category
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should not use proportions from the dataset! This would be information leakage
+    as we are using the same data to inform the prior as the likelihood
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Another option would be to assume a naive, uniform prior, substitute the following:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note the prior is in a tuple ordered in the same order as the features in the
+    predictor feature DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s build our Gaussian naive Bayes model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: instantiate it with the priors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train with the training data, we use the standard fit function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s predict with our new model over the testing dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: test by predicting with the testing data, we use the standard prediction function
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9c470d7e14b568fcdb545dbf88de3583bdc1bb9536121641543dbdada1d00843.png](../Images/698f563856b618261a1304af923cdcf0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model Checking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check our model. With scikit learn we have great built in tools to evaluate
+    our classification model. Let’s try the classification report first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: We get a table with summary metrics for model performance. The metrics include,
+    precision, recall and f1-score,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: \[ Precision_k = \frac{ n_{k,\text{true positives}} }{ n_{k,\text{true positives}}
+    + n_{k,\text{false positives}}} = \frac{ n_{k,\text{true positives}} }{ n_{k,
+    \text{all positives}} } \]\[ Recall_k = \frac{ n_{k, \text{true positives}} }{n_k}
+    \]\[ f1-score_k = \frac{2} { \frac{1}{Precision_k} + \frac{1}{Recall_k} } \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also useful to look at the confusion matrix, the frequencies of for the
+    combinatorial of true and predicted labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\hat{y}_{\alpha}\) - x axis is the prediction - category 0 or 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(y_{\alpha}\) - y axis is the truth - category 0 or 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s make a plot to conveniently visualize the classification report and confusion
+    matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/488e48fbe2c2dbe44babd3153cf986e9f5d15933b89b432427b78d19ec199f2d.png](../Images/d44b3c84b490d217c5a43eb292518ddb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From above we can observe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 9 low production wells classified correctly as low production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 0 high production well misclassified as low production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1 low production wells misclassified as high production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 5 high production wells classified correctly as high production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualizing the Classification Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s visualize the model over the entire feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: here’s the training data with the classification over the full range of predictor
+    features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: blue for low production and yellow for high production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note: naive Bayes provides the posterior probability of high and low production'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the classifications below are based on maximum a priori selection (MAPS), selecting
+    the category with the highest probability
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s visualize the classification model and training data (grey - low production,
+    yellow - high production) over the predictor feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/06e68428e426d2a19fc46fd738a1596dbf9639a934658f32817654c3fea7bc3f.png](../Images/228fd4c465519a1e528797cb6858e7fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We could also visualize the posterior probabilities of low and high production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: here’s the posterior probability of low and high production over the predictor
+    feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4593d5390964965177a9ff8671a7b1721a5bedadf4973ff1a0db0724f4fd9073.png](../Images/eda1d2ef23c319e96be8b33148dff009.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have a reasonable model to predict well production from porosity and brittleness
+    for an unconventional reservoir.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of naive Bayes classifier. Much more could be done
+    and discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

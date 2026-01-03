@@ -1,0 +1,2686 @@
+- en: k-nearest Neighbours
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_knearest_neighbours.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_knearest_neighbours.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **k-nearest Neighbours**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[k-nearest Neighbours Regression](https://youtu.be/lzmeChSYvv8?si=nfcvGtkIAQ7rFkjo)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for k-nearest Neighbours Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are many good reasons to cover k-nearest neighbours regression. In addition
+    to being a simple, interpretable and flexible predictive machine learning model,
+    it also demonstrates important concepts,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**non-parametric predictive model** - that learns the form of the relationships
+    from the data, i.e., no prior assumption about the form of the relationship'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**instance-based, lazy learning** - model training is postponed until prediction
+    is required, no precalculation of the model. i.e., prediction requires access
+    to the data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**hyperparameter tuning** - with a understandable hyperparameters that control
+    model fit'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**very flexible, versatile predictive model** - performs well in many situations'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Convolution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In fact, k-nearest neighbours is analogous to spatial estimation through weighted
+    averaging within a local neighbourhood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0cfb5694654b0332a568b81d0ae25755.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction modeling a spatial interpolation in predictor feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The k-nearest neighbours approach is similar to a convolution approach for spatial
+    interpolation. Convolution is the integral product of two functions, after one
+    is reversed and shifted by \(\tau\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: one interpretation is smoothing a function with weighting function, \(𝑓(\Delta)\),
+    is applied to calculate the weighted average of function, \(𝑔(x)\),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x) = \int_{-\infty}^{\infty} f(\tau) g(x - \tau) \, d\tau \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: this easily extends into multidimensional
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x, y, z) = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} \int_{-\infty}^{\infty}
+    f(\tau_x, \tau_y, \tau_z) g(x - \tau_x, y - \tau_y, z - \tau_z) \, d\tau_x \,
+    d\tau_y \, d\tau_z \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The choice of which function is shifted before integration does not change the
+    result, the convolution operator has commutativity,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x) = \int_{-\infty}^{\infty} f(\tau) g(x - \tau) \, d\tau \]\[ (f
+    * g)(x) = \int_{-\infty}^{\infty} f(x - \tau) g(\tau) \, d\tau \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: if either function is reflected then convolution is equivalent to cross-correlation,
+    measure of similarity between 2 signals as a function of displacement.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To demonstrate convolution with an exhaustive \(g(x)\) and sparsely sampled
+    \(g(x)\) I built out an [interactive Python convolution dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Convolution_kNearest.ipynb),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f55c37e0f7da98a233affd5fbd5ba38c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard to demonstrate convolution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/58f0d6ec82ae506386975d87b4fbaa3fa88f321e3ef516e9f956402a156d2751.png](../Images/83364c0e2e061f041cd64b882996eb7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ae797e2e907bd48f0c7b524dd697136f6a863602289a91dc8e372c930f4a72c1.png](../Images/2eab3ef179c50a4d663c4b21d6e38124.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: While it is useful to review and discuss convolution, k-nearest neighbours departs
+    from convolution with the specification of \(k\) nearest neighbours to include
+    in the weighted average,
+  prefs: []
+  type: TYPE_NORMAL
+- en: specifying \(k\) results in a locally adaptive window size, the local neighbourhood
+    extends far enough to find \(k\) training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/2ffab60ca866a945ae26ac4aab566a02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For a given $k$ number of nearest neighbours data are collected from farther
+    away in sparse data regions of the predictor feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: k-nearest Neighbours Hyperparameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s discuss the k-nearest neighbours hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**k number of nearest data** - to utilize for prediction'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**data weighting** - for example uniform weighting (use local training data
+    average), inverse distance weighting'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note, for the case of inverse distance weighting, the method is analogous to
+    inverse distance weighted interpolation with a maximum number of local data constraint
+    commonly applied for spatial interpolation. Inverse distance is available in GeostatsPy
+    for spatial mapping.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Distance Metric** - training data within the predictor feature space are
+    ranked by distance, closest to farthest, a variety of distance metrics may be
+    applied, including:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Euclidian distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \begin{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: d_i = \sqrt{\sum_{\alpha = 1}^{m} \left(x_{\alpha,i} - x_{\alpha,0}\right)^2}
+    \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: Minkowski Distance - a generalized form of distance with well-known Manhattan
+    and Euclidean distances are special cases,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ d_{(i,i')} = \left( \sum_{j=1}^{m} \left( x_{(j,i)} - x_{(j,i')} \right)^p
+    \right)^{\frac{1}{p}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: when \(p=2\), this becomes the Euclidean distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: when \(p=1\) it becomes the Manhattan distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices,
+    visualization of a decision tree regression model, and the addition specified
+    percentiles and major and minor gridlines to our plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘unconv_MV.csv’. This
+    dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a DataFrame we called ‘my_data’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optional: Add Random Noise to the Response Feature'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can do this to observe the impact of data noise on overfit and hyperparameter
+    tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is for experiential learning, of course we wouldn’t add random noise to
+    our data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We set the random number seed for reproducibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful first check of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: add parameter ‘n=13’ to see the first 13 rows of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1339.165488 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3383.979252 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2509.686720 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5514.421023 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 3532.020478 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4283.543382 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 3627.906723 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 3101.539533 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 3213.391047 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2200.204701 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3433.752662 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 4465.007131 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4373.060709 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum
+    in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we have some negative TOC values! Let’s check the distribution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.40250
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.28750
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.34500
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.26250 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.35000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.14250
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3842.630027 | 1594.301295 | 803.640483 | 2551.414599 | 3626.229052
+    | 4739.73408 | 9021.792491 |'
+  prefs: []
+  type: TYPE_TB
+- en: There are just a couple slightly negative values, let’s just truncate them at
+    zero. We can use this command below to set all TOC values in the DataFrame that
+    are less than 0.0 as 0.0, otherwise we keep the original TOC value.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.40250
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.28750
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.34500
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.26250 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.991950 | 0.478264 | 0.000000 | 0.617500 | 1.030000 | 1.35000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.14250
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3842.630027 | 1594.301295 | 803.640483 | 2551.414599 | 3626.229052
+    | 4739.73408 | 9021.792491 |'
+  prefs: []
+  type: TYPE_TB
+- en: It is good that we checked the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check out the range of values for each feature to set up and adjust plotting
+    limits. See above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the Correlation Matrix and Correlation with Response Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s perform with correlation analysis. We can calculate and view the correlation
+    matrix and correlation to the response features with these previously declared
+    functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation analysis is based on the assumption of linear relationships, but
+    it is a good start
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9ccb60421ffa42bec24f02270e0cb19e4ab0827d13308e827a76a7a86b2c0dc6.png](../Images/6194a66796a23a77575acb7c89abb176.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This looks good. There is a mix of correlation magnitudes. Of course, correlation
+    coefficients are limited to degree of linear correlations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the matrix scatter plot to see the pairwise relationship between
+    the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4c23ae18eda1e533de50c2330dba444a3862043169ebd7569532055f40e72e5f.png](../Images/18798d69cb2a69a3c10006380bba6873.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Working with Only Two Predictor Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s simplify the problem to 2 predictor features, Porosity and Brittleness
+    to predict Production rate. By working with only 2 features, it is very easy to
+    visualize the segmentation of the feature space (it is only 2D and can be shown
+    completely on a single plot).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Standardizing Predictor Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The k-nearest neighbour method uses a nearest training sample search in feature
+    space (like k-means clustering). To remove the impact feature range from the approach
+    we standardize the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will standardize our predictor features to have a mean of zero and a variance
+    of one.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we use the scikit-learn preprocessing module to simplify this step and provide
+    a convenient and safe reverse transform.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod | sPor | sBrittle |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1339.165488 | -0.982256 |
+    2.358297 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3383.979252 | -0.881032 |
+    -0.141332 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2509.686720 | -0.327677 |
+    1.748113 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5514.421023 | 0.903875 |
+    -0.592585 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 3532.020478 | 0.853263 |
+    -2.640962 |'
+  prefs: []
+  type: TYPE_TB
+- en: Let’s demonstrate the reverse transform from standardized features back to the
+    original features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we won’t need this in our workflow since the we only need to forward transform
+    the predictor features to train the model and make predictions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can compare the output above with the original porosity and brittleness.
+    The reverse transform works!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use this method to return to original feature units when needed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In general, the back transformation is not needed for predictor features, well
+    only forward transform the predictor features to make predictions of the response
+    feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this example, we don’t need to transform the response feature while building
+    our model. The response feature distribution is well-behaved and there is not
+    theory in k-nearest neighbours that expects a specific range or distribution share
+    for the response feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature Ranges
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s set some ranges for plotting. Note for the standardized predictor features
+    we will use -3.5 to 3.5 as the limits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For convenience and simplicity we use scikit-learn’s random train and test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s first check the univariate statistics of Porosity, Brittleness and Production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a6e3b01d9e6230c6eb26e1b06c604aa2fc175bb399d25bcd7794d5fb4b1b1e46.png](../Images/2447bd1e6857b017d16d4197616a3dc1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The distributions are well behaved,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we cannot observe obvious gaps nor truncations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check coverage of the train and test data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s look at a scatter plot of Porosity vs. Brittleness with points colored
+    by Production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4c88383d908cf65a54e1601379bf0b36cdbfab09eeae0ff5cc37587387fd084c.png](../Images/0b1f8f8266faddc853479c3aab599c2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This problem looks nonlinear and could not be modeled with simple linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It appears there is a sweet spot for Brittleness and increasing Porosity is
+    always beneficial for Production.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Instantiate, Fit and Predict with k-nearest Neighbour
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s instantiate, fit and predict with a k-nearest neighbour model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: instantiate it with the hyperparameters, k-nearest neighbours
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train with the training data, we use the standard fit function from scikit-learn
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We have set the hyperparameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: weights = averaging weights for the prediction given the nearest neighbours.
+    ‘uniform’ is arithmetic average, while ‘distance’ is inverse distance weighting.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: n_neighbours = maximum number of neighbours. Note, we constrain our prediction
+    by limiting it to 5 nearest neighbours.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: p = distance metric power or Minkowski metric (1 = Manhattan distance, 2 for
+    Euclidian distance) for finding the nearest neighbours.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now we are ready to fit our model for prediction of Production given Porosity
+    and Brittleness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use our two functions defined above to visualize the k-nearest neighbour
+    prediction over the feature space and the cross plot of actual and estimated production
+    for the training data along with three model metrics from the sklearn.metric module.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8687713a2a5e6441f354a7136a11c925434235dd1930a34a508287b1aed9f7e5.png](../Images/8a097688955c9a933b8a09894a1a0ea5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The model looks good:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the nonparametric approach is quite flexible to fit the nonlinear response patterns
+    in the predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can see some search artifacts due to limited k nearest data and the use of
+    uniform weighting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we have dense data for this low dimensional problem (only 2 predictor features)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the testing and training data are consistent and close to each other in the
+    predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try to overfit the model by using a very large k hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/57e183c41e9ee9d084d79c733d18bfe2ce2f5e0504c9b7b75db9ad994fc637cb.png](../Images/7a8fad6c8ab65ba24660fe87eb558d34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that this smoothed out the response, and the predictions are approaching
+    the global mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we have an underfit model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next let’s use a smaller k hyperparameter for our k-nearest neighbours prediction
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/36151afeb7ee7ec97d8f9695513890616f1d619cbc81c9e9a734492d90c1e86f.png](../Images/652c1c3e20ca9e893f0cf17db9352459.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we have an extreme overfit model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The training MSE is 0.0 and the testing error is quite high.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, some of our predictions in our overfit model are outside the plotting
+    min and max response feature values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try to use a L1, Manhattan distance to find the k nearest neighbours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/58118fcb46c0eb738a754ea3e1103828cda85f1f5eea8dc2d12b6e69215213d3.png](../Images/3a4e29a43415592363cfc3314ffd6b4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Compare this prediction model to our first model, all we changes is the distance
+    search for the k nearest samples to Manhattan from Euclidean distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the search artifacts are now aligned on the features (the rays are oriented
+    in the x and y directions)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hyperparameter Tuning for k-Nearest Neighbours
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check this out as we tune the hyper parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what does the \(k\) do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: small \(k\) hyperparameter results in a local specific prediction model over
+    the predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: large \(k\) hyperparameter results in a more smooth, globally fit prediction
+    model over the predictor features space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is analogous to the low to high complexity we have observed with other
+    models (like decision trees).
+  prefs: []
+  type: TYPE_NORMAL
+- en: small \(k\) is complex
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: large \(k\) is simple
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We need to tune the complexity to optimize model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tuning the Hyperparameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s loop over multiple \(k\) nearest neighbours for average and inverse distance
+    estimates to access the best hyperparameters with respect to accuracy in testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now let’s plot the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/01eac05af310de41e5fc30ed84e0dd7ffbc211efc97eea008ec63bd1c8ef9a09.png](../Images/fe795ea54d585888e2632307876aaa72.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What can we observe from this result?
+  prefs: []
+  type: TYPE_NORMAL
+- en: at \(k = 12\) nearest neighbours we minimize the mean square error in testing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we have better performance with the inverse distance weighted than the arithmetic
+    average (uniform weighting of k nearest training data in predictor feature space)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is an optimum degree of specificity / complexity to our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 nearest neighbour is a very locally specific model (overfit)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: many nearest neighbours includes too much information and is too general (underfit)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are observing the accuracy vs. complexity trade-off for the \(k\) nearest
+    neighbour model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: k-fold Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is useful to evaluate the performance of our model by observing the accuracy
+    vs. complexity trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Yet, what we really want to do is rigorously test our model performance. We
+    should perform a more rigorous cross validation that does a better job evaluating
+    over different sets of training and testing data. scikit learn has a built in
+    cross validation method called cross_val_score that we can use to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply k-fold approach with iterative separation of training and testing data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Automate the model construction, looping over folds and averaging the metric
+    of interest
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s try it out on our k nearest neighbour prediction with variable number
+    of \(k\) nearest neighbours. Note the cross validation is set to use 4 processors,
+    but still will likely take a couple of minutes to run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: The output is an array of average scores (MSE) over the k-folds for each level
+    of complexity (number of \(k\) nearest neighbours), along with an array with the
+    \(k\)s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/3486b059575a23212d8aafc3a96a97665590c325236271232ebf8b699313ea39.png](../Images/d79973afda6b57fc45418841e4ff114d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With the hyperparameter of 10 nearest neighbours we get the greatest accuracy
+    in k-fold cross validation model testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predictor Feature Standardization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have standardized the predictor feature to remove the influence of their
+    ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What would happen if we worked with the original predictor features?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try it out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we first apply train and test split with the original features, without standardization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8c3133ce421b3030fdd8a00084845ccd1d24e4e798c75f636c0920eebed4d5c6.png](../Images/7c1a8ce67e0629a7c8b0a3ceccdf2686.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Do you see the horizontal banding? The larger range of magnitudes of brittleness
+    vs. porosity results in this banding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: distances in the feature space are more sensitive to the relative changes in
+    brittleness than porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s convert porosity to a fraction and observe the change in our predictor
+    due to the arbitrary decision to work with porosity as a fraction vs. a percentage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: by applying a \(\frac{1}{100}\) factor to all the porosity values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e98632fa73beaf85be54462502e9cd2b26c6bc804f11e5ba193bd5a17f99b64d.png](../Images/bf1f50f1e62336305668f4aff28ac682.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: this banding effect gets even more severe as we convert from percentage to fractional
+    porosity, because distances in porosity appear so much closer than in brittleness,
+    just because of the difference in feature ranges.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our distance metric for assigning nearest neighbours is quite sensitive to the
+    feature units. We should always standardize all predictor features (put them on
+    equal footing) before we use them to build our \(k\)-nearest neighbour regression
+    model!
+  prefs: []
+  type: TYPE_NORMAL
+- en: k Nearest Neighbour Regression in scikit-learn with Pipelines
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The need to standardize features, train, tune and retrain the tuned model with
+    all the data may seem to be a lot of work!
+  prefs: []
+  type: TYPE_NORMAL
+- en: one solution is to use the Pipeline object from scikit-learn.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s some highlights on Pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine Learning Modeling Pipelines Basics
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Machine learning workflows can be complicated, with various steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: data preparation, feature engineering transformations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model parameter fitting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model hyperparameter tuning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: modeling method selection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: searching over a large combinatorial of hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: training and testing model runs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pipelines are a scikit-learn class that allows for the encapsulation of a sequence
+    of data preparation and modeling steps
+  prefs: []
+  type: TYPE_NORMAL
+- en: then we can treat the pipeline as an object in our much condensed workflow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The pipeline class allows us to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: improve code readability and to keep everything straight
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: avoid common workflow problems like data leakage, testing data informing model
+    parameter training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: abstract common machine learning modeling and focus on building the best model
+    possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The fundamental philosophy is to treat machine learning as a combinatorial search
+    to automate the determination of the best model (AutoML)
+  prefs: []
+  type: TYPE_NORMAL
+- en: k-Nearest Neighbours with Pipelines
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Here’s compact, safe code for the entire model training and tuning process with
+    scikit-learn pipelines
+  prefs: []
+  type: TYPE_NORMAL
+- en: the GridSearchCV object actually becomes the prediction model, with tuned hyperparameters
+    retrained on all of the data!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/83fd2c84c5d45efc2ab0262137bbbdafd882df6ec6ab4098a5b6e277724e7c05.png](../Images/4cddeaa35cf9ea49e9a36b802755dc3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Check the Tuned Hyperparameters
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In the GridSearchCV model object, there is a built in dictionary called best_params_
+    that includes all the tuned hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, over the range of k’s the selected k, n_neighbors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, the other hyperparameters were specified, but we could have provided a
+    range and scenarios for each to explore with the grid search method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When tuning more than 1 hyperparameter, the runtime will increase with the combinatorial
+    of hyperparameters and the resulting model loss function, e.g., cv_results_[‘mean_test_score’],
+    is sorted over all the hyperparameter cases
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It is also useful to look at the entire model object for more information.
+    Including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the pipeline and all cases considered for the hyperparameter tuning.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**In a Jupyter environment, please rerun this cell to show the HTML representation
+    or trust the notebook.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On GitHub, the HTML representation is unable to render, please try loading this
+    page with nbviewer.org.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of k-nearest neighbours. Much more could be done
+    and discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Motivations for k-nearest Neighbours Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are many good reasons to cover k-nearest neighbours regression. In addition
+    to being a simple, interpretable and flexible predictive machine learning model,
+    it also demonstrates important concepts,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**non-parametric predictive model** - that learns the form of the relationships
+    from the data, i.e., no prior assumption about the form of the relationship'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**instance-based, lazy learning** - model training is postponed until prediction
+    is required, no precalculation of the model. i.e., prediction requires access
+    to the data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**hyperparameter tuning** - with a understandable hyperparameters that control
+    model fit'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**very flexible, versatile predictive model** - performs well in many situations'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Convolution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In fact, k-nearest neighbours is analogous to spatial estimation through weighted
+    averaging within a local neighbourhood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0cfb5694654b0332a568b81d0ae25755.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction modeling a spatial interpolation in predictor feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The k-nearest neighbours approach is similar to a convolution approach for spatial
+    interpolation. Convolution is the integral product of two functions, after one
+    is reversed and shifted by \(\tau\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: one interpretation is smoothing a function with weighting function, \(𝑓(\Delta)\),
+    is applied to calculate the weighted average of function, \(𝑔(x)\),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x) = \int_{-\infty}^{\infty} f(\tau) g(x - \tau) \, d\tau \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: this easily extends into multidimensional
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x, y, z) = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} \int_{-\infty}^{\infty}
+    f(\tau_x, \tau_y, \tau_z) g(x - \tau_x, y - \tau_y, z - \tau_z) \, d\tau_x \,
+    d\tau_y \, d\tau_z \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The choice of which function is shifted before integration does not change the
+    result, the convolution operator has commutativity,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (f * g)(x) = \int_{-\infty}^{\infty} f(\tau) g(x - \tau) \, d\tau \]\[ (f
+    * g)(x) = \int_{-\infty}^{\infty} f(x - \tau) g(\tau) \, d\tau \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: if either function is reflected then convolution is equivalent to cross-correlation,
+    measure of similarity between 2 signals as a function of displacement.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To demonstrate convolution with an exhaustive \(g(x)\) and sparsely sampled
+    \(g(x)\) I built out an [interactive Python convolution dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Convolution_kNearest.ipynb),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f55c37e0f7da98a233affd5fbd5ba38c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard to demonstrate convolution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/58f0d6ec82ae506386975d87b4fbaa3fa88f321e3ef516e9f956402a156d2751.png](../Images/83364c0e2e061f041cd64b882996eb7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ae797e2e907bd48f0c7b524dd697136f6a863602289a91dc8e372c930f4a72c1.png](../Images/2eab3ef179c50a4d663c4b21d6e38124.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: While it is useful to review and discuss convolution, k-nearest neighbours departs
+    from convolution with the specification of \(k\) nearest neighbours to include
+    in the weighted average,
+  prefs: []
+  type: TYPE_NORMAL
+- en: specifying \(k\) results in a locally adaptive window size, the local neighbourhood
+    extends far enough to find \(k\) training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/2ffab60ca866a945ae26ac4aab566a02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For a given $k$ number of nearest neighbours data are collected from farther
+    away in sparse data regions of the predictor feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: k-nearest Neighbours Hyperparameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s discuss the k-nearest neighbours hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**k number of nearest data** - to utilize for prediction'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**data weighting** - for example uniform weighting (use local training data
+    average), inverse distance weighting'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note, for the case of inverse distance weighting, the method is analogous to
+    inverse distance weighted interpolation with a maximum number of local data constraint
+    commonly applied for spatial interpolation. Inverse distance is available in GeostatsPy
+    for spatial mapping.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Distance Metric** - training data within the predictor feature space are
+    ranked by distance, closest to farthest, a variety of distance metrics may be
+    applied, including:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Euclidian distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \begin{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: d_i = \sqrt{\sum_{\alpha = 1}^{m} \left(x_{\alpha,i} - x_{\alpha,0}\right)^2}
+    \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: Minkowski Distance - a generalized form of distance with well-known Manhattan
+    and Euclidean distances are special cases,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ d_{(i,i')} = \left( \sum_{j=1}^{m} \left( x_{(j,i)} - x_{(j,i')} \right)^p
+    \right)^{\frac{1}{p}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: when \(p=2\), this becomes the Euclidean distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: when \(p=1\) it becomes the Manhattan distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices,
+    visualization of a decision tree regression model, and the addition specified
+    percentiles and major and minor gridlines to our plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘unconv_MV.csv’. This
+    dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a DataFrame we called ‘my_data’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optional: Add Random Noise to the Response Feature'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can do this to observe the impact of data noise on overfit and hyperparameter
+    tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is for experiential learning, of course we wouldn’t add random noise to
+    our data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We set the random number seed for reproducibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful first check of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: add parameter ‘n=13’ to see the first 13 rows of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1339.165488 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3383.979252 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2509.686720 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5514.421023 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 3532.020478 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4283.543382 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 3627.906723 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 3101.539533 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 3213.391047 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2200.204701 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3433.752662 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 4465.007131 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4373.060709 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum
+    in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we have some negative TOC values! Let’s check the distribution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.40250
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.28750
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.34500
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.26250 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.35000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.14250
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3842.630027 | 1594.301295 | 803.640483 | 2551.414599 | 3626.229052
+    | 4739.73408 | 9021.792491 |'
+  prefs: []
+  type: TYPE_TB
+- en: There are just a couple slightly negative values, let’s just truncate them at
+    zero. We can use this command below to set all TOC values in the DataFrame that
+    are less than 0.0 as 0.0, otherwise we keep the original TOC value.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.40250
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.28750
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.34500
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.26250 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.991950 | 0.478264 | 0.000000 | 0.617500 | 1.030000 | 1.35000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.14250
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3842.630027 | 1594.301295 | 803.640483 | 2551.414599 | 3626.229052
+    | 4739.73408 | 9021.792491 |'
+  prefs: []
+  type: TYPE_TB
+- en: It is good that we checked the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check out the range of values for each feature to set up and adjust plotting
+    limits. See above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the Correlation Matrix and Correlation with Response Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s perform with correlation analysis. We can calculate and view the correlation
+    matrix and correlation to the response features with these previously declared
+    functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation analysis is based on the assumption of linear relationships, but
+    it is a good start
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9ccb60421ffa42bec24f02270e0cb19e4ab0827d13308e827a76a7a86b2c0dc6.png](../Images/6194a66796a23a77575acb7c89abb176.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This looks good. There is a mix of correlation magnitudes. Of course, correlation
+    coefficients are limited to degree of linear correlations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the matrix scatter plot to see the pairwise relationship between
+    the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4c23ae18eda1e533de50c2330dba444a3862043169ebd7569532055f40e72e5f.png](../Images/18798d69cb2a69a3c10006380bba6873.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Working with Only Two Predictor Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s simplify the problem to 2 predictor features, Porosity and Brittleness
+    to predict Production rate. By working with only 2 features, it is very easy to
+    visualize the segmentation of the feature space (it is only 2D and can be shown
+    completely on a single plot).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Standardizing Predictor Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The k-nearest neighbour method uses a nearest training sample search in feature
+    space (like k-means clustering). To remove the impact feature range from the approach
+    we standardize the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will standardize our predictor features to have a mean of zero and a variance
+    of one.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we use the scikit-learn preprocessing module to simplify this step and provide
+    a convenient and safe reverse transform.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod | sPor | sBrittle |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1339.165488 | -0.982256 |
+    2.358297 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3383.979252 | -0.881032 |
+    -0.141332 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2509.686720 | -0.327677 |
+    1.748113 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5514.421023 | 0.903875 |
+    -0.592585 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 3532.020478 | 0.853263 |
+    -2.640962 |'
+  prefs: []
+  type: TYPE_TB
+- en: Let’s demonstrate the reverse transform from standardized features back to the
+    original features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we won’t need this in our workflow since the we only need to forward transform
+    the predictor features to train the model and make predictions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can compare the output above with the original porosity and brittleness.
+    The reverse transform works!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use this method to return to original feature units when needed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In general, the back transformation is not needed for predictor features, well
+    only forward transform the predictor features to make predictions of the response
+    feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this example, we don’t need to transform the response feature while building
+    our model. The response feature distribution is well-behaved and there is not
+    theory in k-nearest neighbours that expects a specific range or distribution share
+    for the response feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature Ranges
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s set some ranges for plotting. Note for the standardized predictor features
+    we will use -3.5 to 3.5 as the limits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For convenience and simplicity we use scikit-learn’s random train and test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s first check the univariate statistics of Porosity, Brittleness and Production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a6e3b01d9e6230c6eb26e1b06c604aa2fc175bb399d25bcd7794d5fb4b1b1e46.png](../Images/2447bd1e6857b017d16d4197616a3dc1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The distributions are well behaved,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we cannot observe obvious gaps nor truncations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check coverage of the train and test data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s look at a scatter plot of Porosity vs. Brittleness with points colored
+    by Production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4c88383d908cf65a54e1601379bf0b36cdbfab09eeae0ff5cc37587387fd084c.png](../Images/0b1f8f8266faddc853479c3aab599c2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This problem looks nonlinear and could not be modeled with simple linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It appears there is a sweet spot for Brittleness and increasing Porosity is
+    always beneficial for Production.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Instantiate, Fit and Predict with k-nearest Neighbour
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s instantiate, fit and predict with a k-nearest neighbour model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: instantiate it with the hyperparameters, k-nearest neighbours
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train with the training data, we use the standard fit function from scikit-learn
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We have set the hyperparameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: weights = averaging weights for the prediction given the nearest neighbours.
+    ‘uniform’ is arithmetic average, while ‘distance’ is inverse distance weighting.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: n_neighbours = maximum number of neighbours. Note, we constrain our prediction
+    by limiting it to 5 nearest neighbours.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: p = distance metric power or Minkowski metric (1 = Manhattan distance, 2 for
+    Euclidian distance) for finding the nearest neighbours.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now we are ready to fit our model for prediction of Production given Porosity
+    and Brittleness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use our two functions defined above to visualize the k-nearest neighbour
+    prediction over the feature space and the cross plot of actual and estimated production
+    for the training data along with three model metrics from the sklearn.metric module.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8687713a2a5e6441f354a7136a11c925434235dd1930a34a508287b1aed9f7e5.png](../Images/8a097688955c9a933b8a09894a1a0ea5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The model looks good:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the nonparametric approach is quite flexible to fit the nonlinear response patterns
+    in the predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can see some search artifacts due to limited k nearest data and the use of
+    uniform weighting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we have dense data for this low dimensional problem (only 2 predictor features)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the testing and training data are consistent and close to each other in the
+    predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try to overfit the model by using a very large k hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/57e183c41e9ee9d084d79c733d18bfe2ce2f5e0504c9b7b75db9ad994fc637cb.png](../Images/7a8fad6c8ab65ba24660fe87eb558d34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note that this smoothed out the response, and the predictions are approaching
+    the global mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we have an underfit model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next let’s use a smaller k hyperparameter for our k-nearest neighbours prediction
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/36151afeb7ee7ec97d8f9695513890616f1d619cbc81c9e9a734492d90c1e86f.png](../Images/652c1c3e20ca9e893f0cf17db9352459.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we have an extreme overfit model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The training MSE is 0.0 and the testing error is quite high.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, some of our predictions in our overfit model are outside the plotting
+    min and max response feature values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try to use a L1, Manhattan distance to find the k nearest neighbours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/58118fcb46c0eb738a754ea3e1103828cda85f1f5eea8dc2d12b6e69215213d3.png](../Images/3a4e29a43415592363cfc3314ffd6b4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Compare this prediction model to our first model, all we changes is the distance
+    search for the k nearest samples to Manhattan from Euclidean distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the search artifacts are now aligned on the features (the rays are oriented
+    in the x and y directions)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hyperparameter Tuning for k-Nearest Neighbours
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check this out as we tune the hyper parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what does the \(k\) do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: small \(k\) hyperparameter results in a local specific prediction model over
+    the predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: large \(k\) hyperparameter results in a more smooth, globally fit prediction
+    model over the predictor features space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is analogous to the low to high complexity we have observed with other
+    models (like decision trees).
+  prefs: []
+  type: TYPE_NORMAL
+- en: small \(k\) is complex
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: large \(k\) is simple
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We need to tune the complexity to optimize model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tuning the Hyperparameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s loop over multiple \(k\) nearest neighbours for average and inverse distance
+    estimates to access the best hyperparameters with respect to accuracy in testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now let’s plot the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/01eac05af310de41e5fc30ed84e0dd7ffbc211efc97eea008ec63bd1c8ef9a09.png](../Images/fe795ea54d585888e2632307876aaa72.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What can we observe from this result?
+  prefs: []
+  type: TYPE_NORMAL
+- en: at \(k = 12\) nearest neighbours we minimize the mean square error in testing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we have better performance with the inverse distance weighted than the arithmetic
+    average (uniform weighting of k nearest training data in predictor feature space)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is an optimum degree of specificity / complexity to our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 nearest neighbour is a very locally specific model (overfit)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: many nearest neighbours includes too much information and is too general (underfit)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are observing the accuracy vs. complexity trade-off for the \(k\) nearest
+    neighbour model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: k-fold Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is useful to evaluate the performance of our model by observing the accuracy
+    vs. complexity trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Yet, what we really want to do is rigorously test our model performance. We
+    should perform a more rigorous cross validation that does a better job evaluating
+    over different sets of training and testing data. scikit learn has a built in
+    cross validation method called cross_val_score that we can use to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply k-fold approach with iterative separation of training and testing data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Automate the model construction, looping over folds and averaging the metric
+    of interest
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s try it out on our k nearest neighbour prediction with variable number
+    of \(k\) nearest neighbours. Note the cross validation is set to use 4 processors,
+    but still will likely take a couple of minutes to run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: The output is an array of average scores (MSE) over the k-folds for each level
+    of complexity (number of \(k\) nearest neighbours), along with an array with the
+    \(k\)s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/3486b059575a23212d8aafc3a96a97665590c325236271232ebf8b699313ea39.png](../Images/d79973afda6b57fc45418841e4ff114d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With the hyperparameter of 10 nearest neighbours we get the greatest accuracy
+    in k-fold cross validation model testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predictor Feature Standardization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have standardized the predictor feature to remove the influence of their
+    ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What would happen if we worked with the original predictor features?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try it out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we first apply train and test split with the original features, without standardization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8c3133ce421b3030fdd8a00084845ccd1d24e4e798c75f636c0920eebed4d5c6.png](../Images/7c1a8ce67e0629a7c8b0a3ceccdf2686.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Do you see the horizontal banding? The larger range of magnitudes of brittleness
+    vs. porosity results in this banding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: distances in the feature space are more sensitive to the relative changes in
+    brittleness than porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s convert porosity to a fraction and observe the change in our predictor
+    due to the arbitrary decision to work with porosity as a fraction vs. a percentage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: by applying a \(\frac{1}{100}\) factor to all the porosity values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e98632fa73beaf85be54462502e9cd2b26c6bc804f11e5ba193bd5a17f99b64d.png](../Images/bf1f50f1e62336305668f4aff28ac682.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: this banding effect gets even more severe as we convert from percentage to fractional
+    porosity, because distances in porosity appear so much closer than in brittleness,
+    just because of the difference in feature ranges.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our distance metric for assigning nearest neighbours is quite sensitive to the
+    feature units. We should always standardize all predictor features (put them on
+    equal footing) before we use them to build our \(k\)-nearest neighbour regression
+    model!
+  prefs: []
+  type: TYPE_NORMAL
+- en: k Nearest Neighbour Regression in scikit-learn with Pipelines
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The need to standardize features, train, tune and retrain the tuned model with
+    all the data may seem to be a lot of work!
+  prefs: []
+  type: TYPE_NORMAL
+- en: one solution is to use the Pipeline object from scikit-learn.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s some highlights on Pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine Learning Modeling Pipelines Basics
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Machine learning workflows can be complicated, with various steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: data preparation, feature engineering transformations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model parameter fitting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model hyperparameter tuning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: modeling method selection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: searching over a large combinatorial of hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: training and testing model runs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pipelines are a scikit-learn class that allows for the encapsulation of a sequence
+    of data preparation and modeling steps
+  prefs: []
+  type: TYPE_NORMAL
+- en: then we can treat the pipeline as an object in our much condensed workflow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The pipeline class allows us to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: improve code readability and to keep everything straight
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: avoid common workflow problems like data leakage, testing data informing model
+    parameter training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: abstract common machine learning modeling and focus on building the best model
+    possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The fundamental philosophy is to treat machine learning as a combinatorial search
+    to automate the determination of the best model (AutoML)
+  prefs: []
+  type: TYPE_NORMAL
+- en: k-Nearest Neighbours with Pipelines
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Here’s compact, safe code for the entire model training and tuning process with
+    scikit-learn pipelines
+  prefs: []
+  type: TYPE_NORMAL
+- en: the GridSearchCV object actually becomes the prediction model, with tuned hyperparameters
+    retrained on all of the data!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/83fd2c84c5d45efc2ab0262137bbbdafd882df6ec6ab4098a5b6e277724e7c05.png](../Images/4cddeaa35cf9ea49e9a36b802755dc3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Check the Tuned Hyperparameters
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In the GridSearchCV model object, there is a built in dictionary called best_params_
+    that includes all the tuned hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, over the range of k’s the selected k, n_neighbors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, the other hyperparameters were specified, but we could have provided a
+    range and scenarios for each to explore with the grid search method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When tuning more than 1 hyperparameter, the runtime will increase with the combinatorial
+    of hyperparameters and the resulting model loss function, e.g., cv_results_[‘mean_test_score’],
+    is sorted over all the hyperparameter cases
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE74]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE75]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It is also useful to look at the entire model object for more information.
+    Including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the pipeline and all cases considered for the hyperparameter tuning.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE77]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**In a Jupyter environment, please rerun this cell to show the HTML representation
+    or trust the notebook.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On GitHub, the HTML representation is unable to render, please try loading this
+    page with nbviewer.org.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE78]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE79]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE80]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE81]'
+  prefs: []
+  type: TYPE_PRE
+- en: Machine Learning Modeling Pipelines Basics
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Machine learning workflows can be complicated, with various steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: data preparation, feature engineering transformations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model parameter fitting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model hyperparameter tuning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: modeling method selection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: searching over a large combinatorial of hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: training and testing model runs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pipelines are a scikit-learn class that allows for the encapsulation of a sequence
+    of data preparation and modeling steps
+  prefs: []
+  type: TYPE_NORMAL
+- en: then we can treat the pipeline as an object in our much condensed workflow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The pipeline class allows us to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: improve code readability and to keep everything straight
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: avoid common workflow problems like data leakage, testing data informing model
+    parameter training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: abstract common machine learning modeling and focus on building the best model
+    possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The fundamental philosophy is to treat machine learning as a combinatorial search
+    to automate the determination of the best model (AutoML)
+  prefs: []
+  type: TYPE_NORMAL
+- en: k-Nearest Neighbours with Pipelines
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Here’s compact, safe code for the entire model training and tuning process with
+    scikit-learn pipelines
+  prefs: []
+  type: TYPE_NORMAL
+- en: the GridSearchCV object actually becomes the prediction model, with tuned hyperparameters
+    retrained on all of the data!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE82]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/83fd2c84c5d45efc2ab0262137bbbdafd882df6ec6ab4098a5b6e277724e7c05.png](../Images/4cddeaa35cf9ea49e9a36b802755dc3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Check the Tuned Hyperparameters
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In the GridSearchCV model object, there is a built in dictionary called best_params_
+    that includes all the tuned hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, over the range of k’s the selected k, n_neighbors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, the other hyperparameters were specified, but we could have provided a
+    range and scenarios for each to explore with the grid search method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When tuning more than 1 hyperparameter, the runtime will increase with the combinatorial
+    of hyperparameters and the resulting model loss function, e.g., cv_results_[‘mean_test_score’],
+    is sorted over all the hyperparameter cases
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE83]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE84]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It is also useful to look at the entire model object for more information.
+    Including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the pipeline and all cases considered for the hyperparameter tuning.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE85]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE86]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**In a Jupyter environment, please rerun this cell to show the HTML representation
+    or trust the notebook.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On GitHub, the HTML representation is unable to render, please try loading this
+    page with nbviewer.org.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE87]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE88]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE89]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE90]'
+  prefs: []
+  type: TYPE_PRE
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of k-nearest neighbours. Much more could be done
+    and discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL

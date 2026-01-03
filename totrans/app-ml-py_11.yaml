@@ -1,0 +1,2543 @@
+- en: Feature Imputation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_feature_imputation.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_feature_imputation.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Feature Imputation**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Curse of Dimensionality, Dimensionality Reduction, Principal Component Analysis](https://youtu.be/embks9p4pb8?si=B2HXm_i0oMSWkBhN)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multidimensional Scaling and Random Projection](https://youtu.be/Yt0o8ukIOKU?si=_ri1NPwKVdhYzgO3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Feature Transformations](https://youtu.be/6QJjZoWknEI?si=p6vp811xWAmzWY3r)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Feature Selection](https://youtu.be/5Q0gemu-h3Q?si=ATG-ue0i2qcc-IVx)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature Imputation - To Be Recorded Soon
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Feature Imputation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Most spatial, subsurface datasets are not complete, missing values from the
+    database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many data analytics and machine learning workflows require complete data, \(𝑥_(1,𝑖),\dots,𝑥_(𝑚,𝑖)\)
+    for each of the data samples \(𝑖 = 1,\ldots,𝑛\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Inferential Machine Learning** - methods the require complete data, for example,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: principal components analysis - require covariance matrix and covariance needs
+    all feature values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: multidimensional scaling - we cannot calculate the dissimilarity matrix without
+    all features available
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: cluster analysis - we cannot calculate distances in feature space without all
+    features values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Predictive Machine Learning** - always require all features to train and
+    test the model,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = f(X_1,\ldots,X_m) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dealing with missing data is an essential part of feature / data engineering,
+    prerequisite for data analytics and machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: it is important firstly to understand the cause and impact of the missing data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cause of Missing Feature Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Missing at random (MAR) is not common and is difficult to evaluated, in this
+    case,
+  prefs: []
+  type: TYPE_NORMAL
+- en: global random omission may not result in data bias and bias in the resulting
+    models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MAR is not typically the case as missing data often is related to a confounding
+    feature, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**sampling cost** - for example, low permeability test takes too long'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**rock rheology or other sample survivorship biases** - for example, not possible
+    to recover the mudstone samples'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**sample design** - sampling to reduce uncertainty and maximize profitability
+    instead of statistical representativity, dual purpose samples for information
+    and production'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**sampling accessibility** - there are locations in the subsurface that are
+    difficult or impossible to samples, for example, near lakes or communities, or
+    subsalt for seismic imaging'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Consequences of Missing Feature Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This will result in clustering of missing values over locations and feature
+    space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: omission of these feature values may bias global statistics, and degrade accuracy
+    of local predictions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the use of global distributions for imputing missing values may not be reasonable
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'More than reducing the amount of training and testing data, missing data, if
+    not completely at random will result in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Biased sample statistics resulting in biased model training and testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Biased models with biased predictions with potentially no indication of the
+    bias!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you reread the above looking for solutions, I offer my Canadian, “I’m sorry”.
+    Those who know us know that we say sorry a lot and have a cool pronunciation of
+    the word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I say all of the above as a cautionary note but,
+  prefs: []
+  type: TYPE_NORMAL
+- en: in some cases there are gaps in practice due to our data challenges, i.e., data
+    paucity and nonstationarity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I could spend an entire course teaching methods to address these challenges
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the solutions integrate the entire subsurface, spatial project team, i.e., domain
+    expertise is critical
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m going to leave this at the level of awareness
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We must move beyond the commonly applied likewise deletion, removal of all samples
+    with any missing features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These should have been installed with Anaconda 3.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here’s a function to assist with the plots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**add_grid** - convenience function to add major and minor gridlines to improve
+    plot interpretability'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here is the function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the working directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 1, Twelve, 12
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 2D spatial dataset [12_sample_data.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/12_sample_data.csv).
+    This dataset has variables from 480 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: X (m), Y (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also establish the feature ranges for plotting. We could calculate the
+    feature range directly from the data with code like this:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: but, this would not result in easy to understand color bars and axis scales,
+    let’s pick convenient round numbers. We will also declare feature labels for ease
+    of plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful first check of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: add parameter ‘n=13’ to see the first 13 rows of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 3 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 6 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 7 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 8 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 9 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 10 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 11 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 12 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 13 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: Note, the first dataset idata = 0, is exhaustic without missing data, if you
+    selected that one, let’s remove some data for the demonstrations below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remove Some Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s select a proportion of NaN values, values to set as missing,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then we can make a boolean array
+  prefs: []
+  type: TYPE_NORMAL
+- en: make an ndarray of same shape (number rows and columns) as the DataFrame of
+    uniform[0,1] distributed values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: check condition of less than the identified proportion to make a boolean ndarray
+    of same size, true if less than the proportion. The result will be the correct
+    proportion (within error) of random true values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: apply the mask to remove the identified values from the DataFrame
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Full disclosure, for this demonstration our data is missing at random, MAR,
+    and this simplifies our task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this allows us to focus on the mechanics of feature imputation without the additional
+    domain expertise topics. This is a good first step!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now have a new DataFrame with some missing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s do a .head() preview to observe the NaN values scattered throughout the
+    dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.0 | 12.38 | 3.53 | NaN | 46.17 | 0.89 | 1.88 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | NaN | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.0 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.0 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 6.0 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 7.0 | 13.49 | 3.60 | NaN | 63.71 | 0.80 | 1.85 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 8.0 | 11.58 | 3.03 | NaN | 53.00 | 0.69 | 1.93 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 9.0 | NaN | 2.72 | NaN | 65.77 | 0.95 | 1.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 10.0 | NaN | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 11.0 | 15.04 | 4.39 | 2.22 | NaN | 1.08 | 1.77 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | NaN | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 13.0 | NaN | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: Evaluation of the Data Coverage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s calculate the amount of missing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Well | 182.0 | 102.653846 | 58.078019 | 1.00 | 53.2500 | 104.000 | 153.7500
+    | 200.00 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 184.0 | 14.935978 | 3.002142 | 6.55 | 12.8900 | 15.055 | 17.4225 |
+    23.55 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 172.0 | 4.319419 | 1.684672 | 1.13 | 3.1300 | 4.010 | 5.1850 | 9.78
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 184.0 | 2.991630 | 0.571569 | 1.28 | 2.5675 | 2.975 | 3.3950 | 4.63
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 186.0 | 47.793817 | 13.781815 | 10.94 | 37.7450 | 48.830 | 58.0150
+    | 81.40 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 186.0 | 0.991882 | 0.481896 | -0.19 | 0.6225 | 1.020 | 1.3500 | 2.18
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 176.0 | 1.969602 | 0.293877 | 0.93 | 1.7775 | 1.970 | 2.1100 | 2.87
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: We can see the counts of available values for each feature, less than the total
+    number of samples due to missing values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s make a plot to indicate data completeness for each feature
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is a useful summarization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6ed9df1de493bc38166372b4dd6106367dd7d5e2888e1c4ef601987fcd269bdd.png](../Images/8141a96c3a1d36a395c9bf10b9abc9ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This leads to the first data imputation method, feature selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Imputation Method #1 - Feature Selection'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data completeness should be considered in feature selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: if there is low data completeness, high percentage of missing samples, for a
+    feature then the feature may be removed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One method is to use the .drop() DataFrame function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use axis = 1 to drop a feature (as above) to remove features with more than
+    10% of feature values missing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4edcc8d4408f594794b18e3efca86c01b48c54a31a361f738633733dd7fdd54d.png](../Images/a9f7ba6bf3b50feec336b95e30cc7f10.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #2 - Sample Selection'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There may be samples with more missing feature values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: a specific vintage of data, for example, older data, or sample locations that
+    experienced data collection problems
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s check the coverage by sample in the DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we use the axis=1 parameter in the sum command to sum NaN values over the rows,
+    samples, of the DataFrame.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1094c196d3204ba769ef70b04f78bd37049a2213377b9a61c94ba44b5e208fac.png](../Images/dd50b4d951d45dfccfe1a8f648f800e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If we identified samples with low data completeness, high percentage of missing
+    samples, for a sample then the sample may be removed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again we use the .drop() DataFrame function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: This time we use axis = 0 to drop a list of samples and demonstrated below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to make a list of the sample indices with too many missing samples
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is a tuple type, let’s convert it to a ndarray then we ensure strip it
+    to just the 1D values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we are ready to apply our boolean array of length number of samples with
+    True for too many missing values to remove these samples by index.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/06a69f6e87268ae712b6a84cba7292734f89c46eafd1791c71fe0503461516dd.png](../Images/31d7badd11c070c12bcfdd1d9682913c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #3 - Listwise Deletion'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of removing all samples that have any missing feature values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this approach ensures complete data while technically avoiding the need for
+    imputation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: no need for a imputation model decision
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: often removes important information
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: maximizes data bias if information is not missing at random (MAR)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We must consider data completeness, coverage for each feature, as visualized
+    above. Consider that,
+  prefs: []
+  type: TYPE_NORMAL
+- en: missing records in one feature may be different than the missing features in
+    another feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the union of missing over all features, may result in loss of much more than
+    the largest proportion of missing over the features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, if missing not at random (MNAR), the sample bias is maximized
+  prefs: []
+  type: TYPE_NORMAL
+- en: while likewise deletion is often applied, it is not recommended.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can use the dropna() function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: with subset we can only consider a list of features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: how can be set to ‘any’ for drop if any missing values and ‘all’ drop if all
+    are missing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: inplace true will overwrite the DataFrame and has no output while false will
+    pass the new dataframe as a copy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/cd0f355d1b0b99db0bc0bdfc15b85d7c71f1e6e72bd6b0586bd0bdcc738b14c8.png](../Images/dbce84c00782b7a258ef46bddbe35881.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Modeling Methods for Imputation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: These are methods for feature imputation that treat feature imputation as a
+    prediction problem, i.e., predict missing feature value with other available data,
+    for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the collocated other available feature values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the same feature values available at other sample locations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are many prediction methods applied for feature imputation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we start with the most simple prediction model possible, predicting with the
+    global mean and proceed from there to more complicated models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To help us visualize the results, let’s add a feature indicating if there are
+    any missing feature values for a specific sample
+  prefs: []
+  type: TYPE_NORMAL
+- en: this way we can label the samples that have had features imputed for evaluation
+    and visualization of the feature imputation results
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | False |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.0 | 12.38 | 3.53 | NaN | 46.17 | 0.89 | 1.88 | True |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | NaN | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | True |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.0 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | False |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.0 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | False |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Imputation Method #4 - Replace with a Constant'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of replacing the missing values with a constant value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: here’s an example of replacing the missing feature values with a very low value
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This results in bias and should not be done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.00 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.00 | 12.38 | 3.53 | 0.01 | 46.17 | 0.89 | 1.88 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 0.01 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.00 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.00 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '![_images/26d51c63231cad2ab6a81f7ea33532841237c36c4d2ed2eadd7cc2d187de5b42.png](../Images/298f9bcf88d78b4cfab76adc592ff1cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #6 - Replace with the Mean'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of replacing the missing values with the mean, arithmetic
+    average, over the feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ 𝑥_𝑖 = 𝐸\{𝑋_𝑖\} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: the global mean is globally unbiased, but may result in local bias, i.e., low
+    values are overestimated and high values are underestimated
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.000000 | 12.08 | 2.92 | 2.80000 | 81.40 | 1.16 | 2.31 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.000000 | 12.38 | 3.53 | 2.99163 | 46.17 | 0.89 | 1.88 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 102.653846 | 14.02 | 2.59 | 4.01000 | 72.80 | 0.89 | 2.72 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.000000 | 17.67 | 6.75 | 2.63000 | 39.81 | 1.08 | 1.88 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.000000 | 17.52 | 4.57 | 3.18000 | 10.94 | 1.51 | 1.90 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '![_images/528e09249ebb432ddad9b71a908196dda11a47ea01b66b45c85c7f762352afbf.png](../Images/4299a66f1feb551c70f7ed3689f190e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #6 - Replace with the Mode'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of replacing the missing values with the most frequent value,
+    mode, over the feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: in the presence of outliers the mean may not be reliable. My recommendation
+    is to first deal with outliers prior to feature imputation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.0 | 12.38 | 3.53 | 2.45 | 46.17 | 0.89 | 1.88 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.0 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.0 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.0 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '![_images/5eaf7ed5b2d8fcf4a6bb53f0d7efe3463b5e18b51a7c7f09b044e579fb936aca.png](../Images/d0bd84a25bcc7b4485a3fc45fa350dfa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #7 - Replace with the n-nearest Neighbor estimation'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of replacing the missing values with the k-nearest neighbour
+    prediction model based on the other available collocated feature values
+  prefs: []
+  type: TYPE_NORMAL
+- en: see the k-nearest neighbour chapter in this e-book for explanation of the method,
+    assumptions and hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the available data is applied to predict at the missing values in features space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since the k-nearest neighbor method is a lazy learner, imputed values are calculated
+    in a single pass over the missing values
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is not a separate train and predict step
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This method should be globally unbiased and will reduce local bias relative
+    to global mean feature imputation
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.0 | 12.38 | 3.53 | 2.45 | 46.17 | 0.89 | 1.88 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.0 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.0 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.0 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '![_images/8f2542fc3c97e9623022bacaddaa28bf89c6d3f36b68ff0c6b0be81b5ade76b2.png](../Images/a00ad8045d28e8e20b2a119a285a84e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #8 - Multiple imputation by chained equations'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of replacing the missing values with the k-nearest neighbour
+    prediction model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Substitute random values from \(𝐹_{𝑋_{𝑖=1,\ldots,𝑚}}(𝑋_{𝑖=1,\ldots,𝑚})\) for
+    missing values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sequentially predict missing values for a feature with others
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Iterative until convergence criteria, usually multivariate statistics
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeat for multiple realizations of the dataset
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The default predictor is BayesianRidge().
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can specify the maximum number of iterations. The last computed imputations
+    are returned.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.0 | 12.38 | 3.53 | 2.45 | 46.17 | 0.89 | 1.88 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.0 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.0 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.0 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '![_images/d930c573190c546f174a877996c13fd81fc9cbda6474c27840ba3b35e15b348d.png](../Images/feb8877973dcdfd81b91cf2afeff7039.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Save the Imputed DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Write out the imputed data file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of feature imputation. Much more could be done and
+    discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Feature Imputation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Most spatial, subsurface datasets are not complete, missing values from the
+    database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many data analytics and machine learning workflows require complete data, \(𝑥_(1,𝑖),\dots,𝑥_(𝑚,𝑖)\)
+    for each of the data samples \(𝑖 = 1,\ldots,𝑛\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Inferential Machine Learning** - methods the require complete data, for example,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: principal components analysis - require covariance matrix and covariance needs
+    all feature values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: multidimensional scaling - we cannot calculate the dissimilarity matrix without
+    all features available
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: cluster analysis - we cannot calculate distances in feature space without all
+    features values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Predictive Machine Learning** - always require all features to train and
+    test the model,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = f(X_1,\ldots,X_m) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dealing with missing data is an essential part of feature / data engineering,
+    prerequisite for data analytics and machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: it is important firstly to understand the cause and impact of the missing data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cause of Missing Feature Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Missing at random (MAR) is not common and is difficult to evaluated, in this
+    case,
+  prefs: []
+  type: TYPE_NORMAL
+- en: global random omission may not result in data bias and bias in the resulting
+    models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MAR is not typically the case as missing data often is related to a confounding
+    feature, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**sampling cost** - for example, low permeability test takes too long'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**rock rheology or other sample survivorship biases** - for example, not possible
+    to recover the mudstone samples'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**sample design** - sampling to reduce uncertainty and maximize profitability
+    instead of statistical representativity, dual purpose samples for information
+    and production'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**sampling accessibility** - there are locations in the subsurface that are
+    difficult or impossible to samples, for example, near lakes or communities, or
+    subsalt for seismic imaging'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Consequences of Missing Feature Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This will result in clustering of missing values over locations and feature
+    space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: omission of these feature values may bias global statistics, and degrade accuracy
+    of local predictions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the use of global distributions for imputing missing values may not be reasonable
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'More than reducing the amount of training and testing data, missing data, if
+    not completely at random will result in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Biased sample statistics resulting in biased model training and testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Biased models with biased predictions with potentially no indication of the
+    bias!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you reread the above looking for solutions, I offer my Canadian, “I’m sorry”.
+    Those who know us know that we say sorry a lot and have a cool pronunciation of
+    the word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I say all of the above as a cautionary note but,
+  prefs: []
+  type: TYPE_NORMAL
+- en: in some cases there are gaps in practice due to our data challenges, i.e., data
+    paucity and nonstationarity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I could spend an entire course teaching methods to address these challenges
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the solutions integrate the entire subsurface, spatial project team, i.e., domain
+    expertise is critical
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m going to leave this at the level of awareness
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We must move beyond the commonly applied likewise deletion, removal of all samples
+    with any missing features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These should have been installed with Anaconda 3.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here’s a function to assist with the plots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**add_grid** - convenience function to add major and minor gridlines to improve
+    plot interpretability'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here is the function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the working directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 1, Twelve, 12
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 2D spatial dataset [12_sample_data.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/12_sample_data.csv).
+    This dataset has variables from 480 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: X (m), Y (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also establish the feature ranges for plotting. We could calculate the
+    feature range directly from the data with code like this:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: but, this would not result in easy to understand color bars and axis scales,
+    let’s pick convenient round numbers. We will also declare feature labels for ease
+    of plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 1, Twelve, 12
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 2D spatial dataset [12_sample_data.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/12_sample_data.csv).
+    This dataset has variables from 480 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: X (m), Y (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also establish the feature ranges for plotting. We could calculate the
+    feature range directly from the data with code like this:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: but, this would not result in easy to understand color bars and axis scales,
+    let’s pick convenient round numbers. We will also declare feature labels for ease
+    of plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful first check of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: add parameter ‘n=13’ to see the first 13 rows of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 3 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 6 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 7 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 8 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 9 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 10 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 11 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 12 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 13 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: Note, the first dataset idata = 0, is exhaustic without missing data, if you
+    selected that one, let’s remove some data for the demonstrations below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remove Some Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s select a proportion of NaN values, values to set as missing,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then we can make a boolean array
+  prefs: []
+  type: TYPE_NORMAL
+- en: make an ndarray of same shape (number rows and columns) as the DataFrame of
+    uniform[0,1] distributed values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: check condition of less than the identified proportion to make a boolean ndarray
+    of same size, true if less than the proportion. The result will be the correct
+    proportion (within error) of random true values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: apply the mask to remove the identified values from the DataFrame
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: Full disclosure, for this demonstration our data is missing at random, MAR,
+    and this simplifies our task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this allows us to focus on the mechanics of feature imputation without the additional
+    domain expertise topics. This is a good first step!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now have a new DataFrame with some missing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s do a .head() preview to observe the NaN values scattered throughout the
+    dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.0 | 12.38 | 3.53 | NaN | 46.17 | 0.89 | 1.88 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | NaN | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.0 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.0 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 6.0 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 7.0 | 13.49 | 3.60 | NaN | 63.71 | 0.80 | 1.85 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 8.0 | 11.58 | 3.03 | NaN | 53.00 | 0.69 | 1.93 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 9.0 | NaN | 2.72 | NaN | 65.77 | 0.95 | 1.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 10.0 | NaN | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 11.0 | 15.04 | 4.39 | 2.22 | NaN | 1.08 | 1.77 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | NaN | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 13.0 | NaN | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: Evaluation of the Data Coverage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s calculate the amount of missing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Well | 182.0 | 102.653846 | 58.078019 | 1.00 | 53.2500 | 104.000 | 153.7500
+    | 200.00 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 184.0 | 14.935978 | 3.002142 | 6.55 | 12.8900 | 15.055 | 17.4225 |
+    23.55 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 172.0 | 4.319419 | 1.684672 | 1.13 | 3.1300 | 4.010 | 5.1850 | 9.78
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 184.0 | 2.991630 | 0.571569 | 1.28 | 2.5675 | 2.975 | 3.3950 | 4.63
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 186.0 | 47.793817 | 13.781815 | 10.94 | 37.7450 | 48.830 | 58.0150
+    | 81.40 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 186.0 | 0.991882 | 0.481896 | -0.19 | 0.6225 | 1.020 | 1.3500 | 2.18
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 176.0 | 1.969602 | 0.293877 | 0.93 | 1.7775 | 1.970 | 2.1100 | 2.87
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: We can see the counts of available values for each feature, less than the total
+    number of samples due to missing values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s make a plot to indicate data completeness for each feature
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is a useful summarization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6ed9df1de493bc38166372b4dd6106367dd7d5e2888e1c4ef601987fcd269bdd.png](../Images/8141a96c3a1d36a395c9bf10b9abc9ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This leads to the first data imputation method, feature selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Imputation Method #1 - Feature Selection'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data completeness should be considered in feature selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: if there is low data completeness, high percentage of missing samples, for a
+    feature then the feature may be removed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One method is to use the .drop() DataFrame function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use axis = 1 to drop a feature (as above) to remove features with more than
+    10% of feature values missing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4edcc8d4408f594794b18e3efca86c01b48c54a31a361f738633733dd7fdd54d.png](../Images/a9f7ba6bf3b50feec336b95e30cc7f10.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #2 - Sample Selection'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There may be samples with more missing feature values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: a specific vintage of data, for example, older data, or sample locations that
+    experienced data collection problems
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s check the coverage by sample in the DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we use the axis=1 parameter in the sum command to sum NaN values over the rows,
+    samples, of the DataFrame.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1094c196d3204ba769ef70b04f78bd37049a2213377b9a61c94ba44b5e208fac.png](../Images/dd50b4d951d45dfccfe1a8f648f800e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If we identified samples with low data completeness, high percentage of missing
+    samples, for a sample then the sample may be removed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again we use the .drop() DataFrame function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: This time we use axis = 0 to drop a list of samples and demonstrated below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to make a list of the sample indices with too many missing samples
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is a tuple type, let’s convert it to a ndarray then we ensure strip it
+    to just the 1D values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we are ready to apply our boolean array of length number of samples with
+    True for too many missing values to remove these samples by index.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/06a69f6e87268ae712b6a84cba7292734f89c46eafd1791c71fe0503461516dd.png](../Images/31d7badd11c070c12bcfdd1d9682913c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #3 - Listwise Deletion'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of removing all samples that have any missing feature values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this approach ensures complete data while technically avoiding the need for
+    imputation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: no need for a imputation model decision
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: often removes important information
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: maximizes data bias if information is not missing at random (MAR)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We must consider data completeness, coverage for each feature, as visualized
+    above. Consider that,
+  prefs: []
+  type: TYPE_NORMAL
+- en: missing records in one feature may be different than the missing features in
+    another feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the union of missing over all features, may result in loss of much more than
+    the largest proportion of missing over the features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, if missing not at random (MNAR), the sample bias is maximized
+  prefs: []
+  type: TYPE_NORMAL
+- en: while likewise deletion is often applied, it is not recommended.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can use the dropna() function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: with subset we can only consider a list of features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: how can be set to ‘any’ for drop if any missing values and ‘all’ drop if all
+    are missing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: inplace true will overwrite the DataFrame and has no output while false will
+    pass the new dataframe as a copy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/cd0f355d1b0b99db0bc0bdfc15b85d7c71f1e6e72bd6b0586bd0bdcc738b14c8.png](../Images/dbce84c00782b7a258ef46bddbe35881.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Modeling Methods for Imputation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: These are methods for feature imputation that treat feature imputation as a
+    prediction problem, i.e., predict missing feature value with other available data,
+    for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the collocated other available feature values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the same feature values available at other sample locations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are many prediction methods applied for feature imputation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we start with the most simple prediction model possible, predicting with the
+    global mean and proceed from there to more complicated models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To help us visualize the results, let’s add a feature indicating if there are
+    any missing feature values for a specific sample
+  prefs: []
+  type: TYPE_NORMAL
+- en: this way we can label the samples that have had features imputed for evaluation
+    and visualization of the feature imputation results
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | False |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.0 | 12.38 | 3.53 | NaN | 46.17 | 0.89 | 1.88 | True |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | NaN | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | True |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.0 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | False |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.0 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | False |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Imputation Method #4 - Replace with a Constant'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of replacing the missing values with a constant value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: here’s an example of replacing the missing feature values with a very low value
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This results in bias and should not be done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.00 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.00 | 12.38 | 3.53 | 0.01 | 46.17 | 0.89 | 1.88 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 0.01 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.00 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.00 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '![_images/26d51c63231cad2ab6a81f7ea33532841237c36c4d2ed2eadd7cc2d187de5b42.png](../Images/298f9bcf88d78b4cfab76adc592ff1cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #6 - Replace with the Mean'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of replacing the missing values with the mean, arithmetic
+    average, over the feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ 𝑥_𝑖 = 𝐸\{𝑋_𝑖\} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: the global mean is globally unbiased, but may result in local bias, i.e., low
+    values are overestimated and high values are underestimated
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.000000 | 12.08 | 2.92 | 2.80000 | 81.40 | 1.16 | 2.31 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.000000 | 12.38 | 3.53 | 2.99163 | 46.17 | 0.89 | 1.88 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 102.653846 | 14.02 | 2.59 | 4.01000 | 72.80 | 0.89 | 2.72 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.000000 | 17.67 | 6.75 | 2.63000 | 39.81 | 1.08 | 1.88 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.000000 | 17.52 | 4.57 | 3.18000 | 10.94 | 1.51 | 1.90 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '![_images/528e09249ebb432ddad9b71a908196dda11a47ea01b66b45c85c7f762352afbf.png](../Images/4299a66f1feb551c70f7ed3689f190e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #6 - Replace with the Mode'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of replacing the missing values with the most frequent value,
+    mode, over the feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: in the presence of outliers the mean may not be reliable. My recommendation
+    is to first deal with outliers prior to feature imputation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.0 | 12.38 | 3.53 | 2.45 | 46.17 | 0.89 | 1.88 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.0 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.0 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.0 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '![_images/5eaf7ed5b2d8fcf4a6bb53f0d7efe3463b5e18b51a7c7f09b044e579fb936aca.png](../Images/d0bd84a25bcc7b4485a3fc45fa350dfa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #7 - Replace with the n-nearest Neighbor estimation'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of replacing the missing values with the k-nearest neighbour
+    prediction model based on the other available collocated feature values
+  prefs: []
+  type: TYPE_NORMAL
+- en: see the k-nearest neighbour chapter in this e-book for explanation of the method,
+    assumptions and hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the available data is applied to predict at the missing values in features space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since the k-nearest neighbor method is a lazy learner, imputed values are calculated
+    in a single pass over the missing values
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is not a separate train and predict step
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This method should be globally unbiased and will reduce local bias relative
+    to global mean feature imputation
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.0 | 12.38 | 3.53 | 2.45 | 46.17 | 0.89 | 1.88 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.0 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.0 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.0 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '![_images/8f2542fc3c97e9623022bacaddaa28bf89c6d3f36b68ff0c6b0be81b5ade76b2.png](../Images/a00ad8045d28e8e20b2a119a285a84e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Imputation Method #8 - Multiple imputation by chained equations'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the method of replacing the missing values with the k-nearest neighbour
+    prediction model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Substitute random values from \(𝐹_{𝑋_{𝑖=1,\ldots,𝑚}}(𝑋_{𝑖=1,\ldots,𝑚})\) for
+    missing values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sequentially predict missing values for a feature with others
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Iterative until convergence criteria, usually multivariate statistics
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeat for multiple realizations of the dataset
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The default predictor is BayesianRidge().
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can specify the maximum number of iterations. The last computed imputations
+    are returned.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Imputed |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1.0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2.0 | 12.38 | 3.53 | 2.45 | 46.17 | 0.89 | 1.88 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.0 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4.0 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5.0 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 0.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '![_images/d930c573190c546f174a877996c13fd81fc9cbda6474c27840ba3b35e15b348d.png](../Images/feb8877973dcdfd81b91cf2afeff7039.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Save the Imputed DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Write out the imputed data file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of feature imputation. Much more could be done and
+    discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

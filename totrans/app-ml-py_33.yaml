@@ -1,0 +1,2261 @@
+- en: Autoencoder
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_autoencoder.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_autoencoder.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Autoencoders**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Artificial Neural Networks](https://youtu.be/A9PiCMY_6nM?si=NxWSU_5RgQ4w55EL)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Convolutional Neural Networks](https://youtu.be/za2my_XDoOs?si=LeHU6p2_fc9dX4Yt)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Autoencoders are a very powerful, flexible deep learning approach for compressing
+    information,
+  prefs: []
+  type: TYPE_NORMAL
+- en: mapping training data to a latent space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: dimensionality reduction of high dimensional data to a much lower dimensionality
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: nonlinear, general approach
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Autoencoder Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s our simple autoencoder,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed815fe23f4bd258b278f7aa6f0dd58e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple demonstration autoencoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is literally the artificial neural network from the [Artificial Neural
+    Networks](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_ANN.html)
+    mirrored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I do not discuss the forward pass through the network, if you are unfamiliar
+    with this process, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: activation applied to the linear weighting plus bias in the nodes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then please review the artificial neural network chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I decided to use unique numerical indices for each node for concise notation
+    for connection weights, for example \(\lambda_{1,4}\), and biases, for example,
+    \(b_4\), \(I\) for input nodes, \(L\) for encoder hidden layer (‘left’), \(M\)
+    for latent node (‘middle’), \(R\) for decoder hidden layer (‘right’) and finally
+    \(O\) for output nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The parts of the autoencoder are indicated below,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/652eb880f88b2d046adcc751aa2d62f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple demonstration autoencoder with parts labeled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The signal passed through the autoencoder and notation include,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input** – training samples,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ z \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Encoder** – learned compression of the training samples to latent space,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ x = f_{\theta} (z) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Latent Space** – bottleneck summarizes patterns in the training data,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑥 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Decoder** – learned decompression of the latent space to reconstruction of
+    the original training data,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{z} = g_{\phi} (x) = g_{\phi} (f_{\theta}(z) ) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reconstruction – attempt to reproduce input,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{z} \sim z \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training Model Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Training an autoencoder proceeds iteratively by these steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3a5bc8956f8ceda05ddf9b582cd141d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training an artificial neural network proceeds iteratively by, 1\. forward pass
+    to make a prediction, 2\. calculate the error derivative based on the prediction
+    and truth over training data, 3\. backpropagate the error derivative back through
+    the artificial neural network to calculate the derivatives of the error over all
+    the model weights and biases parameters, 4\. update the model parameters based
+    on the derivatives and learning rates, 5\. repeat until convergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s some details on each step,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Initializing the Model Parameters** - initialize all model parameters with
+    typically small (near zero) random values. Here’s a couple common methods,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Xavier Weight Initialization** - random realizations from uniform distributions
+    specified by \(U[\text{min}, \text{max}]\),'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda_{i,j} = F_U^{-1} \left[ \frac{-1}{\sqrt{p}}, \frac{1}{\sqrt{p}} \right]
+    (p^\ell) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(F^{-1}_U\) is the inverse of the CDF, \(p\) is the number of inputs,
+    and \(p^{\ell}\) is a random cumulative probability value drawn from the uniform
+    distribution, \(U[0,1]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Normalized Xavier Weight Initialization** - random realizations from uniform
+    distributions specified by \(U[\text{min}, \text{max}]\),'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda_{i,j} = F_U^{-1} \left[ \frac{-1}{\sqrt{p}+k}, \frac{1}{\sqrt{p}+k}
+    \right] (p^\ell) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(F^{-1}_U\) is the inverse of the CDF, \(p\) is the number of inputs,
+    \(k\) is the number of outputs, and \(p^{\ell}\) is a random cumulative probability
+    value drawn from the uniform distribution, \(U[0,1]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, if we return to our first hidden layer node,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b2f8e46ea497049f4b95c03b8812eea7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First hidden layer node with 3 inputs, and 1 output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we have \(p = 3\) and \(k = 1\), and we draw from the uniform distribution,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ U \left[ \frac{-1}{\sqrt{p}+k}, \frac{1}{\sqrt{p}+k} \right] = U \left[ \frac{-1}{\sqrt{3}+1},
+    \frac{1}{\sqrt{3}+1} \right] \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Forward Pass** - to pass a training sample, \(z\), to calculate the reconstruction,
+    $\hat{z}. Initial predictions will be random for the first iteration, but will
+    improve.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Calculate the Error Derivative** - based on the miss match between the input
+    training sample, \(z\), and the reconstruction, \(\hat{z}\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Backpropagate the Error Derivative** - we shift back through the artificial
+    neural network to calculate the derivatives of the error over all the model weights
+    and biases parameters, to accomplish this we use the chain rule,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial}{\partial x} f(g(h(x))) = \frac{\partial f}{\partial g} \cdot
+    \frac{\partial g}{\partial h} \cdot \frac{\partial h}{\partial x} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Loop Over Batch and Average the Error Derivatives** - go to step 1 for all
+    training data in the batch and then calculate the average of the error derivatives,
+    for example,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Update the Model Parameters** - based on the derivatives, \frac{\partial
+    P}{\partial \lambda_{i,j}} and learning rates, \(\eta\), like this,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \lambda_{1,4}^{\ell} = \lambda_{1,4}^{\ell-1} - \eta \cdot \frac{1}{B} \sum_{i=1}^{B}
+    \frac{\partial \mathcal{L}^{(i)}}{\partial \lambda_{1,4}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Repeat Until Convergence** - return to step 1\. until the error, \(P\), is
+    reduced to an acceptable level, i.e., model convergence is the condition to stop
+    the iterations'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Autoencoder Loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There is a loss and loss gradient at each output-input node pair. The error
+    loss function,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/701ec6c7b420f85dae65e62285e83b13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Autoencoder loss at each output node, the goal is for the output to match the
+    input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can generalize as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ L = \frac{1}{2} \sum_{i=1}^3 \left(O_{i+8} - I_i \right)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, the irregular indexing is due to my choice to use a unique node index
+    at each node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Error derivative at each node is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial O_9} = O_9 - I_1 \]\[ \frac{\partial
+    \mathcal{L}}{\partial O_{10}} = O_{10} - I_2 \]\[ \frac{\partial \mathcal{L}}{\partial
+    O_{11}} = O_{11} - I_3 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autoencoder Backpropagation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s walk through the back propagation of our autoencoder, let’s start with
+    a bias in the output node, \(\frac{\partial \mathcal{L}}{\partial b_{9}}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8a6b2383ff34c83e1de1a609373cc653.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the bias, \(𝑏_9\), in the hidden decoder node, \(𝑂_9\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_9} = \frac{\partial O_{9_{\mathrm{in}}}}{\partial
+    b_9} \cdot \frac{\partial O_9}{\partial O_{9_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial O_9} = 1 \cdot 1 \cdot (O_9 - I_1) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s explain each part. We start with the output gradient \(\frac{\partial
+    \mathcal{L}}{\partial O_9}\) and step across the output node, \(O_9\), since linear
+    activation is applied in the output nodes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O_9}{\partial O_{9_{in}}} = 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can calculate the derivative of the bias, \(b_9\), with respect to the
+    node input,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial 0_{9_{\mathrm{in}}}}{\partial b_9} = \frac{\partial}{\partial
+    b_9} \left( \lambda_{7,9} R_7 + \lambda_{8,9} R_8 + b_9 \right) = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can proceed to the connection weight, 𝜆_7,9.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/80eaca0166d0cf02f98e140c090fca18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the connection weight, \(\lambda_{7,9}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \lambda_{7,9}} = \frac{\partial O_{9_{\mathrm{in}}}}{\partial
+    \lambda_{7,9}} \cdot \frac{\partial O_9}{\partial O_{9_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial O_9} = R_7 \cdot 1 \cdot (O_9 - I_1) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since linear activation is applied in the output nodes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O_9}{\partial O_{9_{in}}} = 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and \(\frac{\partial O^{\text{in}}_9}{\partial \lambda_{7,9}}\) is simply the
+    output from \(𝑅_7\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O^{\text{in}}_9}{\partial \lambda_{7,9}} = \frac{\partial}{\partial
+    \lambda_{7,9}} \left( \lambda_{7,9} R_7 + \lambda_{8,9} R_8 + b_9 \right) = R_7
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s continue past \(\partial \lambda_{7,9}\) to the output from our decoder
+    hidden node, \(𝑅_7\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c85ce96ca6f0999b7bc167c32d65b89.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the output of the decoder hidden layer node \(R_7\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial R_7} = \frac{\partial O_{9_{\mathrm{in}}}}{\partial
+    R_7} \cdot \frac{\partial O_9}{\partial O_{9_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial O_9} + \frac{\partial O_{10_{\mathrm{in}}}}{\partial R_7}
+    \cdot \frac{\partial O_{10}}{\partial O_{10_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial O_{10}} + \frac{\partial O_{11_{\mathrm{in}}}}{\partial
+    R_7} \cdot \frac{\partial O_{11}}{\partial O_{11_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial O_{11}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: that we can evaluate as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial R_7} = \lambda_{7,9} \cdot 1 \cdot (O_9
+    - I_1) + \lambda_{7,10} \cdot 1 \cdot (O_{10} - I_2) + \lambda_{7,11} \cdot 1
+    \cdot (O_{11} - I_3) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We add the derivatives from each connection. Once again, since linear activation
+    at \(𝑂_{9}\), \(𝑂_{10}\), and \(𝑂_{11}\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O_9}{\partial O_{9_{\mathrm{in}}}} = 1, \quad \frac{\partial
+    O_{10}}{\partial O_{10_{\mathrm{in}}}} = 1, \quad \frac{\partial O_{11}}{\partial
+    O_{11_{\mathrm{in}}}} = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, along the connection, the derivative is simply the weight,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O_{9_{\mathrm{in}}}}{\partial R_7} = \lambda_{7,9}, \quad
+    \frac{\partial O_{10_{\mathrm{in}}}}{\partial R_7} = \lambda_{7,10}, \quad \frac{\partial
+    O_{11_{\mathrm{in}}}}{\partial R_7} = \lambda_{7,11} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for example we can demonstrate this for \(\frac{\partial O_{9_{\mathrm{in}}}}{\partial
+    R_7}\) as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O_{9_{\mathrm{in}}}}{\partial R_7} = \frac{\partial}{\partial
+    R_7} \left( \lambda_{7,9} R_7 + \lambda_{8,9} R_8 + b_9 \right) = \lambda_{7,9}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s continue from the output from our decoder hidden layer node, \(𝑅_7\),
+    to calculate the derivative of the bias in the node, \(b_7\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/604e4fcf99d1c41dd899458f80a67179.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the bias, $b_7$, in the hidden decoder node, $R_7$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_7} = \frac{\partial R_{7_{\mathrm{in}}}}{\partial
+    b_7} \cdot \frac{\partial R_7}{\partial R_{7_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial R_7} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since sigmoid activation at \(R_7\), to move across the node,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial R_7}{\partial R_{7_{\mathrm{in}}}} = \sigma' (R_7) = R_7 (1
+    - R_7) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and for the partial derivative of the node input given the bias,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{R_{7_{\mathrm{in}}}}{\partial b_7} = \frac{\partial}{\partial b_7}
+    \left( \lambda_{6,7} M_6 + b_7 \right) = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_7} = 1 \cdot R_7 (1 - R_7) \cdot \overbrace{
+    \left[ \lambda_{7,9} \cdot 1 \cdot (O_9 - I_1) + \lambda_{7,10} \cdot 1 \cdot
+    (O_{10} - I_2) + \lambda_{7,11} \cdot 1 \cdot (O_{11} - I_3) \right] }^{\frac{\partial
+    L}{\partial R_7}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can proceed to the connection weight, \(\lambda_{6,7}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1559af01deb817828f382cd89480ff41.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the connection weight, \(\lambda_{6,7}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \lambda_{6,7}} = \frac{\partial R_{7_{\mathrm{in}}}}{\partial
+    \lambda_{6,7}} \cdot \frac{\partial R_7}{\partial R_{7_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial R_7} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since sigmoid activation is applied in the hidden layer nodes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial R_7}{\partial R_{7_{in}}} = 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and \(\frac{\partial R_{7_{\mathrm{in}}}}{\partial \lambda_{6,7}}\) is simply
+    the output from \(M_6\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial R_{7_{\mathrm{in}}}}{\partial \lambda_{6,7}} = \frac{\partial}{\partial
+    \lambda_{6,7}} \left( \lambda_{6,7} M_6 + b_6 \right) = M_6 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_7} = M_6 \cdot R_7 (1 - R_7) \cdot
+    \overbrace{ \left[ \lambda_{7,9} \cdot 1 \cdot (O_9 - I_1) + \lambda_{7,10} \cdot
+    1 \cdot (O_{10} - I_2) + \lambda_{7,11} \cdot 1 \cdot (O_{11} - I_3) \right] }^{\frac{\partial
+    \mathcal{L}}{\partial R_7}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get continue to the output from our latent node, 𝑀_6
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4cc7dbc1493a36ab0eb828c1422d1f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the output of the latent node, \(M_6\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial M_6} = \frac{\partial R_{7_{\mathrm{in}}}}{\partial
+    M_6} \cdot \frac{\partial R_7}{\partial R_{7_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial R_7} + \frac{\partial R_{8_{\mathrm{in}}}}{\partial M_6}
+    \cdot \frac{\partial R_8}{\partial R_{8_{\mathrm{in}}}} \cdot \frac{\partial \mathcal{L}}{\partial
+    R_8} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: That we can resolve as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial M_6} = \lambda_{6,7} \cdot R_7 (1 -
+    R_7) \cdot \frac{\partial \mathcal{L}}{\partial R_7} + \lambda_{6,8} \cdot R_8
+    (1 - R_8) \cdot \frac{\partial \mathcal{L}}{\partial R_8} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since sigmoid activation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial R_7}{\partial R_{7_{\mathrm{in}}}} = R_7 (1 - R_7), \quad
+    \frac{\partial R_8}{\partial R_{8_{\mathrm{in}}}} = R_8 (1 - R_8) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and along the connections,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[\begin{split} \begin{aligned} \frac{\partial R_{7_{\mathrm{in}}}}{\partial
+    M_6} &= \frac{\partial}{\partial M_6} \left( \lambda_{6,7} M_6 + b_7 \right) =
+    \lambda_{6,7} \\ \frac{\partial R_{8_{\mathrm{in}}}}{\partial M_6} &= \frac{\partial}{\partial
+    M_6} \left( \lambda_{6,8} M_6 + b_8 \right) = \lambda_{6,8} \end{aligned} \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s continue from the output from our latent node, \(M_6\), to calculate the
+    derivative of the bias in the node, \(b_6\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90618005b205c6c5ceb09965c36cf2e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the bias, $b_6$, in the latent node, $M_6$. Note image shifted
+    to make room.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_6} = \frac{\partial M_{6_{\mathrm{in}}}}{\partial
+    b_6} \cdot \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial M_6} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since sigmoid activation at \(M_6\), to move across the node,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} = \sigma' (M_6) = M_6 \cdot
+    (1 - M_6) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and for the partial derivative of the node input given the bias,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_{6_{\mathrm{in}}}}{\partial b_6} = \frac{\partial}{\partial
+    b_6} \left( \lambda_{4,6} L_4 + b_6 \right) = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_6} = 1 \cdot M_6 (1 - M_6) \cdot \overbrace{
+    \left[ \lambda_{6,7} \cdot R_7 (1 - R_7) \cdot \frac{\partial \mathcal{L}}{\partial
+    R_7} + \lambda_{6,8} \cdot R_8 (1 - R_8) \cdot \frac{\partial \mathcal{L}}{\partial
+    R_8} \right] }^{\frac{\partial \mathcal{L}}{\partial M_6}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can proceed to the connection weight, \(\lambda_{4,6}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f5770d05672cfe3c14c6973f2775d2de.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the connection weight, \(\lambda_{4,6}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \lambda_{4,6}} = \frac{\partial M_{6_{\mathrm{in}}}}{\partial
+    \lambda_{4,6}} \cdot \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial M_6} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since sigmoid activation is applied in the hidden layer nodes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_6}{\partial M_{6_{in}}} = M_6 \cdot (1 - M_6) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and \(\frac{\partial M_{6_{\mathrm{in}}}}{\partial \lambda_{4,6}}\) is simply
+    the output from \(L_4\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_{6_{\mathrm{in}}}}{\partial \lambda_{4,6}} = \frac{\partial}{\partial
+    \lambda_{4,6}} \left( \lambda_{4,6} L_4 + \lambda_{5,6} L_5 + b_6 \right) = L_4
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \lambda_{4,6}} = L_4 \cdot M_6 (1 -
+    M_6) \cdot \overbrace{ \left[ \lambda_{6,7} \cdot R_7 (1 - R_7) \cdot \frac{\partial
+    \mathcal{L}}{\partial R_7} + \lambda_{6,8} \cdot R_8 (1 - R_8) \cdot \frac{\partial
+    \mathcal{L}}{\partial R_8} \right] }^{\frac{\partial \mathcal{L}}{\partial M_6}}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can proceed to the output of our encoder hidden layer node, \(L_4\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e5148ec01b8276d13a3ac564a201ab3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the output of the encoder hidden node, \(𝐿_4\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get this and evaluate it as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial L_4} = \frac{\partial M_{6_{\mathrm{in}}}}{\partial
+    L_4} \cdot \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial M_6} = \lambda_{4,6} \cdot M_6 (1 - M_6) \cdot \frac{\partial
+    \mathcal{L}}{\partial M_6} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since sigmoid activation is applied in the latent node,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} = M_6 (1 - M_6) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and \(\frac{\partial M_{6_{\mathrm{in}}}}{\partial L_4}\) is simply the weight,
+    \(\lambda_{4,6}\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_{6_{\mathrm{in}}}}{\partial L_4} = \frac{\partial}{\partial
+    L_4} \left( \lambda_{4,6} L_4 + b_6 \right) = \lambda_{4,6} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s continue from the output from our encoder hidden layer node, \(L_4\),
+    to calculate the derivative of the bias in the node, \(b_4\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cf8f925e7a89e3d992b323edfd45034e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the bias, $b_4$, in the encoder hidden layer node, $L_4$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_4} = \frac{\partial L_{4_{\mathrm{in}}}}{\partial
+    b_4} \cdot \frac{\partial L_4}{\partial L_{4_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial L_4} = 1 \cdot L_4 (1 - L_4) \cdot \frac{\partial \mathcal{L}}{\partial
+    L_4} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since sigmoid activation at \(M_6\), to move across the node,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} = \sigma' (M_6) = M_6 \cdot
+    (1 - M_6) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and for the partial derivative of the node input given the bias,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_{6_{\mathrm{in}}}}{\partial b_6} = \frac{\partial}{\partial
+    b_6} \left( \lambda_{4,6} L_4 + b_6 \right) = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_6} = 1 \cdot M_6 (1 - M_6) \cdot \overbrace{
+    \left[ \lambda_{6,7} \cdot R_7 (1 - R_7) \cdot \frac{\partial \mathcal{L}}{\partial
+    R_7} + \lambda_{6,8} \cdot R_8 (1 - R_8) \cdot \frac{\partial \mathcal{L}}{\partial
+    R_8} \right] }^{\frac{\partial \mathcal{L}}{\partial M_6}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: And, finally we proceed to the connection weight, \(\lambda_{1,4}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3623ed192b17eb44b8f6f8c59b1dc0d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the connection weight, \(\lambda_{1,4}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \lambda_{1,4}} = \frac{\partial L^{\text{in}}_4}{\partial
+    \lambda_{1,4}} \cdot \frac{\partial L_4}{\partial L^{\text{in}}_4} \cdot \frac{\partial
+    \mathcal{L}}{\partial L_4} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since sigmoid activation is applied in the hidden layer nodes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial L_4}{\partial L_{4_{in}}} = L_4 \cdot (1 - L_4) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and \(\frac{\partial L^{\text{in}}_4}{\partial \lambda_{1,4}}\) is simply the
+    output from \(I_1\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial L^{\text{in}}_4}{\partial \lambda_{1,4}} = \frac{\partial}{\partial
+    \lambda_{1,4}} \left( \lambda_{1,4} I_1 + \lambda_{2,4} I_2 + \lambda_{3,4} I_3
+    + b_4 \right) = I_1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial L}{\partial \lambda_{1,4}} = I_1 \cdot L_4 (1 - L_4) \cdot
+    \underbrace{\left[ \lambda_{4,6} \cdot M_6 (1 - M_6) \cdot \frac{\partial L}{\partial
+    M_6} \right]}_{\frac{\partial L}{\partial L_4}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we will build out this autoencoder from the ground up with only the NumPy
+    python package for arrays and Python built-in data structure dictionaries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Import Required Packages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the functions to train and visualize our autoencoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the Autoencoder Network
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here we specify the autoencoder labels, positions, connections and colors and
+    then plot the autoencoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: while this code is general, the actual autoencoder codes are not generalized
+    to work with other architectures, for example changing the depth or width of the
+    network
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: change the display parameters but do not the autoencoder architecture
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/333249f6a43bbad84e15a2423db3b9cc8670650c55532adfe9fea6ac7c992872.png](../Images/330a264f2ed0fefaff128fb34a83b1e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Make an Interesting Synthetic Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Generate a stochastic dataset of 1D length of 3 vectors with a pattern that
+    can be summarized by our autoencoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: if we generate random 1D vectors of length 3 our autoencoder would not be able
+    to summarize, i.e., it is not possible to compress the information from the original
+    3 values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we must include a pattern that can be learned by the autoencoder to observe
+    dimensionality reduction through the latent node with good data reconstruction
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To do this, I have calculate dataset as a hybrid model, linear + small random
+    residual. The data generation steps include,
+  prefs: []
+  type: TYPE_NORMAL
+- en: draw a random slope \(\sim N\left[-2.0, 2.0 \right]\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: calculate 3 points at locations \(\left[-1, 0, 1 \right]\), \(f(\left[-1, 0,
+    1 \right])\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: add random, independent residual to each location, \(f(\left[-1, 0, 1 \right])
+    + N\left[0.0,\sigma \right]\), where sigma is the residual standard deviation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note, the slope is retained as a label that will be compared to the latent node,
+    \(M_6\) output to check, what has our autoencoder has learned?
+  prefs: []
+  type: TYPE_NORMAL
+- en: our hypothesis is that the autoencoder will learn a value that directly maps
+    to slope to describe this dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: note, while this label is used to demonstrate the ability of the autoencoder
+    to learn, it is not used to train the model!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/39557c0e268bdf9e355e0769aff4633ec5601e1ef244d68560aa0a4c22ac5f3f.png](../Images/9ce15f05dfa887ce6ee1f02619cb004d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Train the Autoencoder
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have previously defined all the basic functions for our autoencoder so we
+    can put together our autoencoder training steps with the following functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**initialize_parameters** - initialize the weights and bias'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**forward_pass** - forward pass through our autoencoder to calculate node outputs
+    and data reconstruction'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**mse_loss_and_derivative** - calculate the L2 loss and associated error derivative
+    for each output node from training data and reconstruction'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**backpropagate** - backpropagate the error derivative through the network
+    based on error derivative and node outputs and then average the gradients at each
+    weight and bias over the batch'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**update_parameters** - update the weights and biases with the average gradient
+    over the batch and the learning rate'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: go to 2 until convergence, in the case a set number of training epochs
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b4374d79f0f8d85887bb5f6075aa68f024e9e33bc189c7492047de36822bcb2a.png](../Images/3ab1c8fef6098b7c75943615555e53e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The average L2 loss vs. training epoch curve looks very good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we are seeing a pause in learning and then suddenly a fast reduction in training
+    error and then slow convergence
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I stopped at 10,000 epochs for efficiency
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evaluating Our Autoencoder Network
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s look at the output from the latent node at the network bottleneck, i.e.,
+    the output of node M6.
+  prefs: []
+  type: TYPE_NORMAL
+- en: notice above that we recorded the M6 output (called node activation) for all
+    training epochs and for all data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: let’s look at the final trained network, the last epoch, and loop over all data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s a plot of final epoch M6 output vs. the sample slopes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/d0ab2f0cf0b3c073fe93da6aa44c8e663feb48b72910cb0e72f2f5ec9416f426.png](../Images/7815f0d074113f20a6f77a446f1f83d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As hypothesized, there is a good relationship between the output of our latent
+    node at the network bottleneck and the slope of the samples used to generate the
+    data!
+  prefs: []
+  type: TYPE_NORMAL
+- en: our autoencoder has learned 1 value to represent the vectors of 3 values in
+    the dataset!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this is a great demonstration of information compression, 3:1!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Check Training Data Reconstruction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s visualize the reconstructed 1D data, encoded and then decoded with out
+    autoencoder network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for all training data, I include the original data and the reconstructed data,
+    i.e., data encoded and decoded by our trained autoencoder
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for each data training sample, I include the sample slope for interest, but
+    this label are not used in the in the training, nor with the encoder or decoder
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fe7102239237e5dec48032be77d18524b61a306c2238811815f52c81fcbd5955.png](../Images/7203aaa35d3b4fe06560d8885fa0bc78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The training data reconstruction is quite good!
+  prefs: []
+  type: TYPE_NORMAL
+- en: our autoencoder has learned to encode and decode the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: demonstrating good dimensionality reduction from 3 to 1!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Check Testing Data Reconstruction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s generate additional data and test the reconstruction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check the performance of our training autoencoder with data not used to train
+    the autoencoder, known as model generalization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/422b0a32f31f3498764ada7f7ec63e50a53a411b5d12e6c718a4288f371d62e8.png](../Images/28e4aff8d55696fd326194c3a79007d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Apply trained autoencoder to reconstruct test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now visualizated the test data reconstructions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6d4114b87e54f6dcb8a4cbefcdd99015b46e78ceca3a5d93daa4ff900d2cdf08.png](../Images/abda6b15ea724a35119dc1c5cf9554e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our trained autoencoder seems to have generalized well with very good performance
+    reconstructing training and also the withheld testing cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a more complete workflow we would evaluate training and testing error in
+    parallel over training epochs to check for model overfit.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I separated these components for brevity and clarity in the demonstration
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of autoencoder deep learning networks. Much more
+    could be done and discussed, I have many more resources. Check out my [shared
+    resource inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture
+    links at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Autoencoders are a very powerful, flexible deep learning approach for compressing
+    information,
+  prefs: []
+  type: TYPE_NORMAL
+- en: mapping training data to a latent space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: dimensionality reduction of high dimensional data to a much lower dimensionality
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: nonlinear, general approach
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Autoencoder Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s our simple autoencoder,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed815fe23f4bd258b278f7aa6f0dd58e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple demonstration autoencoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is literally the artificial neural network from the [Artificial Neural
+    Networks](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_ANN.html)
+    mirrored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I do not discuss the forward pass through the network, if you are unfamiliar
+    with this process, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: activation applied to the linear weighting plus bias in the nodes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then please review the artificial neural network chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I decided to use unique numerical indices for each node for concise notation
+    for connection weights, for example \(\lambda_{1,4}\), and biases, for example,
+    \(b_4\), \(I\) for input nodes, \(L\) for encoder hidden layer (‘left’), \(M\)
+    for latent node (‘middle’), \(R\) for decoder hidden layer (‘right’) and finally
+    \(O\) for output nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The parts of the autoencoder are indicated below,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/652eb880f88b2d046adcc751aa2d62f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple demonstration autoencoder with parts labeled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The signal passed through the autoencoder and notation include,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input** – training samples,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ z \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Encoder** – learned compression of the training samples to latent space,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ x = f_{\theta} (z) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Latent Space** – bottleneck summarizes patterns in the training data,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑥 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Decoder** – learned decompression of the latent space to reconstruction of
+    the original training data,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{z} = g_{\phi} (x) = g_{\phi} (f_{\theta}(z) ) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reconstruction – attempt to reproduce input,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{z} \sim z \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training Model Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Training an autoencoder proceeds iteratively by these steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3a5bc8956f8ceda05ddf9b582cd141d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training an artificial neural network proceeds iteratively by, 1\. forward pass
+    to make a prediction, 2\. calculate the error derivative based on the prediction
+    and truth over training data, 3\. backpropagate the error derivative back through
+    the artificial neural network to calculate the derivatives of the error over all
+    the model weights and biases parameters, 4\. update the model parameters based
+    on the derivatives and learning rates, 5\. repeat until convergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s some details on each step,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Initializing the Model Parameters** - initialize all model parameters with
+    typically small (near zero) random values. Here’s a couple common methods,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Xavier Weight Initialization** - random realizations from uniform distributions
+    specified by \(U[\text{min}, \text{max}]\),'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda_{i,j} = F_U^{-1} \left[ \frac{-1}{\sqrt{p}}, \frac{1}{\sqrt{p}} \right]
+    (p^\ell) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(F^{-1}_U\) is the inverse of the CDF, \(p\) is the number of inputs,
+    and \(p^{\ell}\) is a random cumulative probability value drawn from the uniform
+    distribution, \(U[0,1]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Normalized Xavier Weight Initialization** - random realizations from uniform
+    distributions specified by \(U[\text{min}, \text{max}]\),'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda_{i,j} = F_U^{-1} \left[ \frac{-1}{\sqrt{p}+k}, \frac{1}{\sqrt{p}+k}
+    \right] (p^\ell) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(F^{-1}_U\) is the inverse of the CDF, \(p\) is the number of inputs,
+    \(k\) is the number of outputs, and \(p^{\ell}\) is a random cumulative probability
+    value drawn from the uniform distribution, \(U[0,1]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, if we return to our first hidden layer node,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b2f8e46ea497049f4b95c03b8812eea7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First hidden layer node with 3 inputs, and 1 output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we have \(p = 3\) and \(k = 1\), and we draw from the uniform distribution,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ U \left[ \frac{-1}{\sqrt{p}+k}, \frac{1}{\sqrt{p}+k} \right] = U \left[ \frac{-1}{\sqrt{3}+1},
+    \frac{1}{\sqrt{3}+1} \right] \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Forward Pass** - to pass a training sample, \(z\), to calculate the reconstruction,
+    $\hat{z}. Initial predictions will be random for the first iteration, but will
+    improve.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Calculate the Error Derivative** - based on the miss match between the input
+    training sample, \(z\), and the reconstruction, \(\hat{z}\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Backpropagate the Error Derivative** - we shift back through the artificial
+    neural network to calculate the derivatives of the error over all the model weights
+    and biases parameters, to accomplish this we use the chain rule,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial}{\partial x} f(g(h(x))) = \frac{\partial f}{\partial g} \cdot
+    \frac{\partial g}{\partial h} \cdot \frac{\partial h}{\partial x} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Loop Over Batch and Average the Error Derivatives** - go to step 1 for all
+    training data in the batch and then calculate the average of the error derivatives,
+    for example,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Update the Model Parameters** - based on the derivatives, \frac{\partial
+    P}{\partial \lambda_{i,j}} and learning rates, \(\eta\), like this,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \lambda_{1,4}^{\ell} = \lambda_{1,4}^{\ell-1} - \eta \cdot \frac{1}{B} \sum_{i=1}^{B}
+    \frac{\partial \mathcal{L}^{(i)}}{\partial \lambda_{1,4}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Repeat Until Convergence** - return to step 1\. until the error, \(P\), is
+    reduced to an acceptable level, i.e., model convergence is the condition to stop
+    the iterations'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Autoencoder Loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There is a loss and loss gradient at each output-input node pair. The error
+    loss function,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/701ec6c7b420f85dae65e62285e83b13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Autoencoder loss at each output node, the goal is for the output to match the
+    input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can generalize as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ L = \frac{1}{2} \sum_{i=1}^3 \left(O_{i+8} - I_i \right)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, the irregular indexing is due to my choice to use a unique node index
+    at each node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Error derivative at each node is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial O_9} = O_9 - I_1 \]\[ \frac{\partial
+    \mathcal{L}}{\partial O_{10}} = O_{10} - I_2 \]\[ \frac{\partial \mathcal{L}}{\partial
+    O_{11}} = O_{11} - I_3 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autoencoder Backpropagation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s walk through the back propagation of our autoencoder, let’s start with
+    a bias in the output node, \(\frac{\partial \mathcal{L}}{\partial b_{9}}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8a6b2383ff34c83e1de1a609373cc653.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the bias, \(𝑏_9\), in the hidden decoder node, \(𝑂_9\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_9} = \frac{\partial O_{9_{\mathrm{in}}}}{\partial
+    b_9} \cdot \frac{\partial O_9}{\partial O_{9_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial O_9} = 1 \cdot 1 \cdot (O_9 - I_1) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s explain each part. We start with the output gradient \(\frac{\partial
+    \mathcal{L}}{\partial O_9}\) and step across the output node, \(O_9\), since linear
+    activation is applied in the output nodes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O_9}{\partial O_{9_{in}}} = 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can calculate the derivative of the bias, \(b_9\), with respect to the
+    node input,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial 0_{9_{\mathrm{in}}}}{\partial b_9} = \frac{\partial}{\partial
+    b_9} \left( \lambda_{7,9} R_7 + \lambda_{8,9} R_8 + b_9 \right) = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can proceed to the connection weight, 𝜆_7,9.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/80eaca0166d0cf02f98e140c090fca18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the connection weight, \(\lambda_{7,9}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \lambda_{7,9}} = \frac{\partial O_{9_{\mathrm{in}}}}{\partial
+    \lambda_{7,9}} \cdot \frac{\partial O_9}{\partial O_{9_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial O_9} = R_7 \cdot 1 \cdot (O_9 - I_1) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since linear activation is applied in the output nodes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O_9}{\partial O_{9_{in}}} = 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and \(\frac{\partial O^{\text{in}}_9}{\partial \lambda_{7,9}}\) is simply the
+    output from \(𝑅_7\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O^{\text{in}}_9}{\partial \lambda_{7,9}} = \frac{\partial}{\partial
+    \lambda_{7,9}} \left( \lambda_{7,9} R_7 + \lambda_{8,9} R_8 + b_9 \right) = R_7
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s continue past \(\partial \lambda_{7,9}\) to the output from our decoder
+    hidden node, \(𝑅_7\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c85ce96ca6f0999b7bc167c32d65b89.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the output of the decoder hidden layer node \(R_7\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial R_7} = \frac{\partial O_{9_{\mathrm{in}}}}{\partial
+    R_7} \cdot \frac{\partial O_9}{\partial O_{9_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial O_9} + \frac{\partial O_{10_{\mathrm{in}}}}{\partial R_7}
+    \cdot \frac{\partial O_{10}}{\partial O_{10_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial O_{10}} + \frac{\partial O_{11_{\mathrm{in}}}}{\partial
+    R_7} \cdot \frac{\partial O_{11}}{\partial O_{11_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial O_{11}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: that we can evaluate as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial R_7} = \lambda_{7,9} \cdot 1 \cdot (O_9
+    - I_1) + \lambda_{7,10} \cdot 1 \cdot (O_{10} - I_2) + \lambda_{7,11} \cdot 1
+    \cdot (O_{11} - I_3) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We add the derivatives from each connection. Once again, since linear activation
+    at \(𝑂_{9}\), \(𝑂_{10}\), and \(𝑂_{11}\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O_9}{\partial O_{9_{\mathrm{in}}}} = 1, \quad \frac{\partial
+    O_{10}}{\partial O_{10_{\mathrm{in}}}} = 1, \quad \frac{\partial O_{11}}{\partial
+    O_{11_{\mathrm{in}}}} = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, along the connection, the derivative is simply the weight,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O_{9_{\mathrm{in}}}}{\partial R_7} = \lambda_{7,9}, \quad
+    \frac{\partial O_{10_{\mathrm{in}}}}{\partial R_7} = \lambda_{7,10}, \quad \frac{\partial
+    O_{11_{\mathrm{in}}}}{\partial R_7} = \lambda_{7,11} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for example we can demonstrate this for \(\frac{\partial O_{9_{\mathrm{in}}}}{\partial
+    R_7}\) as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial O_{9_{\mathrm{in}}}}{\partial R_7} = \frac{\partial}{\partial
+    R_7} \left( \lambda_{7,9} R_7 + \lambda_{8,9} R_8 + b_9 \right) = \lambda_{7,9}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s continue from the output from our decoder hidden layer node, \(𝑅_7\),
+    to calculate the derivative of the bias in the node, \(b_7\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/604e4fcf99d1c41dd899458f80a67179.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the bias, $b_7$, in the hidden decoder node, $R_7$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_7} = \frac{\partial R_{7_{\mathrm{in}}}}{\partial
+    b_7} \cdot \frac{\partial R_7}{\partial R_{7_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial R_7} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since sigmoid activation at \(R_7\), to move across the node,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial R_7}{\partial R_{7_{\mathrm{in}}}} = \sigma' (R_7) = R_7 (1
+    - R_7) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and for the partial derivative of the node input given the bias,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{R_{7_{\mathrm{in}}}}{\partial b_7} = \frac{\partial}{\partial b_7}
+    \left( \lambda_{6,7} M_6 + b_7 \right) = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_7} = 1 \cdot R_7 (1 - R_7) \cdot \overbrace{
+    \left[ \lambda_{7,9} \cdot 1 \cdot (O_9 - I_1) + \lambda_{7,10} \cdot 1 \cdot
+    (O_{10} - I_2) + \lambda_{7,11} \cdot 1 \cdot (O_{11} - I_3) \right] }^{\frac{\partial
+    L}{\partial R_7}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can proceed to the connection weight, \(\lambda_{6,7}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1559af01deb817828f382cd89480ff41.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the connection weight, \(\lambda_{6,7}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \lambda_{6,7}} = \frac{\partial R_{7_{\mathrm{in}}}}{\partial
+    \lambda_{6,7}} \cdot \frac{\partial R_7}{\partial R_{7_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial R_7} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since sigmoid activation is applied in the hidden layer nodes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial R_7}{\partial R_{7_{in}}} = 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and \(\frac{\partial R_{7_{\mathrm{in}}}}{\partial \lambda_{6,7}}\) is simply
+    the output from \(M_6\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial R_{7_{\mathrm{in}}}}{\partial \lambda_{6,7}} = \frac{\partial}{\partial
+    \lambda_{6,7}} \left( \lambda_{6,7} M_6 + b_6 \right) = M_6 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_7} = M_6 \cdot R_7 (1 - R_7) \cdot
+    \overbrace{ \left[ \lambda_{7,9} \cdot 1 \cdot (O_9 - I_1) + \lambda_{7,10} \cdot
+    1 \cdot (O_{10} - I_2) + \lambda_{7,11} \cdot 1 \cdot (O_{11} - I_3) \right] }^{\frac{\partial
+    \mathcal{L}}{\partial R_7}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get continue to the output from our latent node, 𝑀_6
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4cc7dbc1493a36ab0eb828c1422d1f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the output of the latent node, \(M_6\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial M_6} = \frac{\partial R_{7_{\mathrm{in}}}}{\partial
+    M_6} \cdot \frac{\partial R_7}{\partial R_{7_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial R_7} + \frac{\partial R_{8_{\mathrm{in}}}}{\partial M_6}
+    \cdot \frac{\partial R_8}{\partial R_{8_{\mathrm{in}}}} \cdot \frac{\partial \mathcal{L}}{\partial
+    R_8} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: That we can resolve as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial M_6} = \lambda_{6,7} \cdot R_7 (1 -
+    R_7) \cdot \frac{\partial \mathcal{L}}{\partial R_7} + \lambda_{6,8} \cdot R_8
+    (1 - R_8) \cdot \frac{\partial \mathcal{L}}{\partial R_8} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since sigmoid activation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial R_7}{\partial R_{7_{\mathrm{in}}}} = R_7 (1 - R_7), \quad
+    \frac{\partial R_8}{\partial R_{8_{\mathrm{in}}}} = R_8 (1 - R_8) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and along the connections,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[\begin{split} \begin{aligned} \frac{\partial R_{7_{\mathrm{in}}}}{\partial
+    M_6} &= \frac{\partial}{\partial M_6} \left( \lambda_{6,7} M_6 + b_7 \right) =
+    \lambda_{6,7} \\ \frac{\partial R_{8_{\mathrm{in}}}}{\partial M_6} &= \frac{\partial}{\partial
+    M_6} \left( \lambda_{6,8} M_6 + b_8 \right) = \lambda_{6,8} \end{aligned} \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s continue from the output from our latent node, \(M_6\), to calculate the
+    derivative of the bias in the node, \(b_6\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90618005b205c6c5ceb09965c36cf2e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the bias, $b_6$, in the latent node, $M_6$. Note image shifted
+    to make room.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_6} = \frac{\partial M_{6_{\mathrm{in}}}}{\partial
+    b_6} \cdot \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial M_6} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since sigmoid activation at \(M_6\), to move across the node,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} = \sigma' (M_6) = M_6 \cdot
+    (1 - M_6) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and for the partial derivative of the node input given the bias,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_{6_{\mathrm{in}}}}{\partial b_6} = \frac{\partial}{\partial
+    b_6} \left( \lambda_{4,6} L_4 + b_6 \right) = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_6} = 1 \cdot M_6 (1 - M_6) \cdot \overbrace{
+    \left[ \lambda_{6,7} \cdot R_7 (1 - R_7) \cdot \frac{\partial \mathcal{L}}{\partial
+    R_7} + \lambda_{6,8} \cdot R_8 (1 - R_8) \cdot \frac{\partial \mathcal{L}}{\partial
+    R_8} \right] }^{\frac{\partial \mathcal{L}}{\partial M_6}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can proceed to the connection weight, \(\lambda_{4,6}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f5770d05672cfe3c14c6973f2775d2de.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the connection weight, \(\lambda_{4,6}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \lambda_{4,6}} = \frac{\partial M_{6_{\mathrm{in}}}}{\partial
+    \lambda_{4,6}} \cdot \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial M_6} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since sigmoid activation is applied in the hidden layer nodes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_6}{\partial M_{6_{in}}} = M_6 \cdot (1 - M_6) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and \(\frac{\partial M_{6_{\mathrm{in}}}}{\partial \lambda_{4,6}}\) is simply
+    the output from \(L_4\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_{6_{\mathrm{in}}}}{\partial \lambda_{4,6}} = \frac{\partial}{\partial
+    \lambda_{4,6}} \left( \lambda_{4,6} L_4 + \lambda_{5,6} L_5 + b_6 \right) = L_4
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \lambda_{4,6}} = L_4 \cdot M_6 (1 -
+    M_6) \cdot \overbrace{ \left[ \lambda_{6,7} \cdot R_7 (1 - R_7) \cdot \frac{\partial
+    \mathcal{L}}{\partial R_7} + \lambda_{6,8} \cdot R_8 (1 - R_8) \cdot \frac{\partial
+    \mathcal{L}}{\partial R_8} \right] }^{\frac{\partial \mathcal{L}}{\partial M_6}}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can proceed to the output of our encoder hidden layer node, \(L_4\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e5148ec01b8276d13a3ac564a201ab3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the output of the encoder hidden node, \(𝐿_4\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get this and evaluate it as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial L_4} = \frac{\partial M_{6_{\mathrm{in}}}}{\partial
+    L_4} \cdot \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial M_6} = \lambda_{4,6} \cdot M_6 (1 - M_6) \cdot \frac{\partial
+    \mathcal{L}}{\partial M_6} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since sigmoid activation is applied in the latent node,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} = M_6 (1 - M_6) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and \(\frac{\partial M_{6_{\mathrm{in}}}}{\partial L_4}\) is simply the weight,
+    \(\lambda_{4,6}\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_{6_{\mathrm{in}}}}{\partial L_4} = \frac{\partial}{\partial
+    L_4} \left( \lambda_{4,6} L_4 + b_6 \right) = \lambda_{4,6} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s continue from the output from our encoder hidden layer node, \(L_4\),
+    to calculate the derivative of the bias in the node, \(b_4\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cf8f925e7a89e3d992b323edfd45034e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the bias, $b_4$, in the encoder hidden layer node, $L_4$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_4} = \frac{\partial L_{4_{\mathrm{in}}}}{\partial
+    b_4} \cdot \frac{\partial L_4}{\partial L_{4_{\mathrm{in}}}} \cdot \frac{\partial
+    \mathcal{L}}{\partial L_4} = 1 \cdot L_4 (1 - L_4) \cdot \frac{\partial \mathcal{L}}{\partial
+    L_4} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since sigmoid activation at \(M_6\), to move across the node,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_6}{\partial M_{6_{\mathrm{in}}}} = \sigma' (M_6) = M_6 \cdot
+    (1 - M_6) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and for the partial derivative of the node input given the bias,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial M_{6_{\mathrm{in}}}}{\partial b_6} = \frac{\partial}{\partial
+    b_6} \left( \lambda_{4,6} L_4 + b_6 \right) = 1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial b_6} = 1 \cdot M_6 (1 - M_6) \cdot \overbrace{
+    \left[ \lambda_{6,7} \cdot R_7 (1 - R_7) \cdot \frac{\partial \mathcal{L}}{\partial
+    R_7} + \lambda_{6,8} \cdot R_8 (1 - R_8) \cdot \frac{\partial \mathcal{L}}{\partial
+    R_8} \right] }^{\frac{\partial \mathcal{L}}{\partial M_6}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: And, finally we proceed to the connection weight, \(\lambda_{1,4}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3623ed192b17eb44b8f6f8c59b1dc0d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Backpropagation to the connection weight, \(\lambda_{1,4}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the chain rule we get,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial \mathcal{L}}{\partial \lambda_{1,4}} = \frac{\partial L^{\text{in}}_4}{\partial
+    \lambda_{1,4}} \cdot \frac{\partial L_4}{\partial L^{\text{in}}_4} \cdot \frac{\partial
+    \mathcal{L}}{\partial L_4} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, since sigmoid activation is applied in the hidden layer nodes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial L_4}{\partial L_{4_{in}}} = L_4 \cdot (1 - L_4) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and \(\frac{\partial L^{\text{in}}_4}{\partial \lambda_{1,4}}\) is simply the
+    output from \(I_1\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial L^{\text{in}}_4}{\partial \lambda_{1,4}} = \frac{\partial}{\partial
+    \lambda_{1,4}} \left( \lambda_{1,4} I_1 + \lambda_{2,4} I_2 + \lambda_{3,4} I_3
+    + b_4 \right) = I_1 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: So now we have,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{\partial L}{\partial \lambda_{1,4}} = I_1 \cdot L_4 (1 - L_4) \cdot
+    \underbrace{\left[ \lambda_{4,6} \cdot M_6 (1 - M_6) \cdot \frac{\partial L}{\partial
+    M_6} \right]}_{\frac{\partial L}{\partial L_4}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we will build out this autoencoder from the ground up with only the NumPy
+    python package for arrays and Python built-in data structure dictionaries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Import Required Packages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the functions to train and visualize our autoencoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the Autoencoder Network
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here we specify the autoencoder labels, positions, connections and colors and
+    then plot the autoencoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: while this code is general, the actual autoencoder codes are not generalized
+    to work with other architectures, for example changing the depth or width of the
+    network
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: change the display parameters but do not the autoencoder architecture
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/333249f6a43bbad84e15a2423db3b9cc8670650c55532adfe9fea6ac7c992872.png](../Images/330a264f2ed0fefaff128fb34a83b1e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Make an Interesting Synthetic Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Generate a stochastic dataset of 1D length of 3 vectors with a pattern that
+    can be summarized by our autoencoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: if we generate random 1D vectors of length 3 our autoencoder would not be able
+    to summarize, i.e., it is not possible to compress the information from the original
+    3 values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we must include a pattern that can be learned by the autoencoder to observe
+    dimensionality reduction through the latent node with good data reconstruction
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To do this, I have calculate dataset as a hybrid model, linear + small random
+    residual. The data generation steps include,
+  prefs: []
+  type: TYPE_NORMAL
+- en: draw a random slope \(\sim N\left[-2.0, 2.0 \right]\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: calculate 3 points at locations \(\left[-1, 0, 1 \right]\), \(f(\left[-1, 0,
+    1 \right])\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: add random, independent residual to each location, \(f(\left[-1, 0, 1 \right])
+    + N\left[0.0,\sigma \right]\), where sigma is the residual standard deviation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note, the slope is retained as a label that will be compared to the latent node,
+    \(M_6\) output to check, what has our autoencoder has learned?
+  prefs: []
+  type: TYPE_NORMAL
+- en: our hypothesis is that the autoencoder will learn a value that directly maps
+    to slope to describe this dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: note, while this label is used to demonstrate the ability of the autoencoder
+    to learn, it is not used to train the model!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/39557c0e268bdf9e355e0769aff4633ec5601e1ef244d68560aa0a4c22ac5f3f.png](../Images/9ce15f05dfa887ce6ee1f02619cb004d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Train the Autoencoder
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have previously defined all the basic functions for our autoencoder so we
+    can put together our autoencoder training steps with the following functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**initialize_parameters** - initialize the weights and bias'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**forward_pass** - forward pass through our autoencoder to calculate node outputs
+    and data reconstruction'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**mse_loss_and_derivative** - calculate the L2 loss and associated error derivative
+    for each output node from training data and reconstruction'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**backpropagate** - backpropagate the error derivative through the network
+    based on error derivative and node outputs and then average the gradients at each
+    weight and bias over the batch'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**update_parameters** - update the weights and biases with the average gradient
+    over the batch and the learning rate'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: go to 2 until convergence, in the case a set number of training epochs
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b4374d79f0f8d85887bb5f6075aa68f024e9e33bc189c7492047de36822bcb2a.png](../Images/3ab1c8fef6098b7c75943615555e53e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The average L2 loss vs. training epoch curve looks very good.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we are seeing a pause in learning and then suddenly a fast reduction in training
+    error and then slow convergence
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I stopped at 10,000 epochs for efficiency
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evaluating Our Autoencoder Network
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s look at the output from the latent node at the network bottleneck, i.e.,
+    the output of node M6.
+  prefs: []
+  type: TYPE_NORMAL
+- en: notice above that we recorded the M6 output (called node activation) for all
+    training epochs and for all data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: let’s look at the final trained network, the last epoch, and loop over all data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s a plot of final epoch M6 output vs. the sample slopes,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/d0ab2f0cf0b3c073fe93da6aa44c8e663feb48b72910cb0e72f2f5ec9416f426.png](../Images/7815f0d074113f20a6f77a446f1f83d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As hypothesized, there is a good relationship between the output of our latent
+    node at the network bottleneck and the slope of the samples used to generate the
+    data!
+  prefs: []
+  type: TYPE_NORMAL
+- en: our autoencoder has learned 1 value to represent the vectors of 3 values in
+    the dataset!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this is a great demonstration of information compression, 3:1!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Check Training Data Reconstruction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s visualize the reconstructed 1D data, encoded and then decoded with out
+    autoencoder network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for all training data, I include the original data and the reconstructed data,
+    i.e., data encoded and decoded by our trained autoencoder
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for each data training sample, I include the sample slope for interest, but
+    this label are not used in the in the training, nor with the encoder or decoder
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fe7102239237e5dec48032be77d18524b61a306c2238811815f52c81fcbd5955.png](../Images/7203aaa35d3b4fe06560d8885fa0bc78.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The training data reconstruction is quite good!
+  prefs: []
+  type: TYPE_NORMAL
+- en: our autoencoder has learned to encode and decode the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: demonstrating good dimensionality reduction from 3 to 1!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Check Testing Data Reconstruction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s generate additional data and test the reconstruction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check the performance of our training autoencoder with data not used to train
+    the autoencoder, known as model generalization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/422b0a32f31f3498764ada7f7ec63e50a53a411b5d12e6c718a4288f371d62e8.png](../Images/28e4aff8d55696fd326194c3a79007d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Apply trained autoencoder to reconstruct test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now visualizated the test data reconstructions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6d4114b87e54f6dcb8a4cbefcdd99015b46e78ceca3a5d93daa4ff900d2cdf08.png](../Images/abda6b15ea724a35119dc1c5cf9554e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our trained autoencoder seems to have generalized well with very good performance
+    reconstructing training and also the withheld testing cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a more complete workflow we would evaluate training and testing error in
+    parallel over training epochs to check for model overfit.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I separated these components for brevity and clarity in the demonstration
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of autoencoder deep learning networks. Much more
+    could be done and discussed, I have many more resources. Check out my [shared
+    resource inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture
+    links at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

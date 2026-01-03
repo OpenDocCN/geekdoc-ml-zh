@@ -1,0 +1,3574 @@
+- en: LASSO Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_LASSO_regression.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_LASSO_regression.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **LASSO Regression**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Linear Regression](https://youtu.be/0fzbyhWiP84)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Ridge Regression](https://youtu.be/pMGO40yXZ5Y?si=ygJAheyX-v2BmSiR)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[LASSO Regression](https://youtu.be/cVFYhlCCI_8?si=NbwIDaZj30vxezn2)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Norms](https://youtu.be/JmxGlrurQp0?si=vuF1TXDbZkyRC1j-)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for LASSO Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s a simple workflow, demonstration of ridge regression and comparison to
+    linear regression and ridge regression for machine learning-based predictions.
+    Why start with linear regression?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear regression is the simplest parametric predictive machine learning model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We learn about training machine learning models with an iterative approach,
+    with LASSO we loose the analytical solution of linear and ridge regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Get’s us started with the concepts of loss functions and norms
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We have access to analytics expressions for confidence intervals for model uncertainty
+    and hypothesis tests for parameter significance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why also cover ridge regression before LASSO regression?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some times linear regression is not simple enough and we actually need a simpler
+    model!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduce the concept of model regularization and hyperparameter tuning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we cover LASSO regression to learn about the impact of choice of loss function
+    norm on training machine learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With LASSO regression we replace the L2 regularization term in the ridge regression
+    loss function with L1 regularization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a result LASSO sequentially shrinks the model parameters to 0.0, resulting
+    in a built in feature selection!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here’s some basic details about predictive machine learning LASSO regression
+    models, let’s start with linear regression and ridge regression first and build
+    to ridge regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Linear regression for prediction, let’s start by looking at a linear model fit
+    to a set of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed71b506ab0f5b47754cb1c92fc8935a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example linear regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start by defining some terms,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**predictor feature** - an input feature for the prediction model, given we
+    are only discussing linear regression and not multilinear regression we have only
+    one predictor feature, \(x\). On out plots (including above) the predictor feature
+    is on the x-axis.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**response feature** - the output feature for the prediction model, in this
+    case, \(y\). On our plots (including above) the response feature is on the y-axis.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Now, here are some key aspects of linear regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parametric Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a parametric predictive machine learning model, we accept an a prior
+    assumption of linearity and then gain a very low parametric representation that
+    is easy to train without a onerous amount of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the fit model is a simple weighted linear additive model based on all the available
+    features, \(x_1,\ldots,x_m\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'the parametric model takes the form of:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ y = \sum_{\alpha = 1}^m b_{\alpha} x_{\alpha} + b_0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the visualization of the linear model parameters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e798c74dc4ed5ec8fcbd2c8ffe0ef5fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Least Squares**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The analytical solution for the model parameters, \(b_1,\ldots,b_m,b_0\), is
+    available for the L2 norm loss function, the errors are summed and squared known
+    a least squares.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'we minimize the error, residual sum of squares (RSS) over the training data:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ RSS = \sum_{i=1}^n \left(y_i - (\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha,i}
+    + b_0) \right)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(y_i\) is the actual response feature values and \(\sum_{\alpha = 1}^m
+    b_{\alpha} x_{\alpha} + b_0\) are the model predictions, over the \(\alpha = 1,\ldots,n\)
+    training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a visualization of the L2 norm loss function, MSE,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e91d94eb7bac509a6ec741d8af33082f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear model loss function, mean square error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this may be simplified as the sum of square error over the training data,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \begin{equation} \sum_{i=1}^n (\Delta y_i)^2 \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\Delta y_i\) is actual response feature observation \(y_i\) minus the
+    model prediction \(\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha} + b_0\), over the
+    \(i = 1,\ldots,n\) training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Assumptions**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are important assumption with our linear regression model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Error-free** - predictor variables are error free, not random variables'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Linearity** - response is linear combination of feature(s)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Constant Variance** - error in response is constant over predictor(s) value'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Independence of Error** - error in response are uncorrelated with each other'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**No multicollinearity** - none of the features are redundant with other features'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ridge Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With ridge regression we add a hyperparameter, \(\lambda\), to our minimization,
+    with a shrinkage penalty term, \(\sum_{j=1}^m b_{\alpha}^2\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sum_{i=1}^n \left(y_i - \left(\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha,i}
+    + b_0 \right) \right)^2 + \lambda \sum_{j=1}^m b_{\alpha}^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, ridge regression training integrates two and often competing goals
+    to find the model parameters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: find the model parameters that minimize the error with training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: minimize the slope parameters towards zero
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note: lambda does not include the intercept, \(b_0\).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The \(\lambda\) is a hyperparameter that controls the degree of fit of the model
+    and may be related to the model bias-variance trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for \(\lambda \rightarrow 0\) the solution approaches linear regression, there
+    is no bias (relative to a linear model fit), but the model variance is likely
+    higher
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as \(\lambda\) increases the model variance decreases and the model bias increases,
+    the model becomes simpler
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for \(\lambda \rightarrow \infty\) the model parameters \(b_1,\ldots,b_m\) shrink
+    to 0.0 and the model predictions approaches the training data response feature
+    mean
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: LASSO Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For LASSO, similar to ridge regression, we add a hyperparameter \(\lambda\)
+    to our minimization, with a shrinkage penalty term, but we use the L1 norm instead
+    of L2 (sum of absolute values instead of sum of squares).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sum_{i=1}^n \left(y_i - \left(\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha,i}
+    + b_0 \right) \right)^2 + \lambda \sum_{j=1}^m |b_{\alpha}| \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, LASSO regression training integrates two and often competing goals
+    to find the model parameters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: find the model parameters that minimize the error with training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: minimize the slope parameters towards zero
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Once again, the only difference between LASSO and ridge regression is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: for LASSO the shrinkage term is posed as an \(\ell_1\) penalty,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda \sum_{\alpha=1}^m |b_{\alpha}| \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for ridge regression the shrinkage term is posed as an \(\ell_2\) penalty,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda \sum_{\alpha=1}^m \left(b_{\alpha}\right)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While both ridge regression and LASSO shrink the model parameters (\(b_{\alpha},
+    \alpha = 1,\ldots,m\)) towards zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LASSO parameters reach zero at different rates for each predictor feature as
+    the lambda, \(\lambda\), hyperparameter increases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as a result LASSO provides a method for feature ranking and selection!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The lambda, \(\lambda\), hyperparameter controls the degree of fit of the model
+    and may be related to the model bias-variance trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for \(\lambda \rightarrow 0\) the prediction model approaches linear regression,
+    there is lower model bias, but the model variance is higher
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as \(\lambda\) increases the model variance decreases and the model bias increases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for \(\lambda \rightarrow \infty\) the coefficients all become 0.0 and the model
+    is the training data response feature mean
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**\(L^1\) vs. \(L^2\) Norm**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This would be a good time to discuss the choice of \(L^1\) and \(L^2\) norm.
+    To explain this let’s compare the performance of \(L^1\) and \(L^2\) norms in
+    loss functions while training model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| Property | Least Absolute Deviations (L1) | Least Squares (L2) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Robustness** | Robust | Not very robust |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Solution Stability** | Unstable solution | Stable solution |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Number of Solutions** | Possibly multiple solutions | Always one solution
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Feature Selection** | Built-in feature selection | No feature selection
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Output Sparsity** | Sparse outputs | Non-sparse outputs |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Analytical Solutions** | No analytical solutions | Analytical solutions
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: Here’s some important points specifically for LASSO regression,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature Selection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s compare the solutions from Ridge with \(𝑳^𝟐\) and LASSO with \(𝑳^𝟏\) regularization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the same regularization cost we have different shapes in model parameter
+    space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/1f84730c294a4da3a38601107b6392e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Iso-regularization loss contours for LASSO (left) and ridge (right) regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: if \(𝑠\) is large enough (\(\lambda \rightarrow 0\)), then the least squares
+    fit of the parameters is selected, it exists in the space, \(𝑠\)!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now consider the least squares estimates term along with the regularization
+    term in the loss functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/83fdbd948d363151e2f912612c25b44e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Iso-square error and regularization loss contours for LASSO (left) and ridge
+    (right) regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can see that as we balance the regularization and square error loss terms,
+    as \(\lambda\) increases the model parameters traverse from least squares to 0,
+    and due to the shape of the regularization term for LASSO the model parameters
+    are more likely to shrink to 0.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To help visualize the change in the trained model parameters for ridge vs. LASSO
+    regression as \(\lambda\) is changed, I built an interactive Python [Linear Solution
+    Dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Linear_Solutions.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07f28f16502ca9a33065e5ae4077a163.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive dashboard to visualize the square error and Shrinkage losses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see that LASSO performs feature selection at the same time as prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numerical Solutions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The \(𝐿^1\) norm does not have analytical solutions because it is non-differentiable
+    piece-wise function (includes an absolute value).
+  prefs: []
+  type: TYPE_NORMAL
+- en: with LASSO we must use a numerical solution, for example, iterative gradient
+    descent solution instead of an analytical solution, e.g., linear and ridge regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tibshirani (2012) demonstrated that the LASSO solution is unique for any number
+    of features, 𝑚, given all features are continuous. Therefore, the loss function
+    has a global minimum.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recall the LASSO loss function,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sum_{i=1}^n \left(y_i - \left(\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha,i}
+    + b_0 \right) \right)^2 + \lambda \sum_{j=1}^m |b_{\alpha}| \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can illustrate the numerical solution for the model parameter \(b_1\) with
+    this example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cb6737831e2959fec37f3c649753e935.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training error for a medium slope (left) and low slope (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we calculate many cases of \(b_1\) and visualize the loss vs. model parameter
+    plot,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb152078a3aa5de4ab91fc1bd73d4892.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loss vs \(b_1\) model parameter with low and medium cases highlighted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding the model parameters that minimize the loss function is numerical optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: so we use common numerical optimization methods to train our machine learning
+    models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Grid Search, Brute Force Optimization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We could try all the combinations of model parameters, with sufficient discretization,
+    and keep the model parameter combination that minimizes the loss function,
+  prefs: []
+  type: TYPE_NORMAL
+- en: possible for a single model parameter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: impractical for most machines due to the large combinatorial of possible model
+    parameter values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a0d4db417b916675d6246cc896f46f62.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model parameter grid search, brute force optimization, regular sampling of the
+    loss function for 1 model parameter (above) and 2 model parameters (below). .
+  prefs: []
+  type: TYPE_NORMAL
+- en: The combinatorial of model parameters is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ 𝑛_𝑐=𝑛_{𝑏𝑖𝑛𝑠}^{𝑛_𝑏} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(𝑛_𝑏\) is the number of model parameters and \(𝑛_{𝑏𝑖𝑛𝑠}\) is the number
+    of discretizations for each model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the size of the space is even larger with Bayesian approaches where the model
+    parameters are represented by distributions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gradient Descent Optimization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The gradient descent approach for numerical solutions proceeds as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Start a random model parameter
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate the loss function
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate the loss function gradient, generally don’t have an equation for the
+    loss function, sampling with numerical calculation of the local loss function
+    derivative.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \nabla L(y_{\alpha}, F(X_{\alpha}, b_1)) = \frac{L(y_{\alpha}, F(X_{\alpha},
+    b_1 - \epsilon)) - L(y_{\alpha}, F(X_{\alpha}, b_1 + \epsilon))}{2\epsilon} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Update the parameter estimate by stepping down slope / gradient
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \hat{b}_{1,t+1} = \hat{b}_{1,t} - r \nabla L(y_{\alpha}, F(X_{\alpha}, b_1))
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(𝑟\) is the learning rate/step size, \(\hat{b}_{1,𝑡}\), is the current
+    model parameter estimate and \(\hat{𝑏}_{1,𝑡+1}\) is the updated parameter estimate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient search convergence,
+  prefs: []
+  type: TYPE_NORMAL
+- en: gradient descent optimization will find a local or global minimum
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gradient search step size,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(𝑟\) too small, takes too long to converge to a solution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(𝑟\) too large, the solution may skip over/miss a global minimum or diverge
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ea7617f79b05f8efb8ee8b35f2c254b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Solution convergence (left) and divergence (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multivariate optimization, if models will have more than 1 model parameter,
+  prefs: []
+  type: TYPE_NORMAL
+- en: calculate and decompose the gradient over multiple model parameters, now with
+    a vector representation of the gradient over all model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for example, with 2 model parameters,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[\begin{split} \nabla L(y_{\alpha}, F(X_{\alpha}, b_1, b_2)) = \left[ \begin{array}{c}
+    \nabla L(y_{\alpha}, F(X_{\alpha}, b_1)) \\ \nabla L(y_{\alpha}, F(X_{\alpha},
+    b_2)) \end{array} \right] \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can represent this graphically as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ff8218bd8083f37ce36b750a43c46485.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradient descent for 2 model parameters through vector of representation of
+    loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: optimization for training machine learning models is exploration of a high dimensional
+    model parameter space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mitigation of Local Minimums
+  prefs: []
+  type: TYPE_NORMAL
+- en: A common approach is multiple starts and take the best result.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/cde0ae9c36b1219d5667c512d04756fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multiple random starts to improve identification of global minimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Start with larger learning rate, step size, reduce steps over \(𝑡=1,\dots,𝑇\),
+    for search and then converge.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: use of a step size schedule / adaptive step size over iterations, for example,
+    Adam optimizer commonly used for Artificial Neural Networks.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: simulated annealing has a schedule of probability to accept bad steps! Accept
+    more bad steps to explore early and accept less bad steps later to converge.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Momentum to improve solution stability
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Update the previous step with the new step, momentum, \(\lambda\), is the weight
+    on the previous step
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (r \cdot \nabla L)_{t-1}^m = \lambda \cdot (r \cdot \nabla L)_{t-2} + (1
+    - \lambda) \cdot (r \cdot \nabla L)_{t-1} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can visualize this here,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3bb90a5ffaaa17e9358dbf00fcc3ef14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Momentum to weight the previous step and smooth the path through the loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the gradients calculated from the partial derivatives of the loss function for
+    each model parameter have noise.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: momentum smooths out, reduces this noise.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Momentum helps the solution proceed down the general slope of the loss function,
+    rather than oscillating in local ravines or dimples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stochastic Gradient Descent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We may have a lot of data \(\rightarrow \nabla 𝐿_𝑡\), is expensive to calculate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we could replace the gradient with a stochastic approximation, \(\nabla L_{𝑡^{\ell}}\)
+    by retaining a random subset of the training data, online (1 data) or mini-batch
+    (>1 data, \(𝑛_{𝑏𝑎𝑡𝑐ℎ}\)), where \(\ell\) indicates a realization of the gradient.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we reduce accuracy in the gradient descent, but speed up the calculation and
+    can perform more steps, often faster than gradient descent
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: increase \(𝑛_{𝑏𝑎𝑡𝑐ℎ}\) for more accuracy of gradient estimation, and decrease
+    \(𝑛_{𝑏𝑎𝑡𝑐ℎ}\) to speed up the steps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By Robbins-Siegmund (1971) Theorem - converge to global minimum for convex loss
+    functions and either a global or local minimum for nonconvex loss functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sparsity** - \(𝐿^1\) removes features, built-in feature selection, shrinks
+    the model parameters to exactly 0, higher model parameter sparsity.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a function to streamline the addition specified percentiles and
+    major and minor gridlines to our plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time). Also, in this case make
+    sure to place the required (see below) data file in this working directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘unconv_MV.csv’. This
+    dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: density (\(g/cm^{3}\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (volume %)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a DataFrame we called ‘my_data’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train-Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For simplicity we apply a random train-test split with the train_test_split
+    function from scikit-learn package, model_selection module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful first check of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: we have a custom function to preview the training and testing DataFrames side-by-side.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Density | Porosity |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 24 | 1.778580 | 11.426485 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 101 | 2.410560 | 8.488544 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 88 | 2.216014 | 10.133693 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 79 | 1.631896 | 12.712326 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 58 | 1.528019 | 16.129542 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Density | Porosity |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 59 | 1.742534 | 15.380154 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 1.404932 | 13.710628 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 35 | 1.552713 | 14.131878 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 92 | 1.762359 | 11.154896 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 22 | 1.885087 | 9.403056 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum
+    in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Density | Porosity |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 78.000000 | 78.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 1.739027 | 12.501465 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 0.302510 | 3.428260 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 0.996736 | 3.276449 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 2.410560 | 21.660179 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Density | Porosity |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 27.000000 | 27.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 1.734710 | 12.380796 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 0.247761 | 2.916045 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 1.067960 | 7.894595 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 2.119652 | 18.133771 |'
+  prefs: []
+  type: TYPE_TB
+- en: Visualize the Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the consistency and coverage of training and testing with histograms
+    and scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check to make sure the train and test data cover the range of possible predictor
+    feature combinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ensure we are not extrapolating beyond the training data with the testing cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4f4677e517ed9b0f7ed7a658d2f332e4319eee7f3a590ba6a296c8e12695d6ac.png](../Images/3766b457d4d8b8c75cfa925ac2f27fad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Linear Regression Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s first calculate the linear regression model. We use scikit learn and then
+    extend the same workflow to ridge regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we are building a model, \(\phi = f(\rho)\), where \(\phi\) is porosity and
+    \(\rho\) is density.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we could also say, we have “porosity regressed on density”.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our model has this specific equation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \phi = b_1 \times \rho + b_0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/bed1e4c1d09a0f489bb51ecf2a390fd0ebd2683139e25747abe6bb9422957cc5.png](../Images/5330f8e13578eabf8f67b4e8379f1dd5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You may have noticed the additional reshape operation applied to the predictor
+    feature in the predict function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is needed because scikit-learn assumes more than one predictor feature;
+    therefore, expects a 2D array of samples (rows) and features (columns), but we
+    have only a 1D vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the reshape operation turns the 1D vector into a 2D vector with only 1 column
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Linear Regression Model Checks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s run some quick model checks. Much more could be done, but I limit this
+    for brevity here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: see the Linear Regression chapter for more information and checks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c77e7f7dba894c64d292cfc9ca858a37615ac34cb3971d8f9493ee9350fa3f54.png](../Images/cf89ec094ccb520da30fa1ee810410b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ridge Regression Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s replace the scikit-learn linear regression method with the scikit-learn
+    ridge regression method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, we must now set the \(\lambda\) hyperparameter.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: in scikit-learn the hyperparameter(s) is(are) set with the instantiation of
+    the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/00e5ed1c33b653d63cf4625df987255833a6a6e7b6c4457a589677352282acdd.png](../Images/a6448c37319c913a38a278536faa63c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s repeat the simple model checks that we applied with our linear regression
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c90a68d8db0f700d6c5cfbe7c72682c395bc625b587d49f912c457c28f4063b0.png](../Images/5ac80d876690b7e916dd4280243aed8a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interesting, we explained less variance and have a larger residual standard
+    deviation (more error).
+  prefs: []
+  type: TYPE_NORMAL
+- en: ridge regression for our arbitrarily selected hyperparameter, \(\lambda\), actually
+    reduced both testing variance explained and accuracy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this is not surprising, we are not actually tuning the hyperparameter to get
+    the best model!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: LASSO Regression Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s replace the scikit learn linear regression and ridge regression methods
+    with the scikit learn the LASSO regression method. Note, once again must now set
+    the lambda hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall, the lambda hyperparameter \(\lambda\) is set with the instantiation
+    of the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fc905fb342871dd4da4ae71bef01ac90b175345d9b4bde5ed752de9c810ed5c6.png](../Images/c9cb274630b2d8b01b6f4bd114f7ef0e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s repeat the simple model checks that we applied with our linear regression
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LASSO Hyperparameter Tuning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Above we just selected an arbitrary \(\lambda\) hyperparameter, now let’s do
+    hyperparameter tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: summarize MSE over k-folds in cross validation while looping over a wide variety
+    of \(\lambda\) values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recall, Mean Squared Error (MSE) is given by,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(y_i\) is the actual value, \(\hat{y}_i\) is the predicted value, and
+    \(n\) is the number of data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/85e35cf3218c7320c4d78ca384bd49581a2e1ec32b9f69deea82561ac5ee2f7a.png](../Images/aa9ecd6f50ebe5d0f0c5ca2842d39012.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the above we observe that any \(\lambda > 0.1\) results in the minimum
+    test mean square error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the threshold behavior is due to the fact that below this level of regularization,
+    the model is behaving like linear regression.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s now train a model with this hyperparameter on all the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e44b292128f3361d3bbfc9234e6eae5f1a4674adfea6e3977aca89662c817c61.png](../Images/64e13b841e7ab592022426ef7bc2bddf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With our tuned \(\lambda\) hyperparameter,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: our model is the same as linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: could we create a situation where the best model is not linear regression? I.e.,
+    were regularization is helpful?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: yes, we can. Let’s remove most the samples to create data paucity and add a
+    lot of noise!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Admittedly, I iterated the random seeds for the sample and noise to get this
+    result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: few data (low \(n\)) and high dimensionality (high \(m\)) will generally result
+    in LASSO outperforming linear regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c6e91cca2d994d74c0354e932ce89723143be474c7a74db926f6fc9e70cb3419.png](../Images/03c4aefb2d59d3a6e5c4b3652011ed5c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Investigating the Impact of Lambda Hyperparameter on Model Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s look at the multivariate dataset that we already loaded. This way we can
+    observe the model behavior over a range of features, for a range of lambda hyperparameter
+    values. We are going to perform regular steps to get to the punch line!
+  prefs: []
+  type: TYPE_NORMAL
+- en: load a multivariate dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate summary statistics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: standardize the features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we will vary the hyperparameter and observe the model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load a Multivariate Dataset
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s load a dataset with more variables to demonstrate feature ranking with
+    LASSO regression and to compare the behavior in the model parameters over hyperparameter
+    values. The dataset ‘unconv_MV_v5.csv’, is a comma delimited file based on 1,000
+    unconventional wells including the features,
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we assume initial production is the response feature and all other features
+    are predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, you can try another similar dataset by toggling the mv_data integer to
+    1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 4165.196191 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3561.146205 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 4284.348574 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5098.680869 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 3406.132832 |'
+  prefs: []
+  type: TYPE_TB
+- en: Calculate Summary Statistics
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s calculate the summary statistics for our multivariate data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Production | 200.0 | 4311.219852 | 992.038414 | 2107.139414 | 3618.064513
+    | 4284.687348 | 5086.089761 | 6662.622385 |'
+  prefs: []
+  type: TYPE_TB
+- en: Standardize the Features
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s standardize the feature to have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: mean = 0.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: variance = standard deviation = 1.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We do this so the model parameters will similar ranges and will be comparable,
+    i.e., like \(\beta\) vs. \(B\) coefficients for feature ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do this we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: instantiate the StandardScaler from scikit learn. We assign it as ‘scaler’ so
+    we can use it to conveniently reverse the transformation if we like. We will need
+    to do that to get our predictions back into regular production units.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: we then extract all the values from our DataFrame and apply the by-column standardization.
+    The result is a 2D ndarray
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: we make an new empty DataFrame
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: then we add the transformed value to the new DataFrame while keeping the sample
+    index and feature names from the old DataFramae
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | -0.982256 | -0.817030 | -0.298603 | 2.358297 | 0.352948 | 1.152048 |
+    -0.147565 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | -0.881032 | -0.463751 | 0.444147 | -0.141332 | -0.209104 | -0.280931
+    | -0.757991 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | -0.327677 | -1.008148 | 1.841224 | 1.748113 | -0.209104 | 2.518377 |
+    -0.027155 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 0.903875 | 1.401098 | -0.599240 | -0.592585 | 0.186414 | -0.280931 |
+    0.795773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 0.853263 | 0.138561 | 0.373409 | -2.640962 | 1.081534 | -0.214280 | -0.914640
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: Check Summary Statistics
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s check the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 2.486900e-16 | 1.002509 | -2.848142 | -0.701361 | 0.026605
+    | 0.813617 | 2.887855 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | -6.217249e-17 | 1.002509 | -1.853701 | -0.699753 | -0.171282
+    | 0.554098 | 3.208033 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 4.130030e-16 | 1.002509 | -2.986650 | -0.745137 | -0.024493
+    | 0.665203 | 2.937664 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 2.042810e-16 | 1.002509 | -2.640962 | -0.738391 | 0.095646
+    | 0.716652 | 2.566186 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 3.375078e-16 | 1.002509 | -2.457313 | -0.776361 | 0.082330
+    | 0.748466 | 2.476256 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 9.081624e-16 | 1.002509 | -3.446814 | -0.647507 | -0.014330
+    | 0.593853 | 3.018254 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Production | 200.0 | 1.598721e-16 | 1.002509 | -2.227345 | -0.700472 | -0.026813
+    | 0.783049 | 2.376222 |'
+  prefs: []
+  type: TYPE_TB
+- en: Success, we have all features standardized. We are ready to build our model.
+    Let’s extract training and testing datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: Vary the Hyperparameter and Observe the Model Parameters
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now let’s observe the model coefficients (\(b_{\alpha}, \alpha = 1,\ldots,m\))
+    for a range of \(\lambda\) hyperparameter values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/09312a2f4e51e5cd4d8ecb5211db9a6800b6305d448d91ebf9c9ee6164703c6b.png](../Images/b105175b634806ea901b8442f3b13e47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What do we see?
+  prefs: []
+  type: TYPE_NORMAL
+- en: for a very low lambda value, all features are included
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as we increase the lambda hyperparameter, total organic carbon is the first
+    predictor feature to be removed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then acoustic impedance, vitrinite reflectance, brittleness, log perm and finally
+    porosity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: at \(\lambda \ge 0.8\) all features are removed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s repeat this workflow with ridge regression for a comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/09a0ac5014577cbd314e22f6233b84ec6bc3af2a939d398f99e71ae5dc3c24fe.png](../Images/ff11eb98e492b6fb3503b042054e1b80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ridge regression is quite different in the response of predictor feature to
+    change in the \(\lambda\) hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is no selective removal of predictor features as the \(\lambda\) hyperparameter
+    increases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a major component is uniform shrinkage of all coefficients towards zero for
+    \(\lambda \in [10^1, 10^5]\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Demonstrate Solution Instability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s repeat the above experiement and track some of the estimates from the
+    model over the hyperparameter, \(\lambda\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2b66c5aac73becda389b3090d50d3c69d950f870ace31d26bed7e234ad1d97da.png](../Images/d0fb23953092ed15bd21494f123ca3f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ridge regression estimates smoothly vary from linear regression to the global
+    mean of the response feature (stability)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: LASSO regression estimates demonstrate jumps (instability)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of LASSO regression. Much more could be done and
+    discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for LASSO Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s a simple workflow, demonstration of ridge regression and comparison to
+    linear regression and ridge regression for machine learning-based predictions.
+    Why start with linear regression?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear regression is the simplest parametric predictive machine learning model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We learn about training machine learning models with an iterative approach,
+    with LASSO we loose the analytical solution of linear and ridge regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Get’s us started with the concepts of loss functions and norms
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We have access to analytics expressions for confidence intervals for model uncertainty
+    and hypothesis tests for parameter significance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why also cover ridge regression before LASSO regression?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some times linear regression is not simple enough and we actually need a simpler
+    model!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Introduce the concept of model regularization and hyperparameter tuning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we cover LASSO regression to learn about the impact of choice of loss function
+    norm on training machine learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With LASSO regression we replace the L2 regularization term in the ridge regression
+    loss function with L1 regularization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a result LASSO sequentially shrinks the model parameters to 0.0, resulting
+    in a built in feature selection!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here’s some basic details about predictive machine learning LASSO regression
+    models, let’s start with linear regression and ridge regression first and build
+    to ridge regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Linear regression for prediction, let’s start by looking at a linear model fit
+    to a set of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed71b506ab0f5b47754cb1c92fc8935a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example linear regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start by defining some terms,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**predictor feature** - an input feature for the prediction model, given we
+    are only discussing linear regression and not multilinear regression we have only
+    one predictor feature, \(x\). On out plots (including above) the predictor feature
+    is on the x-axis.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**response feature** - the output feature for the prediction model, in this
+    case, \(y\). On our plots (including above) the response feature is on the y-axis.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Now, here are some key aspects of linear regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parametric Model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a parametric predictive machine learning model, we accept an a prior
+    assumption of linearity and then gain a very low parametric representation that
+    is easy to train without a onerous amount of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the fit model is a simple weighted linear additive model based on all the available
+    features, \(x_1,\ldots,x_m\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'the parametric model takes the form of:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ y = \sum_{\alpha = 1}^m b_{\alpha} x_{\alpha} + b_0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the visualization of the linear model parameters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e798c74dc4ed5ec8fcbd2c8ffe0ef5fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Least Squares**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The analytical solution for the model parameters, \(b_1,\ldots,b_m,b_0\), is
+    available for the L2 norm loss function, the errors are summed and squared known
+    a least squares.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'we minimize the error, residual sum of squares (RSS) over the training data:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ RSS = \sum_{i=1}^n \left(y_i - (\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha,i}
+    + b_0) \right)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(y_i\) is the actual response feature values and \(\sum_{\alpha = 1}^m
+    b_{\alpha} x_{\alpha} + b_0\) are the model predictions, over the \(\alpha = 1,\ldots,n\)
+    training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a visualization of the L2 norm loss function, MSE,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e91d94eb7bac509a6ec741d8af33082f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The linear model loss function, mean square error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this may be simplified as the sum of square error over the training data,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \begin{equation} \sum_{i=1}^n (\Delta y_i)^2 \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\Delta y_i\) is actual response feature observation \(y_i\) minus the
+    model prediction \(\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha} + b_0\), over the
+    \(i = 1,\ldots,n\) training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Assumptions**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are important assumption with our linear regression model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Error-free** - predictor variables are error free, not random variables'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Linearity** - response is linear combination of feature(s)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Constant Variance** - error in response is constant over predictor(s) value'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Independence of Error** - error in response are uncorrelated with each other'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**No multicollinearity** - none of the features are redundant with other features'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ridge Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With ridge regression we add a hyperparameter, \(\lambda\), to our minimization,
+    with a shrinkage penalty term, \(\sum_{j=1}^m b_{\alpha}^2\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sum_{i=1}^n \left(y_i - \left(\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha,i}
+    + b_0 \right) \right)^2 + \lambda \sum_{j=1}^m b_{\alpha}^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, ridge regression training integrates two and often competing goals
+    to find the model parameters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: find the model parameters that minimize the error with training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: minimize the slope parameters towards zero
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note: lambda does not include the intercept, \(b_0\).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The \(\lambda\) is a hyperparameter that controls the degree of fit of the model
+    and may be related to the model bias-variance trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for \(\lambda \rightarrow 0\) the solution approaches linear regression, there
+    is no bias (relative to a linear model fit), but the model variance is likely
+    higher
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as \(\lambda\) increases the model variance decreases and the model bias increases,
+    the model becomes simpler
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for \(\lambda \rightarrow \infty\) the model parameters \(b_1,\ldots,b_m\) shrink
+    to 0.0 and the model predictions approaches the training data response feature
+    mean
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: LASSO Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For LASSO, similar to ridge regression, we add a hyperparameter \(\lambda\)
+    to our minimization, with a shrinkage penalty term, but we use the L1 norm instead
+    of L2 (sum of absolute values instead of sum of squares).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sum_{i=1}^n \left(y_i - \left(\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha,i}
+    + b_0 \right) \right)^2 + \lambda \sum_{j=1}^m |b_{\alpha}| \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, LASSO regression training integrates two and often competing goals
+    to find the model parameters,
+  prefs: []
+  type: TYPE_NORMAL
+- en: find the model parameters that minimize the error with training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: minimize the slope parameters towards zero
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Once again, the only difference between LASSO and ridge regression is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: for LASSO the shrinkage term is posed as an \(\ell_1\) penalty,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda \sum_{\alpha=1}^m |b_{\alpha}| \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for ridge regression the shrinkage term is posed as an \(\ell_2\) penalty,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lambda \sum_{\alpha=1}^m \left(b_{\alpha}\right)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While both ridge regression and LASSO shrink the model parameters (\(b_{\alpha},
+    \alpha = 1,\ldots,m\)) towards zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LASSO parameters reach zero at different rates for each predictor feature as
+    the lambda, \(\lambda\), hyperparameter increases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as a result LASSO provides a method for feature ranking and selection!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The lambda, \(\lambda\), hyperparameter controls the degree of fit of the model
+    and may be related to the model bias-variance trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for \(\lambda \rightarrow 0\) the prediction model approaches linear regression,
+    there is lower model bias, but the model variance is higher
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as \(\lambda\) increases the model variance decreases and the model bias increases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for \(\lambda \rightarrow \infty\) the coefficients all become 0.0 and the model
+    is the training data response feature mean
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**\(L^1\) vs. \(L^2\) Norm**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This would be a good time to discuss the choice of \(L^1\) and \(L^2\) norm.
+    To explain this let’s compare the performance of \(L^1\) and \(L^2\) norms in
+    loss functions while training model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '| Property | Least Absolute Deviations (L1) | Least Squares (L2) |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Robustness** | Robust | Not very robust |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Solution Stability** | Unstable solution | Stable solution |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Number of Solutions** | Possibly multiple solutions | Always one solution
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Feature Selection** | Built-in feature selection | No feature selection
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Output Sparsity** | Sparse outputs | Non-sparse outputs |'
+  prefs: []
+  type: TYPE_TB
+- en: '| **Analytical Solutions** | No analytical solutions | Analytical solutions
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: Here’s some important points specifically for LASSO regression,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature Selection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s compare the solutions from Ridge with \(𝑳^𝟐\) and LASSO with \(𝑳^𝟏\) regularization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the same regularization cost we have different shapes in model parameter
+    space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/1f84730c294a4da3a38601107b6392e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Iso-regularization loss contours for LASSO (left) and ridge (right) regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: if \(𝑠\) is large enough (\(\lambda \rightarrow 0\)), then the least squares
+    fit of the parameters is selected, it exists in the space, \(𝑠\)!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now consider the least squares estimates term along with the regularization
+    term in the loss functions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/83fdbd948d363151e2f912612c25b44e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Iso-square error and regularization loss contours for LASSO (left) and ridge
+    (right) regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can see that as we balance the regularization and square error loss terms,
+    as \(\lambda\) increases the model parameters traverse from least squares to 0,
+    and due to the shape of the regularization term for LASSO the model parameters
+    are more likely to shrink to 0.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To help visualize the change in the trained model parameters for ridge vs. LASSO
+    regression as \(\lambda\) is changed, I built an interactive Python [Linear Solution
+    Dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Linear_Solutions.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07f28f16502ca9a33065e5ae4077a163.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive dashboard to visualize the square error and Shrinkage losses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see that LASSO performs feature selection at the same time as prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numerical Solutions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The \(𝐿^1\) norm does not have analytical solutions because it is non-differentiable
+    piece-wise function (includes an absolute value).
+  prefs: []
+  type: TYPE_NORMAL
+- en: with LASSO we must use a numerical solution, for example, iterative gradient
+    descent solution instead of an analytical solution, e.g., linear and ridge regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tibshirani (2012) demonstrated that the LASSO solution is unique for any number
+    of features, 𝑚, given all features are continuous. Therefore, the loss function
+    has a global minimum.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recall the LASSO loss function,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sum_{i=1}^n \left(y_i - \left(\sum_{\alpha = 1}^m b_{\alpha} x_{\alpha,i}
+    + b_0 \right) \right)^2 + \lambda \sum_{j=1}^m |b_{\alpha}| \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can illustrate the numerical solution for the model parameter \(b_1\) with
+    this example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cb6737831e2959fec37f3c649753e935.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training error for a medium slope (left) and low slope (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we calculate many cases of \(b_1\) and visualize the loss vs. model parameter
+    plot,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb152078a3aa5de4ab91fc1bd73d4892.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loss vs \(b_1\) model parameter with low and medium cases highlighted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding the model parameters that minimize the loss function is numerical optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: so we use common numerical optimization methods to train our machine learning
+    models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Grid Search, Brute Force Optimization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We could try all the combinations of model parameters, with sufficient discretization,
+    and keep the model parameter combination that minimizes the loss function,
+  prefs: []
+  type: TYPE_NORMAL
+- en: possible for a single model parameter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: impractical for most machines due to the large combinatorial of possible model
+    parameter values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a0d4db417b916675d6246cc896f46f62.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model parameter grid search, brute force optimization, regular sampling of the
+    loss function for 1 model parameter (above) and 2 model parameters (below). .
+  prefs: []
+  type: TYPE_NORMAL
+- en: The combinatorial of model parameters is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ 𝑛_𝑐=𝑛_{𝑏𝑖𝑛𝑠}^{𝑛_𝑏} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(𝑛_𝑏\) is the number of model parameters and \(𝑛_{𝑏𝑖𝑛𝑠}\) is the number
+    of discretizations for each model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the size of the space is even larger with Bayesian approaches where the model
+    parameters are represented by distributions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gradient Descent Optimization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The gradient descent approach for numerical solutions proceeds as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Start a random model parameter
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate the loss function
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate the loss function gradient, generally don’t have an equation for the
+    loss function, sampling with numerical calculation of the local loss function
+    derivative.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \nabla L(y_{\alpha}, F(X_{\alpha}, b_1)) = \frac{L(y_{\alpha}, F(X_{\alpha},
+    b_1 - \epsilon)) - L(y_{\alpha}, F(X_{\alpha}, b_1 + \epsilon))}{2\epsilon} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Update the parameter estimate by stepping down slope / gradient
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \hat{b}_{1,t+1} = \hat{b}_{1,t} - r \nabla L(y_{\alpha}, F(X_{\alpha}, b_1))
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(𝑟\) is the learning rate/step size, \(\hat{b}_{1,𝑡}\), is the current
+    model parameter estimate and \(\hat{𝑏}_{1,𝑡+1}\) is the updated parameter estimate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient search convergence,
+  prefs: []
+  type: TYPE_NORMAL
+- en: gradient descent optimization will find a local or global minimum
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gradient search step size,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(𝑟\) too small, takes too long to converge to a solution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(𝑟\) too large, the solution may skip over/miss a global minimum or diverge
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ea7617f79b05f8efb8ee8b35f2c254b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Solution convergence (left) and divergence (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multivariate optimization, if models will have more than 1 model parameter,
+  prefs: []
+  type: TYPE_NORMAL
+- en: calculate and decompose the gradient over multiple model parameters, now with
+    a vector representation of the gradient over all model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for example, with 2 model parameters,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[\begin{split} \nabla L(y_{\alpha}, F(X_{\alpha}, b_1, b_2)) = \left[ \begin{array}{c}
+    \nabla L(y_{\alpha}, F(X_{\alpha}, b_1)) \\ \nabla L(y_{\alpha}, F(X_{\alpha},
+    b_2)) \end{array} \right] \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can represent this graphically as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ff8218bd8083f37ce36b750a43c46485.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradient descent for 2 model parameters through vector of representation of
+    loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: optimization for training machine learning models is exploration of a high dimensional
+    model parameter space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mitigation of Local Minimums
+  prefs: []
+  type: TYPE_NORMAL
+- en: A common approach is multiple starts and take the best result.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/cde0ae9c36b1219d5667c512d04756fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multiple random starts to improve identification of global minimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Start with larger learning rate, step size, reduce steps over \(𝑡=1,\dots,𝑇\),
+    for search and then converge.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: use of a step size schedule / adaptive step size over iterations, for example,
+    Adam optimizer commonly used for Artificial Neural Networks.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: simulated annealing has a schedule of probability to accept bad steps! Accept
+    more bad steps to explore early and accept less bad steps later to converge.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Momentum to improve solution stability
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Update the previous step with the new step, momentum, \(\lambda\), is the weight
+    on the previous step
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (r \cdot \nabla L)_{t-1}^m = \lambda \cdot (r \cdot \nabla L)_{t-2} + (1
+    - \lambda) \cdot (r \cdot \nabla L)_{t-1} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can visualize this here,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3bb90a5ffaaa17e9358dbf00fcc3ef14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Momentum to weight the previous step and smooth the path through the loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the gradients calculated from the partial derivatives of the loss function for
+    each model parameter have noise.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: momentum smooths out, reduces this noise.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Momentum helps the solution proceed down the general slope of the loss function,
+    rather than oscillating in local ravines or dimples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stochastic Gradient Descent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We may have a lot of data \(\rightarrow \nabla 𝐿_𝑡\), is expensive to calculate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we could replace the gradient with a stochastic approximation, \(\nabla L_{𝑡^{\ell}}\)
+    by retaining a random subset of the training data, online (1 data) or mini-batch
+    (>1 data, \(𝑛_{𝑏𝑎𝑡𝑐ℎ}\)), where \(\ell\) indicates a realization of the gradient.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we reduce accuracy in the gradient descent, but speed up the calculation and
+    can perform more steps, often faster than gradient descent
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: increase \(𝑛_{𝑏𝑎𝑡𝑐ℎ}\) for more accuracy of gradient estimation, and decrease
+    \(𝑛_{𝑏𝑎𝑡𝑐ℎ}\) to speed up the steps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By Robbins-Siegmund (1971) Theorem - converge to global minimum for convex loss
+    functions and either a global or local minimum for nonconvex loss functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sparsity** - \(𝐿^1\) removes features, built-in feature selection, shrinks
+    the model parameters to exactly 0, higher model parameter sparsity.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a function to streamline the addition specified percentiles and
+    major and minor gridlines to our plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time). Also, in this case make
+    sure to place the required (see below) data file in this working directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘unconv_MV.csv’. This
+    dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: density (\(g/cm^{3}\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (volume %)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a DataFrame we called ‘my_data’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train-Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For simplicity we apply a random train-test split with the train_test_split
+    function from scikit-learn package, model_selection module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful first check of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: we have a custom function to preview the training and testing DataFrames side-by-side.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Density | Porosity |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 24 | 1.778580 | 11.426485 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 101 | 2.410560 | 8.488544 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 88 | 2.216014 | 10.133693 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 79 | 1.631896 | 12.712326 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 58 | 1.528019 | 16.129542 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Density | Porosity |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 59 | 1.742534 | 15.380154 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 1.404932 | 13.710628 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 35 | 1.552713 | 14.131878 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 92 | 1.762359 | 11.154896 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 22 | 1.885087 | 9.403056 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum
+    in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Density | Porosity |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 78.000000 | 78.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 1.739027 | 12.501465 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 0.302510 | 3.428260 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 0.996736 | 3.276449 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 2.410560 | 21.660179 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Density | Porosity |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 27.000000 | 27.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 1.734710 | 12.380796 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 0.247761 | 2.916045 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 1.067960 | 7.894595 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 2.119652 | 18.133771 |'
+  prefs: []
+  type: TYPE_TB
+- en: Visualize the Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the consistency and coverage of training and testing with histograms
+    and scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check to make sure the train and test data cover the range of possible predictor
+    feature combinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ensure we are not extrapolating beyond the training data with the testing cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4f4677e517ed9b0f7ed7a658d2f332e4319eee7f3a590ba6a296c8e12695d6ac.png](../Images/3766b457d4d8b8c75cfa925ac2f27fad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Linear Regression Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s first calculate the linear regression model. We use scikit learn and then
+    extend the same workflow to ridge regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we are building a model, \(\phi = f(\rho)\), where \(\phi\) is porosity and
+    \(\rho\) is density.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we could also say, we have “porosity regressed on density”.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Our model has this specific equation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \phi = b_1 \times \rho + b_0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/bed1e4c1d09a0f489bb51ecf2a390fd0ebd2683139e25747abe6bb9422957cc5.png](../Images/5330f8e13578eabf8f67b4e8379f1dd5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You may have noticed the additional reshape operation applied to the predictor
+    feature in the predict function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is needed because scikit-learn assumes more than one predictor feature;
+    therefore, expects a 2D array of samples (rows) and features (columns), but we
+    have only a 1D vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the reshape operation turns the 1D vector into a 2D vector with only 1 column
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Linear Regression Model Checks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s run some quick model checks. Much more could be done, but I limit this
+    for brevity here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: see the Linear Regression chapter for more information and checks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c77e7f7dba894c64d292cfc9ca858a37615ac34cb3971d8f9493ee9350fa3f54.png](../Images/cf89ec094ccb520da30fa1ee810410b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ridge Regression Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s replace the scikit-learn linear regression method with the scikit-learn
+    ridge regression method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, we must now set the \(\lambda\) hyperparameter.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: in scikit-learn the hyperparameter(s) is(are) set with the instantiation of
+    the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/00e5ed1c33b653d63cf4625df987255833a6a6e7b6c4457a589677352282acdd.png](../Images/a6448c37319c913a38a278536faa63c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s repeat the simple model checks that we applied with our linear regression
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c90a68d8db0f700d6c5cfbe7c72682c395bc625b587d49f912c457c28f4063b0.png](../Images/5ac80d876690b7e916dd4280243aed8a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interesting, we explained less variance and have a larger residual standard
+    deviation (more error).
+  prefs: []
+  type: TYPE_NORMAL
+- en: ridge regression for our arbitrarily selected hyperparameter, \(\lambda\), actually
+    reduced both testing variance explained and accuracy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this is not surprising, we are not actually tuning the hyperparameter to get
+    the best model!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: LASSO Regression Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s replace the scikit learn linear regression and ridge regression methods
+    with the scikit learn the LASSO regression method. Note, once again must now set
+    the lambda hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall, the lambda hyperparameter \(\lambda\) is set with the instantiation
+    of the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fc905fb342871dd4da4ae71bef01ac90b175345d9b4bde5ed752de9c810ed5c6.png](../Images/c9cb274630b2d8b01b6f4bd114f7ef0e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s repeat the simple model checks that we applied with our linear regression
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LASSO Hyperparameter Tuning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Above we just selected an arbitrary \(\lambda\) hyperparameter, now let’s do
+    hyperparameter tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: summarize MSE over k-folds in cross validation while looping over a wide variety
+    of \(\lambda\) values
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recall, Mean Squared Error (MSE) is given by,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(y_i\) is the actual value, \(\hat{y}_i\) is the predicted value, and
+    \(n\) is the number of data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/85e35cf3218c7320c4d78ca384bd49581a2e1ec32b9f69deea82561ac5ee2f7a.png](../Images/aa9ecd6f50ebe5d0f0c5ca2842d39012.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the above we observe that any \(\lambda > 0.1\) results in the minimum
+    test mean square error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the threshold behavior is due to the fact that below this level of regularization,
+    the model is behaving like linear regression.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s now train a model with this hyperparameter on all the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e44b292128f3361d3bbfc9234e6eae5f1a4674adfea6e3977aca89662c817c61.png](../Images/64e13b841e7ab592022426ef7bc2bddf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With our tuned \(\lambda\) hyperparameter,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: our model is the same as linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: could we create a situation where the best model is not linear regression? I.e.,
+    were regularization is helpful?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: yes, we can. Let’s remove most the samples to create data paucity and add a
+    lot of noise!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Admittedly, I iterated the random seeds for the sample and noise to get this
+    result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: few data (low \(n\)) and high dimensionality (high \(m\)) will generally result
+    in LASSO outperforming linear regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c6e91cca2d994d74c0354e932ce89723143be474c7a74db926f6fc9e70cb3419.png](../Images/03c4aefb2d59d3a6e5c4b3652011ed5c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Investigating the Impact of Lambda Hyperparameter on Model Parameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s look at the multivariate dataset that we already loaded. This way we can
+    observe the model behavior over a range of features, for a range of lambda hyperparameter
+    values. We are going to perform regular steps to get to the punch line!
+  prefs: []
+  type: TYPE_NORMAL
+- en: load a multivariate dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate summary statistics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: standardize the features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we will vary the hyperparameter and observe the model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load a Multivariate Dataset
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s load a dataset with more variables to demonstrate feature ranking with
+    LASSO regression and to compare the behavior in the model parameters over hyperparameter
+    values. The dataset ‘unconv_MV_v5.csv’, is a comma delimited file based on 1,000
+    unconventional wells including the features,
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we assume initial production is the response feature and all other features
+    are predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, you can try another similar dataset by toggling the mv_data integer to
+    1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 4165.196191 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3561.146205 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 4284.348574 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5098.680869 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 3406.132832 |'
+  prefs: []
+  type: TYPE_TB
+- en: Calculate Summary Statistics
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s calculate the summary statistics for our multivariate data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Production | 200.0 | 4311.219852 | 992.038414 | 2107.139414 | 3618.064513
+    | 4284.687348 | 5086.089761 | 6662.622385 |'
+  prefs: []
+  type: TYPE_TB
+- en: Standardize the Features
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s standardize the feature to have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: mean = 0.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: variance = standard deviation = 1.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We do this so the model parameters will similar ranges and will be comparable,
+    i.e., like \(\beta\) vs. \(B\) coefficients for feature ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do this we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: instantiate the StandardScaler from scikit learn. We assign it as ‘scaler’ so
+    we can use it to conveniently reverse the transformation if we like. We will need
+    to do that to get our predictions back into regular production units.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: we then extract all the values from our DataFrame and apply the by-column standardization.
+    The result is a 2D ndarray
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: we make an new empty DataFrame
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: then we add the transformed value to the new DataFrame while keeping the sample
+    index and feature names from the old DataFramae
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | -0.982256 | -0.817030 | -0.298603 | 2.358297 | 0.352948 | 1.152048 |
+    -0.147565 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | -0.881032 | -0.463751 | 0.444147 | -0.141332 | -0.209104 | -0.280931
+    | -0.757991 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | -0.327677 | -1.008148 | 1.841224 | 1.748113 | -0.209104 | 2.518377 |
+    -0.027155 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 0.903875 | 1.401098 | -0.599240 | -0.592585 | 0.186414 | -0.280931 |
+    0.795773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 0.853263 | 0.138561 | 0.373409 | -2.640962 | 1.081534 | -0.214280 | -0.914640
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: Check Summary Statistics
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s check the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 2.486900e-16 | 1.002509 | -2.848142 | -0.701361 | 0.026605
+    | 0.813617 | 2.887855 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | -6.217249e-17 | 1.002509 | -1.853701 | -0.699753 | -0.171282
+    | 0.554098 | 3.208033 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 4.130030e-16 | 1.002509 | -2.986650 | -0.745137 | -0.024493
+    | 0.665203 | 2.937664 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 2.042810e-16 | 1.002509 | -2.640962 | -0.738391 | 0.095646
+    | 0.716652 | 2.566186 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 3.375078e-16 | 1.002509 | -2.457313 | -0.776361 | 0.082330
+    | 0.748466 | 2.476256 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 9.081624e-16 | 1.002509 | -3.446814 | -0.647507 | -0.014330
+    | 0.593853 | 3.018254 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Production | 200.0 | 1.598721e-16 | 1.002509 | -2.227345 | -0.700472 | -0.026813
+    | 0.783049 | 2.376222 |'
+  prefs: []
+  type: TYPE_TB
+- en: Success, we have all features standardized. We are ready to build our model.
+    Let’s extract training and testing datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: Vary the Hyperparameter and Observe the Model Parameters
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now let’s observe the model coefficients (\(b_{\alpha}, \alpha = 1,\ldots,m\))
+    for a range of \(\lambda\) hyperparameter values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/09312a2f4e51e5cd4d8ecb5211db9a6800b6305d448d91ebf9c9ee6164703c6b.png](../Images/b105175b634806ea901b8442f3b13e47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What do we see?
+  prefs: []
+  type: TYPE_NORMAL
+- en: for a very low lambda value, all features are included
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as we increase the lambda hyperparameter, total organic carbon is the first
+    predictor feature to be removed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then acoustic impedance, vitrinite reflectance, brittleness, log perm and finally
+    porosity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: at \(\lambda \ge 0.8\) all features are removed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s repeat this workflow with ridge regression for a comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/09a0ac5014577cbd314e22f6233b84ec6bc3af2a939d398f99e71ae5dc3c24fe.png](../Images/ff11eb98e492b6fb3503b042054e1b80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ridge regression is quite different in the response of predictor feature to
+    change in the \(\lambda\) hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is no selective removal of predictor features as the \(\lambda\) hyperparameter
+    increases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a major component is uniform shrinkage of all coefficients towards zero for
+    \(\lambda \in [10^1, 10^5]\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load a Multivariate Dataset
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s load a dataset with more variables to demonstrate feature ranking with
+    LASSO regression and to compare the behavior in the model parameters over hyperparameter
+    values. The dataset ‘unconv_MV_v5.csv’, is a comma delimited file based on 1,000
+    unconventional wells including the features,
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we assume initial production is the response feature and all other features
+    are predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, you can try another similar dataset by toggling the mv_data integer to
+    1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 4165.196191 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3561.146205 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 4284.348574 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5098.680869 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 3406.132832 |'
+  prefs: []
+  type: TYPE_TB
+- en: Calculate Summary Statistics
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s calculate the summary statistics for our multivariate data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Production | 200.0 | 4311.219852 | 992.038414 | 2107.139414 | 3618.064513
+    | 4284.687348 | 5086.089761 | 6662.622385 |'
+  prefs: []
+  type: TYPE_TB
+- en: Standardize the Features
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s standardize the feature to have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: mean = 0.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: variance = standard deviation = 1.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We do this so the model parameters will similar ranges and will be comparable,
+    i.e., like \(\beta\) vs. \(B\) coefficients for feature ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do this we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: instantiate the StandardScaler from scikit learn. We assign it as ‘scaler’ so
+    we can use it to conveniently reverse the transformation if we like. We will need
+    to do that to get our predictions back into regular production units.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: we then extract all the values from our DataFrame and apply the by-column standardization.
+    The result is a 2D ndarray
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: we make an new empty DataFrame
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: then we add the transformed value to the new DataFrame while keeping the sample
+    index and feature names from the old DataFramae
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | -0.982256 | -0.817030 | -0.298603 | 2.358297 | 0.352948 | 1.152048 |
+    -0.147565 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | -0.881032 | -0.463751 | 0.444147 | -0.141332 | -0.209104 | -0.280931
+    | -0.757991 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | -0.327677 | -1.008148 | 1.841224 | 1.748113 | -0.209104 | 2.518377 |
+    -0.027155 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 0.903875 | 1.401098 | -0.599240 | -0.592585 | 0.186414 | -0.280931 |
+    0.795773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 0.853263 | 0.138561 | 0.373409 | -2.640962 | 1.081534 | -0.214280 | -0.914640
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: Check Summary Statistics
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s check the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 2.486900e-16 | 1.002509 | -2.848142 | -0.701361 | 0.026605
+    | 0.813617 | 2.887855 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | -6.217249e-17 | 1.002509 | -1.853701 | -0.699753 | -0.171282
+    | 0.554098 | 3.208033 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 4.130030e-16 | 1.002509 | -2.986650 | -0.745137 | -0.024493
+    | 0.665203 | 2.937664 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 2.042810e-16 | 1.002509 | -2.640962 | -0.738391 | 0.095646
+    | 0.716652 | 2.566186 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 3.375078e-16 | 1.002509 | -2.457313 | -0.776361 | 0.082330
+    | 0.748466 | 2.476256 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 9.081624e-16 | 1.002509 | -3.446814 | -0.647507 | -0.014330
+    | 0.593853 | 3.018254 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Production | 200.0 | 1.598721e-16 | 1.002509 | -2.227345 | -0.700472 | -0.026813
+    | 0.783049 | 2.376222 |'
+  prefs: []
+  type: TYPE_TB
+- en: Success, we have all features standardized. We are ready to build our model.
+    Let’s extract training and testing datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE74]'
+  prefs: []
+  type: TYPE_PRE
+- en: Vary the Hyperparameter and Observe the Model Parameters
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now let’s observe the model coefficients (\(b_{\alpha}, \alpha = 1,\ldots,m\))
+    for a range of \(\lambda\) hyperparameter values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE75]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/09312a2f4e51e5cd4d8ecb5211db9a6800b6305d448d91ebf9c9ee6164703c6b.png](../Images/b105175b634806ea901b8442f3b13e47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What do we see?
+  prefs: []
+  type: TYPE_NORMAL
+- en: for a very low lambda value, all features are included
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as we increase the lambda hyperparameter, total organic carbon is the first
+    predictor feature to be removed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then acoustic impedance, vitrinite reflectance, brittleness, log perm and finally
+    porosity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: at \(\lambda \ge 0.8\) all features are removed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s repeat this workflow with ridge regression for a comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/09a0ac5014577cbd314e22f6233b84ec6bc3af2a939d398f99e71ae5dc3c24fe.png](../Images/ff11eb98e492b6fb3503b042054e1b80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ridge regression is quite different in the response of predictor feature to
+    change in the \(\lambda\) hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is no selective removal of predictor features as the \(\lambda\) hyperparameter
+    increases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a major component is uniform shrinkage of all coefficients towards zero for
+    \(\lambda \in [10^1, 10^5]\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Demonstrate Solution Instability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s repeat the above experiement and track some of the estimates from the
+    model over the hyperparameter, \(\lambda\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE77]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2b66c5aac73becda389b3090d50d3c69d950f870ace31d26bed7e234ad1d97da.png](../Images/d0fb23953092ed15bd21494f123ca3f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ridge regression estimates smoothly vary from linear regression to the global
+    mean of the response feature (stability)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: LASSO regression estimates demonstrate jumps (instability)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of LASSO regression. Much more could be done and
+    discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

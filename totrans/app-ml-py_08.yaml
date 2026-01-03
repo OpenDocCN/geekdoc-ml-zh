@@ -1,0 +1,2377 @@
+- en: Multivariate Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_multivariate_analysis.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_multivariate_analysis.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Multivariate Analysis**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Data Preparation](https://youtu.be/H73dwxNTdYU?si=8H1clq7mUcY7VLoL)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multivariate Analysis](https://youtu.be/Ui2El5CZPRE?si=uA_IqurENzC6Owbg)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Feature Selection](https://youtu.be/5Q0gemu-h3Q?si=BpYhdxNVYOOYt74q)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Feature Transformations](https://youtu.be/6QJjZoWknEI?si=Bab3VTlMbO1xCPRh)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Shapley Values](https://youtu.be/oCIybnawLdg?si=E_ywWmDFq6T9TeV7)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Multivariate Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To build good machine learning models, we build on a foundation of statistical
+    analysis to explore and understand the relationships within our data. This includes
+    the relationships between 2 or more features at a time!
+  prefs: []
+  type: TYPE_NORMAL
+- en: in many cases these multivariate statistics are actually critical components
+    of the machine learning methods, e.g., eigenvalues and eigenvectors are calculated
+    from the covariance matrix for principal component analysis.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s talk about bivariate and multivariate methods briefly. I confess the statistics
+    beyond bivariate is a placeholder right now. Note, in the feature ranking workflow
+    (link above) I have included partial correlation, maximum relevance minimum redundancy
+    (MRMR) based on mutual information and random forest feature importance methods
+    that extract information beyond bivariate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bivariate Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Understand and quantify the relationship between two variables, i.e., the bivariate
+    probability density function, \(f_{x,y}(x,y)\), for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: porosity and permeability
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: fraction of shale and oil recovery
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: copper and gold
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: basal area and tree height
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How can we use these relationships? To improve our prediction models and ultimately
+    make better decisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What would be the impact if we ignore these relationships and simply modeled
+    each feature separately?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**assumption of independence** - there will be no relationship between our
+    estimates or simulated realizations, the joint probability density function will
+    not be reproduced and unrealistic combinations may occur, e.g., very high permeability
+    with very low porosity'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**data conditioning** - will impose the relationship at data locations. The
+    geostatistics models honor the data at the data locations and the data scatter
+    plot is the correct relationship, but away from the data this relationship will
+    fade'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s an example of an interesting bivariate relationship. When we scatter
+    plot the data and plot the facies we can see the natural groups with respect to
+    porosity and permeability. Clearly, considering only porosity or permeability
+    would not be sufficient to understand this data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0182a98f6c76a66804f026e8dfaa8fa7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of a complicated bivariate relationship.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bivariate statistics are our tools to quantify and impose these bivariate relationships
+    in our geostatistical models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bivariate Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Pearson’s Product‐Moment Correlation Coefficient** or just the correlation
+    coefficient or just correlation, is a widely-known bivariate statistic, if you
+    say 0.9 correlation most engineers and scientists can visualize this! Here’s the
+    important points and limitations for the correlation coefficient,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the notation for correlation is, \(\rho_{x,y}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: provides a measure of the degree of linear relationship, i.e., nonlinear relationships
+    will bias the correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: is very sensitive to outliers, i.e., a single extreme outlier can significantly
+    increase or reduce the apparent correlation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are some other deeper points that should be made about the Gaussian assumption,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the correlation coefficient provides a complete description for the bivariate
+    relationship only under the assumption of bivariate Gaussianity. If we assume
+    Gaussian, then the means, \(\overline{x}\) and \(\overline{y}\), standard deviations,
+    \(s_x\) and \(s_y\), with the correlation coefficient, \(\rho_{x,y}\) completely
+    describe the bivariate probability density function \(f_{x,y}(x,y)\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for any other distributions, the correlation coefficient is not sufficient to
+    know the entire, bivariate probability density function \(f_{x,y}(x,y)\), e.g.,
+    to calculate conditional distributions, \(f_{x|y}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the standard approach in geostatistics is to apply Gaussian anamorphosis to
+    each feature and then to assume bivariate Gaussian so that the correlation coefficient
+    is sufficient to describe the relationship between the two features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What about spatial bivariate relationship?
+  prefs: []
+  type: TYPE_NORMAL
+- en: the full cokriging system includes cross variograms and cross covariance that
+    capture the relationships between two features over space! But due to the difficulty
+    of inferring and modeling the required linear model of coregionalization, this
+    is rarely done.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: instead a simplifying apply like collocated cokriging is applied that only retains
+    the collocated secondary data and limits the model of bivariate relationship to
+    the collocated (lag \(\bf{h}\) of 0.0) correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: More could be done! Let’s review the sample variance of variable \(x\). Of course,
+    I’m truncating our notation as \(x\) is a set of samples a locations in our modeling
+    space, \(x(\bf{u_\alpha}), \, \forall \, \alpha = 0, 1, \dots, n - 1\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sigma^2_{x} = \frac{\sum_{i=1}^{n} (x_i - \overline{x})^2}{(n-1)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can expand the squared term and replace on of them with \(y\), another variable
+    in addition to \(x\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ C_{xy} = \frac{\sum_{i=1}^{n} (x_i - \overline{x})(y_i - \overline{y})}{(n-1)}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now have a measure that represents the manner in which variables \(x\) and
+    \(y\) co-vary or vary together. We can standardized the covariance by the product
+    of the standard deviations of \(x\) and \(y\) to calculate the correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{xy} = \frac{\sum_{i=1}^{n} (x_i - \overline{x})(y_i - \overline{y})}{(n-1)\sigma_x
+    \sigma_y}, \, -1.0 \le \rho_{xy} \le 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In summary we can state that the correlation coefficient is related to the
+    covariance as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{xy} = \frac{C_{xy}}{\sigma_x \sigma_y} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: To help you calibrate you eye to the correlation coefficient I developed an
+    interactive [correlation dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Correlation_Coefficient.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the bivariate Gaussian case vary the correlation coefficient and observe
+    the samples, condition expectation and joint probability density
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/9ecae374956041ac124fa04b38cdac9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard for visualizing correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Person’s correlation coefficient is quite sensitive to outliers and departure
+    from linear behavior (in the bivariate sense).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For an more robust correlation measure in the presence of outliers and nonlinearity,
+    we have an alternative known as the Spearman’s rank correlations coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{R_x R_y} = \frac{\sum_{i=1}^{n} (R_{x_i} - \overline{R_x})(R_{y_i}
+    - \overline{R_y})}{(n-1)\sigma_{R_x} \sigma_{R_y}}, \, -1.0 \le \rho_{R_x,R_y}
+    \le 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rank correlation applies the rank transform to the data prior to calculating
+    the correlation coefficient. To calculate the rank transform simply replace the
+    data values with the rank \(R_x = 1,\dots,n\), where \(n\) is the maximum value
+    and \(1\) is the minimum value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ x_\alpha, \, \forall \alpha = 1,\dots, n, \, | \, x_i \ge x_j \, \forall
+    \, i \gt j \]\[ R_{x_i} = i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: To compare Pearson and rank correlation in the presence of an outlier I developed
+    this [correlation outlier dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Correlation_Coefficient_Issues.ipynb),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/47ac86b04ad4fa411d026e47bdd4a7b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard for visualizing correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The correlation coefficients provide useful metrics to quantify relationships
+    between two variables at a time. We can also consider bivariate scatter plots
+    and matrix scatter plots to visualize multivariate data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: remember, current practical subsurface modeling is bivariate, two variables
+    at a time
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Multivariate Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While we are limited to bivariate models, we need to understand some multivariate
+    methods to work with multivariate data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: only a short summary is provided here, see the discussion on joint and conditional
+    probabilities and distributions in the Probability Concepts chapter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: see my lecture on [Multivariate Analysis](https://youtu.be/Ui2El5CZPRE?si=uA_IqurENzC6Owbg)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s a short summary of multivariate statistics. If we define a probability
+    density function (PDF) of feature \(X_1\) as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f_{X_1}(x_1) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can extend the definition to a joint PDF for any arbitrary number, e.g.,
+    \(m\), features as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f_{X_1,\ldots,X_m}(x_1,\ldots,x_m) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, conditional PFDs can be calculated,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f_{Y | X}(y | x) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and extended to any number of features, e.g., \(m\), features as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f_{Y | X_1, \ldots, X_m}(y | x_1,\ldots,x_m) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and many of our statistical concepts extend to high dimensions, for example
+    consider the correlation coefficient,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{X,Y} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: between 2 features and now the partial correlation coefficient that calculates
+    correlation between 2 features (\(X\) and \(Y\)) while controlling for all other
+    features (\(Z\)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{X,Y | Z} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ultimately the difficulty with calculating high dimensionality (massively multivariate)
+    probabilities and statistics is inferential, we rarely have enough data to observe
+    vast multivariate space and to model probabilities and statistics in that space!
+  prefs: []
+  type: TYPE_NORMAL
+- en: See my linked lecture on the curse of dimensionality above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a single function to streamline plotting correlation matrices.
+    I also added a convenience function to add major and minor gridlines to improve
+    plot interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Design Custom Color Map
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Accounting for significance by masking nonsignificant values
+  prefs: []
+  type: TYPE_NORMAL
+- en: for demonstration only currently, could be updated for each plot based on results
+    confidence and uncertainty
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualizing Correlation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we load data, let’s make some synthetic bivariate Gaussian data on the
+    fly and calculate the correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this will help us calibrate our eye to correlation, in the Gaussian case where
+    it perfectly describes the relationship
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can specify 4 correlation coefficients and the number of data and then rerun
+    this block to visualize the scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c879d92e61440a7ca49a6351009408e1166cd04c0a7ca7ffa30754eb86452bb4.png](../Images/187b14d4b0f0ad9475f1dabfa4b83037.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Impact of Outliers on Correlation Coefficients
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s observe the impact of a single outlier on the correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: compare Person product moment and Spearman rank correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to run this example?
+  prefs: []
+  type: TYPE_NORMAL
+- en: set the original data correlation, defaulted as 0.0, no correlation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: set the number of data in the original sample with correlation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: set the sample \(x_{n+1},y_{n+1}\), to be appended to the data as potentially
+    an outlier
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the case that I designed you will observe,
+  prefs: []
+  type: TYPE_NORMAL
+- en: when the new sample is in the middle of the previous data there is not a significant
+    impact on either correlation statistic
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: when as the new sample moves further from the sample data the correlation coefficient
+    increases while the rank correlation coefficient remains close to the original
+    sample correlation, it is more robust in the presence of outliers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/dd2afb2ce7bccc9b020992b89ab592ba2eade5862458bd30bb1dc61021e0185d.png](../Images/1bab0c2a4ccf37b1fc5e5cc042fb74e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We are ready to load some data and work with bivariate and multivariate statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘sample_data_MV_biased.csv’.
+    It is a comma delimited file with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: X and Y coordinates (\(m\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: facies 0 and 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (fraction)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^3\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: add parameter ‘n=13’ to see the first 13 rows of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | X | Y | Facies | Porosity | Perm | AI |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 100.0 | 900.0 | 0.0 | 0.101319 | 1.996868 | 5590.417154 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 100.0 | 800.0 | 1.0 | 0.147676 | 10.711789 | 3470.845666 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 100.0 | 700.0 | 1.0 | 0.145912 | 17.818143 | 3586.988513 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 100.0 | 600.0 | 1.0 | 0.186167 | 217.109365 | 3732.114787 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 100.0 | 500.0 | 1.0 | 0.146088 | 16.717367 | 2534.551236 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 200.0 | 900.0 | 1.0 | 0.129949 | 23.348473 | 4781.590782 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 200.0 | 700.0 | 1.0 | 0.185299 | 595.674540 | 4729.017454 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 200.0 | 600.0 | 1.0 | 0.164923 | 154.555841 | 2147.668805 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 200.0 | 500.0 | 1.0 | 0.167026 | 50.970899 | 4583.679953 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 200.0 | 400.0 | 1.0 | 0.125382 | 4.061772 | 4477.930200 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 200.0 | 200.0 | 0.0 | 0.077419 | 1.162642 | 6844.535923 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 300.0 | 800.0 | 1.0 | 0.164797 | 497.593578 | 3881.489046 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 300.0 | 700.0 | 1.0 | 0.165155 | 486.504799 | 3726.023776 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum,
+    and quartiles all in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use transpose just to flip the table so that features are on the rows and
+    the statistics are on the columns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| X | 368.0 | 499.565217 | 289.770794 | 0.000000 | 240.000000 | 500.000000
+    | 762.500000 | 990.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Y | 368.0 | 520.644022 | 277.412187 | 9.000000 | 269.000000 | 539.000000
+    | 769.000000 | 999.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Facies | 368.0 | 0.597826 | 0.491004 | 0.000000 | 0.000000 | 1.000000 | 1.000000
+    | 1.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Porosity | 368.0 | 0.127026 | 0.030642 | 0.041122 | 0.103412 | 0.125842 |
+    0.148623 | 0.210258 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 368.0 | 85.617362 | 228.362654 | 0.094627 | 2.297348 | 10.377292 |
+    50.581288 | 1991.097723 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 368.0 | 4791.736646 | 974.560569 | 1981.177309 | 4110.728374 | 4713.325533
+    | 5464.043562 | 7561.250336 |'
+  prefs: []
+  type: TYPE_TB
+- en: Visualizing Tabular Data with Location Maps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is natural to set the x and y coordinate and feature ranges manually, e.g.
+    do you want your color bar to go from 0.05887 to 0.24230 exactly? Also, let’s
+    pick a color map for display.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I heard that plasma is known to be friendly to the color blind as the color
+    and intensity vary together (hope I got that right, it was an interesting Twitter
+    conversation started by Matt Hall from Agile if I recall correctly).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will assume a study area of 0 to 1,000m in x and y and omit any data outside
+    this area.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s try out locmap. This is a reimplementation of GSLIB’s locmap program that
+    uses matplotlib. I hope you find it simpler than matplotlib, if you want to get
+    more advanced and build custom plots lock at the source. If you improve it, send
+    me the new code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can populate the plotting parameters and visualize the porosity data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fb390aff66ae78b026e0a8d670a17f1652724168801abaaf0115cf944e3ed6b3.png](../Images/2bebdc841e0b1f00e78c0ab5f1b6c200.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bivariate Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with simple bivariate scatter plots, and calculating bivariate statistics.
+    Here’s the scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I included code below (commented out) for writing the plot as an image file.
+    Note, you can write to many different formats, e.g., .tif, jpg, etc. and you can
+    also control the resolution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: by saving in .pdf, .svg, or eps formats you create vector graphics that retain
+    their sharpness at any resolution with economy of file size
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/67700ddcbaaf979a239805be756a89d96c635a8ccbc9df986502ccd3864bdb15.png](../Images/a42eec8a031e9a1c002a66308e587000.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Correlation and Covariance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is straight forward to calculate the covariance and correlation from the
+    pairs of data in our dataset. Here’s the covariance matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that the matrix is symmetrical? Makes sense, as the \(C_{Por,Perm} =
+    C_{Perm,Por}\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, note that the diagonal values (\(C_{i,j}\) where \(i=j\)) equal to the
+    variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We check porosity by calculating the variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here’s the correlation coefficient matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Porosity | Perm | AI |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Porosity | 1.000000 | 0.579493 | -0.573700 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 0.579493 | 1.000000 | -0.208812 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | -0.573700 | -0.208812 | 1.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: Visualize the Correlation Matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is convenient to visualize the correlation matrix as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I added a custom colour bar to communicate significance. Demonstration only,
+    I did not calculate confidence intervals, but that could be added.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/83761366319655e588a2d6284fe8bda3b63be5655c93c0deb0fb5a9394b8d6d6.png](../Images/95a59ac320af1fb9ac0c58e7fcb46a2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To calculate a single correlation coefficient with the associate p-value for
+    significance testing we can use SciPy’s pearsonr function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the p-value indicates the \(\alpha\) level at which we would reject the null
+    hypothesis that the correlation coefficient is actually 0.0 and the value is due
+    to random effect
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b7686c6dc96be9614c207297741721888cbdb15bdcbf4e6d4fcf6c54f140b248.png](../Images/cb9ab156ea8bd9d5916a536abf3bed47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The p-value of the porosity and permeability correlation coefficient is 2.1569195170201772e-34,
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation is significantly different from 0.0 for any feasible alpha level
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spearman’s Rank Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Spearman’s rank correlation coefficient, provides a measure of the degree
+    of monotonic relationship.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rank transform, e.g. \(R_(x_i)\), sort the data in ascending order and replace
+    the data with the index, $i=1,\ldots,n.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spearman’s rank correlation coefficient is more robust in the presence of outliers
+    and some nonlinear features than the Pearson’s correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try out the rank correlation coefficient with SciPy’s stats module function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: it also provides a p-value for each measure for significance testing, i.e.,
+    if p-value < alpha then we reject the null hypothesis that the rank correlation
+    coefficient is 0.0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Compare Pearson and Spearman Correlation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s make a simple random dataset and add an outlier and then compare Pearson
+    and Spearman correlation coefficients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/0b51993fc92f9b03dbbfb7e41bc12a60a27447b68d847b20bc05487931a9febf.png](../Images/6670f44bf097d76b1bb14223e0d01f77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s look at what Spearman correlation sees, by plotting the rank transform
+    of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4791c418784b757503d75595e5db1015dd22350248f9480fa2bd9996aede6377.png](../Images/90ce37c39bde286d155f24d79db69cae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Compare Pearson and Spearman Correlation with a Parabola
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s try the famous parabola example that is commonly used to demonstrate the
+    impact of nonlinearity on correlation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e56894167e04a56e36643226a78aa3db8892c9b3996c3f0f4480240649b7a530.png](../Images/7ed7d723c00c15abe68581eca42ea237.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s look at what Spearman correlation sees, by plotting the rank transform
+    of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/d34a8a06185f53255efb333209733b72f5d0d690a53f6c531cf0a64f38e50a50.png](../Images/c8e8ad5166ab26562203b0fc7c5743fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Rank transforms can linearize monotonic increasing or decreasing segments of
+    the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Correlation with Multiple Populations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/57af7778c66f18788a9ba34024a16aca9966a669a74511dde0f8877509891603.png](../Images/c6eef9de078584098a6d899d53846216.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simpson’s Paradox
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data trend reverses or disappears when groups are combined (or separated).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To Be Added
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plot Correlation and Rank Correlation Matrices
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Returning to our former dataset, let’s make correlation matrices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/edcf5c74036d111e6669dfe2ad18f9bc29f717402eb2ff1ccfbe3afa42a8acc9.png](../Images/863dac746bfa9539ae24a52549ecd4b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the correlation minus rank correlation heatmap we see,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the nonlinearity is potentially decreasing the permeability correlation with
+    facies and porosity, and increasing the correlation with AI.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Matrix Scatter Plots
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If we have 3 or more variables to consider then matrix scatter plot offer an
+    efficient method to display the multivariate relationships, 2 variables at a time.
+    Once can identify:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the range, envelope of the paired data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: homoscedastic and heteroscedastic behaviors
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: nonlinear features
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Here’s the seaborn package matrix scatter plot function, pairplot. Let’s color
+    the results by facies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a482081691d29bb3a8958da4b9cf7f18e0d1d750b4f4b1fc8ea60fcb707ce1da.png](../Images/8e44243cde49de19979526b8596429a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Remember, although these matrix scatterplots are very useful, they are still
+    a bivariate marginalization of the higher dimensionality relationships.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There may be structures in the other dimensions that we do not see.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pair Grid Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For maximum control of the resulting plot we can work with pair grid plots from
+    seaborn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can independently set lower, upper and diagonal components of the plot
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We demonstrate this with all facies pooled together for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: scatter plots for upper
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: histograms for diagonal
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: kernel density plots for the lower
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ac24270df583b5747f7ae51bb452146ed7d0a0f4c92343d3511f3d5967b76259.png](../Images/3a9ebfb095643ae980083d8592f9664c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Joint, Conditional and Marginals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can use kernel density estimation to estimate the joint probabilities density
+    function (pdf) for the paired data, a 2D pdf!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could use this to estimate any required joint, marginal and conditional probability
+    (care must be taken with normalization).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s use the seaborn package ‘kdeplot’ function to estimate the joint pdf for
+    porosity and acoustic impedance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/69b015671bacfc7fa2fc9d4ab2759470bc875d39a319cd25ef75348eea016048.png](../Images/e60d5a2a12cfdb282208b9c532b03529.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I think is it useful to visualize the joint pdfs with the marginal pdfs on a
+    single plot. We can use seaborn’s ‘jointplot’ to accomplish this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a799790562a52731e8995fba6d657f6d392e8438ec2431d8c8edeeba1566ace9.png](../Images/1953363d2953c218574345255e207a21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The correlation coefficient and the p-value of the correlation coefficient (significant
+    if < \(\alpha/2\) or > \(1-\alpha/2\)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating Conditional Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Of course, we could just calculate the conditional statistics by-hand. We need
+    to select some bins over the variable that we will condition to. Let’s calculate
+    conditional statistical of porosity given acoustic impedance. We will select 9
+    equal spaced bins.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | X | Y | Facies | Porosity | Perm | AI | AI_bins |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 100.0 | 900.0 | 0.0 | 0.101319 | 1.996868 | 5590.417154 | 5666.666667
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 100.0 | 800.0 | 1.0 | 0.147676 | 10.711789 | 3470.845666 | 3666.666667
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 100.0 | 700.0 | 1.0 | 0.145912 | 17.818143 | 3586.988513 | 3666.666667
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 100.0 | 600.0 | 1.0 | 0.186167 | 217.109365 | 3732.114787 | 3666.666667
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 100.0 | 500.0 | 1.0 | 0.146088 | 16.717367 | 2534.551236 | 2333.333333
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Now we can use the ‘groupby’ function built-in to Pandas’ DataFrames to extract
+    subsets of porosity values in each bin from the DataFrame and then to calculate
+    the conditional statistics: expectation, P90 and P10\. Let’s plot the result.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/3b0219cd99865b38ef5047da0a726d7a86111c6fd26a15d3fea9639b6e47a3d8.png](../Images/bb2a49db448a5114e7b03a36cb885081.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Does acoustic impedance provide information about porosity?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yes, clearly the conditional statistics vary over acoustic impedance, knowing
+    the acoustic impedance reduces the uncertainty about porosity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this provide a powerful, nonparametric model of the relationship, i.e., without
+    any assumptions such as linearity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of multivariate analysis with a focus on bivariate.
+    Much more could be done and discussed, I have many more resources. Check out my
+    [shared resource inventory](https://michaelpyrcz.com/my-resources) and the YouTube
+    lecture links at the start of this chapter with resource links in the videos’
+    descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and
+    The Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Multivariate Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To build good machine learning models, we build on a foundation of statistical
+    analysis to explore and understand the relationships within our data. This includes
+    the relationships between 2 or more features at a time!
+  prefs: []
+  type: TYPE_NORMAL
+- en: in many cases these multivariate statistics are actually critical components
+    of the machine learning methods, e.g., eigenvalues and eigenvectors are calculated
+    from the covariance matrix for principal component analysis.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s talk about bivariate and multivariate methods briefly. I confess the statistics
+    beyond bivariate is a placeholder right now. Note, in the feature ranking workflow
+    (link above) I have included partial correlation, maximum relevance minimum redundancy
+    (MRMR) based on mutual information and random forest feature importance methods
+    that extract information beyond bivariate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bivariate Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Understand and quantify the relationship between two variables, i.e., the bivariate
+    probability density function, \(f_{x,y}(x,y)\), for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: porosity and permeability
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: fraction of shale and oil recovery
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: copper and gold
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: basal area and tree height
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How can we use these relationships? To improve our prediction models and ultimately
+    make better decisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What would be the impact if we ignore these relationships and simply modeled
+    each feature separately?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**assumption of independence** - there will be no relationship between our
+    estimates or simulated realizations, the joint probability density function will
+    not be reproduced and unrealistic combinations may occur, e.g., very high permeability
+    with very low porosity'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**data conditioning** - will impose the relationship at data locations. The
+    geostatistics models honor the data at the data locations and the data scatter
+    plot is the correct relationship, but away from the data this relationship will
+    fade'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s an example of an interesting bivariate relationship. When we scatter
+    plot the data and plot the facies we can see the natural groups with respect to
+    porosity and permeability. Clearly, considering only porosity or permeability
+    would not be sufficient to understand this data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0182a98f6c76a66804f026e8dfaa8fa7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of a complicated bivariate relationship.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bivariate statistics are our tools to quantify and impose these bivariate relationships
+    in our geostatistical models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bivariate Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Pearson’s Product‐Moment Correlation Coefficient** or just the correlation
+    coefficient or just correlation, is a widely-known bivariate statistic, if you
+    say 0.9 correlation most engineers and scientists can visualize this! Here’s the
+    important points and limitations for the correlation coefficient,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the notation for correlation is, \(\rho_{x,y}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: provides a measure of the degree of linear relationship, i.e., nonlinear relationships
+    will bias the correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: is very sensitive to outliers, i.e., a single extreme outlier can significantly
+    increase or reduce the apparent correlation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are some other deeper points that should be made about the Gaussian assumption,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the correlation coefficient provides a complete description for the bivariate
+    relationship only under the assumption of bivariate Gaussianity. If we assume
+    Gaussian, then the means, \(\overline{x}\) and \(\overline{y}\), standard deviations,
+    \(s_x\) and \(s_y\), with the correlation coefficient, \(\rho_{x,y}\) completely
+    describe the bivariate probability density function \(f_{x,y}(x,y)\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for any other distributions, the correlation coefficient is not sufficient to
+    know the entire, bivariate probability density function \(f_{x,y}(x,y)\), e.g.,
+    to calculate conditional distributions, \(f_{x|y}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the standard approach in geostatistics is to apply Gaussian anamorphosis to
+    each feature and then to assume bivariate Gaussian so that the correlation coefficient
+    is sufficient to describe the relationship between the two features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What about spatial bivariate relationship?
+  prefs: []
+  type: TYPE_NORMAL
+- en: the full cokriging system includes cross variograms and cross covariance that
+    capture the relationships between two features over space! But due to the difficulty
+    of inferring and modeling the required linear model of coregionalization, this
+    is rarely done.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: instead a simplifying apply like collocated cokriging is applied that only retains
+    the collocated secondary data and limits the model of bivariate relationship to
+    the collocated (lag \(\bf{h}\) of 0.0) correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: More could be done! Let’s review the sample variance of variable \(x\). Of course,
+    I’m truncating our notation as \(x\) is a set of samples a locations in our modeling
+    space, \(x(\bf{u_\alpha}), \, \forall \, \alpha = 0, 1, \dots, n - 1\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sigma^2_{x} = \frac{\sum_{i=1}^{n} (x_i - \overline{x})^2}{(n-1)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can expand the squared term and replace on of them with \(y\), another variable
+    in addition to \(x\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ C_{xy} = \frac{\sum_{i=1}^{n} (x_i - \overline{x})(y_i - \overline{y})}{(n-1)}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now have a measure that represents the manner in which variables \(x\) and
+    \(y\) co-vary or vary together. We can standardized the covariance by the product
+    of the standard deviations of \(x\) and \(y\) to calculate the correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{xy} = \frac{\sum_{i=1}^{n} (x_i - \overline{x})(y_i - \overline{y})}{(n-1)\sigma_x
+    \sigma_y}, \, -1.0 \le \rho_{xy} \le 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In summary we can state that the correlation coefficient is related to the
+    covariance as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{xy} = \frac{C_{xy}}{\sigma_x \sigma_y} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: To help you calibrate you eye to the correlation coefficient I developed an
+    interactive [correlation dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Correlation_Coefficient.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the bivariate Gaussian case vary the correlation coefficient and observe
+    the samples, condition expectation and joint probability density
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/9ecae374956041ac124fa04b38cdac9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard for visualizing correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Person’s correlation coefficient is quite sensitive to outliers and departure
+    from linear behavior (in the bivariate sense).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For an more robust correlation measure in the presence of outliers and nonlinearity,
+    we have an alternative known as the Spearman’s rank correlations coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{R_x R_y} = \frac{\sum_{i=1}^{n} (R_{x_i} - \overline{R_x})(R_{y_i}
+    - \overline{R_y})}{(n-1)\sigma_{R_x} \sigma_{R_y}}, \, -1.0 \le \rho_{R_x,R_y}
+    \le 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rank correlation applies the rank transform to the data prior to calculating
+    the correlation coefficient. To calculate the rank transform simply replace the
+    data values with the rank \(R_x = 1,\dots,n\), where \(n\) is the maximum value
+    and \(1\) is the minimum value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ x_\alpha, \, \forall \alpha = 1,\dots, n, \, | \, x_i \ge x_j \, \forall
+    \, i \gt j \]\[ R_{x_i} = i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: To compare Pearson and rank correlation in the presence of an outlier I developed
+    this [correlation outlier dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Correlation_Coefficient_Issues.ipynb),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/47ac86b04ad4fa411d026e47bdd4a7b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard for visualizing correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The correlation coefficients provide useful metrics to quantify relationships
+    between two variables at a time. We can also consider bivariate scatter plots
+    and matrix scatter plots to visualize multivariate data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: remember, current practical subsurface modeling is bivariate, two variables
+    at a time
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Multivariate Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While we are limited to bivariate models, we need to understand some multivariate
+    methods to work with multivariate data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: only a short summary is provided here, see the discussion on joint and conditional
+    probabilities and distributions in the Probability Concepts chapter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: see my lecture on [Multivariate Analysis](https://youtu.be/Ui2El5CZPRE?si=uA_IqurENzC6Owbg)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s a short summary of multivariate statistics. If we define a probability
+    density function (PDF) of feature \(X_1\) as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f_{X_1}(x_1) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can extend the definition to a joint PDF for any arbitrary number, e.g.,
+    \(m\), features as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f_{X_1,\ldots,X_m}(x_1,\ldots,x_m) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, conditional PFDs can be calculated,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f_{Y | X}(y | x) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and extended to any number of features, e.g., \(m\), features as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f_{Y | X_1, \ldots, X_m}(y | x_1,\ldots,x_m) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and many of our statistical concepts extend to high dimensions, for example
+    consider the correlation coefficient,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{X,Y} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: between 2 features and now the partial correlation coefficient that calculates
+    correlation between 2 features (\(X\) and \(Y\)) while controlling for all other
+    features (\(Z\)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{X,Y | Z} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ultimately the difficulty with calculating high dimensionality (massively multivariate)
+    probabilities and statistics is inferential, we rarely have enough data to observe
+    vast multivariate space and to model probabilities and statistics in that space!
+  prefs: []
+  type: TYPE_NORMAL
+- en: See my linked lecture on the curse of dimensionality above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a single function to streamline plotting correlation matrices.
+    I also added a convenience function to add major and minor gridlines to improve
+    plot interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: Design Custom Color Map
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Accounting for significance by masking nonsignificant values
+  prefs: []
+  type: TYPE_NORMAL
+- en: for demonstration only currently, could be updated for each plot based on results
+    confidence and uncertainty
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualizing Correlation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we load data, let’s make some synthetic bivariate Gaussian data on the
+    fly and calculate the correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this will help us calibrate our eye to correlation, in the Gaussian case where
+    it perfectly describes the relationship
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can specify 4 correlation coefficients and the number of data and then rerun
+    this block to visualize the scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c879d92e61440a7ca49a6351009408e1166cd04c0a7ca7ffa30754eb86452bb4.png](../Images/187b14d4b0f0ad9475f1dabfa4b83037.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Impact of Outliers on Correlation Coefficients
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s observe the impact of a single outlier on the correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: compare Person product moment and Spearman rank correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to run this example?
+  prefs: []
+  type: TYPE_NORMAL
+- en: set the original data correlation, defaulted as 0.0, no correlation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: set the number of data in the original sample with correlation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: set the sample \(x_{n+1},y_{n+1}\), to be appended to the data as potentially
+    an outlier
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the case that I designed you will observe,
+  prefs: []
+  type: TYPE_NORMAL
+- en: when the new sample is in the middle of the previous data there is not a significant
+    impact on either correlation statistic
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: when as the new sample moves further from the sample data the correlation coefficient
+    increases while the rank correlation coefficient remains close to the original
+    sample correlation, it is more robust in the presence of outliers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/dd2afb2ce7bccc9b020992b89ab592ba2eade5862458bd30bb1dc61021e0185d.png](../Images/1bab0c2a4ccf37b1fc5e5cc042fb74e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We are ready to load some data and work with bivariate and multivariate statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘sample_data_MV_biased.csv’.
+    It is a comma delimited file with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: X and Y coordinates (\(m\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: facies 0 and 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (fraction)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^3\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: add parameter ‘n=13’ to see the first 13 rows of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | X | Y | Facies | Porosity | Perm | AI |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 100.0 | 900.0 | 0.0 | 0.101319 | 1.996868 | 5590.417154 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 100.0 | 800.0 | 1.0 | 0.147676 | 10.711789 | 3470.845666 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 100.0 | 700.0 | 1.0 | 0.145912 | 17.818143 | 3586.988513 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 100.0 | 600.0 | 1.0 | 0.186167 | 217.109365 | 3732.114787 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 100.0 | 500.0 | 1.0 | 0.146088 | 16.717367 | 2534.551236 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 200.0 | 900.0 | 1.0 | 0.129949 | 23.348473 | 4781.590782 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 200.0 | 700.0 | 1.0 | 0.185299 | 595.674540 | 4729.017454 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 200.0 | 600.0 | 1.0 | 0.164923 | 154.555841 | 2147.668805 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 200.0 | 500.0 | 1.0 | 0.167026 | 50.970899 | 4583.679953 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 200.0 | 400.0 | 1.0 | 0.125382 | 4.061772 | 4477.930200 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 200.0 | 200.0 | 0.0 | 0.077419 | 1.162642 | 6844.535923 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 300.0 | 800.0 | 1.0 | 0.164797 | 497.593578 | 3881.489046 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 300.0 | 700.0 | 1.0 | 0.165155 | 486.504799 | 3726.023776 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum,
+    and quartiles all in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use transpose just to flip the table so that features are on the rows and
+    the statistics are on the columns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| X | 368.0 | 499.565217 | 289.770794 | 0.000000 | 240.000000 | 500.000000
+    | 762.500000 | 990.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Y | 368.0 | 520.644022 | 277.412187 | 9.000000 | 269.000000 | 539.000000
+    | 769.000000 | 999.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Facies | 368.0 | 0.597826 | 0.491004 | 0.000000 | 0.000000 | 1.000000 | 1.000000
+    | 1.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Porosity | 368.0 | 0.127026 | 0.030642 | 0.041122 | 0.103412 | 0.125842 |
+    0.148623 | 0.210258 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 368.0 | 85.617362 | 228.362654 | 0.094627 | 2.297348 | 10.377292 |
+    50.581288 | 1991.097723 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 368.0 | 4791.736646 | 974.560569 | 1981.177309 | 4110.728374 | 4713.325533
+    | 5464.043562 | 7561.250336 |'
+  prefs: []
+  type: TYPE_TB
+- en: Visualizing Tabular Data with Location Maps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is natural to set the x and y coordinate and feature ranges manually, e.g.
+    do you want your color bar to go from 0.05887 to 0.24230 exactly? Also, let’s
+    pick a color map for display.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I heard that plasma is known to be friendly to the color blind as the color
+    and intensity vary together (hope I got that right, it was an interesting Twitter
+    conversation started by Matt Hall from Agile if I recall correctly).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will assume a study area of 0 to 1,000m in x and y and omit any data outside
+    this area.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s try out locmap. This is a reimplementation of GSLIB’s locmap program that
+    uses matplotlib. I hope you find it simpler than matplotlib, if you want to get
+    more advanced and build custom plots lock at the source. If you improve it, send
+    me the new code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can populate the plotting parameters and visualize the porosity data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fb390aff66ae78b026e0a8d670a17f1652724168801abaaf0115cf944e3ed6b3.png](../Images/2bebdc841e0b1f00e78c0ab5f1b6c200.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bivariate Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with simple bivariate scatter plots, and calculating bivariate statistics.
+    Here’s the scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I included code below (commented out) for writing the plot as an image file.
+    Note, you can write to many different formats, e.g., .tif, jpg, etc. and you can
+    also control the resolution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: by saving in .pdf, .svg, or eps formats you create vector graphics that retain
+    their sharpness at any resolution with economy of file size
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/67700ddcbaaf979a239805be756a89d96c635a8ccbc9df986502ccd3864bdb15.png](../Images/a42eec8a031e9a1c002a66308e587000.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Correlation and Covariance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is straight forward to calculate the covariance and correlation from the
+    pairs of data in our dataset. Here’s the covariance matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that the matrix is symmetrical? Makes sense, as the \(C_{Por,Perm} =
+    C_{Perm,Por}\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, note that the diagonal values (\(C_{i,j}\) where \(i=j\)) equal to the
+    variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We check porosity by calculating the variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here’s the correlation coefficient matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Porosity | Perm | AI |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Porosity | 1.000000 | 0.579493 | -0.573700 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 0.579493 | 1.000000 | -0.208812 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | -0.573700 | -0.208812 | 1.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: Visualize the Correlation Matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is convenient to visualize the correlation matrix as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I added a custom colour bar to communicate significance. Demonstration only,
+    I did not calculate confidence intervals, but that could be added.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/83761366319655e588a2d6284fe8bda3b63be5655c93c0deb0fb5a9394b8d6d6.png](../Images/95a59ac320af1fb9ac0c58e7fcb46a2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To calculate a single correlation coefficient with the associate p-value for
+    significance testing we can use SciPy’s pearsonr function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the p-value indicates the \(\alpha\) level at which we would reject the null
+    hypothesis that the correlation coefficient is actually 0.0 and the value is due
+    to random effect
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b7686c6dc96be9614c207297741721888cbdb15bdcbf4e6d4fcf6c54f140b248.png](../Images/cb9ab156ea8bd9d5916a536abf3bed47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The p-value of the porosity and permeability correlation coefficient is 2.1569195170201772e-34,
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation is significantly different from 0.0 for any feasible alpha level
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spearman’s Rank Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Spearman’s rank correlation coefficient, provides a measure of the degree
+    of monotonic relationship.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rank transform, e.g. \(R_(x_i)\), sort the data in ascending order and replace
+    the data with the index, $i=1,\ldots,n.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spearman’s rank correlation coefficient is more robust in the presence of outliers
+    and some nonlinear features than the Pearson’s correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try out the rank correlation coefficient with SciPy’s stats module function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: it also provides a p-value for each measure for significance testing, i.e.,
+    if p-value < alpha then we reject the null hypothesis that the rank correlation
+    coefficient is 0.0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: Compare Pearson and Spearman Correlation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s make a simple random dataset and add an outlier and then compare Pearson
+    and Spearman correlation coefficients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/0b51993fc92f9b03dbbfb7e41bc12a60a27447b68d847b20bc05487931a9febf.png](../Images/6670f44bf097d76b1bb14223e0d01f77.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s look at what Spearman correlation sees, by plotting the rank transform
+    of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4791c418784b757503d75595e5db1015dd22350248f9480fa2bd9996aede6377.png](../Images/90ce37c39bde286d155f24d79db69cae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Compare Pearson and Spearman Correlation with a Parabola
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s try the famous parabola example that is commonly used to demonstrate the
+    impact of nonlinearity on correlation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e56894167e04a56e36643226a78aa3db8892c9b3996c3f0f4480240649b7a530.png](../Images/7ed7d723c00c15abe68581eca42ea237.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s look at what Spearman correlation sees, by plotting the rank transform
+    of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/d34a8a06185f53255efb333209733b72f5d0d690a53f6c531cf0a64f38e50a50.png](../Images/c8e8ad5166ab26562203b0fc7c5743fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Rank transforms can linearize monotonic increasing or decreasing segments of
+    the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Correlation with Multiple Populations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/57af7778c66f18788a9ba34024a16aca9966a669a74511dde0f8877509891603.png](../Images/c6eef9de078584098a6d899d53846216.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simpson’s Paradox
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data trend reverses or disappears when groups are combined (or separated).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To Be Added
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plot Correlation and Rank Correlation Matrices
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Returning to our former dataset, let’s make correlation matrices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/edcf5c74036d111e6669dfe2ad18f9bc29f717402eb2ff1ccfbe3afa42a8acc9.png](../Images/863dac746bfa9539ae24a52549ecd4b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the correlation minus rank correlation heatmap we see,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the nonlinearity is potentially decreasing the permeability correlation with
+    facies and porosity, and increasing the correlation with AI.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Matrix Scatter Plots
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If we have 3 or more variables to consider then matrix scatter plot offer an
+    efficient method to display the multivariate relationships, 2 variables at a time.
+    Once can identify:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the range, envelope of the paired data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: homoscedastic and heteroscedastic behaviors
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: nonlinear features
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Here’s the seaborn package matrix scatter plot function, pairplot. Let’s color
+    the results by facies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a482081691d29bb3a8958da4b9cf7f18e0d1d750b4f4b1fc8ea60fcb707ce1da.png](../Images/8e44243cde49de19979526b8596429a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Remember, although these matrix scatterplots are very useful, they are still
+    a bivariate marginalization of the higher dimensionality relationships.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There may be structures in the other dimensions that we do not see.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pair Grid Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For maximum control of the resulting plot we can work with pair grid plots from
+    seaborn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can independently set lower, upper and diagonal components of the plot
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We demonstrate this with all facies pooled together for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: scatter plots for upper
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: histograms for diagonal
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: kernel density plots for the lower
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ac24270df583b5747f7ae51bb452146ed7d0a0f4c92343d3511f3d5967b76259.png](../Images/3a9ebfb095643ae980083d8592f9664c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Joint, Conditional and Marginals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can use kernel density estimation to estimate the joint probabilities density
+    function (pdf) for the paired data, a 2D pdf!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could use this to estimate any required joint, marginal and conditional probability
+    (care must be taken with normalization).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s use the seaborn package ‘kdeplot’ function to estimate the joint pdf for
+    porosity and acoustic impedance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/69b015671bacfc7fa2fc9d4ab2759470bc875d39a319cd25ef75348eea016048.png](../Images/e60d5a2a12cfdb282208b9c532b03529.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I think is it useful to visualize the joint pdfs with the marginal pdfs on a
+    single plot. We can use seaborn’s ‘jointplot’ to accomplish this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a799790562a52731e8995fba6d657f6d392e8438ec2431d8c8edeeba1566ace9.png](../Images/1953363d2953c218574345255e207a21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The correlation coefficient and the p-value of the correlation coefficient (significant
+    if < \(\alpha/2\) or > \(1-\alpha/2\)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating Conditional Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Of course, we could just calculate the conditional statistics by-hand. We need
+    to select some bins over the variable that we will condition to. Let’s calculate
+    conditional statistical of porosity given acoustic impedance. We will select 9
+    equal spaced bins.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | X | Y | Facies | Porosity | Perm | AI | AI_bins |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 100.0 | 900.0 | 0.0 | 0.101319 | 1.996868 | 5590.417154 | 5666.666667
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 100.0 | 800.0 | 1.0 | 0.147676 | 10.711789 | 3470.845666 | 3666.666667
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 100.0 | 700.0 | 1.0 | 0.145912 | 17.818143 | 3586.988513 | 3666.666667
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 100.0 | 600.0 | 1.0 | 0.186167 | 217.109365 | 3732.114787 | 3666.666667
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 100.0 | 500.0 | 1.0 | 0.146088 | 16.717367 | 2534.551236 | 2333.333333
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: 'Now we can use the ‘groupby’ function built-in to Pandas’ DataFrames to extract
+    subsets of porosity values in each bin from the DataFrame and then to calculate
+    the conditional statistics: expectation, P90 and P10\. Let’s plot the result.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/3b0219cd99865b38ef5047da0a726d7a86111c6fd26a15d3fea9639b6e47a3d8.png](../Images/bb2a49db448a5114e7b03a36cb885081.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Does acoustic impedance provide information about porosity?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yes, clearly the conditional statistics vary over acoustic impedance, knowing
+    the acoustic impedance reduces the uncertainty about porosity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this provide a powerful, nonparametric model of the relationship, i.e., without
+    any assumptions such as linearity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of multivariate analysis with a focus on bivariate.
+    Much more could be done and discussed, I have many more resources. Check out my
+    [shared resource inventory](https://michaelpyrcz.com/my-resources) and the YouTube
+    lecture links at the start of this chapter with resource links in the videos’
+    descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and
+    The Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

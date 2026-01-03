@@ -1,0 +1,5103 @@
+- en: Bagging and Random Forest
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_ensemble_trees.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_ensemble_trees.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Bagging and Random Forest**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Decision Tree](https://youtu.be/JUGo1Pu3QT4?si=ebQXv6Yglar0mYWp)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Random Forest](https://youtu.be/m5_wk310fho?si=up-mzVPHvniXsYE6)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Gradient Boosting](https://youtu.be/___T8_ixIwc?si=ozHR_eIuMF3SPTxJ)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for Bagging and Random Forest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Decision tree are not the most powerful, cutting edge method in machine learning,
+    but,
+  prefs: []
+  type: TYPE_NORMAL
+- en: one of the most understandable, interpretable predictive machine learning modeling
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/e66b56981b9ff607c82a7fbfc116ccb1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Solitary black spruce tree in Hinton, Alberta, Canada, image from https://hikebiketravel.com/6-fun-things-to-do-in-hinton-alberta-in-winter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: decision trees are enhanced with random forests, bagging and boosting to be
+    one of the best models in many cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ca4872f08f83736f351592c849901c2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Black spruce forest near Hinton, Alberta, east of Jasper National Park, Canada,
+    image from https://en.wikivoyage.org/wiki/Hinton.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we cover ensemble trees, tree bagging and random forest building on decision
+    trees. First, I provide some prerequisite concepts for decision trees and then
+    for ensemble methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: if you are not familiar with decision trees it may be a good idea to review
+    the [Decision Tree Chapter](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_decision_tree.html).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tree Model Formulation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The prediction feature space is partitioned into \(J\) exhaustive, mutually
+    exclusive regions \(R_1, R_2, \ldots, R_J\). For a given prediction case \(x_1,\ldots,x_m
+    \in R_j\), the prediction is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regression** - the average of the training data in the region, \(R_j\)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \frac{1}{|R_j|} \sum_{\mathbf{x}_i \in R_j} y_i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\hat{y}\) is the predicted value for input \(\mathbf{x}\), \(R_j\) is
+    the region (leaf node) that \(\mathbf{x}\) falls into, \(|R_j|\) is the number
+    of training samples in region \(R_j\), and \(y_i\) is the actual target values
+    of those training samples in \(R_j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Classification** - category with the plurality of training cases (most common
+    case) in region \(R_j\):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \arg\max_{c \in C} \left( \frac{1}{|R_j|} \sum_{\mathbf{x}_i \in
+    R_j} \mathbb{1}(y_i = c) \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(C\) is the set of all possible categories, \(\mathbb{1}(y_i = c)\) is
+    indicator transform, 1 if \(y_i = c\), 0 otherwise, \(|R_j|\) is the number of
+    training samples in region \(R_j\), and \(\hat{y}\) is the predicted class label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The predictor space, \(𝑋_1,\ldots,𝑋_𝑚\), is segmented into \(J\) mutually exclusive,
+    exhaustive regions, \(R_j, j = 1,\ldots,J\), where the regions are,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**mutually exclusive** – any combination of predictor features, \(x_1,\ldots,x_𝑚\),
+    only belongs to a single region, \(R_j\)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**exhaustive** – all combinations of predictor feature values belong a region,
+    \(R_j\), i.e., all the regions, \(R_j, j = 1,\ldots,J\), cover entire predictor
+    feature space'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All prediction cases, \(x_1,\ldots,x_m\) that fall in the same region, \(R_j\),
+    are estimated with the same value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the prediction model inherently discontinuous at the region boundaries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, consider this decision tree prediction model for the production
+    response feature, \(\hat{Y}\) ̂from porosity, \(X_1\), predictor feature,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/98d8fb73fe41299a6a9b443163b47c96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Four region decision tree with data and predictions, \(\hat{Y}(R_j) = \overline{Y}(R_j)\)
+    by region, \(R_j, j=1,…,4\). For example, given a predictor feature value of 13%
+    porosity, the model predicts about 2,000 MCFPD for production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we segment the predictor feature space?
+  prefs: []
+  type: TYPE_NORMAL
+- en: the set of regions based on hierarchical, binary segmentation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tree Loss Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For regression trees we minimize the residual sum of squares and for classification
+    trees we minimize the weighted average Gini impurity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Residual Sum of Squares (RSS) measures the total squared difference between
+    the actual values and predicted values in a regression tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{RSS} = \sum_{j=1}^{J} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(J\) is the total number of regions in the tree, \(R_j\) is the \(j\)
+    region, \(y_i\) is the truth value of the response feature at observation the
+    \(i\) training data, and \(\hat{y}_{R_j}\) is the predicted value for region \(R_j\),
+    the mean of \(y_i \; \forall \; i \in R_j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When a parent node splits into two child nodes ( t_L ) and ( t_R ), the weighted
+    Gini impurity is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Gini}_{\text{total}} = \sum_{j=1}^{J} \frac{N_j}{N} \cdot \text{Gini}(j)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(J\) is the total number of regions in the tree, \(N\) is the total number
+    of samples in the dataset, \(N_j\) is the number of samples in leaf node \(j\),
+    and \(\text{Gini}(j)\) is the Gini impurity of leaf node \(j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Gini impurity for a single decision tree node is calculated as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Gini}(j) = 1 - \sum_{c=1}^{C} p_{j,c}^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(p_{j,c}\) is the proportion of class \(c\) samples in node \(j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For classification our loss function does not compare the predictions to the
+    truth values like our regression loss!
+  prefs: []
+  type: TYPE_NORMAL
+- en: the Gini impurity penalizes mixtures of training data categories! A region of
+    all one category of training data will have a Gini impurity of 0 to contribute
+    to the over all loss.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that the by-region Gini impurity is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**weighted** - by the number of training data in each regions, regions with
+    more training data have greater impact on the overall loss'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**averaged** - over all the regions to calculate the total Gini impurity of
+    the decision tree'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These losses are calculated during,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**tree model training** - with respect to training data to grow the tree'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**tree model tuning** - with respect to withheld testing data to select the
+    optimum tree complexity.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s talk about tree model training first and then tree model tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the Tree Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How do we calculate these mutually exclusive, exhaustive regions? This is accomplished
+    through hierarchical binary segmentation of the predictor feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training a decision tree model is both,
+  prefs: []
+  type: TYPE_NORMAL
+- en: assigning the mutual exclusive, exhaustive regions
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: building a decision tree, each region is a terminal node, also known as a leaf
+    node
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These are the same thing! Let’s list the steps and then walk through a training
+    a tree to demonstrate this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Assign All Data to a Single Region** - this region covers the entire predictor
+    feature space'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Scan All Possible Splits** - over all regions and over all features'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Select the Best Split** - this is greedy optimization, i.e., the best split
+    minimizes the residual sum of squares of errors over all the training data \(y_i\)
+    over all of the regions \(j = 1,\ldots,J\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Iterate Until Very Overfit** - return to step 1 for the next split until
+    the tree is very overfit.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For brevity we stop here, and make these observations,
+  prefs: []
+  type: TYPE_NORMAL
+- en: hierarchical, binary segmentation is the same as sequentially building a decision
+    tree, each split adds a new decision node and increases the number of leaf nodes
+    by one.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the simple decision trees are in the complicated decision tree, i.e., if we
+    build an \(8\) leaf node model, we have the \(8, 7, \ldots, 2\) leaf node model
+    by sequentially removing the decision nodes, in the order of last one is the first
+    one to remove.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the ultimate overfit model is number of leaf nodes equal to the number of training
+    data. In this case, the training error is 0.0 as have one region for each training
+    data a we estimate with the training data response feature values for all the
+    at the training data cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tuning the Tree Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To tune the decision tree we take the very overfit trained tree model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: sequentially cut the last decision node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: i.e., prune the last branch of the decision tree
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since the simpler trees are inside the complicated tree!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can calculate test error as we prune and select tree with minimum test error
+  prefs: []
+  type: TYPE_NORMAL
+- en: We overfit the decision tree model, with a large number of leaf nodes and then
+    we reduce the number of leaf nodes while tracking the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we select the number of leaf nodes that minimize the testing error.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: since we are sequentially removing the last branch to simplify the tree, we
+    call model tuning **pruning** for decision trees
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s discuss decision tree hyperparameters. I prefer number of leaf nodes as
+    my decision tree hyperparameter because it provides,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**continuous, uniform increase in complexity** - equal steps in increased complexity
+    without jumps'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**intuitive control on complexity** - we can understand and relate the \(2,
+    3, \ldots, 100\) leaf node decision trees'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**flexible complexity** - the tree is free to grow in any manner to reduce
+    training error, including highly asymmetric decision trees'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are other common decision tree hyperparameters including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Minimum reduction in RSS** – related to the idea that incremental increase
+    in complexity must be offset by sufficient reduction in training error. This could
+    stop the model early, for example, a split with low reduction in training error
+    could lead to a subsequent split with a much larger reduction in training error'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Minimum number of training data in each region** – related to the concept
+    of accuracy of the by-region estimates, i.e., we need at least \(n\) data for
+    a reliable mean and most common category'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Maximum number of levels** – forces symmetric trees, similar number of splits
+    to get to each leaf node. There is a large change in model complexity with change
+    in the hyperparameter.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ensemble Methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What is the Testing Accuracy of Our Predictive Machine Learning Models?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall the equation for expected test error has three components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \mathbb{E}\left[(y_0 - \hat{f}(x_1^0, \ldots, x_m^0))^2\right] = \left(\mathbb{E}[\hat{f}(x_1^0,
+    \ldots, x_m^0)] - f(x_1^0, \ldots, x_m^0)\right)^2 + \mathbb{E}\left[\left(\hat{f}(x_1^0,
+    \ldots, x_m^0) - \mathbb{E}[\hat{f}(x_1^0, \ldots, x_m^0)]\right)^2\right] + \sigma_\varepsilon^2
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There can be labeled as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Expected Test Error} = \text{Model Bias}^2 + \text{Model Variance}
+    + \text{Irreducible Error} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Model Variance** - is the error in the model predictions due to sensitivity
+    to the data, i.e., what if we used different training data?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Model Bias** - is error in the model predictions due to using an approximate
+    model / model is too simple'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Irreducible Error** - is error in the model predictions due to missing features
+    and limited samples can’t be fixed with modeling / entire feature space is not
+    sampled'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now we can visualize the model variance and bias tradeoff as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10e6db08085f4ca1ff6ceb66f673d9d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model variance and bias trade-off, for simple to complicated predictive machine
+    learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model variance limits the complexity and text accuracy of our models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How Can We Reduce Model Variance?** - so that we can use more complicated
+    and more accurate models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By standard error in the average, we observe the reduction in variance by averaging!
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sigma_{\bar{x}}^2 = \frac{\sigma^2_s}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\sigma^2_s\) is the sample variance, \(n\) is the number of samples,
+    and \(\sigma_{\bar{x}}^2\) is the variance of the average under the assumption
+    of independent, identically distributed sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/11ec8dafb91278a4a07a22c274b18c52.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model variance and bias trade-off, for simple to complicated predictive machine
+    learning models with model variance reduced by averaging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can reduce model variance by calculating many estimates and averaging them
+    together. We will need to make \(B\) estimates,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y}^{(b)} = \hat{f}^{(b)}(X_1, \ldots, X_m), \quad b = 1, \ldots, B \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\hat{y}^{(b)}\) is the prediction made by the \(b^{th}\) model in the ensemble,
+    \(\hat{f}^{(b)}\) is the \(b^{th}\) estimator, \(X_1, \ldots, X_m\) is the predictor
+    features, and \(B\) is the total number of estimators (the multiple models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then our ultimate estimate will be the average (regression) or plurality (classification)
+    of our estimates,
+  prefs: []
+  type: TYPE_NORMAL
+- en: regression ensemble estimate,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \frac{1}{B} \sum_{b=1}^{B} \hat{y}^{(b)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: classification ensemble estimate,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \arg\max_y \sum_{b=1}^{B} \mathbb{I}(\hat{y}^{(b)} = y) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: This requires multiple prediction models, \(f^{b}, b = 1,\ldots, B\) to make
+    \(B\) predictions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y}^{(b)} = \hat{f}^{(b)}(X_1, \ldots, X_m), \quad b = 1, \ldots, B \]![](../Images/885306737841b4ce2406407ca170fe7f.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiple models to make multiple predictions to reduce model variance by averaging
+    over the ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But we only have access to a single dataset, \(Y,X_1,\ldots,X_m\); therefore,
+    every model will be the same,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4dd12f28990215e1c5906e7c36793a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multiple models to make multiple predictions to reduce model variance by averaging
+    over the ensemble, with the same data result in the same model and the same predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our models are generally deterministic, train with the same data and hyperparameters
+    and we get the same estimate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bootstrap
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One source of uncertainty is the paucity of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do these 200 or so wells provide a precise (and accurate estimate) of the mean?
+    standard deviation? skew? P13?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is the impact of uncertainty in the mean porosity, for example, \(20\%
+    \pm 2\%\)?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/cc8a09c3c5b404de658a3f4d6a4ace64.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Samples and population, from Bootstrap chapter of Applied Geostatistics in Python
+    e-book.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if we had \(L\) different datasets? \(L\) parallel universes where we collected
+    \(n\) samples from the inaccessible truth (the population).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/03a47e7d2a75afebba6ca7928b259afe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multiple dataset realizations from the truth population, from Bootstrap chapter
+    of Applied Geostatistics in Python e-book.
+  prefs: []
+  type: TYPE_NORMAL
+- en: but we only exist in 1 universe \(\rightarrow\) this is not possible.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Instead we sample \(n\) times from the dataset with replacement,
+  prefs: []
+  type: TYPE_NORMAL
+- en: bootstrap realizations of the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: that vary by due to some samples being left out and others sampled multiple
+    times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07925f4d15205ea985dfc081c24b0589.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multiple dataset bootstrap datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, here’s a definition of bootstrap,
+  prefs: []
+  type: TYPE_NORMAL
+- en: method to assess the uncertainty in a sample statistic by repeated random sampling
+    with replacement simulating the sampling process to acquire dataset realizations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Under the assumptions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**sufficient sample** - enough data to infer the population parameters. Bootstrap
+    cannot make up for too few data!'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**representative sampling** - bias in the sample will be passed to the bootstrap
+    uncertainty model, for example, if the mean is biased in the sample, then the
+    bootstrap uncertainty model will be centered on the biased mean from the sample.
+    We must first debias our data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are also various limitations for bootstrap, including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**stationarity** - the statistics from the sample are assumed to be constant
+    over the model space'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**one uncertainty source only** - only accounts for uncertainty due to too
+    few samples, for example, no uncertainty due to changes away from data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**does not account for area of interest** - larger model region or smaller
+    model region, bootstrap uncertainty does not change.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**independence between the samples** - does not account for correlation, relationships
+    between the samples'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**no local conditioning** - does not account for other local information sources'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could summarize all of this limitations as, bootstrap does not account for
+    the spatial (or temporal) context of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is a form of bootstrap, known as spatial bootstrap that does account for
+    spatial context, [spatial bootstrap and bagging for ensemble machine learning](https://www.sciencedirect.com/science/article/pii/S0098300424000414).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s visualize bootstrap for the case of calculating uncertainty in sample
+    mean estimated ultimate recovery (EUR) given \(n=10\) observations from 10 wells.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1cfe358ff534628282d37d9e47ad383a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: \(n = 10\) samples with replacement to calculate a single realization of the
+    sample mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we repeat and calculate a \(2^{nd}\) realization of the sample mean,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a1d9d26290cdc6495c88246af159f42.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Second realization of \(n = 10\) samples with replacement to calculate the second
+    realization of the sample mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and a third realization of the data to calculate the \(3^{rd}\) realization
+    of the sample mean,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/508b11f7b9417d09182403573f7e40d7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Third realization of \(n = 10\) samples with replacement to calculate the third
+    realization of the sample mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and if we repeat \(L\) times we sample the complete distribution for the uncertainty
+    in the sample mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f2dabcbf8e395ea433527e012d41490.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: $L$ realizations of the data for $L$ realizations to completely sample the uncertainty
+    in the mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s summarize bootstrap,
+  prefs: []
+  type: TYPE_NORMAL
+- en: developed by [Efron, 1982](https://epubs.siam.org/doi/pdf/10.1137/1.9781611970319.fm)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: statistical resampling procedure to calculate uncertainty in a calculated statistic
+    from the data itself.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: seems impossible, but go ahead and compare it to known cases like standard error
+    and you will see that it works,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \sigma_{\bar{x}}^2 = \frac{\sigma^2_s}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\sigma^2_s\) is the sample variance, \(n\) is the number of samples,
+    and \(\sigma_{\bar{x}}^2\) is the variance of the average under the assumption
+    of independent, identically distributed sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: may be applied to calculate the uncertainty in any statistic, for example, \(13^{th}\)
+    percentile, skew, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: advanced forms account for spatial information and strategy (game theory).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a360524ac8f082a989d9ff04d88b3906.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The general flow chart for bootstrap.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bagging Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Bagging models in machine learning apply bootstrap to,
+  prefs: []
+  type: TYPE_NORMAL
+- en: calculate multiple realizations of the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train multiple realizations of the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate multiple realizations of the estimate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: average the estimates to reduce model variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s the flow chart for bagging models,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aa378f660d65104e433bf1eb53c1cd7f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The bagging machine learning model flow chart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply statistical bootstrap to obtain multiple realizations of the data,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ Y^b, X_1^b, \dots, X_m^b,\quad b = 1, \dots, B \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train a prediction model (estimator) for each data realization,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \hat{f}^b(X_1^b, \dots, X_m^b) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate a prediction with each estimator,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \hat{Y}^b = \hat{f}^b(X_1^b, \dots, X_m^b) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Aggregate the ensemble of 𝐵 predictions over the estimators,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Regression** – aggregate the ensemble predictions with the average,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{Y} = \frac{1}{B} \sum_{b=1}^{B} \hat{Y}^b \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Classification** – aggregate the ensemble predictions with majority-rule,
+    plurality,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{Y} = \arg\max(\hat{Y}^b) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: I built out an interactive Python dashboard for [bagging linear regression](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Bootstrap_Bagging.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/734e60e25fd461f174b74321a8caef2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive machine learning bagging with linear regression, 16 data bootstrap,
+    model and prediction realizations aggregated by averaging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training and Tuning Bagging Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What is the Bagging Regression Model?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiple models each trained on different bootstrap data realizations, all with
+    the same hyperparameter(s).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b80d0d8659d6a69c67cc48f81cd46888.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The bagging model, we train individually, but we tune the ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The bagging prediction, \(\hat{y}\), the aggregate of the individual estimators,
+    is the output of this model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8734bb5c0493ecba4f618382a639010c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bagging regression predictions by averaging multiple prediction models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: or for classification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8734bb5c0493ecba4f618382a639010c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bagging classification predictions by plurality of multiple prediction models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each model, known as an estimator in the ensemble of models, is trained with
+    their respective bootstrapped data realization, during training each model minimizes
+    train error of the individual estimator with the bootstrapped data realization,
+    residual sum of squares for regression,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{RSS} = \sum_{j=1}^{J} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and Gini impurity for classification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Gini}_{\text{total}} = \sum_{j=1}^{J} \frac{N_j}{N} \cdot \text{Gini}(j)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: each estimator is trained separately, but they all share the same hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This provides the flexibility to build the best possible model to fit each bootstrap
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/038bd000e2192149c3a4abd1ab0d5cde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimators in the ensemble of models are trained individually, but share the
+    same hyperparameter(s).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We tune our bagged model with the error of the bagging estimate from aggregating
+    the ensemble of estimates, for the case of regression,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{MSE} = \sum_{i=1}^{n} (\hat{y}_i - y_i)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where the predicted value \(\hat{y}_i\) is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y}_i = \frac{1}{B} \sum_{b=1}^{B} \hat{y}_i^{(b)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We tune our ensemble jointly over all estimators, we do not consider the error
+    of individual model estimators, \(\hat{y}_i^𝑏 - y_i\), within the ensemble for
+    model tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb1f17d4c2c24d97eb7c0121be84a79f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimators in the ensemble of models, sharing the same number of leaf nodes
+    hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result is a single measure of test error for each hyperparameter setting,
+    for the case above with number of leaf nodes, we get this result,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c1090b95f0977ae34559787c21ef3800.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ensemble test error vs. number of leaf nodes hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: to select the ensemble hyperparameter to minimize test error. For clarity, let’s
+    add the tuning to our previous training bagging models workflow,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we loop over hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: minimize the test error of the ensemble estimates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/96ee3c145e994796c9a01d181704650c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The workflow for tuning a bagging model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Out-of-Bag Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In expectation, \(\frac{1}{3}\) of the training data is left out of each bootstrap
+    data realization, \(b^c\); therefore, cross-validation is built in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sample with replacement \(\frac{2}{3}\) of the training data (in expectation),
+    \(Y^b, X_1^b, \dots, X_m^b\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train an estimator with the \(\frac{2}{3}\) of training data (in expectation).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Predict at the out-of-bag samples, \(X_1^{b^c}, \dots, X_m^{b^c}\), \(\frac{1}{3}\)
+    of the training data (in expectation).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/63c6819827d1a77f4c0cabcd47f88524.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Out-of-bag error calculation workflow, to apply add to the hyperparameter tuning
+    loop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pool the 𝐵/3 predictions (in expectation) for each sample data from all the
+    𝐵 models and make an out-of-bag prediction, for regression,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \hat{y}_\alpha^{\text{oob}} = \frac{1}{\left(\frac{B}{3}\right)} \sum_{b=1}^{\frac{B}{3}}
+    \hat{y}_\alpha^{(b^c)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the out-of-bag error to assess model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{MSE}_{\text{OOB}} = \frac{1}{n} \sum_{\alpha=1}^{n} \left[\hat{y}_\alpha^{\text{oob}}
+    - y_\alpha \right]^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Number of Estimators
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Number of Estimators is an important hyperparameter for bagging models
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**More estimators** – improve generalization up to a point, increasing the
+    number of trees generally improves performance and reduces variance, as predictions
+    are averaged across more models.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Diminishing returns** - beyond a point, adding more estimators gives little
+    or no improvement and only increases computational cost.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Improved stability** - more trees reduce the likelihood of overfitting to
+    random noise in the training set.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/4ed3a0e3d2ee36395e6476183e806b8a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of estimators, few (upper) and more (lower), within the ensemble model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Estimator Complexity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The hyperparameter(s) shared by the estimators remain as important hyperparameters.
+    Here’s guidance with a focus on tree bagging,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**More complicated models** – bagging reduces model variance, so we often train
+    more complicated models for the ensemble.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Too simple models** – may not see any improvement from bagging, because model
+    variance is not an issue for simple models and does not need to be reduced.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Feature interactions** – more complicated models capture more of the interactions
+    between features, for example, tree bagging models with tree depth 𝑑 can capture
+    𝑑-way feature interactions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b5d39d63f35aded00e0a6d996fa7b353.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ensembles with different tree depth hyperparameters, 2 (upper), 3 (middle) and
+    4 (lower).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tree Bagging
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s summarize the approach,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build an ensemble of decision trees with multiple, bootstrap realizations of
+    the data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: and provide some guidance,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the ensemble of tree estimators reduces model variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: hyperparameter tune over the entire ensemble model, i.e., All trees in the ensemble
+    have the same hyperparameters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: number of estimators is an additional, important hyperparameter in addition
+    to the tree estimators’ complexity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: in expectation, $\frac{1}{3} of the data is not used for each tree, this provides
+    the opportunity to have access to out-of-bag samples for cross validation, so
+    we can build our model and cross validate with all the data at once, no train
+    and test split.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: overgrown trees will often outperform simpler trees due to reduction in model
+    variance with averaging over the estimators.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spoiler Alert - we want the trees to be decorrelated, diverse to maximize the
+    reduction in model variance, this leads to random forest. More on this later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To visualize tree bagging, here’s an example of tree bagging by-hand, 6 estimators
+    from bootstrap realizations of the data, predicting over porosity and brittleness
+    and the average over all the estimates as the bagging model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/88fba0db87ba8271f1b97819bfcf45b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 6 bootstrapped, complicated decision trees (left) and the bagging model, average
+    of all 6 models (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observe the impact on the prediction model with the addition of more trees –
+    transition from a discontinuous to continuous prediction model!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c66db0c2607c6dd31082060dda55ace.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 6 tree bagging prediction models and all training data with increasing number
+    of estimators, for 1, 3, 5, 10, 30 and 500 trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observe the improved testing accuracy in cross validation with increasing number
+    of trees,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/042efb5835a7679f992c4a08097693ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cross validation with 6 tree bagging prediction models with increasing number
+    of trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observe the reduction in model variance with increasing number of trees,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b40d9508fd3daba20f8724ac4dcfb8a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3 models with 1 and 100 trees to demonstrate the reduction in model variance
+    with increased ensemble aggregation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random Forest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A limitation with tree bagging is that the individual trees may be highly correlated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this occurs when there is a dominant predictor feature as it will always be
+    applied to the top split(s), the result is all the trees in the ensemble are very
+    similar (i.e., correlated)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/d21f6ab27e26033ce1dd293c469b1851.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Highly correlated trees in a tree bagging ensemble model, trees with the same
+    initial splits resulting in very similar predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With highly correlated trees, there is significantly less reduction in model
+    variance with the ensemble,
+  prefs: []
+  type: TYPE_NORMAL
+- en: consider, standard error in the mean assumes the samples 𝑛 are independent!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \sigma_{\bar{x}}^2 = \frac{\sigma_s^2}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation between samples reduces the 𝑛 to a 𝑛 effective, as correlation increases,
+    \(n\) effectively is reduced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random forest is tree bagging, but for each split only a subset \(𝑝\) of the
+    \(𝑚\) available predictors are candidates for splits (selected at random).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p \ll m \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: This forces each tree in the ensemble to evolve in dissimilar manner,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Common defaults for 𝑝 for classification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p = \sqrt{m} \quad \text{or} \quad \log_2(p) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and for regression,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p=\frac{m}{3} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lower \(p\) less correlation, better generalization, higher \(p\) more correlation,
+    may overfit. note, too low \(p\) will underfit with high model bias
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s an example random forest model for the previous prediction problem,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 300 trees, trained to a maximum depth of \(7\), \(𝑝=1\), i.e., 1 predictor feature
+    randomly selected for each split
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8af256b868880607f4d3a18527c44eac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Highly correlated trees in a tree bagging ensemble model, trees with the same
+    initial splits resulting in very similar predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we are ready to demonstrate tree bagging and random forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices
+    and visualization of a decision, boosting tree and random forest regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the working directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset [unconv_MV.csv](https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/unconv_MV.csv)
+    available in my GeoDataSet repo. It is a comma delimited file with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well index (integer)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^6\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial gas production (90 day average) (MCFPD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a data frame we called ‘df’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Python Tip: using functions from a package** just type the label for the
+    package that we declared at the beginning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'so we can access the pandas function ‘read_csv’ with the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: but read csv has required input parameters. The essential one is the name of
+    the file. For our circumstance all the other default parameters are fine. If you
+    want to see all the possible parameters for this function, just go to the docs
+    [here](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The docs are always helpful
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is often a lot of flexibility for Python functions, possible through using
+    various inputs parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, the program has an output, a pandas DataFrame loaded from the data. So
+    we have to specify the name / variable representing that new object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s run this command to load the data and then this command to extract a random
+    subset of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Feature Engineering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s make some changes to the data to improve the workflow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Select the predictor features (x2) and the response feature (x1)**, make
+    sure the metadata is also consistent.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Metadata** encoding such as the units, labels and display ranges for each
+    feature.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Reduce the number of data** for ease of visualization (hard to see if too
+    many points on our plots).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Train and test data split** to demonstrate and visualize simple hyperparameter
+    tuning.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Add random noise to the data** to demonstrate model overfit. The original
+    data is error free and does not readily demonstrate overfit.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Given this is properly set, one should be able to use any dataset and features
+    for this demonstration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for brevity we don’t show any feature selection here. Previous chapter, e.g.,
+    k-nearest neighbours include some feature selection methods, but see the feature
+    selection chapter for many possible methods with codes for feature selection.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Optional: Add Random Noise to the Response Feature'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can do this to observe the impact of data noise on overfit and hyperparameter
+    tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is for experiential learning, of course we wouldn’t add random noise to
+    our data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We set the random number seed for reproducibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s make sure that we have selected reasonable features to build a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: the 2 predictor features are not collinear, as this would result in an unstable
+    prediction model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: each of the features are related to the response feature, the predictor features
+    inform the response
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the Correlation Matrix and Correlation with Response Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with correlation analysis. We can calculate and view the correlation
+    matrix and correlation to the response features with these previously declared
+    functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation analysis is based on the assumption of linear relationships, but
+    it is a good start
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/152d837d72f43ba9a48527a444d81b3bbc73a2ba553d2760d27f5c20206ea0b2.png](../Images/fe078f42023f81da1972474b1d3bbf26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This looks good. There is a mix of correlation magnitudes. Of course, correlation
+    coefficients are limited to degree of linear correlations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the matrix scatter plot to see the pairwise relationship between
+    the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8d03fa748bcc76aea92c8e57b5fb8071473e84b910d1402f5fd62dd21b102145.png](../Images/515a70a53d49c49c9ecf98249cd67b5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we are working with ensemble methods the train and test split is built
+    into the model training with out-of-bag samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will work with the entire dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: note, we could split a testing dataset for the train, validate, test approach.
+    For simplicity I only use train and test in these workflows.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the train and test DataFrame is useful check before we build our
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 7.22 | 63.09 | 2006.074005 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 13.01 | 50.41 | 4244.321703 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 10.03 | 37.74 | 2493.189177 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 18.10 | 56.09 | 6124.075271 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 16.95 | 61.43 | 5951.336259 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The describe command provides count, mean, minimum, maximum, percentiles in
+    a nice data table.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 140.000000 | 140.000000 | 140.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 14.897357 | 48.345429 | 4273.644226 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 3.181639 | 14.157619 | 1138.466092 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 6.550000 | 10.940000 | 1517.373571 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10% | 10.866000 | 28.853000 | 2957.573690 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 50% | 14.855000 | 50.735000 | 4315.186629 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 90% | 18.723000 | 65.813000 | 5815.526968 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 23.550000 | 84.330000 | 6907.632261 |'
+  prefs: []
+  type: TYPE_TB
+- en: It is good that we checked the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check out the range of values for each feature to set up and adjust plotting
+    limits. See above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Distributions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the histograms and scatter plots of the predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check to make sure the data cover the range of possible predictor feature combinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check that the predictor features are not highly correlated, collinear, as this
+    increases model variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c9e941b61d19ec872e32d0b10c48a28622e57437ff6fa45205763cc62773906a.png](../Images/3afbd7af1752bc8c73a552f17ebbfd8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again, the distributions are well behaved,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we cannot observe obvious gaps nor truncations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the predictor features are not highly correlated
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s look at a scatter plot of Porosity vs. Brittleness with points colored
+    by Production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: to visualize the prediction problem, i.e., the shape of the system
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6980039b0d3453603a0540f6ba29b6b821be9104ac38a6c3b26a9b0a9cd5a007.png](../Images/872ca67d7fc1098e9ee39b83f936887b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ensemble Tree Method - Tree Bagging Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We are ready to build a tree bagging model. To perform tree bagging we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: set the hyperparameters for the individual trees
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: instantiate an individual regression tree
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: set the bagging hyperparameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: instantiate the bagging regressor with the previously instantiated regression
+    tree (wrapping the decision tree)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: train the bagging regression (wrapping the decision tree)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: visualize the model result over the feature space (easy to do as we have only
+    2 predictor features)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Demonstration of Bagging by-Hand
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For demonstration of by-hand tree bagging let’s set the number of trees to 1
+    and run tree bagging regression 6 times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the result for each is a single complicated decision tree
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: note, the random_state parameter is the random number seed for the bootstrap
+    in the bagging method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the trees vary for each random number seed since the bootstrapped dataset will
+    be different for each
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will loop over the models and store each of them in an list of models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/eea5b5097df4ef4a221f3d871149c4a47c31d4898b463afa9acc7b2d628ea79f.png](../Images/31276b65834e695aebb5de91a9019af9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice the data changes for each model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we have bootstrapped the dataset so some of the data are missing and others
+    are used 2 or more times
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: recall, in expectation, only 2/3 of the data are used for each tree, and 1/3
+    is out-of-bag
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s check the cross validation results with the out-of-bag data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/783d535af6b2da8c5c69b4db7d4c9baff9168424e9c07006449e47e66dc7c771.png](../Images/efaec048c6783e5270a3de45c28fb832.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s demonstrate the averaging of the predictions over the 6 decision trees,
+    we are performing bagging tree prediction by-hand to clearly demonstrate the method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we average the predicted response feature (production) over the discretized
+    predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can take advantage of broadcast methods for operations on entire arrays
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we will apply the same model check, but we will use a modified function to will
+    read in the response feature 2D array, instead of a model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/f20a801dbb20a98a7b2ad7c35c59f481b086f7e243c708954eaafbad1eeac330.png](../Images/e53f12af38e9579211e007a9e5ad0273.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We made 6 complicated trees, each trained with bootstrap resamples of the original
+    data and then averaged the predictions from each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the result is more smooth - lower model variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the result more closely matches the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Demonstration of Bagging with Increasing Number of Trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For demonstration, let’s build 6 bagging tree regression models with increasing
+    number of overly complicated (and likely overfit) trees averaged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: with the bagging regressor from scikit learn this is automated with the ‘num_tree’
+    hyperparameter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will loop over the models and store each of them in an list of models again!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e9e7848dcfd2d82704e1e1d9b3907be8d850b9056a7478092436d1d3dd0376bb.png](../Images/349923f1fbb703de6e34e449aa5461aa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Observe the impact of averaging an increasing number of trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we transition from a discontinuous response prediction model to a smooth prediction
+    model (the jumps are smoothed out)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s repeat the modeling cross validation step with the withheld testing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/897537eef68fdc77ecefa72c0cf2f943ddf6dd1f8cb70e99a54d498f9c901116.png](../Images/e9bf860174405c58ee5d3b39292d0e44.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: See the improvement with testing accuracy with increasing level of ensemble
+    model averaging?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s run many cases and check the accuracy vs. number of trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/20cacfb6fdbc25ddeb7189cfe3d06ce924ab316613a2ab54a7cf162211ee6ca9.png](../Images/b32b7809d8b78abb96826fd4f0392d2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The number of trees improves model accuracy through reduction in model variance.
+    Let’s actually observe this reduction in model variance with an experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Variance vs. Ensemble Model Averaging
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s see the change in model variance through model averaging, we will compare
+    multiple models with different numbers of trees averaged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we accomplish this by visual comparison, let’s look at different bagging modeling
+    through changing the random number seed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b98738c95478440ea08fddbeba7798bc726e6077288dbed59915ba84d147fdd9.png](../Images/d419947c372df1ff5fa41d90a33dde05.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As we increase the number of decision trees averaged for the bagged tree regression
+    models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: once again, the response predictions over the predictor feature space gets more
+    smooth
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the multiple realizations of the model start to converge, this is lower model
+    variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Random Forest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With random forest we limit the number of features considered for each split.
+    Note, in scikit learn the default is \(\frac{m}{3}\). Use this hyperparameter
+    to set to square root of the number of predictor features. Another common alternative
+    in practice \(\sqrt{m}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: This forces tree diversity / decorrelates the trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall the model variance reduced by averaging over multiple decision trees
+    \(Y = \frac{1}{B} \sum_{b=1}^{B} Y^b(X_1^b,...,X_m^b)\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: recall from the [spatial bootstrap workflow](https://github.com/GeostatsGuy/PythonNumericalDemos/blob/master/SubsurfaceDataAnalytics_Spatial_Bootstrap.ipynb)
+    that correlation of samples being averaged attenuates the variance reduction
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s experiment with random forest to demonstrate this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set the hyperparameters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Even if I am just running one model, I set the random number seed to ensure
+    I have a deterministic model, a model that can be rerun to get the same result
+    every time. If the random number seed is not set, then it is likely set based
+    on the system time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will overfit the trees, let them grow overly complicated. Once again, the
+    ensemble approach will mitigate model variance and overfit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will use a large number of trees to mitigate model variance and to benefit
+    from random forest tree diversity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are using a simple 2 predictor feature example for ease of visualization.
+    The default for scikit learn’s random forest is to select \(\frac{m}{3}\) features
+    at random for consideration for each split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This doesn’t make much sense when \(m = 2\), as with our case, so we set the
+    maximum number of features considered for each split to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are forcing random selection of porosity or brittleness for consideration
+    with each split, hierarchical binary segmentation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: Instantiate the random forest regressor with our hyperparameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train the random forest regression
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the model result over the feature space (easy to do as we have only
+    2 predictor features)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s build, visualize and cross validate our first random forest regression
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/95b5bfda652444fd962f82e48a68222434830f5645e78fb1598f64cd5a3e888e.png](../Images/87ab12ba6d0253a69f93da3499c21f86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The power of tree diversity! We just built our best model so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the conditional bias has decreased (our plot has a slope closer to 1:1)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we have the lower out-of-bag mean score error
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s run some tests to make sure we understand random forest regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First let’s confirm that only one feature (at random) is considered for each
+    split
+  prefs: []
+  type: TYPE_NORMAL
+- en: limit ourselves to maximum depth = 1, only one split
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: limit ourselves to a single tree in each forest!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This way we can see the diversity in the first splits over multiple models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c161b87c59434bdd65f9831ab841ba71436cfc60c9e04fa4d5980bbfa7bd80c5.png](../Images/8f016e3c4f9adb7f07b4035f2e51c1e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that the first splits are 50/50 porosity and brittleness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: aside, for all decision trees that I have fit to this dataset, porosity is always
+    the feature selected for the first 2-3 levels of the tree.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the random forest has resulted in model diversity by limiting the predictor
+    features under consideration for the first split!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Just incase you don’t trust this, let’s rerun the above code with both predictors
+    allowed for all splits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1b44bed65bdc0d762afa4706304f8c37a7f517a522d534c448aabf24ae1a9e9a.png](../Images/040c1daaa86a87e50c8d4df661597508.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we have a set of first splits that vary (due to the bootstrap of the training
+    data), but are all over porosity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Performance by Out-of-Bag and Feature Importance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we are now building a more robust model with a large ensemble of trees,
+    let’s get more serious about model checking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will look at out-of-bag mean square error
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we will look at feature importance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s start with a pretty big forest, this may take a while to run!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/735c2983e57fae5ab1825ca0a3a59ee1c45ab833f9d685009c96b01ecdc3728b.png](../Images/dc651fd9d250853ed0b993f26122923c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To get the feature importance we just have to access the model member ‘feature_importance_’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we had to set feature_importance to true in the model instantiation for this
+    to be available
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this measure is standardized to sum to 1.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: same order as the predictor features in the 2D array, porosity and then brittleness
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: feature importance is the proportion of total MSE reduction through splits for
+    each feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can access the importance for each feature for each tree in the forest or
+    the global average for each over the entire forest
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We get the global average of feature importance with this member of the random
+    forest regressor model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s plot the feature importance with significance calculated from the ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: when we report model-based feature importance, it is always a good idea to show
+    that the model is a good model. I like to show a model check beside the feature
+    importance result, in this case the out-of-bag cross validation plot and mean
+    square error.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/bfd529c0f34dd25a412354a45b90571b09239a3df8498d1354f217fdd4261c67.png](../Images/2c8c91f2d316367792438970dc37eac7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s try some hyperparameter training with the out-of-bag mean square error
+    measure from our forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the number of trees in our forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/db70240c4201575375d6d14e35f366a22e45978000e8acabb77231b8d2d2b89f.png](../Images/b9b9a6c0574ef6e5325b02feabf44f82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s try the depth of the trees, given enough trees (we’ll use 60 trees)
+    as determined above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/50da58b3e08eb8830bbeb48b559c70b77602e790fec0e4d361e547e0c74ffb4b.png](../Images/a8dc1e34abadac0b98b890891c53267e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It looks like we need a maximum tree depth of at least 10 for best performance
+    of our model with respect to out-of-bag mean square error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note that our model is robust and resistant to overfit, the out-of-bag performance
+    evaluation is close to monotonically increasing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Machine Learning Pipelines for Clean, Compact Machine Learning Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pipelines are a scikit-learn class that allows for the encapsulation of a sequence
+    of data preparation and modeling steps
+  prefs: []
+  type: TYPE_NORMAL
+- en: then we can treat the pipeline as an object in our much condensed workflow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The pipeline class allows us to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: improve code readability and to keep everything straight
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: build complete workflows with very few lines of readable code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: avoid common workflow problems like data leakage, testing data informing model
+    parameter training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: abstract common machine learning modeling and focus on building the best model
+    possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The fundamental philosophy is to treat machine learning as a combinatorial search
+    to find the best model (AutoML)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more information see my recorded lecture on [Machine Learning Pipelines](https://www.youtube.com/watch?v=tYrPs8s1l9U&list=PLG19vXLQHvSAufDFgZEFAYQEwMJXklnQV&index=5)
+    and a well-documented demonstration [Machine Learning Pipeline Workflow](http://localhost:8892/notebooks/OneDrive%20-%20The%20University%20of%20Texas%20at%20Austin/Courses/Workflows/PythonDataBasics_Pipelines.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: Practice on a New Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Ok, time to get to work. Let’s load up a dataset and build a random forest prediction
+    model with,
+  prefs: []
+  type: TYPE_NORMAL
+- en: compact code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: basic visaulizations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: save the output
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can select any of these datasets or modify the code and add your own to
+    do this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3 year cumulative oil production (Mbbl)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load and format the data,
+  prefs: []
+  type: TYPE_NORMAL
+- en: drop the response feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reformate the features as needed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, I like to store the metadata in lists
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 |'
+  prefs: []
+  type: TYPE_TB
+- en: Build and Check Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We apply the follow steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: specify the K-fold method
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: loop over number of leaf nodes, instantiate, fit and record the error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: plot the test error vs. number of leaf nodes, select the hyperparameter that
+    minimizes test error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: retrain the model with the tuned hyperparameter and all of the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/447cb9297891445a4687987aa0d2d5d1a7bc5f5ea046a61c2ddd9590e8c8d9dc.png](../Images/4541279cae3ac88f62404f70b893beda.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope you found this chapter helpful. Much more could be done and discussed,
+    I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for Bagging and Random Forest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Decision tree are not the most powerful, cutting edge method in machine learning,
+    but,
+  prefs: []
+  type: TYPE_NORMAL
+- en: one of the most understandable, interpretable predictive machine learning modeling
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/e66b56981b9ff607c82a7fbfc116ccb1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Solitary black spruce tree in Hinton, Alberta, Canada, image from https://hikebiketravel.com/6-fun-things-to-do-in-hinton-alberta-in-winter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: decision trees are enhanced with random forests, bagging and boosting to be
+    one of the best models in many cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ca4872f08f83736f351592c849901c2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Black spruce forest near Hinton, Alberta, east of Jasper National Park, Canada,
+    image from https://en.wikivoyage.org/wiki/Hinton.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we cover ensemble trees, tree bagging and random forest building on decision
+    trees. First, I provide some prerequisite concepts for decision trees and then
+    for ensemble methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: if you are not familiar with decision trees it may be a good idea to review
+    the [Decision Tree Chapter](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_decision_tree.html).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tree Model Formulation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The prediction feature space is partitioned into \(J\) exhaustive, mutually
+    exclusive regions \(R_1, R_2, \ldots, R_J\). For a given prediction case \(x_1,\ldots,x_m
+    \in R_j\), the prediction is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regression** - the average of the training data in the region, \(R_j\)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \frac{1}{|R_j|} \sum_{\mathbf{x}_i \in R_j} y_i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\hat{y}\) is the predicted value for input \(\mathbf{x}\), \(R_j\) is
+    the region (leaf node) that \(\mathbf{x}\) falls into, \(|R_j|\) is the number
+    of training samples in region \(R_j\), and \(y_i\) is the actual target values
+    of those training samples in \(R_j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Classification** - category with the plurality of training cases (most common
+    case) in region \(R_j\):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \arg\max_{c \in C} \left( \frac{1}{|R_j|} \sum_{\mathbf{x}_i \in
+    R_j} \mathbb{1}(y_i = c) \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(C\) is the set of all possible categories, \(\mathbb{1}(y_i = c)\) is
+    indicator transform, 1 if \(y_i = c\), 0 otherwise, \(|R_j|\) is the number of
+    training samples in region \(R_j\), and \(\hat{y}\) is the predicted class label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The predictor space, \(𝑋_1,\ldots,𝑋_𝑚\), is segmented into \(J\) mutually exclusive,
+    exhaustive regions, \(R_j, j = 1,\ldots,J\), where the regions are,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**mutually exclusive** – any combination of predictor features, \(x_1,\ldots,x_𝑚\),
+    only belongs to a single region, \(R_j\)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**exhaustive** – all combinations of predictor feature values belong a region,
+    \(R_j\), i.e., all the regions, \(R_j, j = 1,\ldots,J\), cover entire predictor
+    feature space'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All prediction cases, \(x_1,\ldots,x_m\) that fall in the same region, \(R_j\),
+    are estimated with the same value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the prediction model inherently discontinuous at the region boundaries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, consider this decision tree prediction model for the production
+    response feature, \(\hat{Y}\) ̂from porosity, \(X_1\), predictor feature,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/98d8fb73fe41299a6a9b443163b47c96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Four region decision tree with data and predictions, \(\hat{Y}(R_j) = \overline{Y}(R_j)\)
+    by region, \(R_j, j=1,…,4\). For example, given a predictor feature value of 13%
+    porosity, the model predicts about 2,000 MCFPD for production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we segment the predictor feature space?
+  prefs: []
+  type: TYPE_NORMAL
+- en: the set of regions based on hierarchical, binary segmentation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tree Loss Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For regression trees we minimize the residual sum of squares and for classification
+    trees we minimize the weighted average Gini impurity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Residual Sum of Squares (RSS) measures the total squared difference between
+    the actual values and predicted values in a regression tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{RSS} = \sum_{j=1}^{J} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(J\) is the total number of regions in the tree, \(R_j\) is the \(j\)
+    region, \(y_i\) is the truth value of the response feature at observation the
+    \(i\) training data, and \(\hat{y}_{R_j}\) is the predicted value for region \(R_j\),
+    the mean of \(y_i \; \forall \; i \in R_j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When a parent node splits into two child nodes ( t_L ) and ( t_R ), the weighted
+    Gini impurity is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Gini}_{\text{total}} = \sum_{j=1}^{J} \frac{N_j}{N} \cdot \text{Gini}(j)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(J\) is the total number of regions in the tree, \(N\) is the total number
+    of samples in the dataset, \(N_j\) is the number of samples in leaf node \(j\),
+    and \(\text{Gini}(j)\) is the Gini impurity of leaf node \(j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Gini impurity for a single decision tree node is calculated as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Gini}(j) = 1 - \sum_{c=1}^{C} p_{j,c}^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(p_{j,c}\) is the proportion of class \(c\) samples in node \(j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For classification our loss function does not compare the predictions to the
+    truth values like our regression loss!
+  prefs: []
+  type: TYPE_NORMAL
+- en: the Gini impurity penalizes mixtures of training data categories! A region of
+    all one category of training data will have a Gini impurity of 0 to contribute
+    to the over all loss.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that the by-region Gini impurity is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**weighted** - by the number of training data in each regions, regions with
+    more training data have greater impact on the overall loss'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**averaged** - over all the regions to calculate the total Gini impurity of
+    the decision tree'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These losses are calculated during,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**tree model training** - with respect to training data to grow the tree'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**tree model tuning** - with respect to withheld testing data to select the
+    optimum tree complexity.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s talk about tree model training first and then tree model tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the Tree Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How do we calculate these mutually exclusive, exhaustive regions? This is accomplished
+    through hierarchical binary segmentation of the predictor feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training a decision tree model is both,
+  prefs: []
+  type: TYPE_NORMAL
+- en: assigning the mutual exclusive, exhaustive regions
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: building a decision tree, each region is a terminal node, also known as a leaf
+    node
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These are the same thing! Let’s list the steps and then walk through a training
+    a tree to demonstrate this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Assign All Data to a Single Region** - this region covers the entire predictor
+    feature space'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Scan All Possible Splits** - over all regions and over all features'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Select the Best Split** - this is greedy optimization, i.e., the best split
+    minimizes the residual sum of squares of errors over all the training data \(y_i\)
+    over all of the regions \(j = 1,\ldots,J\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Iterate Until Very Overfit** - return to step 1 for the next split until
+    the tree is very overfit.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For brevity we stop here, and make these observations,
+  prefs: []
+  type: TYPE_NORMAL
+- en: hierarchical, binary segmentation is the same as sequentially building a decision
+    tree, each split adds a new decision node and increases the number of leaf nodes
+    by one.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the simple decision trees are in the complicated decision tree, i.e., if we
+    build an \(8\) leaf node model, we have the \(8, 7, \ldots, 2\) leaf node model
+    by sequentially removing the decision nodes, in the order of last one is the first
+    one to remove.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the ultimate overfit model is number of leaf nodes equal to the number of training
+    data. In this case, the training error is 0.0 as have one region for each training
+    data a we estimate with the training data response feature values for all the
+    at the training data cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tuning the Tree Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To tune the decision tree we take the very overfit trained tree model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: sequentially cut the last decision node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: i.e., prune the last branch of the decision tree
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since the simpler trees are inside the complicated tree!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can calculate test error as we prune and select tree with minimum test error
+  prefs: []
+  type: TYPE_NORMAL
+- en: We overfit the decision tree model, with a large number of leaf nodes and then
+    we reduce the number of leaf nodes while tracking the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we select the number of leaf nodes that minimize the testing error.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: since we are sequentially removing the last branch to simplify the tree, we
+    call model tuning **pruning** for decision trees
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s discuss decision tree hyperparameters. I prefer number of leaf nodes as
+    my decision tree hyperparameter because it provides,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**continuous, uniform increase in complexity** - equal steps in increased complexity
+    without jumps'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**intuitive control on complexity** - we can understand and relate the \(2,
+    3, \ldots, 100\) leaf node decision trees'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**flexible complexity** - the tree is free to grow in any manner to reduce
+    training error, including highly asymmetric decision trees'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are other common decision tree hyperparameters including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Minimum reduction in RSS** – related to the idea that incremental increase
+    in complexity must be offset by sufficient reduction in training error. This could
+    stop the model early, for example, a split with low reduction in training error
+    could lead to a subsequent split with a much larger reduction in training error'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Minimum number of training data in each region** – related to the concept
+    of accuracy of the by-region estimates, i.e., we need at least \(n\) data for
+    a reliable mean and most common category'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Maximum number of levels** – forces symmetric trees, similar number of splits
+    to get to each leaf node. There is a large change in model complexity with change
+    in the hyperparameter.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ensemble Methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What is the Testing Accuracy of Our Predictive Machine Learning Models?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall the equation for expected test error has three components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \mathbb{E}\left[(y_0 - \hat{f}(x_1^0, \ldots, x_m^0))^2\right] = \left(\mathbb{E}[\hat{f}(x_1^0,
+    \ldots, x_m^0)] - f(x_1^0, \ldots, x_m^0)\right)^2 + \mathbb{E}\left[\left(\hat{f}(x_1^0,
+    \ldots, x_m^0) - \mathbb{E}[\hat{f}(x_1^0, \ldots, x_m^0)]\right)^2\right] + \sigma_\varepsilon^2
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There can be labeled as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Expected Test Error} = \text{Model Bias}^2 + \text{Model Variance}
+    + \text{Irreducible Error} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Model Variance** - is the error in the model predictions due to sensitivity
+    to the data, i.e., what if we used different training data?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Model Bias** - is error in the model predictions due to using an approximate
+    model / model is too simple'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Irreducible Error** - is error in the model predictions due to missing features
+    and limited samples can’t be fixed with modeling / entire feature space is not
+    sampled'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now we can visualize the model variance and bias tradeoff as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10e6db08085f4ca1ff6ceb66f673d9d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model variance and bias trade-off, for simple to complicated predictive machine
+    learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model variance limits the complexity and text accuracy of our models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How Can We Reduce Model Variance?** - so that we can use more complicated
+    and more accurate models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By standard error in the average, we observe the reduction in variance by averaging!
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sigma_{\bar{x}}^2 = \frac{\sigma^2_s}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\sigma^2_s\) is the sample variance, \(n\) is the number of samples,
+    and \(\sigma_{\bar{x}}^2\) is the variance of the average under the assumption
+    of independent, identically distributed sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/11ec8dafb91278a4a07a22c274b18c52.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model variance and bias trade-off, for simple to complicated predictive machine
+    learning models with model variance reduced by averaging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can reduce model variance by calculating many estimates and averaging them
+    together. We will need to make \(B\) estimates,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y}^{(b)} = \hat{f}^{(b)}(X_1, \ldots, X_m), \quad b = 1, \ldots, B \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\hat{y}^{(b)}\) is the prediction made by the \(b^{th}\) model in the ensemble,
+    \(\hat{f}^{(b)}\) is the \(b^{th}\) estimator, \(X_1, \ldots, X_m\) is the predictor
+    features, and \(B\) is the total number of estimators (the multiple models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then our ultimate estimate will be the average (regression) or plurality (classification)
+    of our estimates,
+  prefs: []
+  type: TYPE_NORMAL
+- en: regression ensemble estimate,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \frac{1}{B} \sum_{b=1}^{B} \hat{y}^{(b)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: classification ensemble estimate,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \arg\max_y \sum_{b=1}^{B} \mathbb{I}(\hat{y}^{(b)} = y) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: This requires multiple prediction models, \(f^{b}, b = 1,\ldots, B\) to make
+    \(B\) predictions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y}^{(b)} = \hat{f}^{(b)}(X_1, \ldots, X_m), \quad b = 1, \ldots, B \]![](../Images/885306737841b4ce2406407ca170fe7f.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiple models to make multiple predictions to reduce model variance by averaging
+    over the ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But we only have access to a single dataset, \(Y,X_1,\ldots,X_m\); therefore,
+    every model will be the same,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4dd12f28990215e1c5906e7c36793a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multiple models to make multiple predictions to reduce model variance by averaging
+    over the ensemble, with the same data result in the same model and the same predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our models are generally deterministic, train with the same data and hyperparameters
+    and we get the same estimate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bootstrap
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One source of uncertainty is the paucity of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do these 200 or so wells provide a precise (and accurate estimate) of the mean?
+    standard deviation? skew? P13?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is the impact of uncertainty in the mean porosity, for example, \(20\%
+    \pm 2\%\)?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/cc8a09c3c5b404de658a3f4d6a4ace64.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Samples and population, from Bootstrap chapter of Applied Geostatistics in Python
+    e-book.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What if we had \(L\) different datasets? \(L\) parallel universes where we collected
+    \(n\) samples from the inaccessible truth (the population).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/03a47e7d2a75afebba6ca7928b259afe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multiple dataset realizations from the truth population, from Bootstrap chapter
+    of Applied Geostatistics in Python e-book.
+  prefs: []
+  type: TYPE_NORMAL
+- en: but we only exist in 1 universe \(\rightarrow\) this is not possible.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Instead we sample \(n\) times from the dataset with replacement,
+  prefs: []
+  type: TYPE_NORMAL
+- en: bootstrap realizations of the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: that vary by due to some samples being left out and others sampled multiple
+    times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07925f4d15205ea985dfc081c24b0589.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multiple dataset bootstrap datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, here’s a definition of bootstrap,
+  prefs: []
+  type: TYPE_NORMAL
+- en: method to assess the uncertainty in a sample statistic by repeated random sampling
+    with replacement simulating the sampling process to acquire dataset realizations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Under the assumptions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**sufficient sample** - enough data to infer the population parameters. Bootstrap
+    cannot make up for too few data!'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**representative sampling** - bias in the sample will be passed to the bootstrap
+    uncertainty model, for example, if the mean is biased in the sample, then the
+    bootstrap uncertainty model will be centered on the biased mean from the sample.
+    We must first debias our data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are also various limitations for bootstrap, including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**stationarity** - the statistics from the sample are assumed to be constant
+    over the model space'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**one uncertainty source only** - only accounts for uncertainty due to too
+    few samples, for example, no uncertainty due to changes away from data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**does not account for area of interest** - larger model region or smaller
+    model region, bootstrap uncertainty does not change.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**independence between the samples** - does not account for correlation, relationships
+    between the samples'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**no local conditioning** - does not account for other local information sources'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could summarize all of this limitations as, bootstrap does not account for
+    the spatial (or temporal) context of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is a form of bootstrap, known as spatial bootstrap that does account for
+    spatial context, [spatial bootstrap and bagging for ensemble machine learning](https://www.sciencedirect.com/science/article/pii/S0098300424000414).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s visualize bootstrap for the case of calculating uncertainty in sample
+    mean estimated ultimate recovery (EUR) given \(n=10\) observations from 10 wells.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1cfe358ff534628282d37d9e47ad383a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: \(n = 10\) samples with replacement to calculate a single realization of the
+    sample mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we repeat and calculate a \(2^{nd}\) realization of the sample mean,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a1d9d26290cdc6495c88246af159f42.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Second realization of \(n = 10\) samples with replacement to calculate the second
+    realization of the sample mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and a third realization of the data to calculate the \(3^{rd}\) realization
+    of the sample mean,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/508b11f7b9417d09182403573f7e40d7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Third realization of \(n = 10\) samples with replacement to calculate the third
+    realization of the sample mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and if we repeat \(L\) times we sample the complete distribution for the uncertainty
+    in the sample mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f2dabcbf8e395ea433527e012d41490.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: $L$ realizations of the data for $L$ realizations to completely sample the uncertainty
+    in the mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s summarize bootstrap,
+  prefs: []
+  type: TYPE_NORMAL
+- en: developed by [Efron, 1982](https://epubs.siam.org/doi/pdf/10.1137/1.9781611970319.fm)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: statistical resampling procedure to calculate uncertainty in a calculated statistic
+    from the data itself.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: seems impossible, but go ahead and compare it to known cases like standard error
+    and you will see that it works,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \sigma_{\bar{x}}^2 = \frac{\sigma^2_s}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\sigma^2_s\) is the sample variance, \(n\) is the number of samples,
+    and \(\sigma_{\bar{x}}^2\) is the variance of the average under the assumption
+    of independent, identically distributed sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: may be applied to calculate the uncertainty in any statistic, for example, \(13^{th}\)
+    percentile, skew, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: advanced forms account for spatial information and strategy (game theory).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a360524ac8f082a989d9ff04d88b3906.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The general flow chart for bootstrap.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bagging Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Bagging models in machine learning apply bootstrap to,
+  prefs: []
+  type: TYPE_NORMAL
+- en: calculate multiple realizations of the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train multiple realizations of the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate multiple realizations of the estimate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: average the estimates to reduce model variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s the flow chart for bagging models,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aa378f660d65104e433bf1eb53c1cd7f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The bagging machine learning model flow chart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply statistical bootstrap to obtain multiple realizations of the data,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ Y^b, X_1^b, \dots, X_m^b,\quad b = 1, \dots, B \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train a prediction model (estimator) for each data realization,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \hat{f}^b(X_1^b, \dots, X_m^b) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate a prediction with each estimator,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \hat{Y}^b = \hat{f}^b(X_1^b, \dots, X_m^b) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Aggregate the ensemble of 𝐵 predictions over the estimators,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Regression** – aggregate the ensemble predictions with the average,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{Y} = \frac{1}{B} \sum_{b=1}^{B} \hat{Y}^b \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Classification** – aggregate the ensemble predictions with majority-rule,
+    plurality,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \hat{Y} = \arg\max(\hat{Y}^b) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: I built out an interactive Python dashboard for [bagging linear regression](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Bootstrap_Bagging.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/734e60e25fd461f174b74321a8caef2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive machine learning bagging with linear regression, 16 data bootstrap,
+    model and prediction realizations aggregated by averaging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training and Tuning Bagging Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What is the Bagging Regression Model?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiple models each trained on different bootstrap data realizations, all with
+    the same hyperparameter(s).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b80d0d8659d6a69c67cc48f81cd46888.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The bagging model, we train individually, but we tune the ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The bagging prediction, \(\hat{y}\), the aggregate of the individual estimators,
+    is the output of this model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8734bb5c0493ecba4f618382a639010c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bagging regression predictions by averaging multiple prediction models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: or for classification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8734bb5c0493ecba4f618382a639010c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bagging classification predictions by plurality of multiple prediction models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each model, known as an estimator in the ensemble of models, is trained with
+    their respective bootstrapped data realization, during training each model minimizes
+    train error of the individual estimator with the bootstrapped data realization,
+    residual sum of squares for regression,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{RSS} = \sum_{j=1}^{J} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and Gini impurity for classification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Gini}_{\text{total}} = \sum_{j=1}^{J} \frac{N_j}{N} \cdot \text{Gini}(j)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: each estimator is trained separately, but they all share the same hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This provides the flexibility to build the best possible model to fit each bootstrap
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/038bd000e2192149c3a4abd1ab0d5cde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimators in the ensemble of models are trained individually, but share the
+    same hyperparameter(s).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We tune our bagged model with the error of the bagging estimate from aggregating
+    the ensemble of estimates, for the case of regression,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{MSE} = \sum_{i=1}^{n} (\hat{y}_i - y_i)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where the predicted value \(\hat{y}_i\) is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y}_i = \frac{1}{B} \sum_{b=1}^{B} \hat{y}_i^{(b)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We tune our ensemble jointly over all estimators, we do not consider the error
+    of individual model estimators, \(\hat{y}_i^𝑏 - y_i\), within the ensemble for
+    model tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fb1f17d4c2c24d97eb7c0121be84a79f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimators in the ensemble of models, sharing the same number of leaf nodes
+    hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result is a single measure of test error for each hyperparameter setting,
+    for the case above with number of leaf nodes, we get this result,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c1090b95f0977ae34559787c21ef3800.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ensemble test error vs. number of leaf nodes hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: to select the ensemble hyperparameter to minimize test error. For clarity, let’s
+    add the tuning to our previous training bagging models workflow,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we loop over hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: minimize the test error of the ensemble estimates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/96ee3c145e994796c9a01d181704650c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The workflow for tuning a bagging model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Out-of-Bag Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In expectation, \(\frac{1}{3}\) of the training data is left out of each bootstrap
+    data realization, \(b^c\); therefore, cross-validation is built in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sample with replacement \(\frac{2}{3}\) of the training data (in expectation),
+    \(Y^b, X_1^b, \dots, X_m^b\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train an estimator with the \(\frac{2}{3}\) of training data (in expectation).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Predict at the out-of-bag samples, \(X_1^{b^c}, \dots, X_m^{b^c}\), \(\frac{1}{3}\)
+    of the training data (in expectation).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/63c6819827d1a77f4c0cabcd47f88524.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Out-of-bag error calculation workflow, to apply add to the hyperparameter tuning
+    loop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pool the 𝐵/3 predictions (in expectation) for each sample data from all the
+    𝐵 models and make an out-of-bag prediction, for regression,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ \hat{y}_\alpha^{\text{oob}} = \frac{1}{\left(\frac{B}{3}\right)} \sum_{b=1}^{\frac{B}{3}}
+    \hat{y}_\alpha^{(b^c)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the out-of-bag error to assess model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{MSE}_{\text{OOB}} = \frac{1}{n} \sum_{\alpha=1}^{n} \left[\hat{y}_\alpha^{\text{oob}}
+    - y_\alpha \right]^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Number of Estimators
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Number of Estimators is an important hyperparameter for bagging models
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**More estimators** – improve generalization up to a point, increasing the
+    number of trees generally improves performance and reduces variance, as predictions
+    are averaged across more models.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Diminishing returns** - beyond a point, adding more estimators gives little
+    or no improvement and only increases computational cost.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Improved stability** - more trees reduce the likelihood of overfitting to
+    random noise in the training set.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/4ed3a0e3d2ee36395e6476183e806b8a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Number of estimators, few (upper) and more (lower), within the ensemble model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Estimator Complexity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The hyperparameter(s) shared by the estimators remain as important hyperparameters.
+    Here’s guidance with a focus on tree bagging,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**More complicated models** – bagging reduces model variance, so we often train
+    more complicated models for the ensemble.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Too simple models** – may not see any improvement from bagging, because model
+    variance is not an issue for simple models and does not need to be reduced.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Feature interactions** – more complicated models capture more of the interactions
+    between features, for example, tree bagging models with tree depth 𝑑 can capture
+    𝑑-way feature interactions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b5d39d63f35aded00e0a6d996fa7b353.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ensembles with different tree depth hyperparameters, 2 (upper), 3 (middle) and
+    4 (lower).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tree Bagging
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s summarize the approach,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build an ensemble of decision trees with multiple, bootstrap realizations of
+    the data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: and provide some guidance,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the ensemble of tree estimators reduces model variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: hyperparameter tune over the entire ensemble model, i.e., All trees in the ensemble
+    have the same hyperparameters.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: number of estimators is an additional, important hyperparameter in addition
+    to the tree estimators’ complexity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: in expectation, $\frac{1}{3} of the data is not used for each tree, this provides
+    the opportunity to have access to out-of-bag samples for cross validation, so
+    we can build our model and cross validate with all the data at once, no train
+    and test split.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: overgrown trees will often outperform simpler trees due to reduction in model
+    variance with averaging over the estimators.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Spoiler Alert - we want the trees to be decorrelated, diverse to maximize the
+    reduction in model variance, this leads to random forest. More on this later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To visualize tree bagging, here’s an example of tree bagging by-hand, 6 estimators
+    from bootstrap realizations of the data, predicting over porosity and brittleness
+    and the average over all the estimates as the bagging model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/88fba0db87ba8271f1b97819bfcf45b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 6 bootstrapped, complicated decision trees (left) and the bagging model, average
+    of all 6 models (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observe the impact on the prediction model with the addition of more trees –
+    transition from a discontinuous to continuous prediction model!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c66db0c2607c6dd31082060dda55ace.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 6 tree bagging prediction models and all training data with increasing number
+    of estimators, for 1, 3, 5, 10, 30 and 500 trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observe the improved testing accuracy in cross validation with increasing number
+    of trees,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/042efb5835a7679f992c4a08097693ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cross validation with 6 tree bagging prediction models with increasing number
+    of trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observe the reduction in model variance with increasing number of trees,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b40d9508fd3daba20f8724ac4dcfb8a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3 models with 1 and 100 trees to demonstrate the reduction in model variance
+    with increased ensemble aggregation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random Forest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A limitation with tree bagging is that the individual trees may be highly correlated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this occurs when there is a dominant predictor feature as it will always be
+    applied to the top split(s), the result is all the trees in the ensemble are very
+    similar (i.e., correlated)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/d21f6ab27e26033ce1dd293c469b1851.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Highly correlated trees in a tree bagging ensemble model, trees with the same
+    initial splits resulting in very similar predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With highly correlated trees, there is significantly less reduction in model
+    variance with the ensemble,
+  prefs: []
+  type: TYPE_NORMAL
+- en: consider, standard error in the mean assumes the samples 𝑛 are independent!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \sigma_{\bar{x}}^2 = \frac{\sigma_s^2}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation between samples reduces the 𝑛 to a 𝑛 effective, as correlation increases,
+    \(n\) effectively is reduced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random forest is tree bagging, but for each split only a subset \(𝑝\) of the
+    \(𝑚\) available predictors are candidates for splits (selected at random).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p \ll m \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: This forces each tree in the ensemble to evolve in dissimilar manner,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Common defaults for 𝑝 for classification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p = \sqrt{m} \quad \text{or} \quad \log_2(p) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and for regression,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ p=\frac{m}{3} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lower \(p\) less correlation, better generalization, higher \(p\) more correlation,
+    may overfit. note, too low \(p\) will underfit with high model bias
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s an example random forest model for the previous prediction problem,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 300 trees, trained to a maximum depth of \(7\), \(𝑝=1\), i.e., 1 predictor feature
+    randomly selected for each split
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8af256b868880607f4d3a18527c44eac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Highly correlated trees in a tree bagging ensemble model, trees with the same
+    initial splits resulting in very similar predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we are ready to demonstrate tree bagging and random forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices
+    and visualization of a decision, boosting tree and random forest regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the working directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset [unconv_MV.csv](https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/unconv_MV.csv)
+    available in my GeoDataSet repo. It is a comma delimited file with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well index (integer)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^6\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial gas production (90 day average) (MCFPD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a data frame we called ‘df’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Python Tip: using functions from a package** just type the label for the
+    package that we declared at the beginning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'so we can access the pandas function ‘read_csv’ with the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: but read csv has required input parameters. The essential one is the name of
+    the file. For our circumstance all the other default parameters are fine. If you
+    want to see all the possible parameters for this function, just go to the docs
+    [here](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The docs are always helpful
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is often a lot of flexibility for Python functions, possible through using
+    various inputs parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, the program has an output, a pandas DataFrame loaded from the data. So
+    we have to specify the name / variable representing that new object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s run this command to load the data and then this command to extract a random
+    subset of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: Feature Engineering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s make some changes to the data to improve the workflow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Select the predictor features (x2) and the response feature (x1)**, make
+    sure the metadata is also consistent.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Metadata** encoding such as the units, labels and display ranges for each
+    feature.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Reduce the number of data** for ease of visualization (hard to see if too
+    many points on our plots).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Train and test data split** to demonstrate and visualize simple hyperparameter
+    tuning.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Add random noise to the data** to demonstrate model overfit. The original
+    data is error free and does not readily demonstrate overfit.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Given this is properly set, one should be able to use any dataset and features
+    for this demonstration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for brevity we don’t show any feature selection here. Previous chapter, e.g.,
+    k-nearest neighbours include some feature selection methods, but see the feature
+    selection chapter for many possible methods with codes for feature selection.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Optional: Add Random Noise to the Response Feature'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can do this to observe the impact of data noise on overfit and hyperparameter
+    tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is for experiential learning, of course we wouldn’t add random noise to
+    our data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We set the random number seed for reproducibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s make sure that we have selected reasonable features to build a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: the 2 predictor features are not collinear, as this would result in an unstable
+    prediction model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: each of the features are related to the response feature, the predictor features
+    inform the response
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the Correlation Matrix and Correlation with Response Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with correlation analysis. We can calculate and view the correlation
+    matrix and correlation to the response features with these previously declared
+    functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation analysis is based on the assumption of linear relationships, but
+    it is a good start
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/152d837d72f43ba9a48527a444d81b3bbc73a2ba553d2760d27f5c20206ea0b2.png](../Images/fe078f42023f81da1972474b1d3bbf26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This looks good. There is a mix of correlation magnitudes. Of course, correlation
+    coefficients are limited to degree of linear correlations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the matrix scatter plot to see the pairwise relationship between
+    the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8d03fa748bcc76aea92c8e57b5fb8071473e84b910d1402f5fd62dd21b102145.png](../Images/515a70a53d49c49c9ecf98249cd67b5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we are working with ensemble methods the train and test split is built
+    into the model training with out-of-bag samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will work with the entire dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: note, we could split a testing dataset for the train, validate, test approach.
+    For simplicity I only use train and test in these workflows.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the train and test DataFrame is useful check before we build our
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 7.22 | 63.09 | 2006.074005 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 13.01 | 50.41 | 4244.321703 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 10.03 | 37.74 | 2493.189177 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 18.10 | 56.09 | 6124.075271 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 16.95 | 61.43 | 5951.336259 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The describe command provides count, mean, minimum, maximum, percentiles in
+    a nice data table.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 140.000000 | 140.000000 | 140.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 14.897357 | 48.345429 | 4273.644226 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 3.181639 | 14.157619 | 1138.466092 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 6.550000 | 10.940000 | 1517.373571 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10% | 10.866000 | 28.853000 | 2957.573690 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 50% | 14.855000 | 50.735000 | 4315.186629 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 90% | 18.723000 | 65.813000 | 5815.526968 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 23.550000 | 84.330000 | 6907.632261 |'
+  prefs: []
+  type: TYPE_TB
+- en: It is good that we checked the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check out the range of values for each feature to set up and adjust plotting
+    limits. See above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Distributions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the histograms and scatter plots of the predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check to make sure the data cover the range of possible predictor feature combinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check that the predictor features are not highly correlated, collinear, as this
+    increases model variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c9e941b61d19ec872e32d0b10c48a28622e57437ff6fa45205763cc62773906a.png](../Images/3afbd7af1752bc8c73a552f17ebbfd8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again, the distributions are well behaved,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we cannot observe obvious gaps nor truncations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the predictor features are not highly correlated
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s look at a scatter plot of Porosity vs. Brittleness with points colored
+    by Production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: to visualize the prediction problem, i.e., the shape of the system
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6980039b0d3453603a0540f6ba29b6b821be9104ac38a6c3b26a9b0a9cd5a007.png](../Images/872ca67d7fc1098e9ee39b83f936887b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ensemble Tree Method - Tree Bagging Regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We are ready to build a tree bagging model. To perform tree bagging we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: set the hyperparameters for the individual trees
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: instantiate an individual regression tree
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: set the bagging hyperparameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: instantiate the bagging regressor with the previously instantiated regression
+    tree (wrapping the decision tree)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: train the bagging regression (wrapping the decision tree)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: visualize the model result over the feature space (easy to do as we have only
+    2 predictor features)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Demonstration of Bagging by-Hand
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For demonstration of by-hand tree bagging let’s set the number of trees to 1
+    and run tree bagging regression 6 times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the result for each is a single complicated decision tree
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: note, the random_state parameter is the random number seed for the bootstrap
+    in the bagging method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the trees vary for each random number seed since the bootstrapped dataset will
+    be different for each
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will loop over the models and store each of them in an list of models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/eea5b5097df4ef4a221f3d871149c4a47c31d4898b463afa9acc7b2d628ea79f.png](../Images/31276b65834e695aebb5de91a9019af9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice the data changes for each model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we have bootstrapped the dataset so some of the data are missing and others
+    are used 2 or more times
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: recall, in expectation, only 2/3 of the data are used for each tree, and 1/3
+    is out-of-bag
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s check the cross validation results with the out-of-bag data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/783d535af6b2da8c5c69b4db7d4c9baff9168424e9c07006449e47e66dc7c771.png](../Images/efaec048c6783e5270a3de45c28fb832.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s demonstrate the averaging of the predictions over the 6 decision trees,
+    we are performing bagging tree prediction by-hand to clearly demonstrate the method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we average the predicted response feature (production) over the discretized
+    predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can take advantage of broadcast methods for operations on entire arrays
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we will apply the same model check, but we will use a modified function to will
+    read in the response feature 2D array, instead of a model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/f20a801dbb20a98a7b2ad7c35c59f481b086f7e243c708954eaafbad1eeac330.png](../Images/e53f12af38e9579211e007a9e5ad0273.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We made 6 complicated trees, each trained with bootstrap resamples of the original
+    data and then averaged the predictions from each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the result is more smooth - lower model variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the result more closely matches the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Demonstration of Bagging with Increasing Number of Trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For demonstration, let’s build 6 bagging tree regression models with increasing
+    number of overly complicated (and likely overfit) trees averaged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: with the bagging regressor from scikit learn this is automated with the ‘num_tree’
+    hyperparameter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will loop over the models and store each of them in an list of models again!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e9e7848dcfd2d82704e1e1d9b3907be8d850b9056a7478092436d1d3dd0376bb.png](../Images/349923f1fbb703de6e34e449aa5461aa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Observe the impact of averaging an increasing number of trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we transition from a discontinuous response prediction model to a smooth prediction
+    model (the jumps are smoothed out)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s repeat the modeling cross validation step with the withheld testing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/897537eef68fdc77ecefa72c0cf2f943ddf6dd1f8cb70e99a54d498f9c901116.png](../Images/e9bf860174405c58ee5d3b39292d0e44.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: See the improvement with testing accuracy with increasing level of ensemble
+    model averaging?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s run many cases and check the accuracy vs. number of trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/20cacfb6fdbc25ddeb7189cfe3d06ce924ab316613a2ab54a7cf162211ee6ca9.png](../Images/b32b7809d8b78abb96826fd4f0392d2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The number of trees improves model accuracy through reduction in model variance.
+    Let’s actually observe this reduction in model variance with an experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Variance vs. Ensemble Model Averaging
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s see the change in model variance through model averaging, we will compare
+    multiple models with different numbers of trees averaged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we accomplish this by visual comparison, let’s look at different bagging modeling
+    through changing the random number seed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b98738c95478440ea08fddbeba7798bc726e6077288dbed59915ba84d147fdd9.png](../Images/d419947c372df1ff5fa41d90a33dde05.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As we increase the number of decision trees averaged for the bagged tree regression
+    models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: once again, the response predictions over the predictor feature space gets more
+    smooth
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the multiple realizations of the model start to converge, this is lower model
+    variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Random Forest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With random forest we limit the number of features considered for each split.
+    Note, in scikit learn the default is \(\frac{m}{3}\). Use this hyperparameter
+    to set to square root of the number of predictor features. Another common alternative
+    in practice \(\sqrt{m}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: This forces tree diversity / decorrelates the trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall the model variance reduced by averaging over multiple decision trees
+    \(Y = \frac{1}{B} \sum_{b=1}^{B} Y^b(X_1^b,...,X_m^b)\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: recall from the [spatial bootstrap workflow](https://github.com/GeostatsGuy/PythonNumericalDemos/blob/master/SubsurfaceDataAnalytics_Spatial_Bootstrap.ipynb)
+    that correlation of samples being averaged attenuates the variance reduction
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s experiment with random forest to demonstrate this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set the hyperparameters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Even if I am just running one model, I set the random number seed to ensure
+    I have a deterministic model, a model that can be rerun to get the same result
+    every time. If the random number seed is not set, then it is likely set based
+    on the system time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will overfit the trees, let them grow overly complicated. Once again, the
+    ensemble approach will mitigate model variance and overfit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will use a large number of trees to mitigate model variance and to benefit
+    from random forest tree diversity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE74]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are using a simple 2 predictor feature example for ease of visualization.
+    The default for scikit learn’s random forest is to select \(\frac{m}{3}\) features
+    at random for consideration for each split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This doesn’t make much sense when \(m = 2\), as with our case, so we set the
+    maximum number of features considered for each split to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are forcing random selection of porosity or brittleness for consideration
+    with each split, hierarchical binary segmentation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE75]'
+  prefs: []
+  type: TYPE_PRE
+- en: Instantiate the random forest regressor with our hyperparameters
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train the random forest regression
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE77]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the model result over the feature space (easy to do as we have only
+    2 predictor features)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s build, visualize and cross validate our first random forest regression
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE78]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/95b5bfda652444fd962f82e48a68222434830f5645e78fb1598f64cd5a3e888e.png](../Images/87ab12ba6d0253a69f93da3499c21f86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The power of tree diversity! We just built our best model so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the conditional bias has decreased (our plot has a slope closer to 1:1)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we have the lower out-of-bag mean score error
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s run some tests to make sure we understand random forest regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First let’s confirm that only one feature (at random) is considered for each
+    split
+  prefs: []
+  type: TYPE_NORMAL
+- en: limit ourselves to maximum depth = 1, only one split
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: limit ourselves to a single tree in each forest!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This way we can see the diversity in the first splits over multiple models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE79]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c161b87c59434bdd65f9831ab841ba71436cfc60c9e04fa4d5980bbfa7bd80c5.png](../Images/8f016e3c4f9adb7f07b4035f2e51c1e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that the first splits are 50/50 porosity and brittleness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: aside, for all decision trees that I have fit to this dataset, porosity is always
+    the feature selected for the first 2-3 levels of the tree.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the random forest has resulted in model diversity by limiting the predictor
+    features under consideration for the first split!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Just incase you don’t trust this, let’s rerun the above code with both predictors
+    allowed for all splits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE80]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1b44bed65bdc0d762afa4706304f8c37a7f517a522d534c448aabf24ae1a9e9a.png](../Images/040c1daaa86a87e50c8d4df661597508.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we have a set of first splits that vary (due to the bootstrap of the training
+    data), but are all over porosity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Performance by Out-of-Bag and Feature Importance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we are now building a more robust model with a large ensemble of trees,
+    let’s get more serious about model checking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will look at out-of-bag mean square error
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we will look at feature importance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s start with a pretty big forest, this may take a while to run!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE81]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/735c2983e57fae5ab1825ca0a3a59ee1c45ab833f9d685009c96b01ecdc3728b.png](../Images/dc651fd9d250853ed0b993f26122923c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To get the feature importance we just have to access the model member ‘feature_importance_’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we had to set feature_importance to true in the model instantiation for this
+    to be available
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this measure is standardized to sum to 1.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: same order as the predictor features in the 2D array, porosity and then brittleness
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: feature importance is the proportion of total MSE reduction through splits for
+    each feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can access the importance for each feature for each tree in the forest or
+    the global average for each over the entire forest
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We get the global average of feature importance with this member of the random
+    forest regressor model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE82]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s plot the feature importance with significance calculated from the ensemble.
+  prefs: []
+  type: TYPE_NORMAL
+- en: when we report model-based feature importance, it is always a good idea to show
+    that the model is a good model. I like to show a model check beside the feature
+    importance result, in this case the out-of-bag cross validation plot and mean
+    square error.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE83]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/bfd529c0f34dd25a412354a45b90571b09239a3df8498d1354f217fdd4261c67.png](../Images/2c8c91f2d316367792438970dc37eac7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s try some hyperparameter training with the out-of-bag mean square error
+    measure from our forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the number of trees in our forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE84]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/db70240c4201575375d6d14e35f366a22e45978000e8acabb77231b8d2d2b89f.png](../Images/b9b9a6c0574ef6e5325b02feabf44f82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s try the depth of the trees, given enough trees (we’ll use 60 trees)
+    as determined above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE85]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/50da58b3e08eb8830bbeb48b559c70b77602e790fec0e4d361e547e0c74ffb4b.png](../Images/a8dc1e34abadac0b98b890891c53267e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It looks like we need a maximum tree depth of at least 10 for best performance
+    of our model with respect to out-of-bag mean square error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note that our model is robust and resistant to overfit, the out-of-bag performance
+    evaluation is close to monotonically increasing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Machine Learning Pipelines for Clean, Compact Machine Learning Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pipelines are a scikit-learn class that allows for the encapsulation of a sequence
+    of data preparation and modeling steps
+  prefs: []
+  type: TYPE_NORMAL
+- en: then we can treat the pipeline as an object in our much condensed workflow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The pipeline class allows us to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: improve code readability and to keep everything straight
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: build complete workflows with very few lines of readable code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: avoid common workflow problems like data leakage, testing data informing model
+    parameter training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: abstract common machine learning modeling and focus on building the best model
+    possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The fundamental philosophy is to treat machine learning as a combinatorial search
+    to find the best model (AutoML)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more information see my recorded lecture on [Machine Learning Pipelines](https://www.youtube.com/watch?v=tYrPs8s1l9U&list=PLG19vXLQHvSAufDFgZEFAYQEwMJXklnQV&index=5)
+    and a well-documented demonstration [Machine Learning Pipeline Workflow](http://localhost:8892/notebooks/OneDrive%20-%20The%20University%20of%20Texas%20at%20Austin/Courses/Workflows/PythonDataBasics_Pipelines.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE86]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE87]'
+  prefs: []
+  type: TYPE_PRE
+- en: Practice on a New Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Ok, time to get to work. Let’s load up a dataset and build a random forest prediction
+    model with,
+  prefs: []
+  type: TYPE_NORMAL
+- en: compact code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: basic visaulizations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: save the output
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can select any of these datasets or modify the code and add your own to
+    do this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3 year cumulative oil production (Mbbl)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load and format the data,
+  prefs: []
+  type: TYPE_NORMAL
+- en: drop the response feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reformate the features as needed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, I like to store the metadata in lists
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE88]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 |'
+  prefs: []
+  type: TYPE_TB
+- en: Build and Check Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We apply the follow steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: specify the K-fold method
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: loop over number of leaf nodes, instantiate, fit and record the error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: plot the test error vs. number of leaf nodes, select the hyperparameter that
+    minimizes test error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: retrain the model with the tuned hyperparameter and all of the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE89]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/447cb9297891445a4687987aa0d2d5d1a7bc5f5ea046a61c2ddd9590e8c8d9dc.png](../Images/4541279cae3ac88f62404f70b893beda.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3 year cumulative oil production (Mbbl)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load and format the data,
+  prefs: []
+  type: TYPE_NORMAL
+- en: drop the response feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reformate the features as needed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, I like to store the metadata in lists
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE90]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 |'
+  prefs: []
+  type: TYPE_TB
+- en: Build and Check Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We apply the follow steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: specify the K-fold method
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: loop over number of leaf nodes, instantiate, fit and record the error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: plot the test error vs. number of leaf nodes, select the hyperparameter that
+    minimizes test error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: retrain the model with the tuned hyperparameter and all of the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE91]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/447cb9297891445a4687987aa0d2d5d1a7bc5f5ea046a61c2ddd9590e8c8d9dc.png](../Images/4541279cae3ac88f62404f70b893beda.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope you found this chapter helpful. Much more could be done and discussed,
+    I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

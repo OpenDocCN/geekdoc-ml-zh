@@ -1,0 +1,2893 @@
+- en: Training and Tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_training_tuning.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_training_tuning.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This chapter is a summary of **Machine Learning Training and Tuning** including
+    essential concepts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Parameter Training and Hyperparameter Tuning
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model Goodness Metrics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cross Validation Workflows
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Limitations of Cross Validation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Training and Testing](https://youtu.be/owOSiKT3K8E?si=PrY5lL4Dbi2Ix7fu).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Model Goodness Metrics](https://youtu.be/g38sEpFOX-0?si=XPC18zNMCxaIZCOF)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Cross Validation Considerations](https://youtu.be/FiX8IWPhTcg?si=K4A3W0zTaiypm7n7)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For your convenience here’s a summary of salient points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training and Tuning Predictive Machine Learning Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In predictive machine learning, we follow a standard model training and testing
+    workflow. This process ensures that our model generalizes well to new data, rather
+    than just fitting the training data perfectly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/31abfecc21c246ba7144dfb847ab4378.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Standard predictive machine learning modeling workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s walk through the key steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Train and Test Split** - divide the available data into mutually exclusive,
+    exhaustive subsets: a training set and a testing set.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: typically, 15%–30% of the data is held out for testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the remaining 70%–85% is used for training the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Define a range of hyperparameter(s)** values to explore, ranging from,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: simple models with low flexibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: to complex models with high flexibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(\quad\) This step may involve tuning multiple hyperparameters, in which case
+    efficient sampling methods (e.g., grid search, random search, or Bayesian optimization)
+    are often used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Train Model Parameters for Each Hyperparameter Setting** - for each set of
+    hyperparameters, train a model on the training data. This yields:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: a suite of trained models, each with different complexity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: each model has parameters optimized to minimize error on the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Evaluate Each Model on the Withheld Testing Data** - using the testing data,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: evaluate how each trained model performs on unseen data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: summarize prediction error (for example, root mean square error (RMSE), mean
+    absolute error (MAE), classification accuracy) for each model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Select the Hyperparameters That Minimize Test Error** - this is the hyperparameter
+    tuning step:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: choose the model hyperparaemter(s) that performs best on the test data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: these are your tuned hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Retrain the Final Model on All Data Using Tuned Hyperparameters** - now that
+    the best model complexity has been identified,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: retrain the model using both the training and test sets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this maximizes the amount of data used for final model parameter estimation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the resulting model is the one you deploy in real-world applications
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Common Questions About the Model Training and Tuning Workflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As a professor, I often hear these questions when I introduce the above machine
+    learning model training and tuning workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is the main outcome of steps 1–5?** - the only reliable outcome is the
+    tuned hyperparameters.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(\quad\) we do not use the model trained in step 3 or 4 directly, because it
+    was trained without access to all available data. Instead, we retrain the final
+    model using all data with the selected hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Why not train the model on all the data from the beginning?** - because if
+    we do that, we have no independent way to evaluate the model’s generalization.
+    A very complex model can easily overfit—fitting the training data perfectly, but
+    performing poorly on new, unseen data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(\quad\) overfitting happens when model flexibility is too high—it captures
+    noise instead of the underlying pattern. Without a withheld test set, we can’t
+    detect this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This workflow for training and tuning predictive machine learning models is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: an empirical, cross-validation-based process
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a practical simulation of real-world model use
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a method to identify the model complexity that best balances fit and generalization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’ve said model parameters and model hyperparameters a bunch of times, so I
+    owe you their definitions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Parameters and Model Hyperparameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Model parameters** are fit during training phase to minimize error at the
+    training data, i.e., model parameters are trained with training data and control
+    model fit to the data. For example,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the polynomial predictive machine learning model from the machine learning
+    workflow example above, the model parameters are the polynomial coefficients,
+    e.g., \(b_3\), \(b_2\), \(b_1\) and \(c\) (often called \(b_0\)) for the third
+    order polynomial model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/85cce1589249c12a11ff52ea10e6c893.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model parameters are adjusted to fit of the model to the data, i.e., model parameters
+    are trained to minimize error over the training data (x markers).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Model hyperparameters** are very different. They do not constrain the model
+    fit to the data directly, instead they constrain the model complexity. The model
+    hyperparameters are selected (call tuning) to minimize error at the withheld testing
+    data. Going back to our polynomial predictive machine learning example, the choice
+    of polynomial order is the model hyperparameter.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aef7a81bd36cd7f2b25e1574784b4932.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model hyperparameters are adjusted to change the model complexity / flexibility,
+    i.e., model hyperparameters are tuned to minimize error over the withheld testing
+    data (solid circles).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model parameters vs. model hyperparameters
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model parameters control the model fit and are trained with training data. Model
+    hyperparameters control the model complexity and are tuned with testing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regression and Classification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we proceed, we need to define regression and classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regression** - a predictive machine learning model where the response feature(s)
+    is continuous.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Classification** - a predictive machine learning model where the response
+    feature(s) is categorical.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It turns out that for each of these we need to build different models and use
+    different methods to score these models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the remainder of this discussion we will focus on regression, but in later
+    chapters we introduce classification models as well.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, to better understand predictive machine learning model tuning, i.e., the
+    empirical approach to tune model complexity to minimize testing error, we need
+    to understand the sources of testing error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the causes of the thing that we are attempting to minimize!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training and Testing Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For clarity, consider this is schematic of the flow of training and testing
+    data in the predictive machine learning model parameter training and hyperparameter
+    tuning workflow,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/454aec4a3d657f072406100f036592b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The flow of training and testing data in the predictive machine learning model
+    parameter training and hyperparameter tuning workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Training Data**,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: trains model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: trains the final model for real world use
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Testing Data**,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: withheld from training model parameters to avoid model overfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: tunes model hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: returned to train the final tuned model for deployment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How Much Data Should be Withheld for Testing?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The proportion in testing is recommended by various sources from 15% - 30% of
+    the total dataset. This is a compromise,
+  prefs: []
+  type: TYPE_NORMAL
+- en: data withheld for testing reduces the data available for training; therefore,
+    reduces the accuracy of the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: data withheld for testing improves the accuracy of the assessment of the model
+    performance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Various authors have experimented on a variety of training and testing ratios
+    and have recommended splits for their applications,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the optimum ratio of training and testing split depends on problem setting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To determine the proportion of testing data to withheld we could consider the
+    difficulty in model parameter training (e.g., the number of model parameters)
+    and the difficulty in model hyperparameter tuning (e.g., number of hyperparameters,
+    range of response feature outcomes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fair Train and Test Splits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Dr. Julian Salazar suggests that for spatial prediction problems that random
+    train and test data splits may not be fair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: proposed a [fair train and test split method](https://www.sciencedirect.com/science/article/pii/S0920410521015023)
+    for spatial prediction models that splits the data based on the difficulty of
+    the planned use of the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: prediction difficulty is related to kriging variance that accounts for spatial
+    continuity and distance offset, i.e., the difficulty of the estimate.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the testing split is iterated to match the distribution of kriging variance
+    for planned real world use of the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To illustrate this concept of prediction difficulty, consider this set of well
+    logs with both random assignment of testing data and withholding an entire contiguous
+    region of the well log for testing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**easy prediction problem** - for random assignment, usually training data
+    are available very close and very similar to the withheld testing data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**difficult prediction problem** - for removal of the contiguous region, there
+    are no similar nor close training data to the withheld testing data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/5aa194417f3fa3435f02717796814e62.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two cases for train and test data split, random (left) and by-region (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider the following prediction cases, i.e., planned real world use of the
+    models, and some practical suggestions for fair train and test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the model will be used to impute data with small offsets from available data
+    then construct a train and test split with train data close to test data - random
+    assignment of withheld testing data is likely sufficient.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: if the model will be used to predict a large distance offsets then perform splits
+    the result is large offsets between train and test data - withhold entire wells,
+    drill holes or spatial regions.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note, with fair train and test splits the tuned model may vary based on the
+    planned use for the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use a simple method like withholding entire wells for a predrill prediction
+    model, or use the Dr. Salazar workflow, but don’t ignore this issue and just use
+    random selection by default.
+  prefs: []
+  type: TYPE_NORMAL
+- en: admittedly, throughout this e-book for demonstration workflow brevity and clarity
+    I have just used random training and testing data assignments.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model Metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we have covered the workflows for training and tuning, now we can specify
+    the model metrics that are applied for,
+  prefs: []
+  type: TYPE_NORMAL
+- en: training model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: tuning model hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model checking and comparison
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s an flowchart indicating how these metrics fit into the machine learning
+    modeling workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d311f90f3b59dd6738b0ce7a12614995.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Various applications for model metrics in machine learning modeling workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choice of model metric depends primarily on the context of the prediction problem,
+  prefs: []
+  type: TYPE_NORMAL
+- en: classification vs. regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: individual estimates vs. entire subsets in space (images) or time (signals)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: estimation vs. uncertainty
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are additional considerations, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(L^1\) vs \(L^2\) norms with their differences, for example, in robustness
+    with outliers, stability of solutions and solution sparsity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: consistency with model assumptions, for example, \(r^2\) is only valid for linear
+    models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s review some of the common model metrics for regression models and then
+    for classification models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mean Square Error (MSE)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Is sensitive to outliers, but is continuously differentiable, leading to a closed-form
+    expression for model training. Since the error is squared the error units are
+    squared and this may be less interpretable, for example, MSE of 23,543 \(mD^2\).
+    The equation is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Test MSE} = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}}
+    (y_i - \hat{y}_i)^2 = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}} (\Delta
+    y_i)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mean Absolute Error (MAE)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Is robust in the presence of outliers, but is not continuously differentiable;
+    therefore, there is no closed-form expression for model training and training
+    is generally accomplished by iterative optimization. The equation is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Test MAE} = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}}
+    |y_i - \hat{y}_i| = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}} |\Delta
+    y_i| \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Variance Explained
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The proportion of variance of the response feature captured by the model. Assumes
+    additivity of variance; therefore, we only use this model metric for linear models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First we calculate the variance explained by the model, simply as the variance
+    of the model predictions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sigma_{\text{explained}}^2 = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}}
+    ( \hat{y}_i - \bar{y} )^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: then we calculate the variance not explained by the model as the variance of
+    the error over the model predictions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sigma_{\text{not explained}}^2 = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}}
+    (y_i - \hat{y}_i)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: then under the assumption of additivity of variance, we calculate the ratio
+    of variance explained over all variance, variance explained plus variance not
+    explained,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ r^2 = \frac{\sigma_{\text{explained}}^2}{\sigma_{\text{explained}}^2 + \sigma_{\text{not
+    explained}}^2} = \frac{\sigma_{\text{explained}}^2}{\sigma_{\text{total}}^2} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For linear regression, recall \(r^2 = \left( \rho_(X,y) \right)^2\); therefore,
+    like correlation coefficients, \(r^2\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: has similar issues as correlation with respect to outliers and mixing multiple
+    populations, e.g., Simpson’s Paradox
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for nonlinear models consider pseudo-R-square methods
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, even a linear model can have a negative \(r^2\) if the model trend contradicts
+    the data trend, for example, if you fit data with a negative slope with a linear
+    model with a positive slope!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inlier Ratio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The proportion of testing data, \(y_i\) within a margin, \(\epsilon\), of the
+    model, \(\hat{y}_i\), calculated as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ I_R = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}} I(y_i, \hat{y}_i)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the indicator transform, \(I_R\) is defined as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[\begin{split} I(y_i, \hat{y}_i) = \begin{cases} 1, & \text{if } |y_i - \hat{y}_i|
+    \leq \epsilon \\ 0, & \text{otherwise} \end{cases} \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s an illustration of the inlier ratio model metric, \(I_R\) model metric,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ddaa66ff3998a59b318297be09c60b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Testing data, model with margin, \(\epsilon\), and outliers (white) and inliers
+    (red) identified, 16 inliers out of 25 data samples, \(𝐼𝑅 = 0.64\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the illustration is a linear model, this metric may be applied to any
+    model. Although there is some subjectivity with the inlier ratio model metric,
+  prefs: []
+  type: TYPE_NORMAL
+- en: what is the best selection for the margin, \(\epsilon\)?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Common Classification Model Metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s review some of the common model metrics for classification models. Classification
+    is potentially more complicated than regression, since instead of a single model
+    metric, we actually calculate an entire confusion matrix,
+  prefs: []
+  type: TYPE_NORMAL
+- en: a \(K \times K\) matrix with frequencies of predicted (x axis) vs. actual (y
+    axis) categories to visualize the performance of a classification model, where
+    \(K\) is the response feature cardinality, i.e., the number of possible categories
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: visualize and diagnose all the combinations of correct and misclassification
+    with the classification model, for example, category 1 is often misclassified
+    as category 3,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/0c2a856f882f5bcc7e9df675ea5afb21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example confusion matrix for a classification model, 2D matrix with the frequencies
+    of all cases of truth and predicted categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: perfect accuracy is number of each class, \(n_1, n_2, \ldots, n_K\) on the diagonal,
+    i.e., category 1 is always predicted as category 1, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/34df964c246951e764fc3a7e8fecbf96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example confusion matrix for perfectly accurate classification model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the confusion matrix is applied to calculate a single summary of categorical
+    accuracy, for example, precision, recall, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model metrics are specific to the specific category and may significantly vary
+    over categories, i.e., we can predict well for category \(k=1\) but not for category
+    \(k=3\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Precision
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For category \(𝑘\), precision is the ratio of true positive over all positives,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Precision}_k = \frac{n_{k \text{ true positive}}}{n_{k \text{ true
+    positive}} + n_{k \text{ false positive}}} = \frac{\text{true positive}}{\text{all
+    positives}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can intuitively describe precision as the conditional probability,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Precision}_k = P \left(k \text{ is happening} \mid \text{model says
+    } k \text{ is happening}\right) \]![](../Images/020824af3f57f97af1ee2ba6ca6de684.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example confusion matrix with illustration of the precision model metric for
+    each category, \(k\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example, we can calculate the precision for each category as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k=1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Precision}_{k=1} = \frac{15}{15 + (5 + 7)} = \frac{15}{27} = 0.56 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 2,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Precision}_{k=2} = \frac{22}{22 + (15 + 15)} = \frac{22}{52} = 0.42
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 3,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Precision}_{k=3} = \frac{4}{4 + (2 + 9)} = \frac{4}{15} = 0.27 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall (called sensitivity in medical)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recall for group \(𝑘\) is the ratio of true positives over all cases of \(𝑘\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Recall}_k = \frac{n_{k \text{ true positive}}}{n_{k \text{ true positive}}
+    + n_{k \text{ false negative}}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can intuitively describe recall as, how many of group 𝑘 did we catch?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, recall does not account for false positives.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/94f40c5cd8c775dabd2e31e85c21a9cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example confusion matrix with illustration of the recall model metric for each
+    category, \(k\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example, we can calculate the recall for each category as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k=1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Recall}_{k=1} = \frac{15}{15 + (15 + 2)} = \frac{15}{32} = 0.47 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 2,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Recall}_{k=2} = \frac{22}{22 + (5 + 9)} = \frac{22}{36} = 0.61 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 3,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Recall}_{k=3} = \frac{4}{4 + (7 + 15)} = \frac{4}{26} = 0.15 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specificity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Specificity for group \(𝑘\) is the ratio of true negatives over all negative
+    cases of \(n \ne 𝑘\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Specificity}_k = \frac{n_{k \text{ true negative}}}{n_{\neq k} \, n_{k
+    \text{ true negative}} + n_{k \text{ false positive}}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can intuitively describe specificity as, how many of not group \(k\) did
+    we catch?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, recall does not account for true positives.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/22a61637f89b9d1f446385497e2e9b65.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example confusion matrix with illustration of the recall model metric for each
+    category, \(k\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example, we can calculate the recall for each category as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k=1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Specificity}_{k=1} = \frac{22 + 9 + 15 + 4}{(22 + 9 + 15 + 4) + (5
+    + 7)} = \frac{50}{62} = 0.81 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 2,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Specificity}_{k=2} = \frac{15 + 2 + 7 + 4}{(15 + 2 + 7 + 4) + (15 +
+    15)} = \frac{28}{58} = 0.48 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 3,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Specificity}_{k=3} = \frac{15 + 15 + 5 + 22}{(15 + 15 + 5 + 22) + (2
+    + 9)} = \frac{57}{68} = 0.84 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: f1-score
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: f1-score is the harmonic mean of precision and recall for each \(k\) category,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{F1-Score}_k = \frac{2}{\frac{1}{\text{Precision}_k} + \frac{1}{\text{Recall}_k}}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea is to combine precision and recall into a single metric since they
+    both see different aspects of the classification model accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the harmonic mean is sensitive the to lowest score; therefore, good performance
+    in one score cannot average out or make up for bad performance in the other
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Train and Test Hold Out Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If only one train and test data split is applied to tune our machine learning
+    model hyperparameters then we are applying the hold out cross validation approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we split the data into training and testing data, these are exhaustive and mutually
+    exclusive groups.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: but this cross validation method is not exahustive, we only consider the one
+    split for testing, most data are not tested. Also, we do not explore the full
+    combinatorial of possible splits (more about this as we compare with other cross
+    validation methods)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ada2e0334323368c40690e596e78d464.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The train and test data hold out cross validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The workflow is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: withhold the testing data subset from model training
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: train models with the remaining training data with various hyperparameters representing
+    simple to complicated models
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: then test the suite of simple to complicated trained models with withheld testing
+    data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: select the model hyperparameters (complexity) with lowest testing error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: retrain the model with the turned hyperparameters and all of the data for deployment
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The advantage of this approach is that we can readily evaluate the training
+    and testing data split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: since there is only one split, we can easily visualize and evaluate the train
+    and test data cases, coverage and balance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The disadvantage is that this method may be sensitive to the specific selection
+    of testing data
+  prefs: []
+  type: TYPE_NORMAL
+- en: as a result hold out cross validation may result in a noisy plot of testing
+    error vs. the hyperparameter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Train, Validate and Test Hold Out Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There is a more complete hold out cross validation workflow commonly applied,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Train with training data split** - models sees and learns from this data
+    to train the model parameters.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Validate with the validation data split** - evaluation of model complexity
+    vs. accuracy with data withheld from model parameter training to tune the model
+    hyperparameters. The same as testing data in train and test workflow.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Test model performance with testing data** - data withheld until the model
+    is complete to provide a final evaluation of model performance. This data had
+    no role in building the model and is commonly applied to compare multiple competing
+    models.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/e1cf2df3d7bb949f562eecd4af03f6c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The train, validate and test hold out cross validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I understand the motivation for the training, validation and testing cross validation
+    workflow. It is an attempt to check our models, objectively, with cases that,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we know the truth and can access accuracy accurately
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: had nothing to do with the model construction, training model parameters nor
+    tuning model hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I appreciate this, but I have some concerns,
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are further reducing the number of samples available to training model parameters
+    and to tuning model hyperparameters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Eventually we will retrain the tuned model with all the data, so the model we
+    test is not actually the final deployed model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What do we do if the testing data is not accurately predicted? Do we include
+    another round of testing with another withheld subset of the data? Ad infinitum?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries. These should have been installed
+    with Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I also added a convenience function to add major and minor gridlines to improve
+    plot interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Load Data to Demonstration Cross Validation Methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s load a spatial dataset and select 2 predictor features to visualize cross
+    validation methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will focus on the data splits and not the actual model training and tuning.
+    Later when we cover predictive machine learning methods we will add the model
+    component of the workflow.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize Train and Test Hold Out Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s compare the train and test with train, validate and test hold out data
+    splits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: first we plot a train and test data split and then a train, validate and test
+    split.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/f0f58efa21786c689ea72d45aad30f90c3dd3c383729660c4fd8a44bd077385e.png](../Images/a54bde3cc01f9083714572540a961fb0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is a good idea to visualize the train and test split,
+  prefs: []
+  type: TYPE_NORMAL
+- en: histograms for each predictor feature and the response feature to ensure that
+    the train and test cover the range of possible outcomes and are balanced
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if the number of predictor features is 2 then we can actually plot the predictor
+    feature space to check coverage and balance of train and test data splits
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s repeat this for the train, validate and test data split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/79b0ada345bb17fe9e2e5450cdd37a1c3881bfd2ae3882674678aab8cad6597d.png](../Images/8537d6caff0c1936ede31daca961765a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again we can visualize the splits, now train, validate and test,
+  prefs: []
+  type: TYPE_NORMAL
+- en: histograms for each predictor feature and the response feature to ensure that
+    the train and test cover the range of possible outcomes and are balanced
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if the number of predictor features is 2 then we can actually plot the predictor
+    feature space to check coverage and balance of train and test data splits
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Leave-one-out Cross Validation (LOO CV)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Leave-one-out cross validation is an exhaustive cross validation method, i.e.,
+    all data gets tested by loop over all the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we train and tune \(n\) models, for each model a single datum is withheld as
+    testing and the \(n-1\) data are assigned as training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we will calculate \(n\) training and testing errors that will be aggregated
+    over all \(n\) models, for example, the average of the mean square error.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the case of leave-one-out cross validation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we test at only one datum so the test error is just a single error at the single
+    withheld datum, so we just use standard MSE over the \(n\) models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Test MSE Aggregate} = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}}
+    (y_i - \hat{y}_i)^2 = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}} (\Delta
+    y_i)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: but, we have \(n-1\) training data for each model, so we aggregate, by averageing
+    the mean square error of each model,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Train MSE Aggregate} = \frac{1}{n} \sum_{i=1}^{n} \frac{1}{n-1} \sum_{i=1}^{n-1}
+    (y_i - \hat{y}_i)^2 = \frac{1}{n} \sum_{i=1}^{n} \text{Train MSE}_i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the leave-one-out cross validation steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loop over all \(n\) data, and withhold that data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train on the remaining \(n−1\) data and test on the withheld single data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate model goodness metric, MSE for a single test data is the square error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Goto 1
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Aggregate model goodness metric over all data, \(n\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Typically, leave-one-out cross validation is too easy of a prediction problem;
+    therefore, it is not commonly used,
+  prefs: []
+  type: TYPE_NORMAL
+- en: but it introduces the concept of exhaustive cross validation, i.e., all data
+    gets tested!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Leave-one-out cross validation is also exhaustive in the sense that the full
+    combinatorial of \(n\) data choose \(p\) where \(p=1\) are explored,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \binom{n}{p} = \frac{n!}{p!(n - p)!} = \frac{n!}{1!(n - 1)!} = \frac{n!}{(n
+    - 1)!} = n \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the full combinatorial is the \(n\) models that we built above!
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-fold Cross Validation (k-fold CV)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: K-fold is a more general, efficient and robust approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: a exhaustive cross validation approach (all data are tested), but it samples
+    a limited set of the possible combinatorial of prediction problems, unlike Leave-one-out
+    cross validation where we attempt every possible case on data withheld for testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for K-fold cross validation we assign a single set of K equal size splits and
+    we loop over the splits, withholding the \(k\) split for testing data and using
+    the data outside the split for training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the testing proportion is \(\frac{1}{K}\), e.g., for \(K=3\), 33.3% is withheld
+    for testing, for \(K=4\), 25% is withheld for testing and for \(K=5\), 20% is
+    withheld for testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We call it K-fold cross validation, because each of the splits is known as a
+    fold. Here’s the steps for K-fold cross validation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select \(K\), integer number of folds
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Split the data into \(K\) equal size folds
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Loop over each \(k = 1,\ldots,K\) fold
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Assign the data outside the \(k\) fold as training data and inside the \(k\)
+    fold as testing data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train and test the prediction model and calculated the testing model metric
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Goto 3
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Aggregate testing model metric over all K folds
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As you can see above k-fold cross validation is exhaustive, since all data is
+    tested, i.e., withheld as testing data, but the method is not exhaustive in that
+    all possible \(\frac{n}{K}\) data subsets are not considered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To calculated the combinatorial for exhaustive K folds we used the multinomial
+    coefficient,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{n!}{\left( \frac{n}{K}! \right)^K \cdot K!} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if there are \(n=100\) data and \(K=4\) folds, there are \(6.72
+    \times 10^55\) possible combinations. I vote that we stick with regular K-fold
+    cross validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize K-fold cross validation splits, for the case of \(K=4\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/614766507683133d44cfac6acbde2fe77809b31d326628000a3baa404147b18a.png](../Images/dd257beaa821a963fc15b3318a7bd9f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Leave-p-out Cross Validation (LpO-CV)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the variant of K-fold cross validation that exhaustively samples the
+    full combinatorial of withholding \(p\) testing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select \(p\), integer number of testing data to withhold
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For all possible \(p\) subsets of \(n\),
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Assign the data outside the \(p\) as training data and inside the \(p\) as testing
+    data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train and test the prediction model and calculated the testing model metric
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Goto 2
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Aggregate testing model metric over the combinatorial
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For this case the combinatorial of cases is, \(n\) choose \(p\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \binom{n}{p} = \frac{n!}{p!(n - p)!} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For \(n=100\) and \(p=20\), we have \(5.36 \times 10^{20}\) combinations to
+    check!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Limitations of Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here are some additional issues with the model cross validation approach in
+    general,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Peeking, Information Leakage** – some information is transmitted from the
+    withheld data into the model, some model decision(s) use all the data. Pipelines
+    and wrappers help with this.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Black Swans / Stationarity** – the model cannot be tested for data events
+    not available in the data. This is also known as the ‘No Free Lunch Theorem’ in
+    machine learning'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Consider the words of Hume,
+  prefs: []
+  type: TYPE_NORMAL
+- en: “even after the observation of the frequent or constant conjunction of objects,
+    we have no reason to draw any inference concerning any object beyond those of
+    which we have had experience” - Hume (1739–1740)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We cannot predict things that we have never seen in our data!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: here’s a quote from the famous Oreskes et al. (1994) paper on subsurface validation
+    and verification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Verification and validation of numerical models of natural systems is impossible.
+    This is because natural systems are never closed and because model results are
+    always nonunique. Models can be confirmed by the demonstration of agreement between
+    observation and prediction, but confirmation is inherently partial. Complete confirmation
+    is logically precluded by the fallacy of affirming the consequent and by incomplete
+    access to natural phenomena. Models can only be evaluated in relative terms, and
+    their predictive value is always open to question. The primary value of models
+    is heuristic.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Oreskes et al. (1994)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: all of this is summed up very well with,
+  prefs: []
+  type: TYPE_NORMAL
+- en: ‘All models are wrong, but some are useful’ – George Box
+  prefs: []
+  type: TYPE_NORMAL
+- en: and a reminder of,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parsimony** – since all models are wrong, an economical description of the
+    system. Occam’s Razor'
+  prefs: []
+  type: TYPE_NORMAL
+- en: resulting in a pragmatic approach of,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Worrying Selectively** – since all models are wrong, figure out what is most
+    importantly wrong.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: finally, I add my own words,
+  prefs: []
+  type: TYPE_NORMAL
+- en: ‘Be humble, the earth will surprise you!’ – Michael Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic description of machine learning concepts. Much more could be
+    done and discussed, I have many more resources. Check out my [shared resource
+    inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture links
+    at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this was helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PIs including Profs. Foster,
+    Torres-Verdin and van Oort)? My research combines data analytics, stochastic modeling
+    and machine learning theory with practice to develop novel methods and workflows
+    to add value. We are solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training and Tuning Predictive Machine Learning Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In predictive machine learning, we follow a standard model training and testing
+    workflow. This process ensures that our model generalizes well to new data, rather
+    than just fitting the training data perfectly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/31abfecc21c246ba7144dfb847ab4378.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Standard predictive machine learning modeling workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s walk through the key steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Train and Test Split** - divide the available data into mutually exclusive,
+    exhaustive subsets: a training set and a testing set.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: typically, 15%–30% of the data is held out for testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the remaining 70%–85% is used for training the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Define a range of hyperparameter(s)** values to explore, ranging from,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: simple models with low flexibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: to complex models with high flexibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(\quad\) This step may involve tuning multiple hyperparameters, in which case
+    efficient sampling methods (e.g., grid search, random search, or Bayesian optimization)
+    are often used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Train Model Parameters for Each Hyperparameter Setting** - for each set of
+    hyperparameters, train a model on the training data. This yields:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: a suite of trained models, each with different complexity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: each model has parameters optimized to minimize error on the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Evaluate Each Model on the Withheld Testing Data** - using the testing data,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: evaluate how each trained model performs on unseen data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: summarize prediction error (for example, root mean square error (RMSE), mean
+    absolute error (MAE), classification accuracy) for each model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Select the Hyperparameters That Minimize Test Error** - this is the hyperparameter
+    tuning step:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: choose the model hyperparaemter(s) that performs best on the test data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: these are your tuned hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Retrain the Final Model on All Data Using Tuned Hyperparameters** - now that
+    the best model complexity has been identified,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: retrain the model using both the training and test sets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this maximizes the amount of data used for final model parameter estimation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the resulting model is the one you deploy in real-world applications
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Common Questions About the Model Training and Tuning Workflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As a professor, I often hear these questions when I introduce the above machine
+    learning model training and tuning workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is the main outcome of steps 1–5?** - the only reliable outcome is the
+    tuned hyperparameters.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(\quad\) we do not use the model trained in step 3 or 4 directly, because it
+    was trained without access to all available data. Instead, we retrain the final
+    model using all data with the selected hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Why not train the model on all the data from the beginning?** - because if
+    we do that, we have no independent way to evaluate the model’s generalization.
+    A very complex model can easily overfit—fitting the training data perfectly, but
+    performing poorly on new, unseen data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(\quad\) overfitting happens when model flexibility is too high—it captures
+    noise instead of the underlying pattern. Without a withheld test set, we can’t
+    detect this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This workflow for training and tuning predictive machine learning models is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: an empirical, cross-validation-based process
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a practical simulation of real-world model use
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a method to identify the model complexity that best balances fit and generalization
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’ve said model parameters and model hyperparameters a bunch of times, so I
+    owe you their definitions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Parameters and Model Hyperparameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Model parameters** are fit during training phase to minimize error at the
+    training data, i.e., model parameters are trained with training data and control
+    model fit to the data. For example,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the polynomial predictive machine learning model from the machine learning
+    workflow example above, the model parameters are the polynomial coefficients,
+    e.g., \(b_3\), \(b_2\), \(b_1\) and \(c\) (often called \(b_0\)) for the third
+    order polynomial model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/85cce1589249c12a11ff52ea10e6c893.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model parameters are adjusted to fit of the model to the data, i.e., model parameters
+    are trained to minimize error over the training data (x markers).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Model hyperparameters** are very different. They do not constrain the model
+    fit to the data directly, instead they constrain the model complexity. The model
+    hyperparameters are selected (call tuning) to minimize error at the withheld testing
+    data. Going back to our polynomial predictive machine learning example, the choice
+    of polynomial order is the model hyperparameter.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aef7a81bd36cd7f2b25e1574784b4932.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Model hyperparameters are adjusted to change the model complexity / flexibility,
+    i.e., model hyperparameters are tuned to minimize error over the withheld testing
+    data (solid circles).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model parameters vs. model hyperparameters
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model parameters control the model fit and are trained with training data. Model
+    hyperparameters control the model complexity and are tuned with testing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regression and Classification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we proceed, we need to define regression and classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regression** - a predictive machine learning model where the response feature(s)
+    is continuous.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Classification** - a predictive machine learning model where the response
+    feature(s) is categorical.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It turns out that for each of these we need to build different models and use
+    different methods to score these models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the remainder of this discussion we will focus on regression, but in later
+    chapters we introduce classification models as well.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, to better understand predictive machine learning model tuning, i.e., the
+    empirical approach to tune model complexity to minimize testing error, we need
+    to understand the sources of testing error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the causes of the thing that we are attempting to minimize!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training and Testing Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For clarity, consider this is schematic of the flow of training and testing
+    data in the predictive machine learning model parameter training and hyperparameter
+    tuning workflow,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/454aec4a3d657f072406100f036592b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The flow of training and testing data in the predictive machine learning model
+    parameter training and hyperparameter tuning workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Training Data**,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: trains model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: trains the final model for real world use
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Testing Data**,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: withheld from training model parameters to avoid model overfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: tunes model hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: returned to train the final tuned model for deployment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How Much Data Should be Withheld for Testing?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The proportion in testing is recommended by various sources from 15% - 30% of
+    the total dataset. This is a compromise,
+  prefs: []
+  type: TYPE_NORMAL
+- en: data withheld for testing reduces the data available for training; therefore,
+    reduces the accuracy of the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: data withheld for testing improves the accuracy of the assessment of the model
+    performance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Various authors have experimented on a variety of training and testing ratios
+    and have recommended splits for their applications,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the optimum ratio of training and testing split depends on problem setting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To determine the proportion of testing data to withheld we could consider the
+    difficulty in model parameter training (e.g., the number of model parameters)
+    and the difficulty in model hyperparameter tuning (e.g., number of hyperparameters,
+    range of response feature outcomes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fair Train and Test Splits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Dr. Julian Salazar suggests that for spatial prediction problems that random
+    train and test data splits may not be fair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: proposed a [fair train and test split method](https://www.sciencedirect.com/science/article/pii/S0920410521015023)
+    for spatial prediction models that splits the data based on the difficulty of
+    the planned use of the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: prediction difficulty is related to kriging variance that accounts for spatial
+    continuity and distance offset, i.e., the difficulty of the estimate.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the testing split is iterated to match the distribution of kriging variance
+    for planned real world use of the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To illustrate this concept of prediction difficulty, consider this set of well
+    logs with both random assignment of testing data and withholding an entire contiguous
+    region of the well log for testing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**easy prediction problem** - for random assignment, usually training data
+    are available very close and very similar to the withheld testing data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**difficult prediction problem** - for removal of the contiguous region, there
+    are no similar nor close training data to the withheld testing data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/5aa194417f3fa3435f02717796814e62.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two cases for train and test data split, random (left) and by-region (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider the following prediction cases, i.e., planned real world use of the
+    models, and some practical suggestions for fair train and test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the model will be used to impute data with small offsets from available data
+    then construct a train and test split with train data close to test data - random
+    assignment of withheld testing data is likely sufficient.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: if the model will be used to predict a large distance offsets then perform splits
+    the result is large offsets between train and test data - withhold entire wells,
+    drill holes or spatial regions.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note, with fair train and test splits the tuned model may vary based on the
+    planned use for the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use a simple method like withholding entire wells for a predrill prediction
+    model, or use the Dr. Salazar workflow, but don’t ignore this issue and just use
+    random selection by default.
+  prefs: []
+  type: TYPE_NORMAL
+- en: admittedly, throughout this e-book for demonstration workflow brevity and clarity
+    I have just used random training and testing data assignments.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model Metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since we have covered the workflows for training and tuning, now we can specify
+    the model metrics that are applied for,
+  prefs: []
+  type: TYPE_NORMAL
+- en: training model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: tuning model hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model checking and comparison
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here’s an flowchart indicating how these metrics fit into the machine learning
+    modeling workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d311f90f3b59dd6738b0ce7a12614995.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Various applications for model metrics in machine learning modeling workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choice of model metric depends primarily on the context of the prediction problem,
+  prefs: []
+  type: TYPE_NORMAL
+- en: classification vs. regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: individual estimates vs. entire subsets in space (images) or time (signals)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: estimation vs. uncertainty
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are additional considerations, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(L^1\) vs \(L^2\) norms with their differences, for example, in robustness
+    with outliers, stability of solutions and solution sparsity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: consistency with model assumptions, for example, \(r^2\) is only valid for linear
+    models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s review some of the common model metrics for regression models and then
+    for classification models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mean Square Error (MSE)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Is sensitive to outliers, but is continuously differentiable, leading to a closed-form
+    expression for model training. Since the error is squared the error units are
+    squared and this may be less interpretable, for example, MSE of 23,543 \(mD^2\).
+    The equation is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Test MSE} = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}}
+    (y_i - \hat{y}_i)^2 = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}} (\Delta
+    y_i)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mean Absolute Error (MAE)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Is robust in the presence of outliers, but is not continuously differentiable;
+    therefore, there is no closed-form expression for model training and training
+    is generally accomplished by iterative optimization. The equation is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Test MAE} = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}}
+    |y_i - \hat{y}_i| = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}} |\Delta
+    y_i| \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Variance Explained
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The proportion of variance of the response feature captured by the model. Assumes
+    additivity of variance; therefore, we only use this model metric for linear models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First we calculate the variance explained by the model, simply as the variance
+    of the model predictions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sigma_{\text{explained}}^2 = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}}
+    ( \hat{y}_i - \bar{y} )^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: then we calculate the variance not explained by the model as the variance of
+    the error over the model predictions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sigma_{\text{not explained}}^2 = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}}
+    (y_i - \hat{y}_i)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: then under the assumption of additivity of variance, we calculate the ratio
+    of variance explained over all variance, variance explained plus variance not
+    explained,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ r^2 = \frac{\sigma_{\text{explained}}^2}{\sigma_{\text{explained}}^2 + \sigma_{\text{not
+    explained}}^2} = \frac{\sigma_{\text{explained}}^2}{\sigma_{\text{total}}^2} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For linear regression, recall \(r^2 = \left( \rho_(X,y) \right)^2\); therefore,
+    like correlation coefficients, \(r^2\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: has similar issues as correlation with respect to outliers and mixing multiple
+    populations, e.g., Simpson’s Paradox
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for nonlinear models consider pseudo-R-square methods
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, even a linear model can have a negative \(r^2\) if the model trend contradicts
+    the data trend, for example, if you fit data with a negative slope with a linear
+    model with a positive slope!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inlier Ratio
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The proportion of testing data, \(y_i\) within a margin, \(\epsilon\), of the
+    model, \(\hat{y}_i\), calculated as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ I_R = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}} I(y_i, \hat{y}_i)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the indicator transform, \(I_R\) is defined as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[\begin{split} I(y_i, \hat{y}_i) = \begin{cases} 1, & \text{if } |y_i - \hat{y}_i|
+    \leq \epsilon \\ 0, & \text{otherwise} \end{cases} \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s an illustration of the inlier ratio model metric, \(I_R\) model metric,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ddaa66ff3998a59b318297be09c60b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Testing data, model with margin, \(\epsilon\), and outliers (white) and inliers
+    (red) identified, 16 inliers out of 25 data samples, \(𝐼𝑅 = 0.64\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the illustration is a linear model, this metric may be applied to any
+    model. Although there is some subjectivity with the inlier ratio model metric,
+  prefs: []
+  type: TYPE_NORMAL
+- en: what is the best selection for the margin, \(\epsilon\)?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Common Classification Model Metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s review some of the common model metrics for classification models. Classification
+    is potentially more complicated than regression, since instead of a single model
+    metric, we actually calculate an entire confusion matrix,
+  prefs: []
+  type: TYPE_NORMAL
+- en: a \(K \times K\) matrix with frequencies of predicted (x axis) vs. actual (y
+    axis) categories to visualize the performance of a classification model, where
+    \(K\) is the response feature cardinality, i.e., the number of possible categories
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: visualize and diagnose all the combinations of correct and misclassification
+    with the classification model, for example, category 1 is often misclassified
+    as category 3,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/0c2a856f882f5bcc7e9df675ea5afb21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example confusion matrix for a classification model, 2D matrix with the frequencies
+    of all cases of truth and predicted categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: perfect accuracy is number of each class, \(n_1, n_2, \ldots, n_K\) on the diagonal,
+    i.e., category 1 is always predicted as category 1, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/34df964c246951e764fc3a7e8fecbf96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example confusion matrix for perfectly accurate classification model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the confusion matrix is applied to calculate a single summary of categorical
+    accuracy, for example, precision, recall, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: model metrics are specific to the specific category and may significantly vary
+    over categories, i.e., we can predict well for category \(k=1\) but not for category
+    \(k=3\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Precision
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For category \(𝑘\), precision is the ratio of true positive over all positives,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Precision}_k = \frac{n_{k \text{ true positive}}}{n_{k \text{ true
+    positive}} + n_{k \text{ false positive}}} = \frac{\text{true positive}}{\text{all
+    positives}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can intuitively describe precision as the conditional probability,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Precision}_k = P \left(k \text{ is happening} \mid \text{model says
+    } k \text{ is happening}\right) \]![](../Images/020824af3f57f97af1ee2ba6ca6de684.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example confusion matrix with illustration of the precision model metric for
+    each category, \(k\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example, we can calculate the precision for each category as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k=1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Precision}_{k=1} = \frac{15}{15 + (5 + 7)} = \frac{15}{27} = 0.56 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 2,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Precision}_{k=2} = \frac{22}{22 + (15 + 15)} = \frac{22}{52} = 0.42
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 3,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Precision}_{k=3} = \frac{4}{4 + (2 + 9)} = \frac{4}{15} = 0.27 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall (called sensitivity in medical)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recall for group \(𝑘\) is the ratio of true positives over all cases of \(𝑘\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Recall}_k = \frac{n_{k \text{ true positive}}}{n_{k \text{ true positive}}
+    + n_{k \text{ false negative}}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can intuitively describe recall as, how many of group 𝑘 did we catch?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, recall does not account for false positives.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/94f40c5cd8c775dabd2e31e85c21a9cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example confusion matrix with illustration of the recall model metric for each
+    category, \(k\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example, we can calculate the recall for each category as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k=1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Recall}_{k=1} = \frac{15}{15 + (15 + 2)} = \frac{15}{32} = 0.47 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 2,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Recall}_{k=2} = \frac{22}{22 + (5 + 9)} = \frac{22}{36} = 0.61 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 3,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Recall}_{k=3} = \frac{4}{4 + (7 + 15)} = \frac{4}{26} = 0.15 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specificity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Specificity for group \(𝑘\) is the ratio of true negatives over all negative
+    cases of \(n \ne 𝑘\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Specificity}_k = \frac{n_{k \text{ true negative}}}{n_{\neq k} \, n_{k
+    \text{ true negative}} + n_{k \text{ false positive}}} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can intuitively describe specificity as, how many of not group \(k\) did
+    we catch?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, recall does not account for true positives.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/22a61637f89b9d1f446385497e2e9b65.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example confusion matrix with illustration of the recall model metric for each
+    category, \(k\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this example, we can calculate the recall for each category as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k=1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Specificity}_{k=1} = \frac{22 + 9 + 15 + 4}{(22 + 9 + 15 + 4) + (5
+    + 7)} = \frac{50}{62} = 0.81 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 2,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Specificity}_{k=2} = \frac{15 + 2 + 7 + 4}{(15 + 2 + 7 + 4) + (15 +
+    15)} = \frac{28}{58} = 0.48 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category k = 3,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Specificity}_{k=3} = \frac{15 + 15 + 5 + 22}{(15 + 15 + 5 + 22) + (2
+    + 9)} = \frac{57}{68} = 0.84 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: f1-score
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: f1-score is the harmonic mean of precision and recall for each \(k\) category,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{F1-Score}_k = \frac{2}{\frac{1}{\text{Precision}_k} + \frac{1}{\text{Recall}_k}}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea is to combine precision and recall into a single metric since they
+    both see different aspects of the classification model accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the harmonic mean is sensitive the to lowest score; therefore, good performance
+    in one score cannot average out or make up for bad performance in the other
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Train and Test Hold Out Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If only one train and test data split is applied to tune our machine learning
+    model hyperparameters then we are applying the hold out cross validation approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we split the data into training and testing data, these are exhaustive and mutually
+    exclusive groups.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: but this cross validation method is not exahustive, we only consider the one
+    split for testing, most data are not tested. Also, we do not explore the full
+    combinatorial of possible splits (more about this as we compare with other cross
+    validation methods)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ada2e0334323368c40690e596e78d464.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The train and test data hold out cross validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The workflow is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: withhold the testing data subset from model training
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: train models with the remaining training data with various hyperparameters representing
+    simple to complicated models
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: then test the suite of simple to complicated trained models with withheld testing
+    data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: select the model hyperparameters (complexity) with lowest testing error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: retrain the model with the turned hyperparameters and all of the data for deployment
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The advantage of this approach is that we can readily evaluate the training
+    and testing data split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: since there is only one split, we can easily visualize and evaluate the train
+    and test data cases, coverage and balance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The disadvantage is that this method may be sensitive to the specific selection
+    of testing data
+  prefs: []
+  type: TYPE_NORMAL
+- en: as a result hold out cross validation may result in a noisy plot of testing
+    error vs. the hyperparameter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Train, Validate and Test Hold Out Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There is a more complete hold out cross validation workflow commonly applied,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Train with training data split** - models sees and learns from this data
+    to train the model parameters.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Validate with the validation data split** - evaluation of model complexity
+    vs. accuracy with data withheld from model parameter training to tune the model
+    hyperparameters. The same as testing data in train and test workflow.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Test model performance with testing data** - data withheld until the model
+    is complete to provide a final evaluation of model performance. This data had
+    no role in building the model and is commonly applied to compare multiple competing
+    models.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/e1cf2df3d7bb949f562eecd4af03f6c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The train, validate and test hold out cross validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I understand the motivation for the training, validation and testing cross validation
+    workflow. It is an attempt to check our models, objectively, with cases that,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we know the truth and can access accuracy accurately
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: had nothing to do with the model construction, training model parameters nor
+    tuning model hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I appreciate this, but I have some concerns,
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are further reducing the number of samples available to training model parameters
+    and to tuning model hyperparameters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Eventually we will retrain the tuned model with all the data, so the model we
+    test is not actually the final deployed model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What do we do if the testing data is not accurately predicted? Do we include
+    another round of testing with another withheld subset of the data? Ad infinitum?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries. These should have been installed
+    with Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I also added a convenience function to add major and minor gridlines to improve
+    plot interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Load Data to Demonstration Cross Validation Methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s load a spatial dataset and select 2 predictor features to visualize cross
+    validation methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will focus on the data splits and not the actual model training and tuning.
+    Later when we cover predictive machine learning methods we will add the model
+    component of the workflow.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize Train and Test Hold Out Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s compare the train and test with train, validate and test hold out data
+    splits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: first we plot a train and test data split and then a train, validate and test
+    split.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/f0f58efa21786c689ea72d45aad30f90c3dd3c383729660c4fd8a44bd077385e.png](../Images/a54bde3cc01f9083714572540a961fb0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is a good idea to visualize the train and test split,
+  prefs: []
+  type: TYPE_NORMAL
+- en: histograms for each predictor feature and the response feature to ensure that
+    the train and test cover the range of possible outcomes and are balanced
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if the number of predictor features is 2 then we can actually plot the predictor
+    feature space to check coverage and balance of train and test data splits
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s repeat this for the train, validate and test data split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/79b0ada345bb17fe9e2e5450cdd37a1c3881bfd2ae3882674678aab8cad6597d.png](../Images/8537d6caff0c1936ede31daca961765a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again we can visualize the splits, now train, validate and test,
+  prefs: []
+  type: TYPE_NORMAL
+- en: histograms for each predictor feature and the response feature to ensure that
+    the train and test cover the range of possible outcomes and are balanced
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if the number of predictor features is 2 then we can actually plot the predictor
+    feature space to check coverage and balance of train and test data splits
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Leave-one-out Cross Validation (LOO CV)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Leave-one-out cross validation is an exhaustive cross validation method, i.e.,
+    all data gets tested by loop over all the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we train and tune \(n\) models, for each model a single datum is withheld as
+    testing and the \(n-1\) data are assigned as training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we will calculate \(n\) training and testing errors that will be aggregated
+    over all \(n\) models, for example, the average of the mean square error.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the case of leave-one-out cross validation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we test at only one datum so the test error is just a single error at the single
+    withheld datum, so we just use standard MSE over the \(n\) models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Test MSE Aggregate} = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}}
+    (y_i - \hat{y}_i)^2 = \frac{1}{n_{\text{test}}} \sum_{i=1}^{n_{\text{test}}} (\Delta
+    y_i)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: but, we have \(n-1\) training data for each model, so we aggregate, by averageing
+    the mean square error of each model,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \text{Train MSE Aggregate} = \frac{1}{n} \sum_{i=1}^{n} \frac{1}{n-1} \sum_{i=1}^{n-1}
+    (y_i - \hat{y}_i)^2 = \frac{1}{n} \sum_{i=1}^{n} \text{Train MSE}_i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the leave-one-out cross validation steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loop over all \(n\) data, and withhold that data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train on the remaining \(n−1\) data and test on the withheld single data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate model goodness metric, MSE for a single test data is the square error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Goto 1
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Aggregate model goodness metric over all data, \(n\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Typically, leave-one-out cross validation is too easy of a prediction problem;
+    therefore, it is not commonly used,
+  prefs: []
+  type: TYPE_NORMAL
+- en: but it introduces the concept of exhaustive cross validation, i.e., all data
+    gets tested!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Leave-one-out cross validation is also exhaustive in the sense that the full
+    combinatorial of \(n\) data choose \(p\) where \(p=1\) are explored,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \binom{n}{p} = \frac{n!}{p!(n - p)!} = \frac{n!}{1!(n - 1)!} = \frac{n!}{(n
+    - 1)!} = n \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the full combinatorial is the \(n\) models that we built above!
+  prefs: []
+  type: TYPE_NORMAL
+- en: K-fold Cross Validation (k-fold CV)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: K-fold is a more general, efficient and robust approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: a exhaustive cross validation approach (all data are tested), but it samples
+    a limited set of the possible combinatorial of prediction problems, unlike Leave-one-out
+    cross validation where we attempt every possible case on data withheld for testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for K-fold cross validation we assign a single set of K equal size splits and
+    we loop over the splits, withholding the \(k\) split for testing data and using
+    the data outside the split for training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the testing proportion is \(\frac{1}{K}\), e.g., for \(K=3\), 33.3% is withheld
+    for testing, for \(K=4\), 25% is withheld for testing and for \(K=5\), 20% is
+    withheld for testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We call it K-fold cross validation, because each of the splits is known as a
+    fold. Here’s the steps for K-fold cross validation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select \(K\), integer number of folds
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Split the data into \(K\) equal size folds
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Loop over each \(k = 1,\ldots,K\) fold
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Assign the data outside the \(k\) fold as training data and inside the \(k\)
+    fold as testing data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train and test the prediction model and calculated the testing model metric
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Goto 3
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Aggregate testing model metric over all K folds
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As you can see above k-fold cross validation is exhaustive, since all data is
+    tested, i.e., withheld as testing data, but the method is not exhaustive in that
+    all possible \(\frac{n}{K}\) data subsets are not considered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To calculated the combinatorial for exhaustive K folds we used the multinomial
+    coefficient,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \frac{n!}{\left( \frac{n}{K}! \right)^K \cdot K!} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if there are \(n=100\) data and \(K=4\) folds, there are \(6.72
+    \times 10^55\) possible combinations. I vote that we stick with regular K-fold
+    cross validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize K-fold cross validation splits, for the case of \(K=4\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/614766507683133d44cfac6acbde2fe77809b31d326628000a3baa404147b18a.png](../Images/dd257beaa821a963fc15b3318a7bd9f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Leave-p-out Cross Validation (LpO-CV)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is the variant of K-fold cross validation that exhaustively samples the
+    full combinatorial of withholding \(p\) testing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Select \(p\), integer number of testing data to withhold
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For all possible \(p\) subsets of \(n\),
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Assign the data outside the \(p\) as training data and inside the \(p\) as testing
+    data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train and test the prediction model and calculated the testing model metric
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Goto 2
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Aggregate testing model metric over the combinatorial
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For this case the combinatorial of cases is, \(n\) choose \(p\),
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \binom{n}{p} = \frac{n!}{p!(n - p)!} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For \(n=100\) and \(p=20\), we have \(5.36 \times 10^{20}\) combinations to
+    check!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Limitations of Cross Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here are some additional issues with the model cross validation approach in
+    general,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Peeking, Information Leakage** – some information is transmitted from the
+    withheld data into the model, some model decision(s) use all the data. Pipelines
+    and wrappers help with this.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Black Swans / Stationarity** – the model cannot be tested for data events
+    not available in the data. This is also known as the ‘No Free Lunch Theorem’ in
+    machine learning'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Consider the words of Hume,
+  prefs: []
+  type: TYPE_NORMAL
+- en: “even after the observation of the frequent or constant conjunction of objects,
+    we have no reason to draw any inference concerning any object beyond those of
+    which we have had experience” - Hume (1739–1740)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We cannot predict things that we have never seen in our data!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: here’s a quote from the famous Oreskes et al. (1994) paper on subsurface validation
+    and verification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Verification and validation of numerical models of natural systems is impossible.
+    This is because natural systems are never closed and because model results are
+    always nonunique. Models can be confirmed by the demonstration of agreement between
+    observation and prediction, but confirmation is inherently partial. Complete confirmation
+    is logically precluded by the fallacy of affirming the consequent and by incomplete
+    access to natural phenomena. Models can only be evaluated in relative terms, and
+    their predictive value is always open to question. The primary value of models
+    is heuristic.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Oreskes et al. (1994)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: all of this is summed up very well with,
+  prefs: []
+  type: TYPE_NORMAL
+- en: ‘All models are wrong, but some are useful’ – George Box
+  prefs: []
+  type: TYPE_NORMAL
+- en: and a reminder of,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parsimony** – since all models are wrong, an economical description of the
+    system. Occam’s Razor'
+  prefs: []
+  type: TYPE_NORMAL
+- en: resulting in a pragmatic approach of,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Worrying Selectively** – since all models are wrong, figure out what is most
+    importantly wrong.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: finally, I add my own words,
+  prefs: []
+  type: TYPE_NORMAL
+- en: ‘Be humble, the earth will surprise you!’ – Michael Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic description of machine learning concepts. Much more could be
+    done and discussed, I have many more resources. Check out my [shared resource
+    inventory](https://michaelpyrcz.com/my-resources) and the YouTube lecture links
+    at the start of this chapter with resource links in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this was helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PIs including Profs. Foster,
+    Torres-Verdin and van Oort)? My research combines data analytics, stochastic modeling
+    and machine learning theory with practice to develop novel methods and workflows
+    to add value. We are solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

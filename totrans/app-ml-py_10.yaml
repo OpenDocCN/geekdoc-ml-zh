@@ -1,0 +1,5277 @@
+- en: Feature Ranking
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_feature_ranking.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_feature_ranking.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Feature Ranking**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Curse of Dimensionality, Dimensionality Reduction, Principal Component Analysis](https://youtu.be/embks9p4pb8?si=B2HXm_i0oMSWkBhN)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multidimensional Scaling and Random Projection](https://youtu.be/Yt0o8ukIOKU?si=_ri1NPwKVdhYzgO3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Feature Transformations](https://youtu.be/6QJjZoWknEI?si=p6vp811xWAmzWY3r)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Feature Selection](https://youtu.be/5Q0gemu-h3Q?si=ATG-ue0i2qcc-IVx)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Feature Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are often many predictor features (input variables), available for us
+    to work with for building our prediction models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are good reasons to be selective, throwing in every possible feature is
+    not a good idea!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In general, for the best prediction model, careful selection of the fewest features
+    that provide the most amount of information is the best practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s why:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**blunders** - more predictor features result in more complicated workflows
+    that require more professional time and have increased opportunity for mistakes
+    in the workflow'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**difficult to visualize** - higher dimensional models, i.e., larger number
+    of predictor features, are more difficult to visualize'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**model checking** - more complicated models may be more difficult to interrogate,
+    interpret and QC'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**predictor feature redundancy** - more likely to have redundant predictor
+    features. The inclusion of highly redundant and collinear or multicollinear features
+    increases model variance, increase model instability and decreases prediction
+    accuracy for testing'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**computational time** - more predictor features generally increase the computational
+    time required to train the model and the computational storage, i.e., the model
+    may be less compact and portable'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**model overfit** - the risk of overfit increases with the more features, due
+    to increase in model complexity'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**model extrapolation** - many predictor features results in high dimensional
+    model space with less data coverage and more likelihood for model extrapolation
+    that may be inaccurate'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The primary concern with many predictor features is the curse of dimensionality.
+    Let’s summarize the curse!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Curse of Dimensionality
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Data and Model Visualization** - we cannot visualize beyond 3D, i.e., access
+    the model fit to data, evaluate interpolation vs. extrapolation.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: consider a 5D example shown as a matrix scatter plot, even in this case there
+    is an extreme marginalization to 2D for each plot,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ecf50f66114aec17ea35fde1342d66c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 5D data as a matrix scatter plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sampling** - the number of samples sufficient to infer statistics like the
+    joint probability, \(P(x_1,\ldots,x_m)\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'recall the calculation of a histogram or normalized histogram: we establish
+    bins and calculate frequencies or probabilities in each bin.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we require a nominal number of data samples for each bin, so we require \(𝑛=𝑛_{𝑠/𝑏𝑖𝑛}
+    \cdot 𝑛_{𝑏𝑖𝑛𝑠}\) samples in 1D
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: but in mD we required \(n\) samples to calculate the discretized joint probability,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑛=𝑛_{𝑠/𝑏𝑖𝑛} \cdot 𝑛_{𝑏𝑖𝑛𝑠}^m$ \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for example, 10 samples per bin with 35 bins requires 12,250 samples in 2D,
+    and 428,750 samples in 3D
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/bc8823819263f4497ef6baab93a9ee38.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sample Coverage** - the range of the sample values cover the predictor feature
+    space.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: fraction of the possible solution space that is sampled, for 1 feature we assume
+    80% coverage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: remember, we usually, directly sample only \(\frac{1}{10^7}\) of the volume
+    of the subsurface
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: yes, the concept of coverage is subjective, how much data to cover? What about
+    gaps? etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/d8058511a88a482ed34b0cbd9eb34fec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: now if there is 80% coverage for 2 features the 2D coverage is 64%
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8d96453b3f6c2a92a160fe4329a13d4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: coverage is,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ c = c_1^m \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Distorted Space** - high dimensional space is distorted.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: take the ratio of the volume of an inscribed hypersphere in a hypercube,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \frac{\pi^{\frac{m}{2}}}{m 2^{m-1} \Gamma\left(\frac{m}{2}\right)} \to 0
+    \quad \text{as} \quad m \to \infty \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall, \(\Gamma(𝑛)=(𝑛−1)!\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: high dimensional space is all corners and no middle and most of high dimensional
+    space is far from the middle (all corners!).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as a result distances in high dimensional space lose sensitivity, i.e., for
+    any random points in the space the expected pairwise distances all become the
+    same,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lim_{m \to \infty} \left( \mathbb{E}\left[\text{dist}_{\text{max}}(m) -
+    \text{dist}_{\text{min}}(m)\right] \right) \to 0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: the limit of the expectation of the range of pairwise distances over random
+    points in hyper-dimensional space tends to zero. If distances are almost all the
+    same, Euclidian distance is no longer meaningful!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8c8d512cca4eb330150d1ba298831543.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The ratio of the volume of a hypersphere within a hypercube.
+  prefs: []
+  type: TYPE_NORMAL
+- en: here’s the severity of the distortion for various dimensionalities,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '| m | nD / 2D |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 0.28 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 0.003 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 20 | 0.00000003 |'
+  prefs: []
+  type: TYPE_TB
+- en: '**Multicollinearity** - higher dimensional datasets are more likely to have
+    collinearity or multicollinearity.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Feature linearly described by other features resulting in high model variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is Feature Ranking?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Feature ranking is a set of metrics that assign relative importance or value
+    to each predictor feature with respect to information contained for inference
+    and importance in predicting a response feature. There are a wide variety of possible
+    methods to accomplish this. My recommendation is a **‘wide-array’** approach with
+    multiple analyses and metrics, while understanding the assumptions and limitations
+    of each method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the general types of metrics that we consider for feature ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visual Inspection of Data Distributions and Scatter Plots
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Statistical Summaries
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Model-based
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Recursive Feature Elimination
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Also, we should not neglect expert knowledge. If additional information is known
+    about physical processes, causation, reliability and availability of predictor
+    features this should be integrated into assigning feature ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the Shapley value approach for feature ranking we need an additional package
+    and to start up javascript support.
+  prefs: []
+  type: TYPE_NORMAL
+- en: after running this block you should see a hexagon with the text ‘js’ to indicate
+    that javascript is ready
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/70b822753245ba6bb888425de8eb62b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Design Custom Color Map
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Accounting for significance by masking nonsignificant values
+  prefs: []
+  type: TYPE_NORMAL
+- en: for demonstration only currently, could be updated for each plot based on results
+    confidence and uncertainty
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here’s a couple of functions to assist with calculating metrics for ranking
+    and other plots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**plot_corr** - plot a correlation matrix'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**partial_corr** - partial correlation coefficient'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**semipar_corr** - semipartial correlation coefficient'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**mutual_matrix** - mutual information matrix, matrix of all pairwise mutual
+    information'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**mutual_information_objective** - my modified version of the MRMR loss function
+    (Ixy - average(Ixx)) for feature ranking (uses all other predictor features)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**delta_mutual_information_quotient** - change in mutual information quotient
+    by adding and removing a specific feature (uses all other predictor features for
+    the comparison)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**weighted_avg_and_std** - average and standard deviation account for data
+    weights'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**weighted_percentile** - percentile accounting for data weights'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**histogram_bounds** - add confidence intervals to histograms'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**add_grid** - convenience function to add major and minor gridlines to improve
+    plot interpretability'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here are the functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘unconv_MV.csv’. This
+    dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a DataFrame we called ‘my_data’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also establish the feature ranges for plotting. We could calculate the
+    feature range directly from the data with code like this:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: but, this would not result in easy to understand color bars and axis scales,
+    let’s pick convenient round numbers. We will also declare feature labels for ease
+    of plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful first check of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: add parameter ‘n=13’ to see the first 13 rows of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 3 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 6 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 7 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 8 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 9 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 10 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 11 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 12 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 13 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum,
+    and quartiles all in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use transpose just to flip the table so that features are on the rows and
+    the statistics are on the columns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Well | 200.0 | 100.500000 | 57.879185 | 1.000000 | 50.750000 | 100.500000
+    | 150.250000 | 200.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3864.407081 | 1553.277558 | 839.822063 | 2686.227611 | 3604.303506
+    | 4752.637555 | 8590.384044 |'
+  prefs: []
+  type: TYPE_TB
+- en: Ranking features is really an effort to understand the features and their relationships
+    with each other. We will start with basic data visualization and move to more
+    complicated methods such are partial correlation and recursive feature elimination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Coverage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with the concept of feature coverage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If a feature is available over a small proportion of the samples then we may
+    not want to include it as it will result in issues with feature imputation, estimation
+    of missing data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By removing a couple features with poor coverage we may improve our model because
+    there are limitations with feature imputation, feature imputation can actually
+    impose bias in statistics and additional error in our prediction models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if likewise deletion is applied to deal with missing values, features with low
+    coverage result in a lot of removed data!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let’s start with a bar chart with the proportion of missing records:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6b56bb06fe01cd87f3513b8ebe3a71bb409619f34b70e4dd2bd50d61e5c4e62d.png](../Images/e5a834b70ca47ad151aee5749adc53ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For the provided example dataset the plot should be empty. There are no missing
+    data so the ‘Proportion of Missing Records’ is 0.0 for all features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you wanted to test this plot with some missing data, run this code first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Remove this code and reload the data to continue to get consistent results with
+    the discussions below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This does not tell the whole story. For example, if 20% of feature A is missing
+    and 20% of feature B is missing are those the same and different samples. This
+    has a huge impact if you perform likewise deletion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If there is not too much data then we can actually visualize data coverage over
+    all samples and features in a boolean table like this.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This method may identify specific samples with many missing features that may
+    be removed to improve overall coverage or other trends or structures in the missing
+    data that may result in sampling bias.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/5849f3ca4f8301f49db8799952b591b62475a866fcaa2646497f042118e36aa0.png](../Images/9b8b2b5fe0360995f89df5950e3ed23d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again this plot should be quite boring for the provided dataset with perfect
+    coverage, every cell should be filled in red.
+  prefs: []
+  type: TYPE_NORMAL
+- en: add the code to remove some records to test this plot. White cells are missing
+    records.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature Imputation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: See the chapter on feature imputation to learn what to do about missing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For now a concise treatment here, we will just apply likewise deletion and move
+    on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we remove all samples with any missing feature values. While this is quite simple,
+    it is a sledge hammer approach to ensure perfect coverage required by feature
+    ranking methods that we are about to demonstrate. Please check out the other methods
+    in the linked workflow above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In any multivariate work we should start with the univariate analysis, summary
+    statistics of one variable at a time. The summary statistic ranking method is
+    qualitative, we are asking:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Are there data issues?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Do we trust the features? Do we trust the features all equally?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Are there issues that need to be taken care of before we develop any multivariate
+    workflows?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum,
+    and quartiles all in a compact data table. We use transpose() command to flip
+    the table so that features are on the rows and the statistics are on the columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Well | 200.0 | 100.500000 | 57.879185 | 1.000000 | 50.750000 | 100.500000
+    | 150.250000 | 200.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3864.407081 | 1553.277558 | 839.822063 | 2686.227611 | 3604.303506
+    | 4752.637555 | 8590.384044 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary statistics are a critical first step in data checking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this includes the number of valid (non-null) values for each feature (count
+    removes all np.NaN from the totals for each variable).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can see the general behaviors such as central tendency, mean, and dispersion,
+    variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can identify issue with negative values, extreme values, and values that
+    are outside the range of plausible values for each property.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The data looks to be in pretty good shape and for brevity we skip outlier detection.
+    Let’s look at the univariate distributions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Univariate Distributions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As with summary statistics, this ranking method is a qualitative check for issues
+    with the data and to assess our confidence with each feature. It is better to
+    not include a feature with low confidence of quality as it may be misleading (while
+    adding to model complexity as discussed previously).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1b5c32c2236778514e0fd18a00eb66559f6030647523aca11be1a1e520a5693c.png](../Images/8a0c89fa0d885a7643839d04c23ff8be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The univariate distributions look good:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious outliers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the permeability is positively skewed, as is often observed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the corrected TOC has a small spike, but it’s reasonable
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bivariate Distributions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Matrix scatter plots are a very efficient method to observe the bivariate relationships
+    between the variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is another opportunity through data visualization to identify data issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can assess if we have collinearity, specifically simpler form between two
+    features at a time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/283204472327a4b7c8b5d3fcf91848aec9161f0646166a8de22e8d42f8dbdaf5.png](../Images/eb1c7e7e9920c8c27be71cd70df81661.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This plot communicates a lot of information. How could we use this plot for
+    variable ranking?
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can identify features that are closely related to each other, e.g., if two
+    features have almost a perfect monotonic linear or near linear relationship we
+    should remove one immediately. This is a simple case of collinearity that will
+    likely result in model instability as discussed above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can check for linear vs. non-linear relationships. If we observe nonlinear
+    bivariate relationships this will impact the choice of methods, and the quality
+    of results from methods that assume linear relationships for variable ranking.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can identify constraint relationships and heteroscedasticity between variables.
+    Once again these may restrict our ranking methods and also encourage us to retains
+    specific features to retain these features in the resulting model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Yet, we must remember that bivariate visualization and analysis is not sufficient
+    to understand all the multivariate relationships in the data, e.g., multicollinearity
+    includes strong linear relationships between 2 or more features. These may be
+    hard to see with only bivariate plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pairwise Covariance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Pairwise covariance provides a measure of the strength of the linear relationship
+    between each predictor feature and the response feature. At this point, we specify
+    that the goal of this study is to predict production, our response variable, from
+    the other available predictor features. We are thinking predictively now, not
+    inferentially, we want to estimate the function, \(\hat{f}\), to accomplish this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y = \hat{f}(X_1,\ldots,X_n) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where \(Y\) is our response feature and \(X_1,\ldots,X_n\) are our predictor
+    features. If we retained all of our predictor features to predict the response
+    we would have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Prod = \hat{f}(Por,Perm,AI,Brittle,TOC,VR) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now back to the covariance, the covariance is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ C_{xy} = \frac{\sum_{i=1}^{n} (x_i - \overline{x})(y_i - \overline{y})}{(n-1)}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Covariance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: measures the linear relationship
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: sensitive to the dispersion / variance of both the predictor and response
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can use the follow command to build a covariance matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: the output is a new Pandas DataFrame, so we can slice the last column to get
+    a Pandas series (ndarray with names) with the covariances between all predictors
+    features and the response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ff711b73e2baba3be2993b907d5023462afb3ab86692953cb31870078fc6969f.png](../Images/89e89e3a083da28954418714216aa9d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The covariance is useful, but as you can see the magnitude is quite variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the covarince magnitudes are a function of each feature’s feature and feature
+    variance is somewhat arbitrary.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'for example, what is the variance of porosity in fraction vs. percentage or
+    permeability in Darcy vs. milliDarcy. We can show that if we apply a constant
+    multiplier, \(c\), to a feature, \(X\), that the variance will change according
+    to this relationship (the proof is based on expectation formulation of variance):'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \sigma_{cX}^2 = c^2 \cdot \sigma_{X}^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: By moving from percentage to fraction we decrease the variance of porosity by
+    a factor of 10,000! The variance of each feature is potentially arbitrary, with
+    the exception when all the features are in the same units.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pairwise correlations are standardized covariances; therefore, avoids this arbitrary
+    magnitude issue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pairwise Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pairwise correlation coefficient provides a measure of the strength of the linear
+    relationship between each predictor feature and the response feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{xy} = \frac{\sum_{i=1}^{n} (x_i - \overline{x})(y_i - \overline{y})}{(n-1)\sigma_x
+    \sigma_y}, \, -1.0 \le \rho_{xy} \le 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The correlation coefficient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: measures the linear relationship
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: removes the sensitivity to the dispersion / variance of both the predictor and
+    response features, by normalizing by the product of the standard deviation of
+    each feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can use the follow command to build a correlation matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: the output is a new Pandas DataFrame, so we can slice the last column to get
+    a Pandas series (ndarray with names) with the correlations between all predictors
+    features and the response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8de550142d1a57e5f8c2443095641ca1f3d8907168b1d668112afc3f7f49b625.png](../Images/cf2f8ebbbb9381f4ae232eefb7ce2e7a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From the correlation matrix we can observe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see that porosity, permeability and total organic carbon have the strongest
+    linear relationships with production.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic impedance has weak negative relationships with production.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Brittleness is very close to 0.0\. If you review the brittleness vs. production
+    scatterplot, you’ll observe a complicated non-linear relationship. There is a
+    brittleness ratio sweet spot for production (rock that is not too soft nor too
+    hard)!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could also look at the full correlation matrix to evaluate the potential
+    for redundancy between predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: strong degree of correlation between porosity and permeability and porosity
+    and TOC
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: strong degree of negative correlation between TOC and acoustic impedance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are still limited to a strict linear relationship. The rank correlation allows
+    us to relax this assumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pairwise Spearman Rank Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The rank correlation coefficient applies the rank transform to the data prior
+    to calculating the correlation coefficient. To calculate the rank transform simply
+    replace the data values with the rank \(R_x = 1,\dots,n\), where \(n\) is the
+    maximum value and \(1\) is the minimum value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{R_x R_y} = \frac{\sum_{i=1}^{n} (R_{x_i} - \overline{R_x})(R_{y_i}
+    - \overline{R_y})}{(n-1)\sigma_{R_x} \sigma_{R_y}}, \, -1.0 \le \rho_{xy} \le
+    1.0 \]\[ x_\alpha, \, \forall \alpha = 1,\dots, n, \, | \, x_i \ge x_j \, \forall
+    \, i \gt j \]\[ R_{x_i} = i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The rank correlation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: measures the monotonic relationship, relaxes the linear assumption
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: removes the sensitivity to the dispersion / variance of both the predictor and
+    response, by normalizing by the product of the standard deviation of each.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can use the follow command to build a rank correlation matrix and calculate
+    the p-value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: the output is a new Pandas DataFrame, so we can slice the last column to get
+    a Pandas series (ndarray with names) with the correlations between all predictors
+    features and the response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Also, we get a very convenient *pval* 2D ndarray with the two-sided (two-tail
+    summing symmetric over both tails) p-value for a hypothesis test with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '\[ H_o: \rho_{R_x R_y} = 0 \]\[ H_1: \rho_{R_x R_y} \ne 0 \]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s keep the p-values between all the predictor features and our response
+    feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/dd0d78eac8d8429bd13249c35c5d50933da7bf91abf6d4cb58614489675c598e.png](../Images/609c07d08205a2c92204da55d19ad62a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There matrix and line plots indicate that the rank correlation coefficients
+    are similar to the correlation coefficients indicating that nonlinearity and outliers
+    are not likely impacting the correlation-based feature ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With regard to rank correlation p-values,
+  prefs: []
+  type: TYPE_NORMAL
+- en: at a typical alpha value of 0.05, only the rank correlation between brittleness
+    and production does not fail the hypothesis test; therefore, is not significantly
+    different than 0.0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is useful to look at the difference between the correlation coefficient and
+    rank correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e6d73185fa9381a8bc24c2f7002331e6bbb2de3276c7073a45074a6ef2fae98b.png](../Images/9010e510d3b644ed069447aad1564797.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here are some interesting observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation of porosity and vitrinite reflectance with production improve when
+    we reduce the impact of linearity and outliers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: correlation of brittleness with production worsen when we reduce the impact
+    of linearity and outliers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All of these methods up to now have considered one feature at a time. We can
+    also consider methods that consider all features jointly to ‘isolate’ the influence
+    of each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Partial Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is a linear correlation coefficient that controls for the effects all the
+    remaining variables, \(\rho_{XY.Z}\) and \(\rho_{YX.Z}\) is the partial correlation
+    between \(X\) and \(Y\), \(Y\) and \(X\), after controlling for \(Z\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To calculate the partial correlation coefficient between \(X\) and \(Y\) given
+    \(Z_i, \forall \quad i = 1,\ldots, m-1\) remaining features we use the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: perform linear, least-squares regression to predict \(X\) from \(Z_i, \forall
+    \quad i = 1,\ldots, m-1\). \(X\) is regressed on the predictors to calculate the
+    estimate, \(X^*\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'calculate the residuals in Step #1, \(X-X^*\), where \(X^* = f(Z_{1,\ldots,m-1})\),
+    linear regression model'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: perform linear, least-squares regression to predict \(Y\) from \(Z_i, \forall
+    \quad i = 1,\ldots, m-1\). \(Y\) is regressed on the predictors to calculate the
+    estimate, \(Y^*\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'calculate the residuals in Step #3, \(Y-Y^*\), where \(Y^* = f(Z_{1,\ldots,m-1})\),
+    linear regression model'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'calculate the correlation coefficient between the residuals from Steps #2 and
+    #4, \(\rho_{X-X^*,Y-Y^*}\)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The partial correlation, provides a measure of the linear relationship between
+    \(X\) and \(Y\) while controlling for the effect of \(Z\) other features on both,
+    \(X\) and \(Y\). We use the function declared previously taken from Fabian Pedregosa-Izquierdo,
+    [f@bianp.net](mailto:f%40bianp.net). The original code is on GitHub at [https://git.io/fhyHB](https://git.io/fhyHB).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To use this method we must assume:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: two variables to compare, \(X\) and \(Y\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: other variables to control, \(Z_{1,\ldots,m-2}\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: linear relationships between all variables
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: no significant outliers
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: approximately bivariate normality between the variables
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We are in pretty good shape, but we have some departures from bivariate normality.
+    We could consider Gaussian univariate transforms to improve this. This option
+    is provided later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/685abb597e65278976ed6245ea39ffba1c566acd98a0496f9a20ae9b472f4e07.png](../Images/11649099249c19a8d0134ee44bd96661.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we see a lot of new things about the unique contributions of each predictor
+    feature!
+  prefs: []
+  type: TYPE_NORMAL
+- en: porosity and permeability are strongly correlated with each other so they are
+    penalized severely
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance’s and vitrinite reflectance’s absolute correlation are increased
+    reflecting their unique contributions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon flipped signs! When we control for all other variables,
+    it has a negative relationship with production.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With the partial correlation coefficients we have controlled for the influence
+    of all other predictor features on both the specific predictor and the response
+    features. The semipartial correlation filters out the influence of all other predictor
+    features on the raw response variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Semipartial Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This is a linear correlation coefficient that controls for the effects all
+    the remaining features, \(Z\) on \(X\), and then calculates the correlation between
+    the residual \(X^*-X\) and \(Y\). Note: we do not control for influence of \(Z\)
+    features on the response feature, \(Y\).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To calculate the semipartial correlation coefficient between \(X\) and \(Y\)
+    given \(Z_i, \forall \quad i = 1,\ldots, m-1\) remaining features we use the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: perform linear, least-squares regression to predict \(X\) from \(Z_i, \forall
+    \quad i = 1,\ldots, m-1\). \(X\) is regressed on the remaining predictor features
+    to calculate the estimate, \(X^*\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'calculate the residuals in Step #1, \(X-X^*\), where \(X^* = f(Z_{1,\ldots,m-1})\),
+    linear regression model'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'calculate the correlation coefficient between the residuals from Steps #2 and
+    \(Y\) response feature, \(\rho_{X-X^*,Y}\)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The semipartial correlation coefficient, provides a measure of the linear relationship
+    between \(X\) and \(Y\) while controlling for the effect of \(Z\) other predictor
+    features on the predictor feature, \(X\), to get the unique contribution of \(X\)
+    with respect to \(Y\). We use a modified version of the partial correlation function
+    that we declared previously. The original code is on GitHub at [https://git.io/fhyHB](https://git.io/fhyHB).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8288d5546785bae96f5c850214ddd5be4c148d6210b1b7d05ca2f86640b6b443.png](../Images/9bc790699675e3bdbd9e8ed625051fa1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'More information to consider:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: porosity, permeability and vitrinite reflectance are the most important by this
+    feature ranking method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: all other predictor features have quite low correlations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is a good moment to stop and take stock of all the results from the quantitative
+    methods. We will plot them all together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8e1ed4eede67a45f3fd9cf848e281724927b517c683e5207ab574696b9952bde.png](../Images/9b87cdad7bc65f987a9f65bfe7febc3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I think we are converging on porosity, permeability and vitrinite reflectance
+    as the most important variables with respect to linear relationships with the
+    production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature Ranking with Feature Transformations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are many reasons to perform feature transformations (see the associated
+    chapter) and as mentioned above for partial and semipartial correlation a distribution
+    transformation may assist with compliance to metric assumptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an exercise and check, let’s standardize all the features and repeat the
+    previously calculated quantitative methods. We know this will have an impact on
+    covariance, what about the other metrics?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There is a bunch of code to get this done, but it isn’t too complicated. First,
+    lets make a new DataFrame with all variables standardized. Then we can make a
+    minor edit (change the DataFrame name) and reuse the code from above. You can
+    choose between:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Standardization - affine correction to scale the distributions to have \(\overline{x}
+    = 0\) and \(\sigma_x = 1.0\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Normal Score Transform - distribution transform of each feature to standard
+    normal, Gaussian shape with \(\overline{x} = 0\) and \(\sigma_x = 1.0\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Use this block to perform affine correction of the features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Use this block to perform normal score transform of the features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | -0.964092 | -0.780664 | -0.285841 | 2.432379 | 0.312053 | 1.114651 |
+    -1.780464 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | -0.832725 | -0.378580 | 0.446827 | -0.195502 | -0.272809 | -0.325239
+    | -0.392079 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | -0.312053 | -1.069155 | 1.722384 | 2.004654 | -0.272809 | 2.241403 |
+    -0.832725 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 0.730638 | 1.325516 | -0.531604 | -0.590284 | 0.131980 | -0.325239 |
+    0.815126 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 0.698283 | 0.298921 | 0.365149 | -2.870033 | 1.047216 | -0.259823 | -0.531604
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: Regardless of the transformation that you chose it is best practice to check
+    the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 200.000000 | 200.000000 | 2.000000e+02 | 2.000000e+02 | 200.000000
+    | 200.000000 | 2.000000e+02 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | -0.009700 | 0.010306 | 9.732356e-03 | 8.028717e-05 | 0.014152 | 0.017360
+    | 1.617223e-03 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 1.040456 | 1.005488 | 1.000221e+00 | 1.000278e+00 | 0.989223 | 1.000401
+    | 9.949811e-01 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | -4.991462 | -3.355431 | -2.782502e+00 | -2.870033e+00 | -2.336891 |
+    -2.899210 | -2.483589e+00 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 25% | -0.670577 | -0.647337 | -6.588985e-01 | -6.705770e-01 | -0.670577 |
+    -0.651072 | -6.705770e-01 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 50% | 0.006267 | 0.006267 | 8.881784e-16 | 8.881784e-16 | 0.018807 | 0.006267
+    | 8.881784e-16 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 75% | 0.670577 | 0.678574 | 6.705770e-01 | 6.705770e-01 | 0.682378 | 0.682642
+    | 6.705770e-01 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 2.807034 | 2.807034 | 2.807034e+00 | 2.807034e+00 | 2.807034 | 2.807034
+    | 2.807034e+00 |'
+  prefs: []
+  type: TYPE_TB
+- en: We should also check the matrix scatter plot again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you performed normal score transform, you have standardized the mean and
+    variance and correct the univariate shape of the distribution, but the bivariate
+    relationships still depart from Gaussian.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/884680b3106f0f9bc10b64a1888d213dedcd55860acea49e6f5bd179d1604868.png](../Images/8568ba1fa581044cc577242f378dd1db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is the new DataFrame with standardized variables. Now we repeat the previous
+    calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will be more efficient this time and use quite compact code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: and repeat the previous summary plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e6320b5768883e13feea467d4888f04edce7671ecd0ba7a92874bc94656cd1a2.png](../Images/8eeed3569969856a648e8f7bf97ddb8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'What can you observe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: covariance is now equal to correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the semipartial correlations are sensitive to the feature standardization (affine
+    correlation or normal score transform).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conditional Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will separate the wells into low, mid and high production and access the
+    difference in the conditional statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This will provide a more flexible method to compare the relationship between
+    each feature and production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the conditional statistics change significantly then that feature is informative
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are going to make a single violin plot over all of our features
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need a categorical feature for production, so we truncate production to High
+    or Low with this code,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will need to standardize all of our features so we can observe their relative
+    differences together
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code extracted the features into a new DataFrame ‘x’, then applied the
+    standardization operation on each column (feature)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we add the truncated production feature into the standardized features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can then apply the melt command to unpivot the DataFrame
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We now have a long DataFrame (6 features x 200 samples = 12000 rows) with:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'production: Low or High'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'features: Por, Perm, AI, Brittle, TOC or VR'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: standardized feature value
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can then build our violin plot
+  prefs: []
+  type: TYPE_NORMAL
+- en: x is our predictor features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: y is the standardized values for the predictor features (all now in one column)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: hue is the production level High or Low
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: split is True so the violins are split in half
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: inner is quartiles for P25, P50 and P75 are plotted as dashed lines
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/39636127cd144d1449668e2c0eee3c8e122afe9891a46cc3e4610d38ff16390a.png](../Images/97e5b28483156d276669ee0ba4b67c7a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the violin plot we can observe that the conditional distributions of porosity,
+    permeability, TOC have the most variation between low and high production wells.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can replace the plot with box and whisker plots of the conditional distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Box and whisker plots improve our ability to observe the conditional P25, P75
+    and the upper and lower bounds from the Tukey outlier test.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2121ce938f6088b2c90acec866c9ff94b488c33826983e13a20d4e1721016352.png](../Images/5cb6b0c21042f1de1888484ca5e64a81.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the conditional box plot we can observe that the conditional distributions
+    of porosity, permeability, TOC have the most variation between low and high production
+    wells.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can observed the outliers in porosity, permeability (upper tail), total organic
+    carbon (lower tail) and vitrinite reflectance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Variance Inflation Factor (VIF)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A measure of linear multicollinearity between a predictor feature (\(X_i\))
+    a nd all other predictor features (\(X_j, \forall j \ne i\)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: First we calculate a linear regression for a predictor feature given all the
+    other predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ X_i = \sum_{j, j \ne i}^m X_j + \epsilon \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: From this model we determine the coefficient of determination, \(R^2\), known
+    as variance explained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then we calculate the Variance Inflation Factor as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ VIF = \frac{1}{1 - R^2} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/eaaa1c71dedcaed7ee83a0dfce8fdfb50ad17facc2a2c38a51caf6c6481cb547.png](../Images/5692efa445f9167d3d0d5a6d8f3e8bcb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vitrinite reflectance has the most linear redundancy while permeability has
+    the least linear redundancy with other predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: remember, high variance inflation factor is bad
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: recall that variance inflation factor does not integrate the relationship between
+    each predictor feature and the response feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: typically, variance inflation factor is used as a screening tool to remove features
+    that have too much redundancy with other predictor features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s cover model-based feature ranking methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(B\) Coefficients / Beta Weights
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We could also consider \(B\) coefficients. These are the linear regression coefficients
+    without standardization of the variables. Let’s use the linear regression method
+    that is available in the SciPy package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The estimator for \(Y\) is simply the linear equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} Y^* = \sum_{i=1}^{m} b_i X_i + c \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: The \(b_i\) coefficients are solved to minimize the squared error between the
+    estimates, \(Y^*\) and the values in the training dataset, \(Y\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ddb18df2725eafa50c95853e6bec78f8aa249726ae339ee0d874966578afdf95.png](../Images/7da7b523b4ae881b20a379148ea78eea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The output is the \(b\) coefficients, ordered over our features from \(b_i,
+    i = 1,\ldots,n\) and then the intercept, \(c\), that I have removed to avoid confusion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we see the negative contribution of AI and TOC
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the results are very sensitive to the magnitudes of the variances of the predictor
+    features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can remove this sensitivity by working with standardized features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\beta\) Coefficients / Beta Weights
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: \(\beta\) coefficients are calculated as the linear regression of the coefficients
+    after we have standardized the predictor and response features to have a variance
+    of one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \sigma^2_{X^s_i} = 1.0 \quad \forall \quad i = 1,\ldots,m,
+    \quad \sigma^2_{Y^s} = 1.0 \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The estimator for \(Y^s\) standardized is simply the linear equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} Y^{s*} = \sum_{i=1}^{m} \beta_i X^s_i + c \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is convenient that we have just standardized all our variables to have a
+    variance of 1.0 just recently (see above). Let’s use the same linear regression
+    method again on the standardized features to get \(\beta\) coefficients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/29565b4c74d530743a2aacdb6e0cda302fe0e962b6635c8cc1f909311289fcd9.png](../Images/63a59eb20ac3161240452ef8f6fcd97a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Some observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the change between \(b\) and \(\beta\) coefficients is not just a constant scaling
+    on the ranking metrics, because the linear model coefficients are also sensitive
+    to the ranges and magnitudes of the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: with beta coefficients porosity, acoustic impedance and total organic carbon
+    have higher rank for estimating production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature Importance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A variety of machine learning methods provide measures of feature importance,
+    for example decision trees the reduction in mean square error through inclusion
+    of each feature and is summarized as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ FI(x) = \sum_{t \in T_f} \frac{N_t}{N} \Delta_{MSE_t} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(T_f\) are all nodes with feature \(x\) as the split, \(N_t\) is the
+    number of training samples reaching node \(t\), \(N\) is the total number of samples
+    in the dataset and \(\Delta_{MSE_t}\) is the reduction in MSE with the \(t\) split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, feature importance can be calculated in a similar manner to MSE above
+    for the case of classification trees with **Gini Impurity**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the feature importance from a random forest regression model fit
+    to our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We instantiate a random forest with default hyperparameters. This results in
+    unlimited complexity, over-trained trees in our forest. The averaging of these
+    trees takes care of the overfit issue.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we train our random forest and extract the feature importances, calculated
+    as the expectated feature importance over all the trees in the forest.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can also extract the feature importances over all the trees in the forest
+    and summarize with the standard deviation to access the robustness, uncertainty
+    of our feature importance measure
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For more information check out my lecture on [random forest](https://www.youtube.com/watch?v=m5_wk310fho&list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&index=39)
+    predictive machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/633da2b9b4e395da57c78aa4f82399344b016071733ef9fb8569d30c70d92604.png](../Images/4221de8488fdf2ce8f7716c22e1ea9d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There is more we can do with model-based methods. We will actually test models
+    to assess the incremental impact of each predictor feature! We will try this with
+    recursive feature elimination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s plot the results from the \(B\) and \(\beta\) coefficients and compare
+    with the previous results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/28592d6d0a57887d32a07cc893157689a5862f636dd4b208cc9b42b3dc9dd964.png](../Images/9b736db6a7b146115943a1775ce2cc0d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mutual Information
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Mutual information is a generalized approach that quantifies the mutual dependence
+    between two features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: quantifies the amount of information gained from observing one feature about
+    the other
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: avoids any assumption about the form of the relationship (e.g. no assumption
+    of linear relationship)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: compares the joint probabilities to the product of the marginal probabilities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For discrete or binned continuous features \(X\) and \(Y\), mutual information
+    is calculated as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ I(X;Y) = \sum_{y \in Y} \sum_{x \in X}P_{X,Y}(x,y) log \left( \frac{P_{X,Y}(x,y)}{P_X(x)
+    \cdot P_Y(y)} \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'recall, given independence between \(X\) and \(Y\):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P_{X,Y}(x,y) = P_X(x) \cdot P_Y(y) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: therefore if the two features are independent then the \(log \left( \frac{P_{X,Y}(x,y)}{P_X(x)
+    \cdot P_Y(y)} \right) = 0\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The joint probability \(P_{X,Y}(x,y)\) is a weighting term on the sum and enforces
+    closure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: parts of the joint distribution with greater density have greater impact on
+    the mutual information metric
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For continuous (and nonbinned) features we can applied the integral form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ I(X;Y) = \int_{Y} \int_{X}P_{X,Y}(x,y) log \left( \frac{P_{X,Y}(x,y)}{P_X(x)
+    \cdot P_Y(y)} \right) dx dy \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We get a sorted list of the indices in decreasing order of importance with the
+    command
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: the slice reverses the order, for descending order of feature importance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/704e3c6fd50614dcf67edb8dd01d1392f4509c1017dae51fcd1a26281de97377.png](../Images/d12dd6dd61aa76402a54c096acd0768b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mutual Information Accounting For Relevance and Redundancy
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The standard Maximum Relevance - Minumum Redundancy (MRMR) objective function
+    considers a subset of predictor features, i.e., to score predictor feature subsets
+    as metric to identify the most informative subset of predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the approach calculates the average mutual information between the subset of
+    predictor features and the response feature minus the average mutual information
+    between the subset of predictor features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \begin{equation} MID = \frac{1}{|S|}{\sum_{\alpha \in S} I(X_{\alpha},Y) } -
+    \frac{1}{|S|^2} {\sum_{\alpha \in S}^m \sum_{\beta \in S}^m I(X_{\alpha},X_{\beta})}
+    \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: as a measure of \(relevance - redundancy\) or
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} MIQ = \frac{ \frac{1}{|S|}{\sum_{\alpha \in S}^m I(X_{\alpha},Y)
+    } }{ \frac{1}{|S|^2} {\sum_{\alpha \in S}^m \sum_{\beta \in S}^m I(X_{\alpha},X_{\beta})}
+    } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: as a measure of \(\frac{relevance}{redundancy}\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mutual Information Accounting For Relevance and Redundancy OFAT Variants
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'I propose that for one-feature-at-a-time (OFAT) predictor feature ranking (predictor
+    feature subset, \(S = [X_i]\) and \(|S| = 1\)) we modify this to the following
+    calculation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**relevance** - the mutual information between the selected predictor feature,
+    \(X_i\), and the response feature, \(Y\)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**redundancy** - the average mutual information between the selected predictor
+    feature, \(X_i\), and the remaining predictor features, \(X_{\alpha}, \alpha \ne
+    i\).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we use the quotient form of the calculation from Gulgezen, Cataltepe and Yu
+    (2009).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Our modified version of the Maximum Relevance - Minumum Redundancy (MRMR) objective
+    function for OFAT ranking scores the selected predictor feature \(X_i\)’s **relevance**
+    as its mutual information with the response feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} I(X_i,Y) \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'and **redundancy** between the selected predictor feature, \(X_i\), and the
+    remaining predictor features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \frac{1}{|S|-1} \sum_{\alpha=1, \alpha \ne i}^m I(X_i,X_{\alpha})
+    \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: were \(X\) are predictor features, \(Y\) is the response feature, \(X_i\) is
+    the specific predictor feature being scored and \(|S|\) is the number of predictor
+    features and \(I()\) is mutual information between the indicated features. One
+    formulation is a simple difference, relevance minus redundancy,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \Phi_{\Delta}(X_i,Y) = I(X_{\alpha},Y) - \frac{1}{|S|-1} \sum_{\beta=1, \alpha
+    \ne \beta}^m I( X_{\alpha},X_{\beta} ) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: an alternative is a ratio,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \Phi_{r}(X_i,Y) = \frac{ I(X_i,Y) }{ \frac{1}{|S|-1} \sum_{\alpha=1, \alpha
+    \ne i}^m I(X_i,X_{\alpha})} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here the feature ranks for the mutual information relevance minus redundancy,
+    \(\Phi_{\Delta}(X_i,Y)\), approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c0b176e4990bdb326b638222358d06af771613f6ae47153d42a7e2614c7d3c28.png](../Images/ce31fdb26712840a6f374091a92555c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Delta Mutual Information Quotient Accounting for Relevance and Redundancy
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We use adapt the mutual information quotient from Gulgezen, Cataltepe and Yu
+    (2009) to develop an OFAT ranking metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The standard MRMR objective function that scores the subset of features’ **relevance**
+    between the subset of predictor features and the response feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y) } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'and **redundancy** between the subset of predictor features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \frac{1}{|S|^2} {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})}
+    \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: To find the most informative subset of predictor features we must find the subset
+    of features that maximize relevance while minimizing redundancy. We can accomplish
+    this by maximizing either of these two formulations,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} MID = \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y) } - \frac{1}{|S|^2}
+    {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})} \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: or
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} MIQ = \frac{ \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y)
+    } }{ \frac{1}{|S|^2} {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})}
+    } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: I suggest feature ranking through the calculation of the change in \(MIQ\) via
+    inclusion and removal of a specific predictor feature (\(X_i\)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \Delta MIQ_i = \frac{ \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y)
+    } }{ \frac{1}{|S|^2} {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})}
+    } - \frac{ \frac{1}{|S|}{\sum_{\alpha=1,\alpha \ne i}^m I(X_{\alpha},Y) } }{ \frac{1}{|S|^2}
+    {\sum_{\alpha=1,\alpha \ne i}^m \sum_{\beta=1,\beta \ne i}^m I(X_{\alpha},X_{\beta})}
+    } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/03d7d53a3d4abf4c562eeb53cbb1d74427a39a38a569d1e60c953a3ce9fe55a8.png](../Images/21f9cee66dbe4d7f6bc8cac154c1ad85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is intructive to compare delta mutual information and variance inflation
+    factor ranking. Both of these methods account for predictor feature redundancy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: but VIF assumes linearity and does not account for relevance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/753de82205baf137ac8f92671732ef8708fc686e982b161ca2b05ba1095ee90e.png](../Images/3028e58a56f928ebb26de84cfb6e1f54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From mutual information we can observe that porosity, permeability then total
+    organic carbon and brittleness have the greatest departure from general independence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary of All Bivariate Metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have a wide array of criteria to rank our features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the \(B\) coefficient have the same issue as covariance, sensitivity to the
+    univariate variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the \(\beta\) coefficients remove this sensitivity and are consistent with previous
+    results.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Given all of these methods, I would rank the variables as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Porosity
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Vitrinite Reflectance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Permeability
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Total Organic Carbon
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Brittleness
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I have assigned these ranks by observing the general trend in these metrics.
+    Of course, we could make a more quantitative score and rank by weighting each
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned before, we should not neglect expert knowledge. If additional information
+    is known about physical processes, causation, and reliability and availability
+    of variables this should be integrated into assigning ranks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We include a bonus method here, recursive feature elimination, but only provide
+    a simple linear regression model example. More could be done with more complicated
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recursive Feature Elimination
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recursive Feature Elimination (RFE) method works by recursively removing features
+    and building a model with the remaining features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the first step, all features are used to build a model and the features
+    are ranked by feature importance or the \(\beta\) coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the least important feature is pruned and the model is rebuilt
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this is repeated until there is only one feature remaining
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this code we make a prediction model based on multilinear regression and
+    indicate that we want to find the best feature based on recursive feature elimination.
+    The algorithm assigns rank \(1,\ldots,m\) for all features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The advantages with the recursive elimination method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the actual model can be used in assessing feature ranks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the ranking is based on accuracy of the estimate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'but this method is sensitive to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: choice of model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: training dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The feature ranks are quite different from our previous methods. Many have moved
+    from the previous assessment. Perhaps we should use a more flexible modeling method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s repeat this method with a more flexible machine learning method, a decision
+    tree regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again, recursive feature elimination for feature ranking is sensitive to
+    the accuracy of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the actual prediction model must have its associated hyperparameters tuned and
+    the model accuracy checked.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for example, in this case the multilinear regression feature ranks are unreliable
+    due to the poor accuracy of the linear model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shapley Values for Feature Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s take a random subset of the data, as background values to evaluate our
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we subset for faster calculation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we should evaluate / enforce efficient coverage of the predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since Shapley values are model based, we must start with building a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build a Random Forest Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Since Shapley is model based we need to build a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with a good random forest model, observe Shapley and then return
+    here and modify the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/cbc4aa1b1542fb9bf3527dc1f3f615180d1f3b63d21eb259a11b916d03595cea.png](../Images/6262d930974113cf78a782fd287a8df6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Calculate Shapley Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s select some background data at random to calculate local Shapley values
+    and then summarize with global Shapley measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background Samples are selected as a random subset from all the data. Why not
+    just use all the data as background?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Shapley values can be computationally expensive to calculate**, we need all
+    the combinations of models to get all the predictions for marginal contributions
+    that are summarized as Shapley values'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The original data may be sampled in a biased manner**, then we would want
+    to ensure that the background data are representative, i.e., sampled from the
+    original data to reduce bias to avoid bias in our feature importance assessment'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Generalization vs. specific prediction cases**, if all the data are used
+    as background we get an overall data assessment of feature importance, but we
+    may want to carefully select data to explore specific prediction cases'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For simplicity here, we just select randomly selection \(n\) data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: Local Shapley Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start by looking at the local Shapley values to demonstrate the concept
+    of efficiency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: first let’s confirm that the output from the shap function is a \(\left[n_{background},
+    m\right]\) nd array.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have the local Shapley values for each prediction for the background cases.
+    Let’s visualize one to demonstrate this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I coded this custom visualization to clearly communicate local Shapley values
+    and the concept of efficiency.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We start at the average of the training response feature and add the local Shapely
+    values for each predictor feature to reach the prediction.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4687606001e63cc73cb21d138e664ae5506aa6589d98a6bb132426a1eeacd218.png](../Images/223f16f325ce6407f83bcbcad31a87a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now I show you the built in plotting methods to communicate the same thing with
+    the shap Python Package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shapley Force Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can simulaneously visualize all of the Shapley values for all of the sample
+    data in the order of the background data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: blue indicates reduction in the predicted production and red indicates increase
+    in predicted production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are visualizing over all background sample data at once. Reorder by original
+    sample ordering and select the nback index to compare to the above plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Visualization omitted, Javascript library not loaded!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have you run `initjs()` in this notebook? If this notebook was from another
+    user you must also trust this notebook (File -> Trust notebook). If you are viewing
+    this notebook on github the Javascript has been stripped for security. If you
+    are using JupyterLab this error is because a JupyterLab extension has not yet
+    been written.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Local Force Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We pick a specific sample from the background and visualize the force plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see the genesis of the plot above, Shapley values for all features given
+    a local set of values in sample \(i\), (\(x_i\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compare this result to the above custom plot that I made and you will see that
+    it communicates the same information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Visualization omitted, Javascript library not loaded!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have you run `initjs()` in this notebook? If this notebook was from another
+    user you must also trust this notebook (File -> Trust notebook). If you are viewing
+    this notebook on github the Javascript has been stripped for security. If you
+    are using JupyterLab this error is because a JupyterLab extension has not yet
+    been written.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appreciation to Xuesong Ma for the suggestion to improve the above local Shapley
+    value content and visualizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Global Shapley Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s review the global Shapley measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: sorted bar chart of the arithmetic average of the absolute SHAP value over the
+    background data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: sorted plot of the SHAP value over the background data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: plot of the SHAP value over the background data as a violin plot
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note: all of these methods are applying the global average (\(E[X_i]\)) for
+    each feature to impute for those cases not including feature \(i\).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2f143182e5f4f722358c7743d0e8d7cd49f8f2a4e3afecee9fcacac06e45af95.png](../Images/e3945b1cd0e515c4f1adfcc33e2436d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The the center and right plots show the Shapley values for each feature over
+    all the randomly selected background samples, while the plot on the left is the
+    bar chart of the mean absolute Shapley values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Porosity, Permeability and TOC are the top features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of feature ranking. Much more could be done and discussed,
+    I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Feature Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are often many predictor features (input variables), available for us
+    to work with for building our prediction models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are good reasons to be selective, throwing in every possible feature is
+    not a good idea!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In general, for the best prediction model, careful selection of the fewest features
+    that provide the most amount of information is the best practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s why:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**blunders** - more predictor features result in more complicated workflows
+    that require more professional time and have increased opportunity for mistakes
+    in the workflow'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**difficult to visualize** - higher dimensional models, i.e., larger number
+    of predictor features, are more difficult to visualize'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**model checking** - more complicated models may be more difficult to interrogate,
+    interpret and QC'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**predictor feature redundancy** - more likely to have redundant predictor
+    features. The inclusion of highly redundant and collinear or multicollinear features
+    increases model variance, increase model instability and decreases prediction
+    accuracy for testing'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**computational time** - more predictor features generally increase the computational
+    time required to train the model and the computational storage, i.e., the model
+    may be less compact and portable'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**model overfit** - the risk of overfit increases with the more features, due
+    to increase in model complexity'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**model extrapolation** - many predictor features results in high dimensional
+    model space with less data coverage and more likelihood for model extrapolation
+    that may be inaccurate'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The primary concern with many predictor features is the curse of dimensionality.
+    Let’s summarize the curse!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Curse of Dimensionality
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Data and Model Visualization** - we cannot visualize beyond 3D, i.e., access
+    the model fit to data, evaluate interpolation vs. extrapolation.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: consider a 5D example shown as a matrix scatter plot, even in this case there
+    is an extreme marginalization to 2D for each plot,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ecf50f66114aec17ea35fde1342d66c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 5D data as a matrix scatter plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sampling** - the number of samples sufficient to infer statistics like the
+    joint probability, \(P(x_1,\ldots,x_m)\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'recall the calculation of a histogram or normalized histogram: we establish
+    bins and calculate frequencies or probabilities in each bin.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we require a nominal number of data samples for each bin, so we require \(𝑛=𝑛_{𝑠/𝑏𝑖𝑛}
+    \cdot 𝑛_{𝑏𝑖𝑛𝑠}\) samples in 1D
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: but in mD we required \(n\) samples to calculate the discretized joint probability,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑛=𝑛_{𝑠/𝑏𝑖𝑛} \cdot 𝑛_{𝑏𝑖𝑛𝑠}^m$ \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for example, 10 samples per bin with 35 bins requires 12,250 samples in 2D,
+    and 428,750 samples in 3D
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/bc8823819263f4497ef6baab93a9ee38.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sample Coverage** - the range of the sample values cover the predictor feature
+    space.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: fraction of the possible solution space that is sampled, for 1 feature we assume
+    80% coverage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: remember, we usually, directly sample only \(\frac{1}{10^7}\) of the volume
+    of the subsurface
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: yes, the concept of coverage is subjective, how much data to cover? What about
+    gaps? etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/d8058511a88a482ed34b0cbd9eb34fec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: now if there is 80% coverage for 2 features the 2D coverage is 64%
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8d96453b3f6c2a92a160fe4329a13d4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: coverage is,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ c = c_1^m \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Distorted Space** - high dimensional space is distorted.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: take the ratio of the volume of an inscribed hypersphere in a hypercube,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \frac{\pi^{\frac{m}{2}}}{m 2^{m-1} \Gamma\left(\frac{m}{2}\right)} \to 0
+    \quad \text{as} \quad m \to \infty \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall, \(\Gamma(𝑛)=(𝑛−1)!\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: high dimensional space is all corners and no middle and most of high dimensional
+    space is far from the middle (all corners!).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as a result distances in high dimensional space lose sensitivity, i.e., for
+    any random points in the space the expected pairwise distances all become the
+    same,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lim_{m \to \infty} \left( \mathbb{E}\left[\text{dist}_{\text{max}}(m) -
+    \text{dist}_{\text{min}}(m)\right] \right) \to 0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: the limit of the expectation of the range of pairwise distances over random
+    points in hyper-dimensional space tends to zero. If distances are almost all the
+    same, Euclidian distance is no longer meaningful!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8c8d512cca4eb330150d1ba298831543.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The ratio of the volume of a hypersphere within a hypercube.
+  prefs: []
+  type: TYPE_NORMAL
+- en: here’s the severity of the distortion for various dimensionalities,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '| m | nD / 2D |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 0.28 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 0.003 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 20 | 0.00000003 |'
+  prefs: []
+  type: TYPE_TB
+- en: '**Multicollinearity** - higher dimensional datasets are more likely to have
+    collinearity or multicollinearity.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Feature linearly described by other features resulting in high model variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What is Feature Ranking?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Feature ranking is a set of metrics that assign relative importance or value
+    to each predictor feature with respect to information contained for inference
+    and importance in predicting a response feature. There are a wide variety of possible
+    methods to accomplish this. My recommendation is a **‘wide-array’** approach with
+    multiple analyses and metrics, while understanding the assumptions and limitations
+    of each method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the general types of metrics that we consider for feature ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visual Inspection of Data Distributions and Scatter Plots
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Statistical Summaries
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Model-based
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Recursive Feature Elimination
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Also, we should not neglect expert knowledge. If additional information is known
+    about physical processes, causation, reliability and availability of predictor
+    features this should be integrated into assigning feature ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the Shapley value approach for feature ranking we need an additional package
+    and to start up javascript support.
+  prefs: []
+  type: TYPE_NORMAL
+- en: after running this block you should see a hexagon with the text ‘js’ to indicate
+    that javascript is ready
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/70b822753245ba6bb888425de8eb62b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Design Custom Color Map
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Accounting for significance by masking nonsignificant values
+  prefs: []
+  type: TYPE_NORMAL
+- en: for demonstration only currently, could be updated for each plot based on results
+    confidence and uncertainty
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here’s a couple of functions to assist with calculating metrics for ranking
+    and other plots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**plot_corr** - plot a correlation matrix'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**partial_corr** - partial correlation coefficient'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**semipar_corr** - semipartial correlation coefficient'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**mutual_matrix** - mutual information matrix, matrix of all pairwise mutual
+    information'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**mutual_information_objective** - my modified version of the MRMR loss function
+    (Ixy - average(Ixx)) for feature ranking (uses all other predictor features)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**delta_mutual_information_quotient** - change in mutual information quotient
+    by adding and removing a specific feature (uses all other predictor features for
+    the comparison)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**weighted_avg_and_std** - average and standard deviation account for data
+    weights'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**weighted_percentile** - percentile accounting for data weights'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**histogram_bounds** - add confidence intervals to histograms'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**add_grid** - convenience function to add major and minor gridlines to improve
+    plot interpretability'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here are the functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘unconv_MV.csv’. This
+    dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a DataFrame we called ‘my_data’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE74]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also establish the feature ranges for plotting. We could calculate the
+    feature range directly from the data with code like this:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE75]'
+  prefs: []
+  type: TYPE_PRE
+- en: but, this would not result in easy to understand color bars and axis scales,
+    let’s pick convenient round numbers. We will also declare feature labels for ease
+    of plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful first check of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: add parameter ‘n=13’ to see the first 13 rows of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 3 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 6 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 7 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 8 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 9 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 10 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 11 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 12 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 13 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum,
+    and quartiles all in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use transpose just to flip the table so that features are on the rows and
+    the statistics are on the columns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE77]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Well | 200.0 | 100.500000 | 57.879185 | 1.000000 | 50.750000 | 100.500000
+    | 150.250000 | 200.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3864.407081 | 1553.277558 | 839.822063 | 2686.227611 | 3604.303506
+    | 4752.637555 | 8590.384044 |'
+  prefs: []
+  type: TYPE_TB
+- en: Ranking features is really an effort to understand the features and their relationships
+    with each other. We will start with basic data visualization and move to more
+    complicated methods such are partial correlation and recursive feature elimination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Coverage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with the concept of feature coverage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If a feature is available over a small proportion of the samples then we may
+    not want to include it as it will result in issues with feature imputation, estimation
+    of missing data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By removing a couple features with poor coverage we may improve our model because
+    there are limitations with feature imputation, feature imputation can actually
+    impose bias in statistics and additional error in our prediction models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: if likewise deletion is applied to deal with missing values, features with low
+    coverage result in a lot of removed data!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let’s start with a bar chart with the proportion of missing records:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE78]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6b56bb06fe01cd87f3513b8ebe3a71bb409619f34b70e4dd2bd50d61e5c4e62d.png](../Images/e5a834b70ca47ad151aee5749adc53ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: For the provided example dataset the plot should be empty. There are no missing
+    data so the ‘Proportion of Missing Records’ is 0.0 for all features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you wanted to test this plot with some missing data, run this code first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE79]'
+  prefs: []
+  type: TYPE_PRE
+- en: Remove this code and reload the data to continue to get consistent results with
+    the discussions below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This does not tell the whole story. For example, if 20% of feature A is missing
+    and 20% of feature B is missing are those the same and different samples. This
+    has a huge impact if you perform likewise deletion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If there is not too much data then we can actually visualize data coverage over
+    all samples and features in a boolean table like this.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This method may identify specific samples with many missing features that may
+    be removed to improve overall coverage or other trends or structures in the missing
+    data that may result in sampling bias.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE80]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/5849f3ca4f8301f49db8799952b591b62475a866fcaa2646497f042118e36aa0.png](../Images/9b8b2b5fe0360995f89df5950e3ed23d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again this plot should be quite boring for the provided dataset with perfect
+    coverage, every cell should be filled in red.
+  prefs: []
+  type: TYPE_NORMAL
+- en: add the code to remove some records to test this plot. White cells are missing
+    records.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature Imputation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: See the chapter on feature imputation to learn what to do about missing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For now a concise treatment here, we will just apply likewise deletion and move
+    on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we remove all samples with any missing feature values. While this is quite simple,
+    it is a sledge hammer approach to ensure perfect coverage required by feature
+    ranking methods that we are about to demonstrate. Please check out the other methods
+    in the linked workflow above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE81]'
+  prefs: []
+  type: TYPE_PRE
+- en: Feature Imputation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: See the chapter on feature imputation to learn what to do about missing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For now a concise treatment here, we will just apply likewise deletion and move
+    on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we remove all samples with any missing feature values. While this is quite simple,
+    it is a sledge hammer approach to ensure perfect coverage required by feature
+    ranking methods that we are about to demonstrate. Please check out the other methods
+    in the linked workflow above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE82]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In any multivariate work we should start with the univariate analysis, summary
+    statistics of one variable at a time. The summary statistic ranking method is
+    qualitative, we are asking:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Are there data issues?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Do we trust the features? Do we trust the features all equally?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Are there issues that need to be taken care of before we develop any multivariate
+    workflows?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum,
+    and quartiles all in a compact data table. We use transpose() command to flip
+    the table so that features are on the rows and the statistics are on the columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE83]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Well | 200.0 | 100.500000 | 57.879185 | 1.000000 | 50.750000 | 100.500000
+    | 150.250000 | 200.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3864.407081 | 1553.277558 | 839.822063 | 2686.227611 | 3604.303506
+    | 4752.637555 | 8590.384044 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary statistics are a critical first step in data checking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this includes the number of valid (non-null) values for each feature (count
+    removes all np.NaN from the totals for each variable).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can see the general behaviors such as central tendency, mean, and dispersion,
+    variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can identify issue with negative values, extreme values, and values that
+    are outside the range of plausible values for each property.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The data looks to be in pretty good shape and for brevity we skip outlier detection.
+    Let’s look at the univariate distributions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Univariate Distributions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As with summary statistics, this ranking method is a qualitative check for issues
+    with the data and to assess our confidence with each feature. It is better to
+    not include a feature with low confidence of quality as it may be misleading (while
+    adding to model complexity as discussed previously).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE84]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1b5c32c2236778514e0fd18a00eb66559f6030647523aca11be1a1e520a5693c.png](../Images/8a0c89fa0d885a7643839d04c23ff8be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The univariate distributions look good:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious outliers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the permeability is positively skewed, as is often observed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the corrected TOC has a small spike, but it’s reasonable
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bivariate Distributions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Matrix scatter plots are a very efficient method to observe the bivariate relationships
+    between the variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is another opportunity through data visualization to identify data issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can assess if we have collinearity, specifically simpler form between two
+    features at a time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE85]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/283204472327a4b7c8b5d3fcf91848aec9161f0646166a8de22e8d42f8dbdaf5.png](../Images/eb1c7e7e9920c8c27be71cd70df81661.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This plot communicates a lot of information. How could we use this plot for
+    variable ranking?
+  prefs: []
+  type: TYPE_NORMAL
+- en: we can identify features that are closely related to each other, e.g., if two
+    features have almost a perfect monotonic linear or near linear relationship we
+    should remove one immediately. This is a simple case of collinearity that will
+    likely result in model instability as discussed above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can check for linear vs. non-linear relationships. If we observe nonlinear
+    bivariate relationships this will impact the choice of methods, and the quality
+    of results from methods that assume linear relationships for variable ranking.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can identify constraint relationships and heteroscedasticity between variables.
+    Once again these may restrict our ranking methods and also encourage us to retains
+    specific features to retain these features in the resulting model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Yet, we must remember that bivariate visualization and analysis is not sufficient
+    to understand all the multivariate relationships in the data, e.g., multicollinearity
+    includes strong linear relationships between 2 or more features. These may be
+    hard to see with only bivariate plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pairwise Covariance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Pairwise covariance provides a measure of the strength of the linear relationship
+    between each predictor feature and the response feature. At this point, we specify
+    that the goal of this study is to predict production, our response variable, from
+    the other available predictor features. We are thinking predictively now, not
+    inferentially, we want to estimate the function, \(\hat{f}\), to accomplish this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Y = \hat{f}(X_1,\ldots,X_n) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where \(Y\) is our response feature and \(X_1,\ldots,X_n\) are our predictor
+    features. If we retained all of our predictor features to predict the response
+    we would have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ Prod = \hat{f}(Por,Perm,AI,Brittle,TOC,VR) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now back to the covariance, the covariance is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ C_{xy} = \frac{\sum_{i=1}^{n} (x_i - \overline{x})(y_i - \overline{y})}{(n-1)}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Covariance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: measures the linear relationship
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: sensitive to the dispersion / variance of both the predictor and response
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can use the follow command to build a covariance matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE86]'
+  prefs: []
+  type: TYPE_PRE
+- en: the output is a new Pandas DataFrame, so we can slice the last column to get
+    a Pandas series (ndarray with names) with the covariances between all predictors
+    features and the response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE87]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ff711b73e2baba3be2993b907d5023462afb3ab86692953cb31870078fc6969f.png](../Images/89e89e3a083da28954418714216aa9d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The covariance is useful, but as you can see the magnitude is quite variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the covarince magnitudes are a function of each feature’s feature and feature
+    variance is somewhat arbitrary.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'for example, what is the variance of porosity in fraction vs. percentage or
+    permeability in Darcy vs. milliDarcy. We can show that if we apply a constant
+    multiplier, \(c\), to a feature, \(X\), that the variance will change according
+    to this relationship (the proof is based on expectation formulation of variance):'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \sigma_{cX}^2 = c^2 \cdot \sigma_{X}^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: By moving from percentage to fraction we decrease the variance of porosity by
+    a factor of 10,000! The variance of each feature is potentially arbitrary, with
+    the exception when all the features are in the same units.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pairwise correlations are standardized covariances; therefore, avoids this arbitrary
+    magnitude issue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pairwise Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pairwise correlation coefficient provides a measure of the strength of the linear
+    relationship between each predictor feature and the response feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{xy} = \frac{\sum_{i=1}^{n} (x_i - \overline{x})(y_i - \overline{y})}{(n-1)\sigma_x
+    \sigma_y}, \, -1.0 \le \rho_{xy} \le 1.0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The correlation coefficient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: measures the linear relationship
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: removes the sensitivity to the dispersion / variance of both the predictor and
+    response features, by normalizing by the product of the standard deviation of
+    each feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can use the follow command to build a correlation matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE88]'
+  prefs: []
+  type: TYPE_PRE
+- en: the output is a new Pandas DataFrame, so we can slice the last column to get
+    a Pandas series (ndarray with names) with the correlations between all predictors
+    features and the response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE89]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8de550142d1a57e5f8c2443095641ca1f3d8907168b1d668112afc3f7f49b625.png](../Images/cf2f8ebbbb9381f4ae232eefb7ce2e7a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From the correlation matrix we can observe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see that porosity, permeability and total organic carbon have the strongest
+    linear relationships with production.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic impedance has weak negative relationships with production.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Brittleness is very close to 0.0\. If you review the brittleness vs. production
+    scatterplot, you’ll observe a complicated non-linear relationship. There is a
+    brittleness ratio sweet spot for production (rock that is not too soft nor too
+    hard)!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We could also look at the full correlation matrix to evaluate the potential
+    for redundancy between predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: strong degree of correlation between porosity and permeability and porosity
+    and TOC
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: strong degree of negative correlation between TOC and acoustic impedance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are still limited to a strict linear relationship. The rank correlation allows
+    us to relax this assumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pairwise Spearman Rank Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The rank correlation coefficient applies the rank transform to the data prior
+    to calculating the correlation coefficient. To calculate the rank transform simply
+    replace the data values with the rank \(R_x = 1,\dots,n\), where \(n\) is the
+    maximum value and \(1\) is the minimum value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \rho_{R_x R_y} = \frac{\sum_{i=1}^{n} (R_{x_i} - \overline{R_x})(R_{y_i}
+    - \overline{R_y})}{(n-1)\sigma_{R_x} \sigma_{R_y}}, \, -1.0 \le \rho_{xy} \le
+    1.0 \]\[ x_\alpha, \, \forall \alpha = 1,\dots, n, \, | \, x_i \ge x_j \, \forall
+    \, i \gt j \]\[ R_{x_i} = i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The rank correlation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: measures the monotonic relationship, relaxes the linear assumption
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: removes the sensitivity to the dispersion / variance of both the predictor and
+    response, by normalizing by the product of the standard deviation of each.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can use the follow command to build a rank correlation matrix and calculate
+    the p-value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE90]'
+  prefs: []
+  type: TYPE_PRE
+- en: the output is a new Pandas DataFrame, so we can slice the last column to get
+    a Pandas series (ndarray with names) with the correlations between all predictors
+    features and the response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Also, we get a very convenient *pval* 2D ndarray with the two-sided (two-tail
+    summing symmetric over both tails) p-value for a hypothesis test with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '\[ H_o: \rho_{R_x R_y} = 0 \]\[ H_1: \rho_{R_x R_y} \ne 0 \]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s keep the p-values between all the predictor features and our response
+    feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE91]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE92]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/dd0d78eac8d8429bd13249c35c5d50933da7bf91abf6d4cb58614489675c598e.png](../Images/609c07d08205a2c92204da55d19ad62a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There matrix and line plots indicate that the rank correlation coefficients
+    are similar to the correlation coefficients indicating that nonlinearity and outliers
+    are not likely impacting the correlation-based feature ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With regard to rank correlation p-values,
+  prefs: []
+  type: TYPE_NORMAL
+- en: at a typical alpha value of 0.05, only the rank correlation between brittleness
+    and production does not fail the hypothesis test; therefore, is not significantly
+    different than 0.0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is useful to look at the difference between the correlation coefficient and
+    rank correlation coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE93]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e6d73185fa9381a8bc24c2f7002331e6bbb2de3276c7073a45074a6ef2fae98b.png](../Images/9010e510d3b644ed069447aad1564797.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here are some interesting observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation of porosity and vitrinite reflectance with production improve when
+    we reduce the impact of linearity and outliers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: correlation of brittleness with production worsen when we reduce the impact
+    of linearity and outliers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All of these methods up to now have considered one feature at a time. We can
+    also consider methods that consider all features jointly to ‘isolate’ the influence
+    of each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Partial Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is a linear correlation coefficient that controls for the effects all the
+    remaining variables, \(\rho_{XY.Z}\) and \(\rho_{YX.Z}\) is the partial correlation
+    between \(X\) and \(Y\), \(Y\) and \(X\), after controlling for \(Z\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To calculate the partial correlation coefficient between \(X\) and \(Y\) given
+    \(Z_i, \forall \quad i = 1,\ldots, m-1\) remaining features we use the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: perform linear, least-squares regression to predict \(X\) from \(Z_i, \forall
+    \quad i = 1,\ldots, m-1\). \(X\) is regressed on the predictors to calculate the
+    estimate, \(X^*\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'calculate the residuals in Step #1, \(X-X^*\), where \(X^* = f(Z_{1,\ldots,m-1})\),
+    linear regression model'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: perform linear, least-squares regression to predict \(Y\) from \(Z_i, \forall
+    \quad i = 1,\ldots, m-1\). \(Y\) is regressed on the predictors to calculate the
+    estimate, \(Y^*\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'calculate the residuals in Step #3, \(Y-Y^*\), where \(Y^* = f(Z_{1,\ldots,m-1})\),
+    linear regression model'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'calculate the correlation coefficient between the residuals from Steps #2 and
+    #4, \(\rho_{X-X^*,Y-Y^*}\)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The partial correlation, provides a measure of the linear relationship between
+    \(X\) and \(Y\) while controlling for the effect of \(Z\) other features on both,
+    \(X\) and \(Y\). We use the function declared previously taken from Fabian Pedregosa-Izquierdo,
+    [f@bianp.net](mailto:f%40bianp.net). The original code is on GitHub at [https://git.io/fhyHB](https://git.io/fhyHB).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To use this method we must assume:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: two variables to compare, \(X\) and \(Y\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: other variables to control, \(Z_{1,\ldots,m-2}\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: linear relationships between all variables
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: no significant outliers
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: approximately bivariate normality between the variables
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We are in pretty good shape, but we have some departures from bivariate normality.
+    We could consider Gaussian univariate transforms to improve this. This option
+    is provided later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE94]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/685abb597e65278976ed6245ea39ffba1c566acd98a0496f9a20ae9b472f4e07.png](../Images/11649099249c19a8d0134ee44bd96661.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we see a lot of new things about the unique contributions of each predictor
+    feature!
+  prefs: []
+  type: TYPE_NORMAL
+- en: porosity and permeability are strongly correlated with each other so they are
+    penalized severely
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance’s and vitrinite reflectance’s absolute correlation are increased
+    reflecting their unique contributions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon flipped signs! When we control for all other variables,
+    it has a negative relationship with production.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With the partial correlation coefficients we have controlled for the influence
+    of all other predictor features on both the specific predictor and the response
+    features. The semipartial correlation filters out the influence of all other predictor
+    features on the raw response variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Semipartial Correlation Coefficient
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This is a linear correlation coefficient that controls for the effects all
+    the remaining features, \(Z\) on \(X\), and then calculates the correlation between
+    the residual \(X^*-X\) and \(Y\). Note: we do not control for influence of \(Z\)
+    features on the response feature, \(Y\).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To calculate the semipartial correlation coefficient between \(X\) and \(Y\)
+    given \(Z_i, \forall \quad i = 1,\ldots, m-1\) remaining features we use the following
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: perform linear, least-squares regression to predict \(X\) from \(Z_i, \forall
+    \quad i = 1,\ldots, m-1\). \(X\) is regressed on the remaining predictor features
+    to calculate the estimate, \(X^*\)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'calculate the residuals in Step #1, \(X-X^*\), where \(X^* = f(Z_{1,\ldots,m-1})\),
+    linear regression model'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'calculate the correlation coefficient between the residuals from Steps #2 and
+    \(Y\) response feature, \(\rho_{X-X^*,Y}\)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The semipartial correlation coefficient, provides a measure of the linear relationship
+    between \(X\) and \(Y\) while controlling for the effect of \(Z\) other predictor
+    features on the predictor feature, \(X\), to get the unique contribution of \(X\)
+    with respect to \(Y\). We use a modified version of the partial correlation function
+    that we declared previously. The original code is on GitHub at [https://git.io/fhyHB](https://git.io/fhyHB).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE95]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8288d5546785bae96f5c850214ddd5be4c148d6210b1b7d05ca2f86640b6b443.png](../Images/9bc790699675e3bdbd9e8ed625051fa1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'More information to consider:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: porosity, permeability and vitrinite reflectance are the most important by this
+    feature ranking method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: all other predictor features have quite low correlations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is a good moment to stop and take stock of all the results from the quantitative
+    methods. We will plot them all together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE96]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8e1ed4eede67a45f3fd9cf848e281724927b517c683e5207ab574696b9952bde.png](../Images/9b87cdad7bc65f987a9f65bfe7febc3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I think we are converging on porosity, permeability and vitrinite reflectance
+    as the most important variables with respect to linear relationships with the
+    production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature Ranking with Feature Transformations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are many reasons to perform feature transformations (see the associated
+    chapter) and as mentioned above for partial and semipartial correlation a distribution
+    transformation may assist with compliance to metric assumptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an exercise and check, let’s standardize all the features and repeat the
+    previously calculated quantitative methods. We know this will have an impact on
+    covariance, what about the other metrics?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There is a bunch of code to get this done, but it isn’t too complicated. First,
+    lets make a new DataFrame with all variables standardized. Then we can make a
+    minor edit (change the DataFrame name) and reuse the code from above. You can
+    choose between:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Standardization - affine correction to scale the distributions to have \(\overline{x}
+    = 0\) and \(\sigma_x = 1.0\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Normal Score Transform - distribution transform of each feature to standard
+    normal, Gaussian shape with \(\overline{x} = 0\) and \(\sigma_x = 1.0\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Use this block to perform affine correction of the features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE97]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Use this block to perform normal score transform of the features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE98]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | -0.964092 | -0.780664 | -0.285841 | 2.432379 | 0.312053 | 1.114651 |
+    -1.780464 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | -0.832725 | -0.378580 | 0.446827 | -0.195502 | -0.272809 | -0.325239
+    | -0.392079 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | -0.312053 | -1.069155 | 1.722384 | 2.004654 | -0.272809 | 2.241403 |
+    -0.832725 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 0.730638 | 1.325516 | -0.531604 | -0.590284 | 0.131980 | -0.325239 |
+    0.815126 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 0.698283 | 0.298921 | 0.365149 | -2.870033 | 1.047216 | -0.259823 | -0.531604
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: Regardless of the transformation that you chose it is best practice to check
+    the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE99]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 200.000000 | 200.000000 | 2.000000e+02 | 2.000000e+02 | 200.000000
+    | 200.000000 | 2.000000e+02 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | -0.009700 | 0.010306 | 9.732356e-03 | 8.028717e-05 | 0.014152 | 0.017360
+    | 1.617223e-03 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 1.040456 | 1.005488 | 1.000221e+00 | 1.000278e+00 | 0.989223 | 1.000401
+    | 9.949811e-01 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | -4.991462 | -3.355431 | -2.782502e+00 | -2.870033e+00 | -2.336891 |
+    -2.899210 | -2.483589e+00 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 25% | -0.670577 | -0.647337 | -6.588985e-01 | -6.705770e-01 | -0.670577 |
+    -0.651072 | -6.705770e-01 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 50% | 0.006267 | 0.006267 | 8.881784e-16 | 8.881784e-16 | 0.018807 | 0.006267
+    | 8.881784e-16 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 75% | 0.670577 | 0.678574 | 6.705770e-01 | 6.705770e-01 | 0.682378 | 0.682642
+    | 6.705770e-01 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 2.807034 | 2.807034 | 2.807034e+00 | 2.807034e+00 | 2.807034 | 2.807034
+    | 2.807034e+00 |'
+  prefs: []
+  type: TYPE_TB
+- en: We should also check the matrix scatter plot again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you performed normal score transform, you have standardized the mean and
+    variance and correct the univariate shape of the distribution, but the bivariate
+    relationships still depart from Gaussian.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE100]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/884680b3106f0f9bc10b64a1888d213dedcd55860acea49e6f5bd179d1604868.png](../Images/8568ba1fa581044cc577242f378dd1db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is the new DataFrame with standardized variables. Now we repeat the previous
+    calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will be more efficient this time and use quite compact code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE101]'
+  prefs: []
+  type: TYPE_PRE
+- en: and repeat the previous summary plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE102]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e6320b5768883e13feea467d4888f04edce7671ecd0ba7a92874bc94656cd1a2.png](../Images/8eeed3569969856a648e8f7bf97ddb8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'What can you observe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: covariance is now equal to correlation coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the semipartial correlations are sensitive to the feature standardization (affine
+    correlation or normal score transform).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conditional Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will separate the wells into low, mid and high production and access the
+    difference in the conditional statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This will provide a more flexible method to compare the relationship between
+    each feature and production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the conditional statistics change significantly then that feature is informative
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are going to make a single violin plot over all of our features
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need a categorical feature for production, so we truncate production to High
+    or Low with this code,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE103]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will need to standardize all of our features so we can observe their relative
+    differences together
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE104]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code extracted the features into a new DataFrame ‘x’, then applied the
+    standardization operation on each column (feature)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we add the truncated production feature into the standardized features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE105]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can then apply the melt command to unpivot the DataFrame
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE106]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We now have a long DataFrame (6 features x 200 samples = 12000 rows) with:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'production: Low or High'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'features: Por, Perm, AI, Brittle, TOC or VR'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: standardized feature value
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can then build our violin plot
+  prefs: []
+  type: TYPE_NORMAL
+- en: x is our predictor features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: y is the standardized values for the predictor features (all now in one column)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: hue is the production level High or Low
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: split is True so the violins are split in half
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: inner is quartiles for P25, P50 and P75 are plotted as dashed lines
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE107]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/39636127cd144d1449668e2c0eee3c8e122afe9891a46cc3e4610d38ff16390a.png](../Images/97e5b28483156d276669ee0ba4b67c7a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the violin plot we can observe that the conditional distributions of porosity,
+    permeability, TOC have the most variation between low and high production wells.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can replace the plot with box and whisker plots of the conditional distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Box and whisker plots improve our ability to observe the conditional P25, P75
+    and the upper and lower bounds from the Tukey outlier test.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE108]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2121ce938f6088b2c90acec866c9ff94b488c33826983e13a20d4e1721016352.png](../Images/5cb6b0c21042f1de1888484ca5e64a81.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the conditional box plot we can observe that the conditional distributions
+    of porosity, permeability, TOC have the most variation between low and high production
+    wells.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can observed the outliers in porosity, permeability (upper tail), total organic
+    carbon (lower tail) and vitrinite reflectance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Variance Inflation Factor (VIF)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A measure of linear multicollinearity between a predictor feature (\(X_i\))
+    a nd all other predictor features (\(X_j, \forall j \ne i\)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: First we calculate a linear regression for a predictor feature given all the
+    other predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ X_i = \sum_{j, j \ne i}^m X_j + \epsilon \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: From this model we determine the coefficient of determination, \(R^2\), known
+    as variance explained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then we calculate the Variance Inflation Factor as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ VIF = \frac{1}{1 - R^2} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE109]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/eaaa1c71dedcaed7ee83a0dfce8fdfb50ad17facc2a2c38a51caf6c6481cb547.png](../Images/5692efa445f9167d3d0d5a6d8f3e8bcb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vitrinite reflectance has the most linear redundancy while permeability has
+    the least linear redundancy with other predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: remember, high variance inflation factor is bad
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: recall that variance inflation factor does not integrate the relationship between
+    each predictor feature and the response feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: typically, variance inflation factor is used as a screening tool to remove features
+    that have too much redundancy with other predictor features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s cover model-based feature ranking methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(B\) Coefficients / Beta Weights
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We could also consider \(B\) coefficients. These are the linear regression coefficients
+    without standardization of the variables. Let’s use the linear regression method
+    that is available in the SciPy package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The estimator for \(Y\) is simply the linear equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} Y^* = \sum_{i=1}^{m} b_i X_i + c \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: The \(b_i\) coefficients are solved to minimize the squared error between the
+    estimates, \(Y^*\) and the values in the training dataset, \(Y\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE110]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ddb18df2725eafa50c95853e6bec78f8aa249726ae339ee0d874966578afdf95.png](../Images/7da7b523b4ae881b20a379148ea78eea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The output is the \(b\) coefficients, ordered over our features from \(b_i,
+    i = 1,\ldots,n\) and then the intercept, \(c\), that I have removed to avoid confusion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we see the negative contribution of AI and TOC
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the results are very sensitive to the magnitudes of the variances of the predictor
+    features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can remove this sensitivity by working with standardized features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\beta\) Coefficients / Beta Weights
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: \(\beta\) coefficients are calculated as the linear regression of the coefficients
+    after we have standardized the predictor and response features to have a variance
+    of one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \sigma^2_{X^s_i} = 1.0 \quad \forall \quad i = 1,\ldots,m,
+    \quad \sigma^2_{Y^s} = 1.0 \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The estimator for \(Y^s\) standardized is simply the linear equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} Y^{s*} = \sum_{i=1}^{m} \beta_i X^s_i + c \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is convenient that we have just standardized all our variables to have a
+    variance of 1.0 just recently (see above). Let’s use the same linear regression
+    method again on the standardized features to get \(\beta\) coefficients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE111]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/29565b4c74d530743a2aacdb6e0cda302fe0e962b6635c8cc1f909311289fcd9.png](../Images/63a59eb20ac3161240452ef8f6fcd97a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Some observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the change between \(b\) and \(\beta\) coefficients is not just a constant scaling
+    on the ranking metrics, because the linear model coefficients are also sensitive
+    to the ranges and magnitudes of the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: with beta coefficients porosity, acoustic impedance and total organic carbon
+    have higher rank for estimating production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature Importance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A variety of machine learning methods provide measures of feature importance,
+    for example decision trees the reduction in mean square error through inclusion
+    of each feature and is summarized as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ FI(x) = \sum_{t \in T_f} \frac{N_t}{N} \Delta_{MSE_t} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(T_f\) are all nodes with feature \(x\) as the split, \(N_t\) is the
+    number of training samples reaching node \(t\), \(N\) is the total number of samples
+    in the dataset and \(\Delta_{MSE_t}\) is the reduction in MSE with the \(t\) split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, feature importance can be calculated in a similar manner to MSE above
+    for the case of classification trees with **Gini Impurity**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the feature importance from a random forest regression model fit
+    to our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We instantiate a random forest with default hyperparameters. This results in
+    unlimited complexity, over-trained trees in our forest. The averaging of these
+    trees takes care of the overfit issue.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then we train our random forest and extract the feature importances, calculated
+    as the expectated feature importance over all the trees in the forest.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can also extract the feature importances over all the trees in the forest
+    and summarize with the standard deviation to access the robustness, uncertainty
+    of our feature importance measure
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For more information check out my lecture on [random forest](https://www.youtube.com/watch?v=m5_wk310fho&list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&index=39)
+    predictive machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE112]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/633da2b9b4e395da57c78aa4f82399344b016071733ef9fb8569d30c70d92604.png](../Images/4221de8488fdf2ce8f7716c22e1ea9d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There is more we can do with model-based methods. We will actually test models
+    to assess the incremental impact of each predictor feature! We will try this with
+    recursive feature elimination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s plot the results from the \(B\) and \(\beta\) coefficients and compare
+    with the previous results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE113]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/28592d6d0a57887d32a07cc893157689a5862f636dd4b208cc9b42b3dc9dd964.png](../Images/9b736db6a7b146115943a1775ce2cc0d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mutual Information
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Mutual information is a generalized approach that quantifies the mutual dependence
+    between two features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: quantifies the amount of information gained from observing one feature about
+    the other
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: avoids any assumption about the form of the relationship (e.g. no assumption
+    of linear relationship)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: compares the joint probabilities to the product of the marginal probabilities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For discrete or binned continuous features \(X\) and \(Y\), mutual information
+    is calculated as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ I(X;Y) = \sum_{y \in Y} \sum_{x \in X}P_{X,Y}(x,y) log \left( \frac{P_{X,Y}(x,y)}{P_X(x)
+    \cdot P_Y(y)} \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'recall, given independence between \(X\) and \(Y\):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ P_{X,Y}(x,y) = P_X(x) \cdot P_Y(y) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: therefore if the two features are independent then the \(log \left( \frac{P_{X,Y}(x,y)}{P_X(x)
+    \cdot P_Y(y)} \right) = 0\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The joint probability \(P_{X,Y}(x,y)\) is a weighting term on the sum and enforces
+    closure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: parts of the joint distribution with greater density have greater impact on
+    the mutual information metric
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For continuous (and nonbinned) features we can applied the integral form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ I(X;Y) = \int_{Y} \int_{X}P_{X,Y}(x,y) log \left( \frac{P_{X,Y}(x,y)}{P_X(x)
+    \cdot P_Y(y)} \right) dx dy \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We get a sorted list of the indices in decreasing order of importance with the
+    command
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE114]'
+  prefs: []
+  type: TYPE_PRE
+- en: the slice reverses the order, for descending order of feature importance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE115]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE116]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/704e3c6fd50614dcf67edb8dd01d1392f4509c1017dae51fcd1a26281de97377.png](../Images/d12dd6dd61aa76402a54c096acd0768b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mutual Information Accounting For Relevance and Redundancy
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The standard Maximum Relevance - Minumum Redundancy (MRMR) objective function
+    considers a subset of predictor features, i.e., to score predictor feature subsets
+    as metric to identify the most informative subset of predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the approach calculates the average mutual information between the subset of
+    predictor features and the response feature minus the average mutual information
+    between the subset of predictor features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \begin{equation} MID = \frac{1}{|S|}{\sum_{\alpha \in S} I(X_{\alpha},Y) } -
+    \frac{1}{|S|^2} {\sum_{\alpha \in S}^m \sum_{\beta \in S}^m I(X_{\alpha},X_{\beta})}
+    \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: as a measure of \(relevance - redundancy\) or
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} MIQ = \frac{ \frac{1}{|S|}{\sum_{\alpha \in S}^m I(X_{\alpha},Y)
+    } }{ \frac{1}{|S|^2} {\sum_{\alpha \in S}^m \sum_{\beta \in S}^m I(X_{\alpha},X_{\beta})}
+    } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: as a measure of \(\frac{relevance}{redundancy}\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mutual Information Accounting For Relevance and Redundancy
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The standard Maximum Relevance - Minumum Redundancy (MRMR) objective function
+    considers a subset of predictor features, i.e., to score predictor feature subsets
+    as metric to identify the most informative subset of predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the approach calculates the average mutual information between the subset of
+    predictor features and the response feature minus the average mutual information
+    between the subset of predictor features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \begin{equation} MID = \frac{1}{|S|}{\sum_{\alpha \in S} I(X_{\alpha},Y) } -
+    \frac{1}{|S|^2} {\sum_{\alpha \in S}^m \sum_{\beta \in S}^m I(X_{\alpha},X_{\beta})}
+    \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: as a measure of \(relevance - redundancy\) or
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} MIQ = \frac{ \frac{1}{|S|}{\sum_{\alpha \in S}^m I(X_{\alpha},Y)
+    } }{ \frac{1}{|S|^2} {\sum_{\alpha \in S}^m \sum_{\beta \in S}^m I(X_{\alpha},X_{\beta})}
+    } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: as a measure of \(\frac{relevance}{redundancy}\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mutual Information Accounting For Relevance and Redundancy OFAT Variants
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'I propose that for one-feature-at-a-time (OFAT) predictor feature ranking (predictor
+    feature subset, \(S = [X_i]\) and \(|S| = 1\)) we modify this to the following
+    calculation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**relevance** - the mutual information between the selected predictor feature,
+    \(X_i\), and the response feature, \(Y\)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**redundancy** - the average mutual information between the selected predictor
+    feature, \(X_i\), and the remaining predictor features, \(X_{\alpha}, \alpha \ne
+    i\).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we use the quotient form of the calculation from Gulgezen, Cataltepe and Yu
+    (2009).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Our modified version of the Maximum Relevance - Minumum Redundancy (MRMR) objective
+    function for OFAT ranking scores the selected predictor feature \(X_i\)’s **relevance**
+    as its mutual information with the response feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} I(X_i,Y) \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'and **redundancy** between the selected predictor feature, \(X_i\), and the
+    remaining predictor features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \frac{1}{|S|-1} \sum_{\alpha=1, \alpha \ne i}^m I(X_i,X_{\alpha})
+    \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: were \(X\) are predictor features, \(Y\) is the response feature, \(X_i\) is
+    the specific predictor feature being scored and \(|S|\) is the number of predictor
+    features and \(I()\) is mutual information between the indicated features. One
+    formulation is a simple difference, relevance minus redundancy,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \Phi_{\Delta}(X_i,Y) = I(X_{\alpha},Y) - \frac{1}{|S|-1} \sum_{\beta=1, \alpha
+    \ne \beta}^m I( X_{\alpha},X_{\beta} ) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: an alternative is a ratio,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \Phi_{r}(X_i,Y) = \frac{ I(X_i,Y) }{ \frac{1}{|S|-1} \sum_{\alpha=1, \alpha
+    \ne i}^m I(X_i,X_{\alpha})} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here the feature ranks for the mutual information relevance minus redundancy,
+    \(\Phi_{\Delta}(X_i,Y)\), approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE117]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c0b176e4990bdb326b638222358d06af771613f6ae47153d42a7e2614c7d3c28.png](../Images/ce31fdb26712840a6f374091a92555c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Delta Mutual Information Quotient Accounting for Relevance and Redundancy
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We use adapt the mutual information quotient from Gulgezen, Cataltepe and Yu
+    (2009) to develop an OFAT ranking metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The standard MRMR objective function that scores the subset of features’ **relevance**
+    between the subset of predictor features and the response feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y) } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'and **redundancy** between the subset of predictor features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \frac{1}{|S|^2} {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})}
+    \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: To find the most informative subset of predictor features we must find the subset
+    of features that maximize relevance while minimizing redundancy. We can accomplish
+    this by maximizing either of these two formulations,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} MID = \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y) } - \frac{1}{|S|^2}
+    {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})} \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: or
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} MIQ = \frac{ \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y)
+    } }{ \frac{1}{|S|^2} {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})}
+    } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: I suggest feature ranking through the calculation of the change in \(MIQ\) via
+    inclusion and removal of a specific predictor feature (\(X_i\)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \Delta MIQ_i = \frac{ \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y)
+    } }{ \frac{1}{|S|^2} {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})}
+    } - \frac{ \frac{1}{|S|}{\sum_{\alpha=1,\alpha \ne i}^m I(X_{\alpha},Y) } }{ \frac{1}{|S|^2}
+    {\sum_{\alpha=1,\alpha \ne i}^m \sum_{\beta=1,\beta \ne i}^m I(X_{\alpha},X_{\beta})}
+    } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE118]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/03d7d53a3d4abf4c562eeb53cbb1d74427a39a38a569d1e60c953a3ce9fe55a8.png](../Images/21f9cee66dbe4d7f6bc8cac154c1ad85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is intructive to compare delta mutual information and variance inflation
+    factor ranking. Both of these methods account for predictor feature redundancy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: but VIF assumes linearity and does not account for relevance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE119]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/753de82205baf137ac8f92671732ef8708fc686e982b161ca2b05ba1095ee90e.png](../Images/3028e58a56f928ebb26de84cfb6e1f54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From mutual information we can observe that porosity, permeability then total
+    organic carbon and brittleness have the greatest departure from general independence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Delta Mutual Information Quotient Accounting for Relevance and Redundancy
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We use adapt the mutual information quotient from Gulgezen, Cataltepe and Yu
+    (2009) to develop an OFAT ranking metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The standard MRMR objective function that scores the subset of features’ **relevance**
+    between the subset of predictor features and the response feature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y) } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'and **redundancy** between the subset of predictor features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \frac{1}{|S|^2} {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})}
+    \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: To find the most informative subset of predictor features we must find the subset
+    of features that maximize relevance while minimizing redundancy. We can accomplish
+    this by maximizing either of these two formulations,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} MID = \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y) } - \frac{1}{|S|^2}
+    {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})} \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: or
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} MIQ = \frac{ \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y)
+    } }{ \frac{1}{|S|^2} {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})}
+    } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: I suggest feature ranking through the calculation of the change in \(MIQ\) via
+    inclusion and removal of a specific predictor feature (\(X_i\)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} \Delta MIQ_i = \frac{ \frac{1}{|S|}{\sum_{\alpha=1}^m I(X_{\alpha},Y)
+    } }{ \frac{1}{|S|^2} {\sum_{\alpha=1}^m \sum_{\beta=1}^m I(X_{\alpha},X_{\beta})}
+    } - \frac{ \frac{1}{|S|}{\sum_{\alpha=1,\alpha \ne i}^m I(X_{\alpha},Y) } }{ \frac{1}{|S|^2}
+    {\sum_{\alpha=1,\alpha \ne i}^m \sum_{\beta=1,\beta \ne i}^m I(X_{\alpha},X_{\beta})}
+    } \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE120]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/03d7d53a3d4abf4c562eeb53cbb1d74427a39a38a569d1e60c953a3ce9fe55a8.png](../Images/21f9cee66dbe4d7f6bc8cac154c1ad85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is intructive to compare delta mutual information and variance inflation
+    factor ranking. Both of these methods account for predictor feature redundancy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: but VIF assumes linearity and does not account for relevance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE121]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/753de82205baf137ac8f92671732ef8708fc686e982b161ca2b05ba1095ee90e.png](../Images/3028e58a56f928ebb26de84cfb6e1f54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From mutual information we can observe that porosity, permeability then total
+    organic carbon and brittleness have the greatest departure from general independence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary of All Bivariate Metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have a wide array of criteria to rank our features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the \(B\) coefficient have the same issue as covariance, sensitivity to the
+    univariate variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the \(\beta\) coefficients remove this sensitivity and are consistent with previous
+    results.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Given all of these methods, I would rank the variables as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Porosity
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Vitrinite Reflectance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Permeability
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Total Organic Carbon
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Brittleness
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I have assigned these ranks by observing the general trend in these metrics.
+    Of course, we could make a more quantitative score and rank by weighting each
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned before, we should not neglect expert knowledge. If additional information
+    is known about physical processes, causation, and reliability and availability
+    of variables this should be integrated into assigning ranks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We include a bonus method here, recursive feature elimination, but only provide
+    a simple linear regression model example. More could be done with more complicated
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recursive Feature Elimination
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recursive Feature Elimination (RFE) method works by recursively removing features
+    and building a model with the remaining features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the first step, all features are used to build a model and the features
+    are ranked by feature importance or the \(\beta\) coefficient
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the least important feature is pruned and the model is rebuilt
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this is repeated until there is only one feature remaining
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this code we make a prediction model based on multilinear regression and
+    indicate that we want to find the best feature based on recursive feature elimination.
+    The algorithm assigns rank \(1,\ldots,m\) for all features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE122]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE123]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The advantages with the recursive elimination method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the actual model can be used in assessing feature ranks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the ranking is based on accuracy of the estimate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'but this method is sensitive to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: choice of model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: training dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The feature ranks are quite different from our previous methods. Many have moved
+    from the previous assessment. Perhaps we should use a more flexible modeling method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s repeat this method with a more flexible machine learning method, a decision
+    tree regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE124]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE125]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again, recursive feature elimination for feature ranking is sensitive to
+    the accuracy of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the actual prediction model must have its associated hyperparameters tuned and
+    the model accuracy checked.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for example, in this case the multilinear regression feature ranks are unreliable
+    due to the poor accuracy of the linear model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shapley Values for Feature Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s take a random subset of the data, as background values to evaluate our
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we subset for faster calculation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we should evaluate / enforce efficient coverage of the predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since Shapley values are model based, we must start with building a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Build a Random Forest Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Since Shapley is model based we need to build a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with a good random forest model, observe Shapley and then return
+    here and modify the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE126]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE127]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/cbc4aa1b1542fb9bf3527dc1f3f615180d1f3b63d21eb259a11b916d03595cea.png](../Images/6262d930974113cf78a782fd287a8df6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Build a Random Forest Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Since Shapley is model based we need to build a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with a good random forest model, observe Shapley and then return
+    here and modify the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE128]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE129]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/cbc4aa1b1542fb9bf3527dc1f3f615180d1f3b63d21eb259a11b916d03595cea.png](../Images/6262d930974113cf78a782fd287a8df6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Calculate Shapley Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s select some background data at random to calculate local Shapley values
+    and then summarize with global Shapley measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background Samples are selected as a random subset from all the data. Why not
+    just use all the data as background?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Shapley values can be computationally expensive to calculate**, we need all
+    the combinations of models to get all the predictions for marginal contributions
+    that are summarized as Shapley values'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The original data may be sampled in a biased manner**, then we would want
+    to ensure that the background data are representative, i.e., sampled from the
+    original data to reduce bias to avoid bias in our feature importance assessment'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Generalization vs. specific prediction cases**, if all the data are used
+    as background we get an overall data assessment of feature importance, but we
+    may want to carefully select data to explore specific prediction cases'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For simplicity here, we just select randomly selection \(n\) data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE130]'
+  prefs: []
+  type: TYPE_PRE
+- en: Local Shapley Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start by looking at the local Shapley values to demonstrate the concept
+    of efficiency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: first let’s confirm that the output from the shap function is a \(\left[n_{background},
+    m\right]\) nd array.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE131]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE132]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have the local Shapley values for each prediction for the background cases.
+    Let’s visualize one to demonstrate this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I coded this custom visualization to clearly communicate local Shapley values
+    and the concept of efficiency.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We start at the average of the training response feature and add the local Shapely
+    values for each predictor feature to reach the prediction.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE133]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/4687606001e63cc73cb21d138e664ae5506aa6589d98a6bb132426a1eeacd218.png](../Images/223f16f325ce6407f83bcbcad31a87a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now I show you the built in plotting methods to communicate the same thing with
+    the shap Python Package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shapley Force Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can simulaneously visualize all of the Shapley values for all of the sample
+    data in the order of the background data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: blue indicates reduction in the predicted production and red indicates increase
+    in predicted production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are visualizing over all background sample data at once. Reorder by original
+    sample ordering and select the nback index to compare to the above plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE134]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Visualization omitted, Javascript library not loaded!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have you run `initjs()` in this notebook? If this notebook was from another
+    user you must also trust this notebook (File -> Trust notebook). If you are viewing
+    this notebook on github the Javascript has been stripped for security. If you
+    are using JupyterLab this error is because a JupyterLab extension has not yet
+    been written.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Local Force Plot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We pick a specific sample from the background and visualize the force plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see the genesis of the plot above, Shapley values for all features given
+    a local set of values in sample \(i\), (\(x_i\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compare this result to the above custom plot that I made and you will see that
+    it communicates the same information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE135]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Visualization omitted, Javascript library not loaded!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have you run `initjs()` in this notebook? If this notebook was from another
+    user you must also trust this notebook (File -> Trust notebook). If you are viewing
+    this notebook on github the Javascript has been stripped for security. If you
+    are using JupyterLab this error is because a JupyterLab extension has not yet
+    been written.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appreciation to Xuesong Ma for the suggestion to improve the above local Shapley
+    value content and visualizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Global Shapley Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s review the global Shapley measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: sorted bar chart of the arithmetic average of the absolute SHAP value over the
+    background data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: sorted plot of the SHAP value over the background data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: plot of the SHAP value over the background data as a violin plot
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note: all of these methods are applying the global average (\(E[X_i]\)) for
+    each feature to impute for those cases not including feature \(i\).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE136]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2f143182e5f4f722358c7743d0e8d7cd49f8f2a4e3afecee9fcacac06e45af95.png](../Images/e3945b1cd0e515c4f1adfcc33e2436d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The the center and right plots show the Shapley values for each feature over
+    all the randomly selected background samples, while the plot on the left is the
+    bar chart of the mean absolute Shapley values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Porosity, Permeability and TOC are the top features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of feature ranking. Much more could be done and discussed,
+    I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

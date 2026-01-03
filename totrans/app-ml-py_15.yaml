@@ -1,0 +1,4003 @@
+- en: Principal Component Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_PCA.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_PCA.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Principal Component Analysis**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Curse of Dimensionality, Dimensionality Reduction, Principal Component Analysis](https://youtu.be/-to3JXiae9Y?si=W1j2CwR9t0t8hxIB)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multidimensional Scaling and Random Projection](https://youtu.be/Yt0o8ukIOKU?si=_ri1NPwKVdhYzgO3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Principal Component Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Working with more features / variables is harder!
+  prefs: []
+  type: TYPE_NORMAL
+- en: More difficult to visualize data and model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More data are required to infer the joint probabilities
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Less data coverage of feature space
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More difficult to interrogate / check the model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More likely redundant features, e.g., multicollinearity, resulting in model
+    instability
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More computational effort, more computational resources and longer run times
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More complicated model is more likely overfit
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More professional time for model construction
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We get a better model with fewer, informative features than throwing all our
+    features into the model! A big part of this motivation is driven by the curse
+    of dimensionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Curse of Dimensionality
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Data and Model Visualization** - we cannot visualize beyond 3D, i.e., access
+    the model fit to data, evaluate interpolation vs. extrapolation.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: consider a 5D example shown as a matrix scatter plot, even in this case there
+    is an extreme marginalization to 2D for each plot,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ecf50f66114aec17ea35fde1342d66c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 5D data as a matrix scatter plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sampling** - the number of samples sufficient to infer statistics like the
+    joint probability, \(P(x_1,\ldots,x_m)\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'recall the calculation of a histogram or normalized histogram: we establish
+    bins and calculate frequencies or probabilities in each bin.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we require a nominal number of data samples for each bin, so we require \(𝑛=𝑛_{𝑠/𝑏𝑖𝑛}
+    \cdot 𝑛_{𝑏𝑖𝑛𝑠}\) samples in 1D
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: but in mD we required \(n\) samples to calculate the discretized joint probability,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑛=𝑛_{𝑠/𝑏𝑖𝑛} \cdot 𝑛_{𝑏𝑖𝑛𝑠}^m$ \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for example, 10 samples per bin with 35 bins requires 12,250 samples in 2D,
+    and 428,750 samples in 3D
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/bc8823819263f4497ef6baab93a9ee38.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sample Coverage** - the range of the sample values cover the predictor feature
+    space.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: fraction of the possible solution space that is sampled, for 1 feature we assume
+    80% coverage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: remember, we usually, directly sample only \(\frac{1}{10^7}\) of the volume
+    of the subsurface
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: yes, the concept of coverage is subjective, how much data to cover? What about
+    gaps? etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/d8058511a88a482ed34b0cbd9eb34fec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: now if there is 80% coverage for 2 features the 2D coverage is 64%
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8d96453b3f6c2a92a160fe4329a13d4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: coverage is,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ c = c_1^m \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Distorted Space** - high dimensional space is distorted.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: take the ratio of the volume of an inscribed hypersphere in a hypercube,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \frac{\pi^{\frac{m}{2}}}{m 2^{m-1} \Gamma\left(\frac{m}{2}\right)} \to 0
+    \quad \text{as} \quad m \to \infty \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall, \(\Gamma(𝑛)=(𝑛−1)!\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: high dimensional space is all corners and no middle and most of high dimensional
+    space is far from the middle (all corners!).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as a result distances in high dimensional space lose sensitivity, i.e., for
+    any random points in the space the expected pairwise distances all become the
+    same,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lim_{m \to \infty} \left( \mathbb{E}\left[\text{dist}_{\text{max}}(m) -
+    \text{dist}_{\text{min}}(m)\right] \right) \to 0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: the limit of the expectation of the range of pairwise distances over random
+    points in hyper-dimensional space tends to zero. If distances are almost all the
+    same, Euclidian distance is no longer meaningful!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8c8d512cca4eb330150d1ba298831543.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The ratio of the volume of a hypersphere within a hypercube.
+  prefs: []
+  type: TYPE_NORMAL
+- en: here’s the severity of the distortion for various dimensionalities,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '| m | nD / 2D |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 0.28 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 0.003 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 20 | 0.00000003 |'
+  prefs: []
+  type: TYPE_TB
+- en: '**Multicollinearity** - higher dimensional datasets are more likely to have
+    collinearity or multicollinearity.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Feature linearly described by other features resulting in high model variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Inferential Machine Learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Princpal conponent analysis is an inferential, unsupervised machine learnng
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no response features, \(y\), just predictor features,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑋_1,\ldots,𝑋_𝑚 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine learns by mimicry a compact representation of the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Captures patterns as feature projections, group assignments, neural network
+    latent features, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We focus on inference of the population, the natural system, instead of prediction
+    of response features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Principal Component Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Principal Component Analysis one of a variety of methods for dimensional reduction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dimensional reduction transforms the data to a lower dimension
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given features, \(𝑋_1,\dots,𝑋_𝑚\) we would require \({m \choose 2}=\frac{𝑚 \cdot
+    (𝑚−1)}{2}\) scatter plots to visualize just the two-dimensional scatter plots.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Once we have 4 or more variables understanding our data gets very hard.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recall the curse of dimensionality, impact inference, modeling and visualization.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One solution, is to find a good lower dimensional, \(𝑝\), representation of
+    the original dimensions \(𝑚\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Benefits of Working in a Reduced Dimensional Representation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data storage / Computational Time
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Easier visualization
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Also takes care of multicollinearity
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Orthogonal Transformation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Convert a set of observations into a set of linearly uncorrelated variables
+    known as principal components
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of principal components (\(k\)) available are min⁡(\(𝑛−1,𝑚\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Limited by the variables/features, \(𝑚\), and the number of data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Components are ordered,
+  prefs: []
+  type: TYPE_NORMAL
+- en: First component describes the larges possible variance / accounts for as much
+    variability as possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next component describes the largest possible remaining variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Up to the maximum number of principal components
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are mutliple ways to interpret principal components analysis,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Best Fitting Interpretation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Minimizes the orthogonal projection error between the data and the principal
+    components,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \min \sum_{i=1}^{n} \left( \left( X_i - \bar{X} \right) - \left( X_i - \bar{X}
+    \right) V_p V_p^T \right)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(𝑽_𝒑\) is a matrix of our first \(𝒑\) vectors, and \(𝑿_𝒊\) is a vector
+    for sample \(𝑖\) over all \(𝑝\) features and \(\overline{X}\) is a vector of the
+    means,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9c37a5643c5eca21190ee3fa4c30880.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Orthogonal error when projecting 2D data to 1D (left) and 3D data to 2D (right)(citation
+    to be added).
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the princpal components describe a vector in 1D and a plane in 2D, and
+    where the principal component scores in the projected space are,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (𝑿_𝒊−\overline{𝑿})𝑽_𝒑 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and the back transformation in the original space with reduced dimensionality
+    is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (𝑿_𝒊−\overline{X})𝑽_𝒑 𝑽_𝒑^𝑻 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, given the \(V_p\) matrix is orthogonal,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ V_p^T = V_p^{-1} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rotation-based Intepretation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Orthogonal transformation is a rotation that maximizes the variance explained
+    on the first principal component, maximizes the remaining variance on the second
+    principal component, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you would like to see PCA as a rotation in action, check out my [PCA Rotation
+    interactive Python dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_PCA_Rotation.ipynb),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1292179f35c2427c0914445105c302d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: My interactive dashboard demonstrating PCA as rotation of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: from this dashboard it is clear that there is a rotation that maixmizes the
+    variance explained by the first principal component while removing the correlation
+    between the first and second principal component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eigenvalues / Eigenvectors Interpretation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For principal components analysis we calculate the data covariance matrix, the
+    pairwise covariance for the combinatorial of features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The we calculate the eigenvectors and eigenvalues from the covariance matrix.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The eigenvalues are the variance explained for each component.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The eigenvectors of the data covariance matrix are the principal components.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Principal Components Analysis Workflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Standardize the Features
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ 𝑋^𝑠=\frac{𝑋−\overline{X}}{\sigma_𝑋} \]\[ 𝑋_1,\ldots,𝑋_𝑚 \quad \rightarrow
+    𝑋_1^𝑠,\ldots,𝑋_𝑚^𝑠 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: standardization is required to prevent features with larger variance dominating
+    the solution, i.e., first principal component aligned with feature with greatest
+    variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the standardized feature covariance matrix
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ C_{(X_{m_1}, X_{m_2})} = \frac{\sum_{i=1}^{n} \left( (x_{m_1} - \bar{x}_{m_1})(x_{m_2}
+    - \bar{x}_{m_2}) \right)}{n - 1} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: \[\begin{split} C = \begin{bmatrix} C(X_1, X_1) & \cdots & C(X_1, X_m) \\ \vdots
+    & \ddots & \vdots \\ C(X_m, X_1) & \cdots & C(X_m, X_m) \end{bmatrix} \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: \[\begin{split} C = \begin{bmatrix} \rho(X_1, X_1) & \cdots & \rho(X_1, X_m)
+    \\ \vdots & \ddots & \vdots \\ \rho(X_m, X_1) & \cdots & \rho(X_m, X_m) \end{bmatrix}
+    \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the eigenvalues and eigenvectors of covariance matrix, \(𝑪\),
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: given 𝐶 is a square matrix \((𝑚 \times 𝑚)\), \(𝑣 (𝑚 \times 1)\) is a vector
+    and \(\lambda\) is a scaler (\(1\)),
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: \[ 𝐶𝑣=\lambda 𝑣 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: \[ (𝐶− \lambda \cdot 𝐼)∙𝑣=0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: \[ |𝐶− \lambda \cdot 𝐼|=0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: the resulting \(\text{𝒎𝒊𝒏}⁡(𝒎,𝒏−𝟏)\) eigenvectors in a matrix, \(𝑽_𝒎\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/149885b8478ebe255e67e3781a68b054.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Eigen vectors as principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/99275c247c63e53876ec6c9dd844b7b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Eigen vectors as principal components defining the new rotated basis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you would like to see the principal components loadings and the variance
+    partitioning between components, check out my [PCA loadings interactive Python
+    dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_PCA_Eigen.ipynb),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8a7fbf602c24c192b7d999a9a3faaf43.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: My interactive dashboard demonstrating PCA loadings and variance explained for
+    eacch principal component as correlation is changes between features 1, 2 and
+    3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries. These should have been installed
+    with Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a single function to streamline plotting correlation matrices.
+    I also added a convenience function to add major and minor gridlines to improve
+    plot interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘unconv_MV.csv’. This
+    dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a DataFrame we called ‘my_data’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is a useful first check.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can preview by slicing the DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we are showing all records from 0 up to and not including 7
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | LogPerm | AI | Brittle | TOC | VR | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 15.91 | 1.67 | 3.06 | 14.05 | 1.36 | 1.85 | 177.381958 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 15.34 | 1.65 | 2.60 | 31.88 | 1.37 | 1.79 | 1479.767778 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 20.45 | 2.02 | 3.13 | 63.67 | 1.79 | 2.53 | 4421.221583 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 11.95 | 1.14 | 3.90 | 58.81 | 0.40 | 2.03 | 1488.317629 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 19.53 | 1.83 | 2.57 | 43.75 | 1.40 | 2.11 | 5261.094919 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 19.47 | 2.04 | 2.73 | 54.37 | 1.42 | 2.12 | 5497.005506 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 12.70 | 1.30 | 3.70 | 43.03 | 0.45 | 1.95 | 1784.266285 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum,
+    and quartiles all in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use transpose just to flip the table so that features are on the rows and
+    the statistics are on the columns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 1000.0 | 14.950460 | 3.029634 | 5.400000 | 12.85750 | 14.98500 | 17.080000
+    | 24.65000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| LogPerm | 1000.0 | 1.398880 | 0.405966 | 0.120000 | 1.13000 | 1.39000 | 1.680000
+    | 2.58000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 1000.0 | 2.982610 | 0.577629 | 0.960000 | 2.57750 | 3.01000 | 3.360000
+    | 4.70000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 1000.0 | 49.719480 | 15.077006 | -10.500000 | 39.72250 | 49.68000
+    | 59.170000 | 93.47000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 1000.0 | 1.003810 | 0.504978 | -0.260000 | 0.64000 | 0.99500 | 1.360000
+    | 2.71000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 1000.0 | 1.991170 | 0.308194 | 0.900000 | 1.81000 | 2.00000 | 2.172500
+    | 2.90000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Production | 1000.0 | 2247.295809 | 1464.256312 | 2.713535 | 1191.36956 |
+    1976.48782 | 3023.594214 | 12568.64413 |'
+  prefs: []
+  type: TYPE_TB
+- en: Good that we checked the summary statistics, we have some negative values for
+    brittleness and total organic carbon. This is physically impossible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The values must be in error. We know the lowest possible values are 0.0, so
+    we will truncate on 0.0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We use the:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: DataFrame member function to get a shallow copy of the data from the DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since it is a shallow copy, any changes we make to the copy are made to the
+    data in the original DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This allows us to apply this simple conditional statement to all the data values
+    in the DataFrame all at once.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 1000.0 | 14.950460 | 3.029634 | 5.400000 | 12.85750 | 14.98500 | 17.080000
+    | 24.65000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| LogPerm | 1000.0 | 1.398880 | 0.405966 | 0.120000 | 1.13000 | 1.39000 | 1.680000
+    | 2.58000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 1000.0 | 2.982610 | 0.577629 | 0.960000 | 2.57750 | 3.01000 | 3.360000
+    | 4.70000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 1000.0 | 49.731480 | 15.033593 | 0.000000 | 39.72250 | 49.68000
+    | 59.170000 | 93.47000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 1000.0 | 1.006170 | 0.499838 | 0.000000 | 0.64000 | 0.99500 | 1.360000
+    | 2.71000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 1000.0 | 1.991170 | 0.308194 | 0.900000 | 1.81000 | 2.00000 | 2.172500
+    | 2.90000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Production | 1000.0 | 2247.295809 | 1464.256312 | 2.713535 | 1191.36956 |
+    1976.48782 | 3023.594214 | 12568.64413 |'
+  prefs: []
+  type: TYPE_TB
+- en: Calculate the Correlation Matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For dimensional reduction, a good first step is data visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the correlation matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can calculate it and view it in the console with these commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: the input data is a 2D ndarray and \(rowvar\) specifies if the variables are
+    in the rows instead of columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s use our function declared above to make a graphical correlation matrix
+    visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This may improve our ability to spot features. It relies on the built in correlation
+    matrix method with Numpy DataFrames and MatPlotLib for plotting.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/779b947412ca0f360bb3a9f517fdd22d7c6ad98015e0cf1a6bd4a8f8fb0162da.png](../Images/93b5d485eb7760d8aa68200eb8d5b65a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This looks good. There is a mix of bivariate, linear correlation magnitudes.
+    Of course, correlation coefficients are limited to degree of linear correlations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Check Matrix Scatter Plots
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For more complete information, let’s look at the matrix scatter plot from the
+    Pandas package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: covariance and correlation are sensitive to outliers and nonlinearity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: the \(alpha\) allows us to use semitransparent points for easier visualization
+    with dense scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the \(hist_kwds\) is a set of parameters for the histograms on the diagonal
+    elements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ad5210bc0e50b9cd1f9e82e2101cd6a8e22b7b46827929b73884539038ea060c.png](../Images/018895042e5a686505eab9280b272aa5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple Bivariate Example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s simplify the problem to bivariate (2 features), porosity and the log transform
+    of permeability and reduce the number of wells from 1,000 to 100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 100.0 | 14.9856 | 2.823016 | 9.23 | 12.9275 | 14.720 | 16.705 | 21.00
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| LogPerm | 100.0 | 1.3947 | 0.390947 | 0.36 | 1.1475 | 1.365 | 1.650 | 2.48
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: Let’s first check the univariate statistics of Por and LogPerm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/06c2be261b8ed9903e1e372588a28bcd52cf56d411cbd6376aa5fdec5bbda07e.png](../Images/5905d69c02168314e84b6bf1c5e7d169.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The distributions may actually be Gaussian distributed, regardless they are
+    well behaved, we cannot observe obvious gaps nor truncations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at a scatter plot of porosity vs. log permeability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This would be the basic command from *matplotlib* to make a scatter plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: the additional parameters are for formatting and labels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6db1439ec376e70dfe82d70d9dfae50de99df77b9c2bbc25f29d89f082850b57.png](../Images/9c8f27583a828639b3ad04b5051376a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Calculation of Principal Components
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the log transform of permeability we have a very nice linear relationship
+    with porosity, PCA should work well on this data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are ready to perform PCA with porosity and log of permeability.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Standardize the Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We must standardize our variables to have a mean equal to zero, \(\bar{x} =
+    0.0\), and the variance equal to one, \(\sigma^{2}_{x} = 1.0\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Otherwise the difference between the scale of porosity and permeability would
+    have a significant impact. Note, given the impact of choice of units on variance,
+    e.g., darcies (D) vs. millidarcies (mD) for permeability or fraction instead of
+    a percentage for porosity. This is quite arbitrary!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To remove this effect, we should always standardize unless the two variables
+    have the same units and then the range, variance between them is meaningful and
+    standardization could remove important information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: “x” is a 2D ndarray from Numpy package with the features in columns and the
+    samples in rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Above we confirm that the features in the “x” 2D array are standardized.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is not a bad idea to check the univariate and bivariate distributions of
+    our standardized variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/294c5353a5f381ec9771db8cfa867a24ca2c07c3089527accf291ed36b79524d.png](../Images/fabb8a2ef820e71361695cf1232eccd7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Everything looks fine and we are ready to apply principal components analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Principal Component Analysis (PCA)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To run PCA with the SciKitLearn machine learning package in Python, we first
+    make a PCA model with a specified number of components and then we ‘fit’ it to
+    our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you will see later with dimensional reduction, we can use matrix math with
+    this model and reduce our data to any dimensionality from 1 to the number of features,
+    m. Let’s run the model with number of components equal to number of features,
+    m.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Component Loadings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first thing we should do is look at the component loadings. Let’s view them
+    and interpret our result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The components are listed as a 2D array (ndarray) with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: principal components on the rows
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: features on the columns
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the rows are sorted so that the first principal component is the top row and
+    the last principal component is the last row.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Proportion of Variance Explained with Principal Components
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is also important to look at the proportion of the variance described by
+    each principal component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Principal Component Scores, Forward and Reverse Projections
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can calculate the principle component scores of the original data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is effectively a rotation of the data, aligned with PC1 for the direction
+    of greatest variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will calculate the principal component scores with the “transform” function
+    built into PCA and then visualize as a scatter plot.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then to “close the loop” and check what we have done (and our knowledge) we
+    will reverse the PCA, go from the principal component scores back to the standardized
+    features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/040728685fd4737dba466d509bb325eece330659c69d1efa7a1d9c67735a74ae.png](../Images/a58857e0fc1f11730774c37f6998fb6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The standardized original and reverse PCA cross plots should look exactly the
+    same. If so, the method is working.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conservation of Variance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the variances of the principle component scores, since we have calculated
+    them now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we calculate the variance for each of the original features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then sum to get the original total variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we calculate the variance for each of the transformed, principal component scores
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then we sum to get the transformed total variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We note the:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the first principal component score has larger variance than the second component
+    scores
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total variance is preserved over the transformation, the sum of variance is
+    the same for original features and m principal component scores
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: Independence of Principal Component Scores
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the correlations for the original features vs. our projected features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have projected our original features with high correlation to 2 new features
+    without correlation between the new features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Principal Component Analysis By-hand with Eigenvalue and Eigen Vector Calculator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s show PCA by-hand with the standardized features and the eigen calculation
+    and compare to the scikit-learn results from above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we confirm that the results match.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/792323ef0c7e641c08fbe33eefb6dc67e05dfacaee639375589ba3f7f4689f07.png](../Images/5f1afcb9beed01f67ca256f8ea4acb30.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Demonstration of Dimensional Reduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s attempt **dimensional reduction** by only retaining the first principle
+    component. We will go from original values to predictions of original values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall we were able to explain about 90% of the variance with the first principal
+    component so the result should look ‘pretty good’, right?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We will do the whole thing by hand to make it as simple/understandable as possible
+    for this first time through. Later we will be much more compact. The steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: start with the original porosity and permeability data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: standardize such that Por and LogPerm have a mean of 0.0 and a variance of 1.0
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: calculate the 2 principal component model, visualize the principal component
+    scores
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: remove the 2nd principal component by setting the associated component scores
+    to 0.0
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: reverse the principal component by matrix multiplication of the scores with
+    the component loadings
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: apply matrix math to restore the original mean and variance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/99fce5c8ff4962b84e1d76599a56e25a485eb8a4462b4fa608f8d5a9af64a8dd.png](../Images/bf554436f2aadf97e6226c941ec9202d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s put the original data and the resulting lower dimensional model side-by-side
+    and check the resulting variances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/dd23216e8863e8d206d5ad4311ffe9586147d99dbb5d2ad0581d859f68582c1d.png](../Images/240c16e5f3411a754b89857959797e42.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: All Predictor Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will go back to the original data file and this time extract all 6 predictor
+    variables and the first 500 samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is a good idea to start with the summary statistics for our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 500.0 | 14.89936 | 2.985967 | 5.40 | 12.8500 | 14.900 | 17.0125 | 23.85
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| LogPerm | 500.0 | 1.40010 | 0.409616 | 0.18 | 1.1475 | 1.380 | 1.6700 | 2.58
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 500.0 | 2.99244 | 0.563674 | 1.21 | 2.5900 | 3.035 | 3.3725 | 4.70 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 500.0 | 49.74682 | 15.212123 | 0.00 | 39.3125 | 49.595 | 59.2075
+    | 93.47 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 500.0 | 0.99800 | 0.503635 | 0.00 | 0.6400 | 0.960 | 1.3500 | 2.71
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 500.0 | 1.99260 | 0.307434 | 0.90 | 1.8200 | 2.010 | 2.1725 | 2.84 |'
+  prefs: []
+  type: TYPE_TB
+- en: Let’s also calculate a correlation matrix and view it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will need to standardize each variable to have a mean of zero and a variance
+    of one. Let’s do that and check the results. In the console below we print all
+    the initial and standardized means and variances for all 6 predictors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: We should also check the univariate distributions for each variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/cb70ebc58a6161c91e168f37c51faf16ad0c7a73cb23c7741794ee731d2470a4.png](../Images/c9eb87ba8e54d0f26a95ce04a0f2751a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The summary statistics and distributions look good. No obvious missing data,
+    gaps, significant truncations, spikes or outliers. We are ready to perform principal
+    component analysis on our 6 features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s look at the component loadings first. Each row is a component, top row
+    is the first principal component (PC1), next row is the second principal component
+    (PC2) up to the last row the sixth principal component (PC6). The columns are
+    the features ordered from ‘Por’, ‘LogPerm’, ‘AI’, ‘Brittle’, ‘TOC’, to ‘VR’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First principal component is mainly composed of porosity, log permeability,
+    acoustic impedance and total organic carbon, suggesting that the way they vary
+    together is responsible for much of the variance. The next principle component
+    is mainly composed of vitrinite reflectance. The third principal coordinate is
+    mainly composed of brittleness and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scree Plots
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To assist in this interpretation we should consider the variance contributions
+    from each principal component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/f13a2759a5a3a9ba079c2c90976c1d01b7e4e03c073aeb9780c2e4db83e7bbbf.png](../Images/6f96fbe837665bd4b49b22deee4579f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that about 46% of the variance is described by the 1st principal
+    component and then about 25% is described by the 2nd principal component etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Independence of Principal Component Scores
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the pairwise feature correlations before and after the projection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: The new projected features (even without dimensionality reduction, \(p=m\))
+    all have pairwise correlations of 0.0!
+  prefs: []
+  type: TYPE_NORMAL
+- en: all the projected features are linearly independent of each other
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reduced Dimensionality Impact on a 2 Feature Relationship
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It would be interesting to look just at the porosity vs. log permeability bivariate
+    relationship when we retain \(1,\ldots,6\) principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: to do this we use matrix math to reverse with PCA and the standardization with
+    various number of principal component and then plot the scatter plots of log permeability
+    vs. porosity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2c07008ca4c1cad616bfb73f5ffed082b67c565a0bbab5e216624e59e8c949ff.png](../Images/5a69f72819a4fda450143b47c8b81454.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very interesting to watch the accuracy of the bivariate relationship between
+    log permeability and porosity improve as we include more components. Let’s check
+    the variances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is interesting. With the first principal component we describe 86% of the
+    porosity variance. The next two principal components do not provide much assistance.
+    Then there is a jump with the 4th and 5th principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: of course, the problem is 6 dimensional, not just porosity vs. log permeability,
+    but is it interesting to see the relationship between number of principal components
+    and variance retained each of these 2 original features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: principal components do not uniformly described each feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reduced Dimensionality Impact on Matrix Scatter Plots of All Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s look at the matrix scatter plots for see all of the bivariate combinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: first some book keeping, we have to put the 6D reduced dimensionality models
+    in DataFrames (there are currently Numpy ndarrays.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can go ahead and produce the matrix scatter plots with these DataFrames.
+    It is very interesting to see the accuracy of the bivariate plots improve as we
+    add principal components. Also, with only two principal components we capture
+    some of the bivariate relationships quite well for some of the variable pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7e0fd0b08b519dd15fc7c0b2a9ccd5a2b5754140ab93346fc7115546b8d3e809.png](../Images/e78345fd784cdb36b14f282fe91180d5.png)
+    ![_images/f27b9d55ef99f92c08c7cb21de0a0d689254e6fc3a83a54a3e8eb85f5c95c0d0.png](../Images/73bc7cc3f14b45b2024f8ac9631eeff6.png)
+    ![_images/aed8d060779415617db82a0fcf6fe64f0807b6bd8859de1bf769095e5a16edf8.png](../Images/58965505867559377436105bcfe2bd2f.png)
+    ![_images/fe7783f010bac449b06713e8507ed1212dae68d11fe79bf77c977cfda4ec2a47.png](../Images/edc87f7af42bdbab50ece3313c71f72d.png)
+    ![_images/258d2ca47aaa2f729024d1eb1517e1e69073d620c641c8c2a8663cf88c072056.png](../Images/deadaf11c865b21029ccb2121e4df45b.png)
+    ![_images/c8dbfa1e504c7c4ee4572bd05c6736e244f886478e03ac2b6eba2326d41cf45f.png](../Images/3847c4e4cad0f11b7497cac6c1234968.png)
+    ![_images/eafec2b6941a708273a969e316ee914e7c226f8fc8a51d1273c87a50db86b27a.png](../Images/ffde399e1f56a914a61abaada97a2abb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Principal Components Analysis on Uncorrelated Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s try one more test, principal components analysis on uncorrelated data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we generate a large number of random samples (n is large) for 5 feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we will assume a uniform distribution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/823b3c82d910714d4edc279cdc281c8f2a3624421d39dcd7a571a905f53b40dd.png](../Images/3e13125b9ca06c498e74bfcd5ae47b64.png)
+    ![_images/3067a78a3b5a5b8996f16d3b7b405b0bc52cb6995934ab583e5ccfbc538267aa.png](../Images/67ae027cd9095c50fbc22e0a2f176a6b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What happens when principal component analysis is applied to uncorrelated, uniformly
+    distributed features?
+  prefs: []
+  type: TYPE_NORMAL
+- en: all the principal components describe the same amount of variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: there is no opportunity for dimensionality reduction through feature projection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the linear combination of independent random variables invokes the central limit
+    theorem, the principle component scores tend to a Gaussian distribution (see the
+    rounding of the points in the matrix scatter plots above)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Practice on a New Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Ok, time to get to work. Let’s load up a dataset and perform PCA with,
+  prefs: []
+  type: TYPE_NORMAL
+- en: compact code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: basic visaulizations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: save the output
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can select any of these datasets or modify the code and add your own to
+    do this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 1, Twelve, 12
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 2D spatial dataset [12_sample_data.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/12_sample_data.csv).
+    This dataset has variables from 480 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: X (m), Y (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: facies (0 - shale, 1 - sand)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load and format the data,
+  prefs: []
+  type: TYPE_NORMAL
+- en: drop the response feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reformate the features as needed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, I like to store the metadata in lists
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 0.325294 | 0.204805 | 0.453731 | 0.960076 | 0.569620 | 0.711340 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 0.342941 | 0.274600 | 0.579104 | 0.480038 | 0.455696 | 0.489691 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 0.439412 | 0.167048 | 0.814925 | 0.842894 | 0.455696 | 0.922680 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 0.654118 | 0.643021 | 0.402985 | 0.393378 | 0.535865 | 0.489691 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 0.645294 | 0.393593 | 0.567164 | 0.000000 | 0.717300 | 0.500000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 0.469412 | 0.421053 | 0.420896 | 0.581278 | 0.476793 | 0.381443 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 0.408235 | 0.282609 | 0.492537 | 0.719035 | 0.417722 | 0.474227 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 0.295882 | 0.217391 | 0.588060 | 0.573103 | 0.371308 | 0.515464 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 0.351176 | 0.181922 | 0.343284 | 0.747105 | 0.481013 | 0.541237 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 0.394118 | 0.321510 | 0.725373 | 0.752964 | 0.561181 | 0.886598 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 0.499412 | 0.372998 | 0.280597 | 0.683608 | 0.535865 | 0.432990 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 0.567059 | 0.591533 | 0.301493 | 0.519962 | 0.725738 | 0.479381 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 0.604118 | 0.490847 | 0.453731 | 0.759095 | 0.573840 | 0.541237 |'
+  prefs: []
+  type: TYPE_TB
+- en: Perform Principal Components Analysis
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Perform principal components analysis,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the principal component loadings
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select the number of principal components to describe a target variance explained
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make a new DataFrame with the principal component scores
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c849a0643237d2cfdd80d77be1638fac7ede9092059c7cf673a61db49ae9519a.png](../Images/5c93c2ee554f6df8bbbb8936c7fec98e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Check the Cumulative Variance Explained
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2ff3b417eb8d29bf00f83b4ed697d6e6112a30ee3d2545d1079c3b838c4d2933.png](../Images/4810ab4ed9ff9b4c3c7270ea4fce631d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Save the Principal Components
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now we can choose to write out the DataFrame with the reduced dimensionality
+    principal component scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of dimensionality reduction by principal component
+    analysis (PCA). Much more could be done and discussed, I have many more resources.
+    Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Principal Component Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Working with more features / variables is harder!
+  prefs: []
+  type: TYPE_NORMAL
+- en: More difficult to visualize data and model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More data are required to infer the joint probabilities
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Less data coverage of feature space
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More difficult to interrogate / check the model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More likely redundant features, e.g., multicollinearity, resulting in model
+    instability
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More computational effort, more computational resources and longer run times
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More complicated model is more likely overfit
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More professional time for model construction
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We get a better model with fewer, informative features than throwing all our
+    features into the model! A big part of this motivation is driven by the curse
+    of dimensionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Curse of Dimensionality
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Data and Model Visualization** - we cannot visualize beyond 3D, i.e., access
+    the model fit to data, evaluate interpolation vs. extrapolation.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: consider a 5D example shown as a matrix scatter plot, even in this case there
+    is an extreme marginalization to 2D for each plot,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ecf50f66114aec17ea35fde1342d66c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 5D data as a matrix scatter plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sampling** - the number of samples sufficient to infer statistics like the
+    joint probability, \(P(x_1,\ldots,x_m)\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'recall the calculation of a histogram or normalized histogram: we establish
+    bins and calculate frequencies or probabilities in each bin.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we require a nominal number of data samples for each bin, so we require \(𝑛=𝑛_{𝑠/𝑏𝑖𝑛}
+    \cdot 𝑛_{𝑏𝑖𝑛𝑠}\) samples in 1D
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: but in mD we required \(n\) samples to calculate the discretized joint probability,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑛=𝑛_{𝑠/𝑏𝑖𝑛} \cdot 𝑛_{𝑏𝑖𝑛𝑠}^m$ \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: for example, 10 samples per bin with 35 bins requires 12,250 samples in 2D,
+    and 428,750 samples in 3D
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/bc8823819263f4497ef6baab93a9ee38.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sample Coverage** - the range of the sample values cover the predictor feature
+    space.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: fraction of the possible solution space that is sampled, for 1 feature we assume
+    80% coverage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: remember, we usually, directly sample only \(\frac{1}{10^7}\) of the volume
+    of the subsurface
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: yes, the concept of coverage is subjective, how much data to cover? What about
+    gaps? etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/d8058511a88a482ed34b0cbd9eb34fec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: now if there is 80% coverage for 2 features the 2D coverage is 64%
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8d96453b3f6c2a92a160fe4329a13d4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example 2D data with 35 bins for each feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: coverage is,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ c = c_1^m \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Distorted Space** - high dimensional space is distorted.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: take the ratio of the volume of an inscribed hypersphere in a hypercube,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \frac{\pi^{\frac{m}{2}}}{m 2^{m-1} \Gamma\left(\frac{m}{2}\right)} \to 0
+    \quad \text{as} \quad m \to \infty \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: recall, \(\Gamma(𝑛)=(𝑛−1)!\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: high dimensional space is all corners and no middle and most of high dimensional
+    space is far from the middle (all corners!).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: as a result distances in high dimensional space lose sensitivity, i.e., for
+    any random points in the space the expected pairwise distances all become the
+    same,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ \lim_{m \to \infty} \left( \mathbb{E}\left[\text{dist}_{\text{max}}(m) -
+    \text{dist}_{\text{min}}(m)\right] \right) \to 0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: the limit of the expectation of the range of pairwise distances over random
+    points in hyper-dimensional space tends to zero. If distances are almost all the
+    same, Euclidian distance is no longer meaningful!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8c8d512cca4eb330150d1ba298831543.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The ratio of the volume of a hypersphere within a hypercube.
+  prefs: []
+  type: TYPE_NORMAL
+- en: here’s the severity of the distortion for various dimensionalities,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '| m | nD / 2D |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 0.28 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 0.003 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 20 | 0.00000003 |'
+  prefs: []
+  type: TYPE_TB
+- en: '**Multicollinearity** - higher dimensional datasets are more likely to have
+    collinearity or multicollinearity.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Feature linearly described by other features resulting in high model variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Inferential Machine Learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Princpal conponent analysis is an inferential, unsupervised machine learnng
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no response features, \(y\), just predictor features,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑋_1,\ldots,𝑋_𝑚 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine learns by mimicry a compact representation of the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Captures patterns as feature projections, group assignments, neural network
+    latent features, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We focus on inference of the population, the natural system, instead of prediction
+    of response features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Principal Component Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Principal Component Analysis one of a variety of methods for dimensional reduction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dimensional reduction transforms the data to a lower dimension
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given features, \(𝑋_1,\dots,𝑋_𝑚\) we would require \({m \choose 2}=\frac{𝑚 \cdot
+    (𝑚−1)}{2}\) scatter plots to visualize just the two-dimensional scatter plots.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Once we have 4 or more variables understanding our data gets very hard.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recall the curse of dimensionality, impact inference, modeling and visualization.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One solution, is to find a good lower dimensional, \(𝑝\), representation of
+    the original dimensions \(𝑚\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Benefits of Working in a Reduced Dimensional Representation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data storage / Computational Time
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Easier visualization
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Also takes care of multicollinearity
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Orthogonal Transformation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Convert a set of observations into a set of linearly uncorrelated variables
+    known as principal components
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of principal components (\(k\)) available are min⁡(\(𝑛−1,𝑚\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Limited by the variables/features, \(𝑚\), and the number of data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Components are ordered,
+  prefs: []
+  type: TYPE_NORMAL
+- en: First component describes the larges possible variance / accounts for as much
+    variability as possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next component describes the largest possible remaining variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Up to the maximum number of principal components
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are mutliple ways to interpret principal components analysis,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Best Fitting Interpretation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Minimizes the orthogonal projection error between the data and the principal
+    components,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \min \sum_{i=1}^{n} \left( \left( X_i - \bar{X} \right) - \left( X_i - \bar{X}
+    \right) V_p V_p^T \right)^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(𝑽_𝒑\) is a matrix of our first \(𝒑\) vectors, and \(𝑿_𝒊\) is a vector
+    for sample \(𝑖\) over all \(𝑝\) features and \(\overline{X}\) is a vector of the
+    means,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9c37a5643c5eca21190ee3fa4c30880.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Orthogonal error when projecting 2D data to 1D (left) and 3D data to 2D (right)(citation
+    to be added).
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the princpal components describe a vector in 1D and a plane in 2D, and
+    where the principal component scores in the projected space are,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (𝑿_𝒊−\overline{𝑿})𝑽_𝒑 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and the back transformation in the original space with reduced dimensionality
+    is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ (𝑿_𝒊−\overline{X})𝑽_𝒑 𝑽_𝒑^𝑻 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, given the \(V_p\) matrix is orthogonal,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ V_p^T = V_p^{-1} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rotation-based Intepretation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Orthogonal transformation is a rotation that maximizes the variance explained
+    on the first principal component, maximizes the remaining variance on the second
+    principal component, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you would like to see PCA as a rotation in action, check out my [PCA Rotation
+    interactive Python dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_PCA_Rotation.ipynb),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1292179f35c2427c0914445105c302d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: My interactive dashboard demonstrating PCA as rotation of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: from this dashboard it is clear that there is a rotation that maixmizes the
+    variance explained by the first principal component while removing the correlation
+    between the first and second principal component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eigenvalues / Eigenvectors Interpretation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For principal components analysis we calculate the data covariance matrix, the
+    pairwise covariance for the combinatorial of features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The we calculate the eigenvectors and eigenvalues from the covariance matrix.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The eigenvalues are the variance explained for each component.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The eigenvectors of the data covariance matrix are the principal components.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Principal Components Analysis Workflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Standardize the Features
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ 𝑋^𝑠=\frac{𝑋−\overline{X}}{\sigma_𝑋} \]\[ 𝑋_1,\ldots,𝑋_𝑚 \quad \rightarrow
+    𝑋_1^𝑠,\ldots,𝑋_𝑚^𝑠 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE74]'
+  prefs: []
+  type: TYPE_PRE
+- en: standardization is required to prevent features with larger variance dominating
+    the solution, i.e., first principal component aligned with feature with greatest
+    variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the standardized feature covariance matrix
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ C_{(X_{m_1}, X_{m_2})} = \frac{\sum_{i=1}^{n} \left( (x_{m_1} - \bar{x}_{m_1})(x_{m_2}
+    - \bar{x}_{m_2}) \right)}{n - 1} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE75]'
+  prefs: []
+  type: TYPE_PRE
+- en: \[\begin{split} C = \begin{bmatrix} C(X_1, X_1) & \cdots & C(X_1, X_m) \\ \vdots
+    & \ddots & \vdots \\ C(X_m, X_1) & \cdots & C(X_m, X_m) \end{bmatrix} \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs: []
+  type: TYPE_PRE
+- en: \[\begin{split} C = \begin{bmatrix} \rho(X_1, X_1) & \cdots & \rho(X_1, X_m)
+    \\ \vdots & \ddots & \vdots \\ \rho(X_m, X_1) & \cdots & \rho(X_m, X_m) \end{bmatrix}
+    \end{split}\]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the eigenvalues and eigenvectors of covariance matrix, \(𝑪\),
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: given 𝐶 is a square matrix \((𝑚 \times 𝑚)\), \(𝑣 (𝑚 \times 1)\) is a vector
+    and \(\lambda\) is a scaler (\(1\)),
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: \[ 𝐶𝑣=\lambda 𝑣 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE77]'
+  prefs: []
+  type: TYPE_PRE
+- en: \[ (𝐶− \lambda \cdot 𝐼)∙𝑣=0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE78]'
+  prefs: []
+  type: TYPE_PRE
+- en: \[ |𝐶− \lambda \cdot 𝐼|=0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE79]'
+  prefs: []
+  type: TYPE_PRE
+- en: the resulting \(\text{𝒎𝒊𝒏}⁡(𝒎,𝒏−𝟏)\) eigenvectors in a matrix, \(𝑽_𝒎\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/149885b8478ebe255e67e3781a68b054.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Eigen vectors as principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE80]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/99275c247c63e53876ec6c9dd844b7b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Eigen vectors as principal components defining the new rotated basis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you would like to see the principal components loadings and the variance
+    partitioning between components, check out my [PCA loadings interactive Python
+    dashboard](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_PCA_Eigen.ipynb),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8a7fbf602c24c192b7d999a9a3faaf43.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: My interactive dashboard demonstrating PCA loadings and variance explained for
+    eacch principal component as correlation is changes between features 1, 2 and
+    3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries. These should have been installed
+    with Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE81]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a single function to streamline plotting correlation matrices.
+    I also added a convenience function to add major and minor gridlines to improve
+    plot interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE82]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE83]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘unconv_MV.csv’. This
+    dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a DataFrame we called ‘my_data’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE84]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is a useful first check.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can preview by slicing the DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we are showing all records from 0 up to and not including 7
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE85]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | LogPerm | AI | Brittle | TOC | VR | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 15.91 | 1.67 | 3.06 | 14.05 | 1.36 | 1.85 | 177.381958 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 15.34 | 1.65 | 2.60 | 31.88 | 1.37 | 1.79 | 1479.767778 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 20.45 | 2.02 | 3.13 | 63.67 | 1.79 | 2.53 | 4421.221583 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 11.95 | 1.14 | 3.90 | 58.81 | 0.40 | 2.03 | 1488.317629 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 19.53 | 1.83 | 2.57 | 43.75 | 1.40 | 2.11 | 5261.094919 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 19.47 | 2.04 | 2.73 | 54.37 | 1.42 | 2.12 | 5497.005506 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 12.70 | 1.30 | 3.70 | 43.03 | 0.45 | 1.95 | 1784.266285 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum,
+    and quartiles all in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use transpose just to flip the table so that features are on the rows and
+    the statistics are on the columns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE86]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 1000.0 | 14.950460 | 3.029634 | 5.400000 | 12.85750 | 14.98500 | 17.080000
+    | 24.65000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| LogPerm | 1000.0 | 1.398880 | 0.405966 | 0.120000 | 1.13000 | 1.39000 | 1.680000
+    | 2.58000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 1000.0 | 2.982610 | 0.577629 | 0.960000 | 2.57750 | 3.01000 | 3.360000
+    | 4.70000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 1000.0 | 49.719480 | 15.077006 | -10.500000 | 39.72250 | 49.68000
+    | 59.170000 | 93.47000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 1000.0 | 1.003810 | 0.504978 | -0.260000 | 0.64000 | 0.99500 | 1.360000
+    | 2.71000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 1000.0 | 1.991170 | 0.308194 | 0.900000 | 1.81000 | 2.00000 | 2.172500
+    | 2.90000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Production | 1000.0 | 2247.295809 | 1464.256312 | 2.713535 | 1191.36956 |
+    1976.48782 | 3023.594214 | 12568.64413 |'
+  prefs: []
+  type: TYPE_TB
+- en: Good that we checked the summary statistics, we have some negative values for
+    brittleness and total organic carbon. This is physically impossible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The values must be in error. We know the lowest possible values are 0.0, so
+    we will truncate on 0.0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We use the:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE87]'
+  prefs: []
+  type: TYPE_PRE
+- en: DataFrame member function to get a shallow copy of the data from the DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since it is a shallow copy, any changes we make to the copy are made to the
+    data in the original DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This allows us to apply this simple conditional statement to all the data values
+    in the DataFrame all at once.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE88]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 1000.0 | 14.950460 | 3.029634 | 5.400000 | 12.85750 | 14.98500 | 17.080000
+    | 24.65000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| LogPerm | 1000.0 | 1.398880 | 0.405966 | 0.120000 | 1.13000 | 1.39000 | 1.680000
+    | 2.58000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 1000.0 | 2.982610 | 0.577629 | 0.960000 | 2.57750 | 3.01000 | 3.360000
+    | 4.70000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 1000.0 | 49.731480 | 15.033593 | 0.000000 | 39.72250 | 49.68000
+    | 59.170000 | 93.47000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 1000.0 | 1.006170 | 0.499838 | 0.000000 | 0.64000 | 0.99500 | 1.360000
+    | 2.71000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 1000.0 | 1.991170 | 0.308194 | 0.900000 | 1.81000 | 2.00000 | 2.172500
+    | 2.90000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Production | 1000.0 | 2247.295809 | 1464.256312 | 2.713535 | 1191.36956 |
+    1976.48782 | 3023.594214 | 12568.64413 |'
+  prefs: []
+  type: TYPE_TB
+- en: Calculate the Correlation Matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For dimensional reduction, a good first step is data visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the correlation matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can calculate it and view it in the console with these commands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE89]'
+  prefs: []
+  type: TYPE_PRE
+- en: the input data is a 2D ndarray and \(rowvar\) specifies if the variables are
+    in the rows instead of columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE90]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE91]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s use our function declared above to make a graphical correlation matrix
+    visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This may improve our ability to spot features. It relies on the built in correlation
+    matrix method with Numpy DataFrames and MatPlotLib for plotting.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE92]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/779b947412ca0f360bb3a9f517fdd22d7c6ad98015e0cf1a6bd4a8f8fb0162da.png](../Images/93b5d485eb7760d8aa68200eb8d5b65a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This looks good. There is a mix of bivariate, linear correlation magnitudes.
+    Of course, correlation coefficients are limited to degree of linear correlations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Check Matrix Scatter Plots
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For more complete information, let’s look at the matrix scatter plot from the
+    Pandas package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: covariance and correlation are sensitive to outliers and nonlinearity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE93]'
+  prefs: []
+  type: TYPE_PRE
+- en: the \(alpha\) allows us to use semitransparent points for easier visualization
+    with dense scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the \(hist_kwds\) is a set of parameters for the histograms on the diagonal
+    elements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE94]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ad5210bc0e50b9cd1f9e82e2101cd6a8e22b7b46827929b73884539038ea060c.png](../Images/018895042e5a686505eab9280b272aa5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple Bivariate Example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s simplify the problem to bivariate (2 features), porosity and the log transform
+    of permeability and reduce the number of wells from 1,000 to 100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE95]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 100.0 | 14.9856 | 2.823016 | 9.23 | 12.9275 | 14.720 | 16.705 | 21.00
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| LogPerm | 100.0 | 1.3947 | 0.390947 | 0.36 | 1.1475 | 1.365 | 1.650 | 2.48
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: Let’s first check the univariate statistics of Por and LogPerm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE96]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/06c2be261b8ed9903e1e372588a28bcd52cf56d411cbd6376aa5fdec5bbda07e.png](../Images/5905d69c02168314e84b6bf1c5e7d169.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The distributions may actually be Gaussian distributed, regardless they are
+    well behaved, we cannot observe obvious gaps nor truncations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at a scatter plot of porosity vs. log permeability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This would be the basic command from *matplotlib* to make a scatter plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE97]'
+  prefs: []
+  type: TYPE_PRE
+- en: the additional parameters are for formatting and labels
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE98]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6db1439ec376e70dfe82d70d9dfae50de99df77b9c2bbc25f29d89f082850b57.png](../Images/9c8f27583a828639b3ad04b5051376a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Calculation of Principal Components
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the log transform of permeability we have a very nice linear relationship
+    with porosity, PCA should work well on this data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are ready to perform PCA with porosity and log of permeability.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Standardize the Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We must standardize our variables to have a mean equal to zero, \(\bar{x} =
+    0.0\), and the variance equal to one, \(\sigma^{2}_{x} = 1.0\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Otherwise the difference between the scale of porosity and permeability would
+    have a significant impact. Note, given the impact of choice of units on variance,
+    e.g., darcies (D) vs. millidarcies (mD) for permeability or fraction instead of
+    a percentage for porosity. This is quite arbitrary!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To remove this effect, we should always standardize unless the two variables
+    have the same units and then the range, variance between them is meaningful and
+    standardization could remove important information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE99]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE100]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE101]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE102]'
+  prefs: []
+  type: TYPE_PRE
+- en: “x” is a 2D ndarray from Numpy package with the features in columns and the
+    samples in rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Above we confirm that the features in the “x” 2D array are standardized.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is not a bad idea to check the univariate and bivariate distributions of
+    our standardized variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE103]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/294c5353a5f381ec9771db8cfa867a24ca2c07c3089527accf291ed36b79524d.png](../Images/fabb8a2ef820e71361695cf1232eccd7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Everything looks fine and we are ready to apply principal components analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Principal Component Analysis (PCA)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To run PCA with the SciKitLearn machine learning package in Python, we first
+    make a PCA model with a specified number of components and then we ‘fit’ it to
+    our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE104]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you will see later with dimensional reduction, we can use matrix math with
+    this model and reduce our data to any dimensionality from 1 to the number of features,
+    m. Let’s run the model with number of components equal to number of features,
+    m.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE105]'
+  prefs: []
+  type: TYPE_PRE
+- en: Component Loadings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first thing we should do is look at the component loadings. Let’s view them
+    and interpret our result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE106]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE107]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The components are listed as a 2D array (ndarray) with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: principal components on the rows
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: features on the columns
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the rows are sorted so that the first principal component is the top row and
+    the last principal component is the last row.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Proportion of Variance Explained with Principal Components
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is also important to look at the proportion of the variance described by
+    each principal component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE108]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE109]'
+  prefs: []
+  type: TYPE_PRE
+- en: Principal Component Scores, Forward and Reverse Projections
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can calculate the principle component scores of the original data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is effectively a rotation of the data, aligned with PC1 for the direction
+    of greatest variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will calculate the principal component scores with the “transform” function
+    built into PCA and then visualize as a scatter plot.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then to “close the loop” and check what we have done (and our knowledge) we
+    will reverse the PCA, go from the principal component scores back to the standardized
+    features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE110]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/040728685fd4737dba466d509bb325eece330659c69d1efa7a1d9c67735a74ae.png](../Images/a58857e0fc1f11730774c37f6998fb6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The standardized original and reverse PCA cross plots should look exactly the
+    same. If so, the method is working.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conservation of Variance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the variances of the principle component scores, since we have calculated
+    them now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we calculate the variance for each of the original features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then sum to get the original total variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we calculate the variance for each of the transformed, principal component scores
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then we sum to get the transformed total variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We note the:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the first principal component score has larger variance than the second component
+    scores
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total variance is preserved over the transformation, the sum of variance is
+    the same for original features and m principal component scores
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE111]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE112]'
+  prefs: []
+  type: TYPE_PRE
+- en: Independence of Principal Component Scores
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the correlations for the original features vs. our projected features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE113]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE114]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have projected our original features with high correlation to 2 new features
+    without correlation between the new features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Principal Component Analysis By-hand with Eigenvalue and Eigen Vector Calculator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s show PCA by-hand with the standardized features and the eigen calculation
+    and compare to the scikit-learn results from above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we confirm that the results match.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE115]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE116]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/792323ef0c7e641c08fbe33eefb6dc67e05dfacaee639375589ba3f7f4689f07.png](../Images/5f1afcb9beed01f67ca256f8ea4acb30.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Demonstration of Dimensional Reduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s attempt **dimensional reduction** by only retaining the first principle
+    component. We will go from original values to predictions of original values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall we were able to explain about 90% of the variance with the first principal
+    component so the result should look ‘pretty good’, right?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We will do the whole thing by hand to make it as simple/understandable as possible
+    for this first time through. Later we will be much more compact. The steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: start with the original porosity and permeability data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: standardize such that Por and LogPerm have a mean of 0.0 and a variance of 1.0
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: calculate the 2 principal component model, visualize the principal component
+    scores
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: remove the 2nd principal component by setting the associated component scores
+    to 0.0
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: reverse the principal component by matrix multiplication of the scores with
+    the component loadings
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: apply matrix math to restore the original mean and variance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE117]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/99fce5c8ff4962b84e1d76599a56e25a485eb8a4462b4fa608f8d5a9af64a8dd.png](../Images/bf554436f2aadf97e6226c941ec9202d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s put the original data and the resulting lower dimensional model side-by-side
+    and check the resulting variances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE118]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/dd23216e8863e8d206d5ad4311ffe9586147d99dbb5d2ad0581d859f68582c1d.png](../Images/240c16e5f3411a754b89857959797e42.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE119]'
+  prefs: []
+  type: TYPE_PRE
+- en: All Predictor Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will go back to the original data file and this time extract all 6 predictor
+    variables and the first 500 samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE120]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is a good idea to start with the summary statistics for our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE121]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 500.0 | 14.89936 | 2.985967 | 5.40 | 12.8500 | 14.900 | 17.0125 | 23.85
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| LogPerm | 500.0 | 1.40010 | 0.409616 | 0.18 | 1.1475 | 1.380 | 1.6700 | 2.58
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 500.0 | 2.99244 | 0.563674 | 1.21 | 2.5900 | 3.035 | 3.3725 | 4.70 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 500.0 | 49.74682 | 15.212123 | 0.00 | 39.3125 | 49.595 | 59.2075
+    | 93.47 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 500.0 | 0.99800 | 0.503635 | 0.00 | 0.6400 | 0.960 | 1.3500 | 2.71
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 500.0 | 1.99260 | 0.307434 | 0.90 | 1.8200 | 2.010 | 2.1725 | 2.84 |'
+  prefs: []
+  type: TYPE_TB
+- en: Let’s also calculate a correlation matrix and view it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE122]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE123]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will need to standardize each variable to have a mean of zero and a variance
+    of one. Let’s do that and check the results. In the console below we print all
+    the initial and standardized means and variances for all 6 predictors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE124]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE125]'
+  prefs: []
+  type: TYPE_PRE
+- en: We should also check the univariate distributions for each variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE126]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/cb70ebc58a6161c91e168f37c51faf16ad0c7a73cb23c7741794ee731d2470a4.png](../Images/c9eb87ba8e54d0f26a95ce04a0f2751a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The summary statistics and distributions look good. No obvious missing data,
+    gaps, significant truncations, spikes or outliers. We are ready to perform principal
+    component analysis on our 6 features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE127]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE128]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s look at the component loadings first. Each row is a component, top row
+    is the first principal component (PC1), next row is the second principal component
+    (PC2) up to the last row the sixth principal component (PC6). The columns are
+    the features ordered from ‘Por’, ‘LogPerm’, ‘AI’, ‘Brittle’, ‘TOC’, to ‘VR’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First principal component is mainly composed of porosity, log permeability,
+    acoustic impedance and total organic carbon, suggesting that the way they vary
+    together is responsible for much of the variance. The next principle component
+    is mainly composed of vitrinite reflectance. The third principal coordinate is
+    mainly composed of brittleness and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scree Plots
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To assist in this interpretation we should consider the variance contributions
+    from each principal component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE129]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE130]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/f13a2759a5a3a9ba079c2c90976c1d01b7e4e03c073aeb9780c2e4db83e7bbbf.png](../Images/6f96fbe837665bd4b49b22deee4579f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that about 46% of the variance is described by the 1st principal
+    component and then about 25% is described by the 2nd principal component etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Independence of Principal Component Scores
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the pairwise feature correlations before and after the projection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE131]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE132]'
+  prefs: []
+  type: TYPE_PRE
+- en: The new projected features (even without dimensionality reduction, \(p=m\))
+    all have pairwise correlations of 0.0!
+  prefs: []
+  type: TYPE_NORMAL
+- en: all the projected features are linearly independent of each other
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reduced Dimensionality Impact on a 2 Feature Relationship
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It would be interesting to look just at the porosity vs. log permeability bivariate
+    relationship when we retain \(1,\ldots,6\) principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: to do this we use matrix math to reverse with PCA and the standardization with
+    various number of principal component and then plot the scatter plots of log permeability
+    vs. porosity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE133]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2c07008ca4c1cad616bfb73f5ffed082b67c565a0bbab5e216624e59e8c949ff.png](../Images/5a69f72819a4fda450143b47c8b81454.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very interesting to watch the accuracy of the bivariate relationship between
+    log permeability and porosity improve as we include more components. Let’s check
+    the variances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE134]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE135]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is interesting. With the first principal component we describe 86% of the
+    porosity variance. The next two principal components do not provide much assistance.
+    Then there is a jump with the 4th and 5th principal components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: of course, the problem is 6 dimensional, not just porosity vs. log permeability,
+    but is it interesting to see the relationship between number of principal components
+    and variance retained each of these 2 original features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: principal components do not uniformly described each feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reduced Dimensionality Impact on Matrix Scatter Plots of All Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s look at the matrix scatter plots for see all of the bivariate combinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: first some book keeping, we have to put the 6D reduced dimensionality models
+    in DataFrames (there are currently Numpy ndarrays.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE136]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can go ahead and produce the matrix scatter plots with these DataFrames.
+    It is very interesting to see the accuracy of the bivariate plots improve as we
+    add principal components. Also, with only two principal components we capture
+    some of the bivariate relationships quite well for some of the variable pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE137]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE138]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7e0fd0b08b519dd15fc7c0b2a9ccd5a2b5754140ab93346fc7115546b8d3e809.png](../Images/e78345fd784cdb36b14f282fe91180d5.png)
+    ![_images/f27b9d55ef99f92c08c7cb21de0a0d689254e6fc3a83a54a3e8eb85f5c95c0d0.png](../Images/73bc7cc3f14b45b2024f8ac9631eeff6.png)
+    ![_images/aed8d060779415617db82a0fcf6fe64f0807b6bd8859de1bf769095e5a16edf8.png](../Images/58965505867559377436105bcfe2bd2f.png)
+    ![_images/fe7783f010bac449b06713e8507ed1212dae68d11fe79bf77c977cfda4ec2a47.png](../Images/edc87f7af42bdbab50ece3313c71f72d.png)
+    ![_images/258d2ca47aaa2f729024d1eb1517e1e69073d620c641c8c2a8663cf88c072056.png](../Images/deadaf11c865b21029ccb2121e4df45b.png)
+    ![_images/c8dbfa1e504c7c4ee4572bd05c6736e244f886478e03ac2b6eba2326d41cf45f.png](../Images/3847c4e4cad0f11b7497cac6c1234968.png)
+    ![_images/eafec2b6941a708273a969e316ee914e7c226f8fc8a51d1273c87a50db86b27a.png](../Images/ffde399e1f56a914a61abaada97a2abb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Principal Components Analysis on Uncorrelated Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s try one more test, principal components analysis on uncorrelated data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we generate a large number of random samples (n is large) for 5 feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we will assume a uniform distribution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE139]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE140]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE141]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE142]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/823b3c82d910714d4edc279cdc281c8f2a3624421d39dcd7a571a905f53b40dd.png](../Images/3e13125b9ca06c498e74bfcd5ae47b64.png)
+    ![_images/3067a78a3b5a5b8996f16d3b7b405b0bc52cb6995934ab583e5ccfbc538267aa.png](../Images/67ae027cd9095c50fbc22e0a2f176a6b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What happens when principal component analysis is applied to uncorrelated, uniformly
+    distributed features?
+  prefs: []
+  type: TYPE_NORMAL
+- en: all the principal components describe the same amount of variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: there is no opportunity for dimensionality reduction through feature projection
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the linear combination of independent random variables invokes the central limit
+    theorem, the principle component scores tend to a Gaussian distribution (see the
+    rounding of the points in the matrix scatter plots above)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Practice on a New Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Ok, time to get to work. Let’s load up a dataset and perform PCA with,
+  prefs: []
+  type: TYPE_NORMAL
+- en: compact code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: basic visaulizations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: save the output
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can select any of these datasets or modify the code and add your own to
+    do this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 1, Twelve, 12
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 2D spatial dataset [12_sample_data.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/12_sample_data.csv).
+    This dataset has variables from 480 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: X (m), Y (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: facies (0 - shale, 1 - sand)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load and format the data,
+  prefs: []
+  type: TYPE_NORMAL
+- en: drop the response feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reformate the features as needed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, I like to store the metadata in lists
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE143]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 0.325294 | 0.204805 | 0.453731 | 0.960076 | 0.569620 | 0.711340 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 0.342941 | 0.274600 | 0.579104 | 0.480038 | 0.455696 | 0.489691 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 0.439412 | 0.167048 | 0.814925 | 0.842894 | 0.455696 | 0.922680 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 0.654118 | 0.643021 | 0.402985 | 0.393378 | 0.535865 | 0.489691 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 0.645294 | 0.393593 | 0.567164 | 0.000000 | 0.717300 | 0.500000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 0.469412 | 0.421053 | 0.420896 | 0.581278 | 0.476793 | 0.381443 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 0.408235 | 0.282609 | 0.492537 | 0.719035 | 0.417722 | 0.474227 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 0.295882 | 0.217391 | 0.588060 | 0.573103 | 0.371308 | 0.515464 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 0.351176 | 0.181922 | 0.343284 | 0.747105 | 0.481013 | 0.541237 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 0.394118 | 0.321510 | 0.725373 | 0.752964 | 0.561181 | 0.886598 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 0.499412 | 0.372998 | 0.280597 | 0.683608 | 0.535865 | 0.432990 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 0.567059 | 0.591533 | 0.301493 | 0.519962 | 0.725738 | 0.479381 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 0.604118 | 0.490847 | 0.453731 | 0.759095 | 0.573840 | 0.541237 |'
+  prefs: []
+  type: TYPE_TB
+- en: Perform Principal Components Analysis
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Perform principal components analysis,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the principal component loadings
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select the number of principal components to describe a target variance explained
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make a new DataFrame with the principal component scores
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE144]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c849a0643237d2cfdd80d77be1638fac7ede9092059c7cf673a61db49ae9519a.png](../Images/5c93c2ee554f6df8bbbb8936c7fec98e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Check the Cumulative Variance Explained
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[PRE145]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2ff3b417eb8d29bf00f83b4ed697d6e6112a30ee3d2545d1079c3b838c4d2933.png](../Images/4810ab4ed9ff9b4c3c7270ea4fce631d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Save the Principal Components
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now we can choose to write out the DataFrame with the reduced dimensionality
+    principal component scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE146]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE147]'
+  prefs: []
+  type: TYPE_PRE
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 1, Twelve, 12
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 2D spatial dataset [12_sample_data.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/12_sample_data.csv).
+    This dataset has variables from 480 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: X (m), Y (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: facies (0 - shale, 1 - sand)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load and format the data,
+  prefs: []
+  type: TYPE_NORMAL
+- en: drop the response feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reformate the features as needed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, I like to store the metadata in lists
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE148]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 0.325294 | 0.204805 | 0.453731 | 0.960076 | 0.569620 | 0.711340 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 0.342941 | 0.274600 | 0.579104 | 0.480038 | 0.455696 | 0.489691 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 0.439412 | 0.167048 | 0.814925 | 0.842894 | 0.455696 | 0.922680 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 0.654118 | 0.643021 | 0.402985 | 0.393378 | 0.535865 | 0.489691 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 0.645294 | 0.393593 | 0.567164 | 0.000000 | 0.717300 | 0.500000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 0.469412 | 0.421053 | 0.420896 | 0.581278 | 0.476793 | 0.381443 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 0.408235 | 0.282609 | 0.492537 | 0.719035 | 0.417722 | 0.474227 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 0.295882 | 0.217391 | 0.588060 | 0.573103 | 0.371308 | 0.515464 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 0.351176 | 0.181922 | 0.343284 | 0.747105 | 0.481013 | 0.541237 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 0.394118 | 0.321510 | 0.725373 | 0.752964 | 0.561181 | 0.886598 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 0.499412 | 0.372998 | 0.280597 | 0.683608 | 0.535865 | 0.432990 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 0.567059 | 0.591533 | 0.301493 | 0.519962 | 0.725738 | 0.479381 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 0.604118 | 0.490847 | 0.453731 | 0.759095 | 0.573840 | 0.541237 |'
+  prefs: []
+  type: TYPE_TB
+- en: Perform Principal Components Analysis
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Perform principal components analysis,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the principal component loadings
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select the number of principal components to describe a target variance explained
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make a new DataFrame with the principal component scores
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE149]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c849a0643237d2cfdd80d77be1638fac7ede9092059c7cf673a61db49ae9519a.png](../Images/5c93c2ee554f6df8bbbb8936c7fec98e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Check the Cumulative Variance Explained
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[PRE150]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2ff3b417eb8d29bf00f83b4ed697d6e6112a30ee3d2545d1079c3b838c4d2933.png](../Images/4810ab4ed9ff9b4c3c7270ea4fce631d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Save the Principal Components
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Now we can choose to write out the DataFrame with the reduced dimensionality
+    principal component scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE151]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE152]'
+  prefs: []
+  type: TYPE_PRE
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of dimensionality reduction by principal component
+    analysis (PCA). Much more could be done and discussed, I have many more resources.
+    Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

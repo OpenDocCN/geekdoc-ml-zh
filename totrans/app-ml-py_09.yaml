@@ -1,0 +1,2449 @@
+- en: Feature Transformations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_feature_transformations.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_feature_transformations.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Feature Transformations**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Curse of Dimensionality, Dimensionality Reduction, Principal Component Analysis](https://youtu.be/embks9p4pb8?si=B2HXm_i0oMSWkBhN)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multidimensional Scaling and Random Projection](https://youtu.be/Yt0o8ukIOKU?si=_ri1NPwKVdhYzgO3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Feature Transformations](https://youtu.be/6QJjZoWknEI?si=p6vp811xWAmzWY3r)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for Feature Transformations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are many reasons that we may want to perform feature transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the make the features consistent for visualization and comparison
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: to avoid bias or impose feature weighting for methods (e.g. k-nearest neighbours
+    regression) that rely on distances calculated in predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'the method requires the variables to have a specific range or distribution:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: artificial neural networks may require all features to range from [-1,1]
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: partial correlation coefficients require a Gaussian distribution.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: statistical tests may require a specific distribution
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: geostatistical sequential simulation requires an indicator or Gaussian transform
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature transformations is a common basic building blocks in many machine learning
+    workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s learn how to perform feature transformations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature Transformation Workflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A common feature transformation workflow involves the transformation of the
+    features to a new space, completed the machine learning workflow in the new space
+    and then backtransform to the original space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ae790b00800f8cc2de58a4f790c4f884.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The common feature transformation workflow, transform predictor features, \(X_1,\ldots,X_m\),
+    to \(X^{\prime}_1,\ldots,X^{\prime}_m\), apply data analytics, geostatistics or
+    machine learning steps to predict transformed response feature, \(Y^{\prime}\),
+    and then backtransform to original response feature, \(Y\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a function to streamline the addition specified percentiles and
+    major and minor gridlines to our plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘unconv_MV.csv’. This
+    dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a DataFrame we called ‘my_data’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful first check of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: add parameter ‘n=13’ to see the first 13 rows of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum,
+    and quartiles all in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use transpose just to flip the table so that features are on the rows and
+    the statistics are on the columns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3864.407081 | 1553.277558 | 839.822063 | 2686.227611 | 3604.303506
+    | 4752.637555 | 8590.384044 |'
+  prefs: []
+  type: TYPE_TB
+- en: Data Visualization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We should also take a look at the histograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: get a sense of the range, modes, skew, outliers etc. for each feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/919ec2a38f23ede94c93df48bbd9fe48c3a4a10ace07770d09b4768c61b9da29.png](../Images/b8ff5b0fb09ce8ca4654d3de0cc8d24f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s step through, describe, demonstrate and visualize each feature transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, there are just a couple slightly negative values, this is a great
+    segue into our first feature transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Truncation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is possible that the features may extend beyond the plausible range of values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: truncation is simply assigning values outside the range with a specific value
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: it is common to assign the minimum permissible value to outliers on the lower
+    tail and visa versa
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Truncation can be handled easily with numpy operators applied to the feature
+    array within the Pandas DataFrame
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/d3c727976e7e63b35f0ea4317278cef07a079a9471f83ab835c5fa45071e563d.png](../Images/32aeb11308c9787d4c642224696afa98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s look at the summary statistics again to confirm that we were successful
+    in truncating TOC to \(\ge 0\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.991950 | 0.478264 | 0.000000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3864.407081 | 1553.277558 | 839.822063 | 2686.227611 | 3604.303506
+    | 4752.637555 | 8590.384044 |'
+  prefs: []
+  type: TYPE_TB
+- en: From the summary statistics you can see that the truncation was successful,
+    we now have a minimum of 0.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Affine Correction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The affine correction is the transform of the feature distribution to a new
+    mean and variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is a shift and stretch / squeeze of the original property distribution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: no shape change is assumed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The following equation is applied to each sample in the original distribution
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = \frac{\sigma_y}{\sigma_x}\left( x - \overline{x} \right) + \overline{y}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\sigma_x\) is the original standard deviation, \(\sigma_y\) is the target
+    standard deviation, \(\overline{x}\) is the original mean and \(\overline{y}\)
+    is the target mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is an affine function in GeostatsPy that we may use
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for brevity we will just transform a single feature, note the function is not
+    set up to transform more than one feature at a time, nor does the function handle
+    the back transformation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s transform porosity to have an arbitrary mean and standard deviation (\(\overline{x}
+    = 20\%\) and \(\sigma_x = 3\%\))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/503e7600fa382ce95c90337883c56169c23a7019c676e8932519689bd69521ba.png](../Images/db7fa0e9ac41c5e5ab5cd0fefc2373a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s check the summary statistics of our new feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s remove the affine transformed feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Standardization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Standardization is the transform of the feature distribution to a mean of zero
+    and a variance of one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is a shift and stretch / squeeze of the original property distribution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: no shape change is assumed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The transform is effectively a specific case of the affine correction, with
+    \(\overline{y} = 0\) and \(\sigma_y = 1.0\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} y = \frac{1}{\sigma_x}\left( x - \overline{x} \right) \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\sigma_x\) is the original standard deviation and \(\overline{x}\) is
+    the original mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s standardize the feature to have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: mean = 0.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: variance = standard deviation = 1.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To do this we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: instantiate the StandardScaler from scikit learn. We assign it as ‘scaler’ object
+    so we can use it to conveniently use this object to reverse the transformation,
+    we will need to do that to get our predictions back into regular production units.
+    The “scaler” object takes care of all the bookkeeping for us.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: we then extract all the values from our DataFrame and apply the by-column standardization.
+    The result is a 2D ndarray
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: we make an new empty DataFrame
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: then we add the transformed value to the new DataFrame while keeping the sample
+    index and feature names from the old DataFramae
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/860c817150a4b132f0a47fd6b3633078aa8aad5e083becddb7c142dd011b9761.png](../Images/079cfb8ceae27853bc018c73d884d093.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s close the loop and reverse the transformation and confirm that we get
+    back to the original data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do this we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: call the ‘fit’ features’ scaler’s inverse transform function transformed value
+    to the new DataFrame while keeping the sample index and feature names from the
+    old DataFramae
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: the output from this is a 2D numpy array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will put it into a new DataFrame.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7d881f2136413ce943bfe3043e094add5466ee75470a94ee7b8aa3293b013a80.png](../Images/b5efe788c9aee04d7494c8741e573050.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can confirm the result is the same as the original, prior to standardization
+    DatatFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We were just testing, so let’s get rid of (delete) the new DataFrame. We can
+    use the following to delete an instantiated object in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: For more complicated workflows it may be a good idea to remove intermediate
+    products to save memory and to prevent clutter!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: Normalization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Also known as the min / max transform, recales the features to have a minimum
+    of 0 and a maximum of 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = \frac{x - min(x)}{max(x) - min(x)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(min(x)\) and \(max(x)\) are the minimum and maximum values for each
+    feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: scikit learn has a built in min / max transform method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1720620304bcabd820b921f3816eb82144f13a0e5c72c14f54b7df3377402c90.png](../Images/9661e46dd0caef61a8c851bb3755834b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s check the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 0.496538 | 0.174775 | 0.0 | 0.374265 | 0.501176 | 0.638382
+    | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 0.366219 | 0.198057 | 0.0 | 0.227975 | 0.332380 | 0.475686
+    | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 0.504134 | 0.169220 | 0.0 | 0.378358 | 0.500000 | 0.616418 |
+    1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 0.507180 | 0.192526 | 0.0 | 0.365377 | 0.525548 | 0.644809
+    | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.455023 | 0.219387 | 0.0 | 0.283257 | 0.472477 | 0.619266
+    | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 0.533144 | 0.155066 | 0.0 | 0.432990 | 0.530928 | 0.625000 |
+    1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 0.390241 | 0.200408 | 0.0 | 0.238229 | 0.356681 | 0.504843
+    | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: Let’s close the loop and reverse the transformation (back-transform) and confirm
+    that we get back to the original data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/5aef0d99270f184e75f6cb3c82049f191a609ba33e108a1df3bd77627ad879d8.png](../Images/3327a07669cf5828865e031f3888007f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can confirm the result is the same as the original, prior to standardization
+    DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again we were just testing, so let’s delete the back-transformed DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: L1 / L2 Normalizer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another type of normalization is performed independently on each sample to force
+    the \(L1\) or \(L2\) norm to be 1.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the L1 norm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sum^m_{i,\alpha = 1} x_{i, \alpha} = 1.0, \quad i = 1, \ldots, n \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where we have \(x_{i, \alpha}, \alpha = 1, \dots, m\) features over \(i = 1,
+    \dots, n\) samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the L2 norm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sum^m_{i,\alpha = 1}\left( x_{i, \alpha} \right)^2 = 1.0, \quad i = 1, \ldots,
+    n \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where we have \(x_{i, \alpha}, \alpha = 1, \dots, m\) features over \(i = 1,
+    \dots, n\) samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this may be applied in text classification or clustering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We demonstrate the L1 and L2 normalizer below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is no reverse to this transform
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s start with the \(L2\) norm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/0df41899d9ad7219dd3958a6d8ec2c4d1056a0c3c707e310b2e9d165eec49742.png](../Images/9c80aaebc1db6ce0fc9038668e623e39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s demonstrate the \(L1\) norm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c84fb1b26214b18195f7fb1487fe47dd19bd2c6efddf362366c9aae31d5e4206.png](../Images/47bf10a7365716f03447c05aabd6b06c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Binary or Indictor Transform
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For the many problems that we need to perform a binary transform to convert
+    our continuous feature to 0’s and 1’s based on a threshold, \(x_t\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the binary transform, \(x_i = 0\) if \(<= x_t\) and \(x_i = 1\) otherwise
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for the indicator transform, \(x_i = 1\) if \(<= x_t\) and \(x_i = 0\) otherwise
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is a scikit-learn function for the binary transform
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/22403035d20f298245a599ee12ef0e21b691b6964c3114767ac5d96de5cfc458.png](../Images/57a6dc5789a210159b86f7bf295d5803.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: k Bins Discretization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With k bins discretization we bin the range of the feature into K bins and then
+    expand each sample for our continuous feature to K features with the assignment
+    of a value of 1 if the sample is within a bin and 0 if outsize the bin
+  prefs: []
+  type: TYPE_NORMAL
+- en: strategies include uniform width bins (uniform) and uniform number of data in
+    each bin (quantile)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s make 5 uniform bins and then concatenate the original porosity values
+    so we can compare the original porosity values and our K bins discretization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s visualize the k bins discretization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: look at original data distribution and the bin boundaries to better understand
+    the result above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/840d6c4d9df55591d3d7cae041218c40ff8d026432fdb76a746b82a1112c0c91.png](../Images/20ffce30ca834e7ea0fb4eef6f2fd9f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spot check the first sample, \(12.08\%\) porosity is \(\in [9.95\%,13.35\%]\)
+    so we have a 1 in the second bin (second column in our table) and zeros in the
+    other bins.
+  prefs: []
+  type: TYPE_NORMAL
+- en: General Distribution Transformation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The distribution transformation may be applied to transform any distribution,
+    \(F_x(x)\) to any other distribution, \(F_y(y)\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: the target distribution, \(F_y(y)\), could be nonparametric, i.e., a set of
+    values. In this case the data is converted to a CDF and some form of interpolation
+    is applied to find the inverse of the target CDF, \(F_y^{-1}(p)\), for any cumulative
+    probability, \(p\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the target distribution, \(F_y(y)\), could be any parametric distribution, and
+    the calculation of the inverse of the target CDF, \(F_y^{-1}(p)\), for any cumulative
+    probability, \(p\) is available through an analytical solution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I have built out an interactive Python dashboard [Distribution Transformation](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Distribution_Transformations.ipynb)
+    with a transformation to a parametric distribution,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5951dba271d32533d8f8be74911ebbdb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard for distribution transformation to a parametric
+    target distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and a transformation to a nonparametric distribution,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3daa5fc0b74e87ff3cc19ccbe14dd8ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard for distribution transformation to a nonparametric
+    target distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distribution Transformation to a Parametric Distribution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can transform our data feature distribution to any parametric distribution
+    with this workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the cumulative probability value of each of our data values, \(p_{\alpha}
+    = F_x(x_\alpha)\), \(\forall\) \(\alpha = 1,\ldots, n\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Apply the inverse of the target parametric cumulative distribution function
+    (CDF) to calculate the transformed values. \(y_{\alpha} = G_y^{-1}\left(F_x(x_\alpha)\right)\),
+    \(\forall\) \(\alpha = 1,\ldots, n\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While assigning the cumulative probabilities you must make an assumption about
+    the distribution tails (minimum and maximum values).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**known tail** - the minimum or maximum value in the dataset is the minimum
+    or maximum value of the distribution'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**unknown tail** - the minimum or maximum value of the distribution is known'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For each possible case we calculate cumulative probability of the sorted in
+    ascending order data as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: known lower and upper tail,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ F_i = \frac{i-1}{n-1} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: unknown lower and known upper tail,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ F_i = \frac{i}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: known lower and unknown upper tail,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ F_i = \frac{i-1}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: unknown upper and lower tail,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ F_i = \frac{i}{n+1} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is more important with sparsely sampled datasets. When \(n\) is large this
+    is not as important,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the range of cumulative probability at the tails is very small!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the minimum and maximum of the feature may be well-known
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gaussian Transform / Gaussian Anamorphosis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We showed that the correction of the mean to 0.0 and standard deviation to 1.0
+    with affine correction does not change the shape; therefore, does not make a Gaussian
+    distributed property.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for many statistic or geostatistical methods the assumption of Gaussian distributed
+    is required. We need normal score transforms in many subsurface modeling workflows
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Gaussian anamorphosis is applied through the cumulative distribution functions
+    (CDF)s, \(F_{X}\), to a new CDF , \(G_{Y}\). This can be generalized with the
+    quantile - quantile transformation applied to all the sample data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The forward transform:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ Y = G_{Y}^{-1}(F_{X}(X)) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The reverse transform:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ X = F_{X}^{-1}(G_{Y}(Y)) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a visualization of the Gaussian transformation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5dd4af0319dc1d8eaac6c7e310fe22d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gaussian anamorphosis to transform the original distribution to standard normal,
+    Gaussian shape with a mean of 0.0 and variance of 1.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the original cumulative distribution function and Gaussian transformed
+    cumulative distribution function for a single feature by-hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ccfe930544f5631942cac6455936c674ed3658e40aa34b66bc3c368a840557e0.png](../Images/19ade0d7378dc1505187a39b4e6db409.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s perform the Gaussian transformation with a function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2e23070ec75841817bb2ff45e537e54f2962feb70f76f2e949cadc823bb937d3.png](../Images/f28d00851ce977c6f15ee39809be0a18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s visualize the Gaussian transformed feature histograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we should see a nice bell shape centered on 0.0 with a range of about -4 to
+    4.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2808b9faa14fa3d3de6707270f13cb812ef90c1c2d4d2d6f15ad935b45cd1496.png](../Images/9215093e0990a24b415e67b7d6effa3c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again, let’s check out the reverse transform, from Gaussian back to the
+    original features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} x = F_x^{-1}(G_y(y)) \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6b26c6c43ee3edace11bb1110c1426f4315f45336fb68b4ab16720270aa4c5d5.png](../Images/797b5c1e3b904eefb0e0b553c51f4728.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Quantile / Uniform[0,1] Transform
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can also perform a uniform transform, this is known as the quantile transformation
+    to the cumulative probability values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the cumulative probability values have a uniform distribution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e55888e0117a7257dadef0dbe2984d3a2d5f30cb7c2dc20033d33a1ea6d77e25.png](../Images/99330dfcaa9ee43cc2229d0c9a50c0a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s visualize the uniform transformed feature histograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we should see a uniform frequencies (with some noise due to limited sampling)
+    \(\in [0,1]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/091517d75ff4bdf9bfab58d187bd9a5ffd9c00c1dd38b8b65ab31b57357dd725.png](../Images/817b0dc273082d1313fd39edf592647a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We now have features with uniform distributions \([0,1]\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Custom Feature Transforms
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can also create our own custom feature transformation. We can specify our
+    own transform within a scikit-learn preprocessing function
+  prefs: []
+  type: TYPE_NORMAL
+- en: this allows us to have a convenient method for forward and reverse transforms
+    of our features as we have seen above
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s demonstrate with the natural log for the forward transform and the exponential
+    for the reverse transform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = log(x) \]\[ x = exp(y) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the code to make our custom feature transformation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/366f97304182137c18af248ab05bcf691049364126a2a1b44d259c5072f2007a.png](../Images/da19551845829eb35537c892489299a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s demonstrate that our custom transform is reversible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a9e9bd5918fbfe72331f080d2d0f8d2ad3e4285d43ef2fda1c2c38bd3a9fdf82.png](../Images/a7f3f081062e44a7946dde42334b8af0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Compare the back-transformed permeability values to the original dataset. The
+    reverse transform that we specified with our custom transformation works!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of feature transformations. Much more could be done
+    and discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and
+    The Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for Feature Transformations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are many reasons that we may want to perform feature transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the make the features consistent for visualization and comparison
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: to avoid bias or impose feature weighting for methods (e.g. k-nearest neighbours
+    regression) that rely on distances calculated in predictor feature space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'the method requires the variables to have a specific range or distribution:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: artificial neural networks may require all features to range from [-1,1]
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: partial correlation coefficients require a Gaussian distribution.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: statistical tests may require a specific distribution
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: geostatistical sequential simulation requires an indicator or Gaussian transform
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature transformations is a common basic building blocks in many machine learning
+    workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s learn how to perform feature transformations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Feature Transformation Workflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A common feature transformation workflow involves the transformation of the
+    features to a new space, completed the machine learning workflow in the new space
+    and then backtransform to the original space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ae790b00800f8cc2de58a4f790c4f884.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The common feature transformation workflow, transform predictor features, \(X_1,\ldots,X_m\),
+    to \(X^{\prime}_1,\ldots,X^{\prime}_m\), apply data analytics, geostatistics or
+    machine learning steps to predict transformed response feature, \(Y^{\prime}\),
+    and then backtransform to original response feature, \(Y\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a function to streamline the addition specified percentiles and
+    major and minor gridlines to our plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘unconv_MV.csv’. This
+    dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a DataFrame we called ‘my_data’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the DataFrame is useful first check of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: add parameter ‘n=13’ to see the first 13 rows of the dataset.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames. The describe command provides count, mean, minimum, maximum,
+    and quartiles all in a nice data table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use transpose just to flip the table so that features are on the rows and
+    the statistics are on the columns.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.990450 | 0.481588 | -0.190000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3864.407081 | 1553.277558 | 839.822063 | 2686.227611 | 3604.303506
+    | 4752.637555 | 8590.384044 |'
+  prefs: []
+  type: TYPE_TB
+- en: Data Visualization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We should also take a look at the histograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: get a sense of the range, modes, skew, outliers etc. for each feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/919ec2a38f23ede94c93df48bbd9fe48c3a4a10ace07770d09b4768c61b9da29.png](../Images/b8ff5b0fb09ce8ca4654d3de0cc8d24f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s step through, describe, demonstrate and visualize each feature transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, there are just a couple slightly negative values, this is a great
+    segue into our first feature transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Truncation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is possible that the features may extend beyond the plausible range of values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: truncation is simply assigning values outside the range with a specific value
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: it is common to assign the minimum permissible value to outliers on the lower
+    tail and visa versa
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Truncation can be handled easily with numpy operators applied to the feature
+    array within the Pandas DataFrame
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/d3c727976e7e63b35f0ea4317278cef07a079a9471f83ab835c5fa45071e563d.png](../Images/32aeb11308c9787d4c642224696afa98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s look at the summary statistics again to confirm that we were successful
+    in truncating TOC to \(\ge 0\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.991950 | 0.478264 | 0.000000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3864.407081 | 1553.277558 | 839.822063 | 2686.227611 | 3604.303506
+    | 4752.637555 | 8590.384044 |'
+  prefs: []
+  type: TYPE_TB
+- en: From the summary statistics you can see that the truncation was successful,
+    we now have a minimum of 0.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Affine Correction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The affine correction is the transform of the feature distribution to a new
+    mean and variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is a shift and stretch / squeeze of the original property distribution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: no shape change is assumed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The following equation is applied to each sample in the original distribution
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = \frac{\sigma_y}{\sigma_x}\left( x - \overline{x} \right) + \overline{y}
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\sigma_x\) is the original standard deviation, \(\sigma_y\) is the target
+    standard deviation, \(\overline{x}\) is the original mean and \(\overline{y}\)
+    is the target mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is an affine function in GeostatsPy that we may use
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for brevity we will just transform a single feature, note the function is not
+    set up to transform more than one feature at a time, nor does the function handle
+    the back transformation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s transform porosity to have an arbitrary mean and standard deviation (\(\overline{x}
+    = 20\%\) and \(\sigma_x = 3\%\))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/503e7600fa382ce95c90337883c56169c23a7019c676e8932519689bd69521ba.png](../Images/db7fa0e9ac41c5e5ab5cd0fefc2373a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s check the summary statistics of our new feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s remove the affine transformed feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: Standardization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Standardization is the transform of the feature distribution to a mean of zero
+    and a variance of one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is a shift and stretch / squeeze of the original property distribution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: no shape change is assumed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The transform is effectively a specific case of the affine correction, with
+    \(\overline{y} = 0\) and \(\sigma_y = 1.0\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} y = \frac{1}{\sigma_x}\left( x - \overline{x} \right) \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\sigma_x\) is the original standard deviation and \(\overline{x}\) is
+    the original mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s standardize the feature to have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: mean = 0.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: variance = standard deviation = 1.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To do this we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: instantiate the StandardScaler from scikit learn. We assign it as ‘scaler’ object
+    so we can use it to conveniently use this object to reverse the transformation,
+    we will need to do that to get our predictions back into regular production units.
+    The “scaler” object takes care of all the bookkeeping for us.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: we then extract all the values from our DataFrame and apply the by-column standardization.
+    The result is a 2D ndarray
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: we make an new empty DataFrame
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: then we add the transformed value to the new DataFrame while keeping the sample
+    index and feature names from the old DataFramae
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/860c817150a4b132f0a47fd6b3633078aa8aad5e083becddb7c142dd011b9761.png](../Images/079cfb8ceae27853bc018c73d884d093.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s close the loop and reverse the transformation and confirm that we get
+    back to the original data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do this we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: call the ‘fit’ features’ scaler’s inverse transform function transformed value
+    to the new DataFrame while keeping the sample index and feature names from the
+    old DataFramae
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: the output from this is a 2D numpy array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will put it into a new DataFrame.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7d881f2136413ce943bfe3043e094add5466ee75470a94ee7b8aa3293b013a80.png](../Images/b5efe788c9aee04d7494c8741e573050.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can confirm the result is the same as the original, prior to standardization
+    DatatFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We were just testing, so let’s get rid of (delete) the new DataFrame. We can
+    use the following to delete an instantiated object in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: For more complicated workflows it may be a good idea to remove intermediate
+    products to save memory and to prevent clutter!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: Normalization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Also known as the min / max transform, recales the features to have a minimum
+    of 0 and a maximum of 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = \frac{x - min(x)}{max(x) - min(x)} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(min(x)\) and \(max(x)\) are the minimum and maximum values for each
+    feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: scikit learn has a built in min / max transform method
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/1720620304bcabd820b921f3816eb82144f13a0e5c72c14f54b7df3377402c90.png](../Images/9661e46dd0caef61a8c851bb3755834b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s check the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE74]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 0.496538 | 0.174775 | 0.0 | 0.374265 | 0.501176 | 0.638382
+    | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 0.366219 | 0.198057 | 0.0 | 0.227975 | 0.332380 | 0.475686
+    | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 0.504134 | 0.169220 | 0.0 | 0.378358 | 0.500000 | 0.616418 |
+    1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 0.507180 | 0.192526 | 0.0 | 0.365377 | 0.525548 | 0.644809
+    | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.455023 | 0.219387 | 0.0 | 0.283257 | 0.472477 | 0.619266
+    | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 0.533144 | 0.155066 | 0.0 | 0.432990 | 0.530928 | 0.625000 |
+    1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 0.390241 | 0.200408 | 0.0 | 0.238229 | 0.356681 | 0.504843
+    | 1.0 |'
+  prefs: []
+  type: TYPE_TB
+- en: Let’s close the loop and reverse the transformation (back-transform) and confirm
+    that we get back to the original data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE75]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/5aef0d99270f184e75f6cb3c82049f191a609ba33e108a1df3bd77627ad879d8.png](../Images/3327a07669cf5828865e031f3888007f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can confirm the result is the same as the original, prior to standardization
+    DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again we were just testing, so let’s delete the back-transformed DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs: []
+  type: TYPE_PRE
+- en: L1 / L2 Normalizer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another type of normalization is performed independently on each sample to force
+    the \(L1\) or \(L2\) norm to be 1.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the L1 norm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sum^m_{i,\alpha = 1} x_{i, \alpha} = 1.0, \quad i = 1, \ldots, n \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where we have \(x_{i, \alpha}, \alpha = 1, \dots, m\) features over \(i = 1,
+    \dots, n\) samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the L2 norm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \sum^m_{i,\alpha = 1}\left( x_{i, \alpha} \right)^2 = 1.0, \quad i = 1, \ldots,
+    n \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where we have \(x_{i, \alpha}, \alpha = 1, \dots, m\) features over \(i = 1,
+    \dots, n\) samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this may be applied in text classification or clustering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We demonstrate the L1 and L2 normalizer below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is no reverse to this transform
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s start with the \(L2\) norm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE77]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/0df41899d9ad7219dd3958a6d8ec2c4d1056a0c3c707e310b2e9d165eec49742.png](../Images/9c80aaebc1db6ce0fc9038668e623e39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s demonstrate the \(L1\) norm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE78]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c84fb1b26214b18195f7fb1487fe47dd19bd2c6efddf362366c9aae31d5e4206.png](../Images/47bf10a7365716f03447c05aabd6b06c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Binary or Indictor Transform
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For the many problems that we need to perform a binary transform to convert
+    our continuous feature to 0’s and 1’s based on a threshold, \(x_t\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: for the binary transform, \(x_i = 0\) if \(<= x_t\) and \(x_i = 1\) otherwise
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for the indicator transform, \(x_i = 1\) if \(<= x_t\) and \(x_i = 0\) otherwise
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is a scikit-learn function for the binary transform
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE79]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/22403035d20f298245a599ee12ef0e21b691b6964c3114767ac5d96de5cfc458.png](../Images/57a6dc5789a210159b86f7bf295d5803.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: k Bins Discretization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With k bins discretization we bin the range of the feature into K bins and then
+    expand each sample for our continuous feature to K features with the assignment
+    of a value of 1 if the sample is within a bin and 0 if outsize the bin
+  prefs: []
+  type: TYPE_NORMAL
+- en: strategies include uniform width bins (uniform) and uniform number of data in
+    each bin (quantile)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s make 5 uniform bins and then concatenate the original porosity values
+    so we can compare the original porosity values and our K bins discretization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE80]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE81]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s visualize the k bins discretization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: look at original data distribution and the bin boundaries to better understand
+    the result above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE82]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/840d6c4d9df55591d3d7cae041218c40ff8d026432fdb76a746b82a1112c0c91.png](../Images/20ffce30ca834e7ea0fb4eef6f2fd9f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spot check the first sample, \(12.08\%\) porosity is \(\in [9.95\%,13.35\%]\)
+    so we have a 1 in the second bin (second column in our table) and zeros in the
+    other bins.
+  prefs: []
+  type: TYPE_NORMAL
+- en: General Distribution Transformation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The distribution transformation may be applied to transform any distribution,
+    \(F_x(x)\) to any other distribution, \(F_y(y)\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: the target distribution, \(F_y(y)\), could be nonparametric, i.e., a set of
+    values. In this case the data is converted to a CDF and some form of interpolation
+    is applied to find the inverse of the target CDF, \(F_y^{-1}(p)\), for any cumulative
+    probability, \(p\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the target distribution, \(F_y(y)\), could be any parametric distribution, and
+    the calculation of the inverse of the target CDF, \(F_y^{-1}(p)\), for any cumulative
+    probability, \(p\) is available through an analytical solution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I have built out an interactive Python dashboard [Distribution Transformation](https://github.com/GeostatsGuy/DataScienceInteractivePython/blob/main/Interactive_Distribution_Transformations.ipynb)
+    with a transformation to a parametric distribution,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5951dba271d32533d8f8be74911ebbdb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard for distribution transformation to a parametric
+    target distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and a transformation to a nonparametric distribution,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3daa5fc0b74e87ff3cc19ccbe14dd8ff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive Python dashboard for distribution transformation to a nonparametric
+    target distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distribution Transformation to a Parametric Distribution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can transform our data feature distribution to any parametric distribution
+    with this workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculate the cumulative probability value of each of our data values, \(p_{\alpha}
+    = F_x(x_\alpha)\), \(\forall\) \(\alpha = 1,\ldots, n\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Apply the inverse of the target parametric cumulative distribution function
+    (CDF) to calculate the transformed values. \(y_{\alpha} = G_y^{-1}\left(F_x(x_\alpha)\right)\),
+    \(\forall\) \(\alpha = 1,\ldots, n\).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While assigning the cumulative probabilities you must make an assumption about
+    the distribution tails (minimum and maximum values).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**known tail** - the minimum or maximum value in the dataset is the minimum
+    or maximum value of the distribution'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**unknown tail** - the minimum or maximum value of the distribution is known'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For each possible case we calculate cumulative probability of the sorted in
+    ascending order data as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: known lower and upper tail,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ F_i = \frac{i-1}{n-1} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: unknown lower and known upper tail,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ F_i = \frac{i}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: known lower and unknown upper tail,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ F_i = \frac{i-1}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: unknown upper and lower tail,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ F_i = \frac{i}{n+1} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is more important with sparsely sampled datasets. When \(n\) is large this
+    is not as important,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the range of cumulative probability at the tails is very small!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the minimum and maximum of the feature may be well-known
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Gaussian Transform / Gaussian Anamorphosis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We showed that the correction of the mean to 0.0 and standard deviation to 1.0
+    with affine correction does not change the shape; therefore, does not make a Gaussian
+    distributed property.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for many statistic or geostatistical methods the assumption of Gaussian distributed
+    is required. We need normal score transforms in many subsurface modeling workflows
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Gaussian anamorphosis is applied through the cumulative distribution functions
+    (CDF)s, \(F_{X}\), to a new CDF , \(G_{Y}\). This can be generalized with the
+    quantile - quantile transformation applied to all the sample data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The forward transform:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ Y = G_{Y}^{-1}(F_{X}(X)) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The reverse transform:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ X = F_{X}^{-1}(G_{Y}(Y)) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a visualization of the Gaussian transformation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5dd4af0319dc1d8eaac6c7e310fe22d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gaussian anamorphosis to transform the original distribution to standard normal,
+    Gaussian shape with a mean of 0.0 and variance of 1.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the original cumulative distribution function and Gaussian transformed
+    cumulative distribution function for a single feature by-hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE83]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/ccfe930544f5631942cac6455936c674ed3658e40aa34b66bc3c368a840557e0.png](../Images/19ade0d7378dc1505187a39b4e6db409.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now let’s perform the Gaussian transformation with a function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE84]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2e23070ec75841817bb2ff45e537e54f2962feb70f76f2e949cadc823bb937d3.png](../Images/f28d00851ce977c6f15ee39809be0a18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s visualize the Gaussian transformed feature histograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we should see a nice bell shape centered on 0.0 with a range of about -4 to
+    4.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE85]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/2808b9faa14fa3d3de6707270f13cb812ef90c1c2d4d2d6f15ad935b45cd1496.png](../Images/9215093e0990a24b415e67b7d6effa3c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again, let’s check out the reverse transform, from Gaussian back to the
+    original features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} x = F_x^{-1}(G_y(y)) \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE86]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/6b26c6c43ee3edace11bb1110c1426f4315f45336fb68b4ab16720270aa4c5d5.png](../Images/797b5c1e3b904eefb0e0b553c51f4728.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Quantile / Uniform[0,1] Transform
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can also perform a uniform transform, this is known as the quantile transformation
+    to the cumulative probability values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the cumulative probability values have a uniform distribution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE87]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e55888e0117a7257dadef0dbe2984d3a2d5f30cb7c2dc20033d33a1ea6d77e25.png](../Images/99330dfcaa9ee43cc2229d0c9a50c0a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s visualize the uniform transformed feature histograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we should see a uniform frequencies (with some noise due to limited sampling)
+    \(\in [0,1]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE88]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/091517d75ff4bdf9bfab58d187bd9a5ffd9c00c1dd38b8b65ab31b57357dd725.png](../Images/817b0dc273082d1313fd39edf592647a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We now have features with uniform distributions \([0,1]\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Custom Feature Transforms
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can also create our own custom feature transformation. We can specify our
+    own transform within a scikit-learn preprocessing function
+  prefs: []
+  type: TYPE_NORMAL
+- en: this allows us to have a convenient method for forward and reverse transforms
+    of our features as we have seen above
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s demonstrate with the natural log for the forward transform and the exponential
+    for the reverse transform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y = log(x) \]\[ x = exp(y) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the code to make our custom feature transformation,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE89]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE90]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/366f97304182137c18af248ab05bcf691049364126a2a1b44d259c5072f2007a.png](../Images/da19551845829eb35537c892489299a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s demonstrate that our custom transform is reversible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE91]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a9e9bd5918fbfe72331f080d2d0f8d2ad3e4285d43ef2fda1c2c38bd3a9fdf82.png](../Images/a7f3f081062e44a7946dde42334b8af0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Compare the back-transformed permeability values to the original dataset. The
+    reverse transform that we specified with our custom transformation works!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of feature transformations. Much more could be done
+    and discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and
+    The Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

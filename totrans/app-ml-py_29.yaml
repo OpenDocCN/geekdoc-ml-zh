@@ -1,0 +1,1908 @@
+- en: Support Vector Machines
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_support_vector_machines.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_support_vector_machines.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M. J., 2024, Applied Machine Learning in Python: A Hands-on Guide with
+    Code. GitHub repository. Zenodo. DOI: 10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository (0.0.1). Zenodo. DOI: 10.5281/zenodo.13835312 [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Support Vector Machines**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Polynomial Regression](https://youtu.be/z19Hs2HfO88?si=U2eAMJcMXRMwHG0C)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Support Vector Machines](https://youtu.be/UpN6TLMJiGg?si=-aevKAWNqk_sXxYO)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivations for Support Vector Machines
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A binary classification machine learning method that is a good classification
+    method when there is poor separation of groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: projects the original predictor features to higher dimensional space and then
+    applies a linear, plane or hyperplane,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑓(𝑥) = 𝑥^𝑇 \beta +\beta_0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\beta\) is a vector and together with \(\beta\) are the hyperplane model
+    parameters, while \(x\) is the matrix of predictor features, all are in the high
+    dimensional space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(𝑓(𝑥)\) is proportional to the signed distance from the decision boundary,
+    and \(𝐺(𝑥)\) is the side of the decision boundary, \(−\) one side and \(+\) the
+    other, \(f(x) = 0\) is on the decision boundary,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝐺(𝑥)=\text{𝑠𝑖𝑔𝑛}\left( 𝑓(𝑥) \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We represent the constraint, all data of each category must be on the correct
+    side of the boundary, by,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y_i \left( x_i^T \beta + \beta_0 \right) \geq 0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where this holds if the categories, \(y_i\), are -1 or 1\. We need a model that
+    allows for some misclassification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y_i \left( x_i^T \beta + \beta_0 \right) \geq M - \xi_i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We introduce the concept of a margin, \(𝑀\), and a distance from the margin,
+    the error as \(\xi_i\). Now we can pose our loss function as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \underset{\beta, \beta_0}{\text{min}} \left( \frac{1}{2M^2} + C \sum_{i=1}^N
+    \xi_i \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: subject to, \(\xi_i \geq 0, \quad y_i \left( x_i^T \beta + \beta_0 \right) \geq
+    M - \xi_i\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the support vector machine loss function in the higher dimensional space,
+    where 𝛽,𝛽_0 are the multilinear model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the support vector machine, by finding the model parameters of the
+    plane to maximize the margin, \(M\), while minimizing the error, \(\sum_{i=1}^N
+    \xi_i\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(𝑪\) hyperparameter weights the sum of errors, \(xi_𝑖\), higher \(𝐶\), will
+    result in reduced margin, \(M\), and lead to overfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: smaller margin, fewer data used to constrain the boundary, known as support
+    vectors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: training data well within the correct side of the boundary have no influence
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here are some key aspects of support vector machines,
+  prefs: []
+  type: TYPE_NORMAL
+- en: known as support vector machines, and not machine, because with a new kernel
+    you get a new machine
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: there are many kernels available including polynomial and radial basis functions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The primary hyperparameter is \(C\), the cost of
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperparameters are related to the choice of kernel, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*polynomial* - polynomial order'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*radial basis function* - \(\gamma\) inversely proportional to the distance
+    influence of the training data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Kernel Trick**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can incorporate our basis expansion in our method without ever needing to
+    transform the training data to this higher dimensional space,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ h(x) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We only need the inner product over the predictor features,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ h(x) \left( h(x') \right)^T = \langle h(x), h(x') \rangle \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of the actual values in the transformed space, we just need the ‘similarity’
+    between all available training data in that transformed space!
+  prefs: []
+  type: TYPE_NORMAL
+- en: we training our support vector machines with only a similarity matrix between
+    training data that will be projected to the higher dimensional space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we never actually need to calculate the training data values in the higher dimensional
+    space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices
+    and visualization of a decision tree regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the working directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘12_sample_data.csv’.
+    It is a comma delimited file with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: X and Y coordinates (\(m\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: facies 0 and 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (fraction)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^3\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a data frame we called ‘df’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Python Tip: using functions from a package** just type the label for the
+    package that we declared at the beginning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'so we can access the pandas function ‘read_csv’ with the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: but read csv has required input parameters. The essential one is the name of
+    the file. For our circumstance all the other default parameters are fine. If you
+    want to see all the possible parameters for this function, just go to the docs
+    [here](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The docs are always helpful
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is often a lot of flexibility for Python functions, possible through using
+    various inputs parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, the program has an output, a pandas DataFrame loaded from the data. So
+    we have to specficy the name / variable representing that new object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Standardize Predictor Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The support vector machines minimize the error, the distance of training data
+    from the margin. Therefore, this method is sensitivity to the relative ranges
+    of the predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: if one predictor feature has a much larger range then it will dominate the model,
+    the model will only separate on that feature! The result is a model orthogonal
+    to that one feature, i.e., splitting only on that feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For convenience and simplicity we use scikit-learn’s random train and test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we use the same random_state parameter so the train and test splits on original
+    and standardized features are the same.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I could have just backtransformed the standardize latter (spoiler alert, I’m
+    going to show the impact of not standardizing on the model).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: typically we don’t have to back transform the predictor features, for our prediction
+    workflows it is a one way trip for the predictor features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the train and test DataFrame is useful check before we build our
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Porosity | AI | sPorosity | sAI | Facies |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 340 | 0.204313 | 4373.187870 | 0.469659 | 0.788406 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 159 | 0.167316 | 3088.482947 | -0.698603 | -0.860390 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 315 | 0.219801 | 2983.326185 | 0.958720 | -0.995349 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 365 | 0.216819 | 2543.772663 | 0.864542 | -1.559474 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 385 | 0.191565 | 3670.457907 | 0.067120 | -0.113481 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Porosity | AI | sPorosity | sAI | Facies |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 72 | 0.139637 | 4747.274043 | -1.572630 | 1.268510 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 153 | 0.170732 | 4535.625583 | -0.590742 | 0.996879 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 258 | 0.244345 | 2696.102930 | 1.733756 | -1.363972 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 56 | 0.167125 | 5500.997419 | -0.704644 | 2.235841 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 303 | 0.216253 | 3959.934912 | 0.846677 | 0.258035 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The describe command provides count, mean, minimum, maximum in a nice data table.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Porosity | AI | sPorosity | sAI | Facies |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 360.000000 | 360.000000 | 360.000000 | 360.000000 | 360.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 0.189150 | 3767.451286 | -0.009167 | 0.011001 | 0.602778 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 0.031636 | 786.394126 | 0.998983 | 1.009262 | 0.490004 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 0.117562 | 1746.387548 | -2.269691 | -2.582841 | 0.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 0.261091 | 5957.162150 | 2.262519 | 2.821285 | 1.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Porosity | AI | sPorosity | sAI | Facies |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 120.000000 | 120.000000 | 120.000000 | 120.000000 | 120.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 0.190311 | 3733.164755 | 0.027500 | -0.033003 | 0.658333 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 0.032014 | 763.117871 | 1.010903 | 0.979389 | 0.476257 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 0.131230 | 1961.600397 | -1.838105 | -2.306636 | 0.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 0.256172 | 6194.573653 | 2.107198 | 3.125980 | 1.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: It is good that we checked the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check out the range of values for each feature to set up and adjust plotting
+    limits. See above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Train and Test Splits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the consistency and coverage of training and testing with histograms
+    and scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check to make sure the training and testing cover the range of possible feature
+    combinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ensure we are not extrapolating beyond the training data with the testing cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c96849d9ac15251e0c63378a9f425aa0f734d87c0a250b8ce44f189349db09c5.png](../Images/acefe3d0111ef4c4aadff2177c5a7676.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sometimes I find it more convenient to compare distributions by looking at CDF’s
+    instead of histograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we avoid the arbitrary choice of histogram bin size, because CDF’s are at the
+    data resolution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7f4199220c2686c54fc8e8ceea1351ff88ab7bba2333e7441c6d268c034adbed.png](../Images/2bbf0a8662041cb7a556a37197370bc0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This looks good,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the distributions are well behaved, we cannot observe obvious gaps, outliers
+    nor truncations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the test and train cases have similar coverage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the relative frequencies of the categorical response are similar over train
+    and test datasets, i.e., a good train and test balance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Predictor Feature Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s build a simplified plot to visualize the 2D predictor feature space with
+    the train and test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we ask the question, will we be able to model the classification boundary? Is
+    there a lot of data overlap? Is the boundary simple (i.e., linear) or more complicated?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b3c308d6eca35509ace9645fe2c47910d318c23c40b049222f1c1f89bfeeea5b.png](../Images/56dc165df133e2ddbce54c0beda4915c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This will be a difficult classification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is certainly a lot of overlap
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the boundary may be nonlinear.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But, there is good news,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the train and test coverage looks good in general, note there are a few testing
+    cases that will test model extrapolation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: support vector machines are designed to work with this overlap!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Support Vector Machine Model with Linear Kernel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start simple, train and visualize linear support vector machine models
+    over our feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This will provide a linear spatial classification model for facies 0 and 1 as
+    a function of AI and porosity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We use the scikit-learn function \(SVC\) substantiate the support vector machine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The parameters include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**kernel** the kernel type that is applied to project the data to a potentially
+    higher dimensional space'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**\(C\)** penalty for misclassification'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**random_state** random number see for random shuffling data for probability
+    estimates'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We then use the command,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: to train the model with the training dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The inputs to the fit function include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**X** - the \(n \times m\) array with the predictor features for the training
+    dataset'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**y** - the \(n \times 1\) array with the response feature for the training
+    dataset'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try out 2 different \(C\) penalty hyperparameters to visualize the impact
+    of the penalty for misclassification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Looks like it ran ok! Let’s visualize the results using the convenient visualization
+    functions that we previously defined.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/0dec98b51eac972aa8541bbcf4d2742f7a09bcb6b1b19ee80196793e988428ba.png](../Images/f9599d00749b4f00b75cb1eeb40f7f47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The above plot shows the linear kernel support vector machine classification
+    model, the training dataset and the resulting support vectors with bold circles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear kernel only provide a straight decision boundary.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is hard to tune the model to fit more complicated situation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that with higher C, weighting of the sum of errors, we get a smaller margin.
+    The linear model is fit with fewer support vectors (training data in the margin.
+    Let’s summarize the end members of this hyperparameter with respect to simple
+    and complicated models, potential under and overfit and the model bias and variance
+    trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**simple model \ underfit model** - when C is smaller, the classifier is more
+    tolerant with misclassified data points (higher model bias, lower model variance).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**complex model \ overfit model** - when C is larger, the classifier is more
+    sensitive to misclassified data points (lower model bias, higher model variance).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In other words, \(C\) is a regularization term, just like the shrinkage term
+    for ridge regression. Let’s try some more flexible classifiers with a different
+    kernel so we can better see this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support Vector Machine Model with Polynomial Kernel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The polynomial kernel is defined as
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} K(x,x’) = (x^Tx)^d, \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(d\) is the degree of polynomials.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The hyperparameter \(degree\) is the order of the polynomial kernel function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As previously mentioned, let’s try out different \(C\), penalty for error, with
+    a single polynomial order observe the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/db044f313815811c58d2c4c54acfdaba7a6e69a6ce29d65cc9a535b7ec667c76.png](../Images/00a2d3685850074a3a660b3f3a1259f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As we increase the \(C\) hyperparameter, the margin shrinks, the number of support
+    vectors reduces and the model complexity increases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support Vector Machine Model with Radial Basis Function Kernel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Radial Basis Function (RBF) is another commonly used kernel in SVC:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} K(x,x’) = e^{- \gamma ||x-x’||^2}, \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(||x-x'||^2\) is the squared Euclidean distance between two data points
+    x and x’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Gaussian kernel is a special case of RBF, where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} K(x,x’) = e^{- \frac {||x-x’||^2} {2 \sigma^2}}. \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: By changing the value of \(\gamma\) and C, the classifier with an RBF kernel
+    can be tuned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\gamma\) can be thought of as the spread of the kernel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: when \(\gamma\) is low, the curvature of the decision boundary is low, leading
+    to a broad decision region (low variance, high bias), low complexity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The \(\gamma\) parameter can be interpreted as the inverse of the radius of
+    influence of samples selected by the model as support vectors, i.e., low gamma
+    integrates more data for a smoother model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/82ff1c768a726890aad3ac7762874583b4c7c13de8c4a2eb9150851584e58eb1.png](../Images/6f78098f6348e837aa484bf3c227abf8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The impact of regularization with the C hyperparameter is very clear in this
+    case,
+  prefs: []
+  type: TYPE_NORMAL
+- en: higher C, smaller margin, fewer support vectors, tends to overfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: lower C, larger margin, more support vectors, tends to underfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The impact of gamma is also very clear in this case,
+  prefs: []
+  type: TYPE_NORMAL
+- en: higher gamma results in more complicated, high curvature decision boundaries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: lower gamma results in more simple, low curvature, smooth decision boundaries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Although two facies seem to be classified properly in some cases above, there
+    is a risk of overfitting, specifically for the high gamma and high C example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support Vector Machines without Standardizing the Predictor Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As promised, let’s try a model without standardizing the predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this will be illustrative as the original predictor features have very different
+    ranges!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/214f9d02bb8c207b3c3bbefb825c5bd28482dca26856c9f37b16b8d18e527260.png](../Images/6284d1148a1bd492bb2d8429f0b4cd96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What happened?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The support vector machine with the polynomial kernel splits on the feature
+    with the largest range, acoustic impedance. The differences in the feature with
+    the very small range, porosity here, do not significantly influence to the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The radial basis function support vector machine has thin shale and sand layers
+    over the acoustic impedance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We must standardize our predictor features to apply support vector machines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperparameter Tuning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s use the brute force grid search with stratified shuffle splits to iterate
+    over multiple hyperparameters and find the optimum model complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Grid Search Cross Validation** - models are constructed for the full combinatorial
+    of hyperparameters'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Stratified Shuffle Splits** - ensures that the balance of categorical cases
+    is preserved in the splits and randomizes the split to ensure the model does use
+    the same data in the same order each time'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: warning this will take about 2 minutes to run on a regular PC
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can visualize the cross validation accuracy for all of the hyperparameter
+    combinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, the output is average accuracy over all of the stratified shuffle splits,
+    where accuracy is,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ Accuracy = \frac{n_{\text{correctly classified}}}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c27ee9a9f09064a90ce366edd51e5c5e6693ed7e75b913239500a89b85839743.png](../Images/a7a596942f23b8c59494c817735ad48e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can observe a region around \(C\) of 100 and \(\gamma\) of 0.1 with the best
+    model cross validation accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing High, Mid and Low Performing Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we show examples of high, mid and low performing model based on validation
+    accuracy from the demonstration above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will use parameter combinations, \(C\) and \(\gamma\), from the plot above
+    to select and rerun the cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/72e5e586c8cb2a4e90eea81cd6276fdc2175a66c300652b076105e3cc3ba6079.png](../Images/e3b9d37c4cafc9bc078800f977947926.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By selecting low, mid and high accuracy hyperparameter cases from our hyperparameter
+    tuning cross validation accuracy we obtain a good illustration example of overfit
+    to well-fit models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope you found this chapter helpful. Much more could be done and discussed,
+    I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Author:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Professor, The University of Texas at Austin *Novel Data Analytics,
+    Geostatistics and Machine Learning Subsurface Solutions*
+  prefs: []
+  type: TYPE_NORMAL
+- en: With over 17 years of experience in subsurface consulting, research and development,
+    Michael has returned to academia driven by his passion for teaching and enthusiasm
+    for enhancing engineers’ and geoscientists’ impact in subsurface resource development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For more about Michael check out these links:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Motivations for Support Vector Machines
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A binary classification machine learning method that is a good classification
+    method when there is poor separation of groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: projects the original predictor features to higher dimensional space and then
+    applies a linear, plane or hyperplane,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑓(𝑥) = 𝑥^𝑇 \beta +\beta_0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\beta\) is a vector and together with \(\beta\) are the hyperplane model
+    parameters, while \(x\) is the matrix of predictor features, all are in the high
+    dimensional space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(𝑓(𝑥)\) is proportional to the signed distance from the decision boundary,
+    and \(𝐺(𝑥)\) is the side of the decision boundary, \(−\) one side and \(+\) the
+    other, \(f(x) = 0\) is on the decision boundary,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝐺(𝑥)=\text{𝑠𝑖𝑔𝑛}\left( 𝑓(𝑥) \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We represent the constraint, all data of each category must be on the correct
+    side of the boundary, by,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y_i \left( x_i^T \beta + \beta_0 \right) \geq 0 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where this holds if the categories, \(y_i\), are -1 or 1\. We need a model that
+    allows for some misclassification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ y_i \left( x_i^T \beta + \beta_0 \right) \geq M - \xi_i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We introduce the concept of a margin, \(𝑀\), and a distance from the margin,
+    the error as \(\xi_i\). Now we can pose our loss function as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \underset{\beta, \beta_0}{\text{min}} \left( \frac{1}{2M^2} + C \sum_{i=1}^N
+    \xi_i \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: subject to, \(\xi_i \geq 0, \quad y_i \left( x_i^T \beta + \beta_0 \right) \geq
+    M - \xi_i\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the support vector machine loss function in the higher dimensional space,
+    where 𝛽,𝛽_0 are the multilinear model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the support vector machine, by finding the model parameters of the
+    plane to maximize the margin, \(M\), while minimizing the error, \(\sum_{i=1}^N
+    \xi_i\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(𝑪\) hyperparameter weights the sum of errors, \(xi_𝑖\), higher \(𝐶\), will
+    result in reduced margin, \(M\), and lead to overfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: smaller margin, fewer data used to constrain the boundary, known as support
+    vectors
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: training data well within the correct side of the boundary have no influence
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here are some key aspects of support vector machines,
+  prefs: []
+  type: TYPE_NORMAL
+- en: known as support vector machines, and not machine, because with a new kernel
+    you get a new machine
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: there are many kernels available including polynomial and radial basis functions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The primary hyperparameter is \(C\), the cost of
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperparameters are related to the choice of kernel, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*polynomial* - polynomial order'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*radial basis function* - \(\gamma\) inversely proportional to the distance
+    influence of the training data'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Kernel Trick**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can incorporate our basis expansion in our method without ever needing to
+    transform the training data to this higher dimensional space,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ h(x) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We only need the inner product over the predictor features,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ h(x) \left( h(x') \right)^T = \langle h(x), h(x') \rangle \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of the actual values in the transformed space, we just need the ‘similarity’
+    between all available training data in that transformed space!
+  prefs: []
+  type: TYPE_NORMAL
+- en: we training our support vector machines with only a similarity matrix between
+    training data that will be projected to the higher dimensional space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we never actually need to calculate the training data values in the higher dimensional
+    space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices
+    and visualization of a decision tree regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the working directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset ‘12_sample_data.csv’.
+    It is a comma delimited file with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: X and Y coordinates (\(m\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: facies 0 and 1
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (fraction)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^3\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a data frame we called ‘df’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Python Tip: using functions from a package** just type the label for the
+    package that we declared at the beginning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'so we can access the pandas function ‘read_csv’ with the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: but read csv has required input parameters. The essential one is the name of
+    the file. For our circumstance all the other default parameters are fine. If you
+    want to see all the possible parameters for this function, just go to the docs
+    [here](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The docs are always helpful
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is often a lot of flexibility for Python functions, possible through using
+    various inputs parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, the program has an output, a pandas DataFrame loaded from the data. So
+    we have to specficy the name / variable representing that new object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: Standardize Predictor Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The support vector machines minimize the error, the distance of training data
+    from the margin. Therefore, this method is sensitivity to the relative ranges
+    of the predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: if one predictor feature has a much larger range then it will dominate the model,
+    the model will only separate on that feature! The result is a model orthogonal
+    to that one feature, i.e., splitting only on that feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For convenience and simplicity we use scikit-learn’s random train and test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we use the same random_state parameter so the train and test splits on original
+    and standardized features are the same.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I could have just backtransformed the standardize latter (spoiler alert, I’m
+    going to show the impact of not standardizing on the model).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: typically we don’t have to back transform the predictor features, for our prediction
+    workflows it is a one way trip for the predictor features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the train and test DataFrame is useful check before we build our
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Porosity | AI | sPorosity | sAI | Facies |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 340 | 0.204313 | 4373.187870 | 0.469659 | 0.788406 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 159 | 0.167316 | 3088.482947 | -0.698603 | -0.860390 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 315 | 0.219801 | 2983.326185 | 0.958720 | -0.995349 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 365 | 0.216819 | 2543.772663 | 0.864542 | -1.559474 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 385 | 0.191565 | 3670.457907 | 0.067120 | -0.113481 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Porosity | AI | sPorosity | sAI | Facies |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 72 | 0.139637 | 4747.274043 | -1.572630 | 1.268510 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 153 | 0.170732 | 4535.625583 | -0.590742 | 0.996879 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 258 | 0.244345 | 2696.102930 | 1.733756 | -1.363972 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 56 | 0.167125 | 5500.997419 | -0.704644 | 2.235841 | 0 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 303 | 0.216253 | 3959.934912 | 0.846677 | 0.258035 | 1 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The describe command provides count, mean, minimum, maximum in a nice data table.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Porosity | AI | sPorosity | sAI | Facies |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 360.000000 | 360.000000 | 360.000000 | 360.000000 | 360.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 0.189150 | 3767.451286 | -0.009167 | 0.011001 | 0.602778 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 0.031636 | 786.394126 | 0.998983 | 1.009262 | 0.490004 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 0.117562 | 1746.387548 | -2.269691 | -2.582841 | 0.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 0.261091 | 5957.162150 | 2.262519 | 2.821285 | 1.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Porosity | AI | sPorosity | sAI | Facies |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 120.000000 | 120.000000 | 120.000000 | 120.000000 | 120.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 0.190311 | 3733.164755 | 0.027500 | -0.033003 | 0.658333 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 0.032014 | 763.117871 | 1.010903 | 0.979389 | 0.476257 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 0.131230 | 1961.600397 | -1.838105 | -2.306636 | 0.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 0.256172 | 6194.573653 | 2.107198 | 3.125980 | 1.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: It is good that we checked the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check out the range of values for each feature to set up and adjust plotting
+    limits. See above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Train and Test Splits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the consistency and coverage of training and testing with histograms
+    and scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check to make sure the training and testing cover the range of possible feature
+    combinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ensure we are not extrapolating beyond the training data with the testing cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c96849d9ac15251e0c63378a9f425aa0f734d87c0a250b8ce44f189349db09c5.png](../Images/acefe3d0111ef4c4aadff2177c5a7676.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sometimes I find it more convenient to compare distributions by looking at CDF’s
+    instead of histograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we avoid the arbitrary choice of histogram bin size, because CDF’s are at the
+    data resolution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7f4199220c2686c54fc8e8ceea1351ff88ab7bba2333e7441c6d268c034adbed.png](../Images/2bbf0a8662041cb7a556a37197370bc0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This looks good,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the distributions are well behaved, we cannot observe obvious gaps, outliers
+    nor truncations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the test and train cases have similar coverage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the relative frequencies of the categorical response are similar over train
+    and test datasets, i.e., a good train and test balance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Predictor Feature Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s build a simplified plot to visualize the 2D predictor feature space with
+    the train and test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we ask the question, will we be able to model the classification boundary? Is
+    there a lot of data overlap? Is the boundary simple (i.e., linear) or more complicated?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b3c308d6eca35509ace9645fe2c47910d318c23c40b049222f1c1f89bfeeea5b.png](../Images/56dc165df133e2ddbce54c0beda4915c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This will be a difficult classification,
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is certainly a lot of overlap
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the boundary may be nonlinear.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But, there is good news,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the train and test coverage looks good in general, note there are a few testing
+    cases that will test model extrapolation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: support vector machines are designed to work with this overlap!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Support Vector Machine Model with Linear Kernel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start simple, train and visualize linear support vector machine models
+    over our feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This will provide a linear spatial classification model for facies 0 and 1 as
+    a function of AI and porosity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We use the scikit-learn function \(SVC\) substantiate the support vector machine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The parameters include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**kernel** the kernel type that is applied to project the data to a potentially
+    higher dimensional space'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**\(C\)** penalty for misclassification'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**random_state** random number see for random shuffling data for probability
+    estimates'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We then use the command,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: to train the model with the training dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The inputs to the fit function include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**X** - the \(n \times m\) array with the predictor features for the training
+    dataset'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**y** - the \(n \times 1\) array with the response feature for the training
+    dataset'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s try out 2 different \(C\) penalty hyperparameters to visualize the impact
+    of the penalty for misclassification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: Looks like it ran ok! Let’s visualize the results using the convenient visualization
+    functions that we previously defined.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/0dec98b51eac972aa8541bbcf4d2742f7a09bcb6b1b19ee80196793e988428ba.png](../Images/f9599d00749b4f00b75cb1eeb40f7f47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The above plot shows the linear kernel support vector machine classification
+    model, the training dataset and the resulting support vectors with bold circles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear kernel only provide a straight decision boundary.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is hard to tune the model to fit more complicated situation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that with higher C, weighting of the sum of errors, we get a smaller margin.
+    The linear model is fit with fewer support vectors (training data in the margin.
+    Let’s summarize the end members of this hyperparameter with respect to simple
+    and complicated models, potential under and overfit and the model bias and variance
+    trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**simple model \ underfit model** - when C is smaller, the classifier is more
+    tolerant with misclassified data points (higher model bias, lower model variance).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**complex model \ overfit model** - when C is larger, the classifier is more
+    sensitive to misclassified data points (lower model bias, higher model variance).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In other words, \(C\) is a regularization term, just like the shrinkage term
+    for ridge regression. Let’s try some more flexible classifiers with a different
+    kernel so we can better see this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support Vector Machine Model with Polynomial Kernel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The polynomial kernel is defined as
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} K(x,x’) = (x^Tx)^d, \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(d\) is the degree of polynomials.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The hyperparameter \(degree\) is the order of the polynomial kernel function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As previously mentioned, let’s try out different \(C\), penalty for error, with
+    a single polynomial order observe the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/db044f313815811c58d2c4c54acfdaba7a6e69a6ce29d65cc9a535b7ec667c76.png](../Images/00a2d3685850074a3a660b3f3a1259f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As we increase the \(C\) hyperparameter, the margin shrinks, the number of support
+    vectors reduces and the model complexity increases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support Vector Machine Model with Radial Basis Function Kernel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Radial Basis Function (RBF) is another commonly used kernel in SVC:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} K(x,x’) = e^{- \gamma ||x-x’||^2}, \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(||x-x'||^2\) is the squared Euclidean distance between two data points
+    x and x’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Gaussian kernel is a special case of RBF, where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \begin{equation} K(x,x’) = e^{- \frac {||x-x’||^2} {2 \sigma^2}}. \end{equation}
+  prefs: []
+  type: TYPE_NORMAL
+- en: By changing the value of \(\gamma\) and C, the classifier with an RBF kernel
+    can be tuned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \(\gamma\) can be thought of as the spread of the kernel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: when \(\gamma\) is low, the curvature of the decision boundary is low, leading
+    to a broad decision region (low variance, high bias), low complexity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The \(\gamma\) parameter can be interpreted as the inverse of the radius of
+    influence of samples selected by the model as support vectors, i.e., low gamma
+    integrates more data for a smoother model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/82ff1c768a726890aad3ac7762874583b4c7c13de8c4a2eb9150851584e58eb1.png](../Images/6f78098f6348e837aa484bf3c227abf8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The impact of regularization with the C hyperparameter is very clear in this
+    case,
+  prefs: []
+  type: TYPE_NORMAL
+- en: higher C, smaller margin, fewer support vectors, tends to overfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: lower C, larger margin, more support vectors, tends to underfit
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The impact of gamma is also very clear in this case,
+  prefs: []
+  type: TYPE_NORMAL
+- en: higher gamma results in more complicated, high curvature decision boundaries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: lower gamma results in more simple, low curvature, smooth decision boundaries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Although two facies seem to be classified properly in some cases above, there
+    is a risk of overfitting, specifically for the high gamma and high C example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Support Vector Machines without Standardizing the Predictor Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As promised, let’s try a model without standardizing the predictor features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this will be illustrative as the original predictor features have very different
+    ranges!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/214f9d02bb8c207b3c3bbefb825c5bd28482dca26856c9f37b16b8d18e527260.png](../Images/6284d1148a1bd492bb2d8429f0b4cd96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What happened?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The support vector machine with the polynomial kernel splits on the feature
+    with the largest range, acoustic impedance. The differences in the feature with
+    the very small range, porosity here, do not significantly influence to the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The radial basis function support vector machine has thin shale and sand layers
+    over the acoustic impedance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We must standardize our predictor features to apply support vector machines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperparameter Tuning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s use the brute force grid search with stratified shuffle splits to iterate
+    over multiple hyperparameters and find the optimum model complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Grid Search Cross Validation** - models are constructed for the full combinatorial
+    of hyperparameters'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Stratified Shuffle Splits** - ensures that the balance of categorical cases
+    is preserved in the splits and randomizes the split to ensure the model does use
+    the same data in the same order each time'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: warning this will take about 2 minutes to run on a regular PC
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can visualize the cross validation accuracy for all of the hyperparameter
+    combinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, the output is average accuracy over all of the stratified shuffle splits,
+    where accuracy is,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ Accuracy = \frac{n_{\text{correctly classified}}}{n} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/c27ee9a9f09064a90ce366edd51e5c5e6693ed7e75b913239500a89b85839743.png](../Images/a7a596942f23b8c59494c817735ad48e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can observe a region around \(C\) of 100 and \(\gamma\) of 0.1 with the best
+    model cross validation accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualizing High, Mid and Low Performing Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we show examples of high, mid and low performing model based on validation
+    accuracy from the demonstration above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we will use parameter combinations, \(C\) and \(\gamma\), from the plot above
+    to select and rerun the cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/72e5e586c8cb2a4e90eea81cd6276fdc2175a66c300652b076105e3cc3ba6079.png](../Images/e3b9d37c4cafc9bc078800f977947926.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By selecting low, mid and high accuracy hyperparameter cases from our hyperparameter
+    tuning cross validation accuracy we obtain a good illustration example of overfit
+    to well-fit models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope you found this chapter helpful. Much more could be done and discussed,
+    I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources),
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Author:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Professor, The University of Texas at Austin *Novel Data Analytics,
+    Geostatistics and Machine Learning Subsurface Solutions*
+  prefs: []
+  type: TYPE_NORMAL
+- en: With over 17 years of experience in subsurface consulting, research and development,
+    Michael has returned to academia driven by his passion for teaching and enthusiasm
+    for enhancing engineers’ and geoscientists’ impact in subsurface resource development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For more about Michael check out these links:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL

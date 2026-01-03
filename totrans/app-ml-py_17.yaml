@@ -1,0 +1,1521 @@
+- en: Random Projection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_random_projection.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_random_projection.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Random Projection**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Curse of Dimensionality, Dimensionality Reduction, Principal Component Analysis](https://youtu.be/-to3JXiae9Y?si=W1j2CwR9t0t8hxIB)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multidimensional Scaling and Random Projection](https://youtu.be/Yt0o8ukIOKU?si=_ri1NPwKVdhYzgO3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Random Projection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Imagine we need very fast dimensionality reduction by a projection from \(m\)
+    features, i.e., high dimensional, to \(p\) features, i.e., lower dimensional space,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ 𝑝, \quad \text{where} \quad 𝑝 << 𝑚 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and in this case,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we do not have all the data now (for example, real-time data), so we cannot
+    calculate a matrix of covariances nor dissimilarities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we cannot afford to calculate an orthogonal transform, given the size of \(m\)
+    it is too computationally expensive
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Can we transform the \(m\) features to a lower dimensional \(p\) with a random
+    linear projection?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ff1ace2c6fcc051cac02de9dd663851.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The concept of random projection, vs. multidimensional scaling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(𝑋_{1 \times m}\) is a single data sample over \(m\) features, \(𝑅_{p
+    \times m}\) is a random projection matrix, populated with random values, and \(𝑋_{p
+    \times n}^{𝑅𝑃}\) is the new data projected to \(p\) features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random Projection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An alternative to principal components analysis and multidimensional scaling
+    that relies on an random (\(p \times n\)) projection matrix, \(𝑅_{p \times m}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: all values are independent, random variables, typically standard normal, \(N\left[0,1\right]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To avoid distortion, the projection \(𝑅_{p \times m}\) should be orthogonal,
+    but as said above, ensuring orthogonality is too computationally expensive, to
+    understand how this can work, we need to understand,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hercht-Neilsen (1994)** - the existence of a much larger number of orthogonal
+    vectors in high dimensional space, likely quasi-orthogonal'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Johnson-Lindenstrauss lemma (1984)** - that points in high-dimensional space
+    can be linearly embedded in lower dimension with approximate preservation of pairwise
+    distance with a high probability'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Near-orthogonal Vectors in High Dimensional Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Robert Hercht-Neilsen (1994) demonstrates that in high dimensional space, there
+    exists a much larger number of almost orthogonal than strictly orthogonal directions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random matrices may be sufficiently close to orthogonal in high dimensions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑅_{m×p}^𝑇 𝑅_{p×m} \approx 𝐼_{m×m} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(I\) is the identify matrix, \(\approx\) indicates approximate equal
+    to identity matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our random vectors will be close enough to orthogonal if the dimensionality
+    is large enough, i.e., high dimensional space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the probability increases with increase in dimensionality, the number of features,
+    \(𝑚\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Probability of Near Preservation of Pairwise Distance in High Dimensional Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This random approach works practically because of the The Johnson-Lindenstrauss
+    lemma:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In mathematics, the Johnson-Lindenstrauss lemma is a result concerning low-distortion
+    embeddings of points from high-dimensional into low-dimensional Euclidean space.
+    The lemma states that a small set of points in a high-dimensional space can be
+    embedded into a space of much lower dimension in such a way that distances between
+    the points are nearly preserved. The map used for the embedding is at least Lipschitz,
+    and can even be taken to be an orthogonal projection.* - Wikipedia article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Points in a high-dimensionality space can be linearly embedded in a space of
+    much lower dimensionality in such a way that distances between the points are
+    nearly preserved (we allow for error, 𝜀)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can calculate given the size of data set, 𝑛, and desired error limit, 𝜀,
+    the minimum number of dimensions, 𝑝, that we can project to with high probability
+    of based on random projection, as a minimum,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ 𝑝 > \frac{ln⁡(𝑛)}{𝜀^2} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, for 1,000 data with an pairwise distance error of 10% (0.1) we
+    can project randomly to 690 dimensional.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this minimum does not depend on the original dimensionality of the problem,
+    \(𝑚\)!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries. These should have been installed
+    with Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Convenience functions to add commas to numbers and major and minor gridlines
+    to plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the working directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualizing the DataFrame would be useful and we already learned about these
+    methods in this demo ([https://git.io/fNgRW](https://git.io/fNgRW)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can preview the DataFrame by utilizing the ‘head’ DataFrame member function
+    (with a nice and clean format, see below). With the head command, add parameter
+    ‘n=13’ to see the first 13 rows of the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 3 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 6 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 7 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 8 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 9 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 10 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 11 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 12 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 13 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'This dataset has features from 200 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well index
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: well average porosity (%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: permeability (mD)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m2s*10^6)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: normalized initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic, but has realistic ranges and general multivariate
+    relationships.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ranking features is really an effort to understand the features and their relationships
+    with each other. We will start with basic data visualization and move to more
+    complicated methods such are partial correlation and recursive feature elimination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the summary statistics of our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Well | 200.0 | 100.500000 | 57.879185 | 1.000000 | 50.750000 | 100.500000
+    | 150.250000 | 200.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.991950 | 0.478264 | 0.000000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3864.407081 | 1553.277558 | 839.822063 | 2686.227611 | 3604.303506
+    | 4752.637555 | 8590.384044 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary statistics are a critical first step in data checking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this includes the number of valid (non-null) values for each feature (count
+    removes all np.NaN from the totals for each variable).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can see the general behaviors such as central tendency, mean, and dispersion,
+    variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can identify issue with negative values, extreme values, and values that
+    are outside the range of plausible values for each property.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can also establish the feature ranges for plotting. We could calculate the
+    feature range directly from the data with code like this:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: but, this would not result in easy to understand color bars and axis scales,
+    let’s pick convenient round numbers. We will also declare feature labels for ease
+    of plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The data looks to be in pretty good shape and for brevity we skip outlier detection.
+    Let’s look at the distributions with a matrix scatter plot from the Seaborn package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/d82e98fd3f20b062e5af7a1166a4e2e974afd596af23ad51bb6ea0c6f780ddce.png](../Images/95fb79f6de153d43d36030d365b24d3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feature Standardization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since our model works with dissimilarity (analogous to distance in feature space)
+    measures, we need to standardize the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Prod | NS_Por | NS_Perm
+    | NS_AI | NS_Brittle | NS_TOC | NS_VR |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 | -0.982256
+    | -0.817030 | -0.298603 | 2.358297 | 0.352257 | 1.152048 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 | -0.881032
+    | -0.463751 | 0.444147 | -0.141332 | -0.213702 | -0.280931 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 3 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 | -0.327677
+    | -1.008148 | 1.841224 | 1.748113 | -0.213702 | 2.518377 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 | 0.903875
+    | 1.401098 | -0.599240 | -0.592585 | 0.184565 | -0.280931 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 | 0.853263
+    | 0.138561 | 0.373409 | -2.640962 | 1.085907 | -0.214280 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 6 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 | -0.155597
+    | 0.277556 | -0.493133 | 0.385839 | -0.108895 | -0.980758 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 7 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 | -0.506505
+    | -0.423211 | -0.068704 | 1.103161 | -0.402355 | -0.380906 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 8 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 | -1.150962
+    | -0.753324 | 0.497200 | 0.343268 | -0.632930 | -0.114305 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 9 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 | -0.833795
+    | -0.932859 | -0.952930 | 1.249322 | -0.087933 | 0.052320 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 10 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 | -0.587484
+    | -0.226301 | 1.310688 | 1.279831 | 0.310334 | 2.285102 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 11 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 | 0.016483
+    | 0.034314 | -1.324305 | 0.918687 | 0.184565 | -0.647507 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 12 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 | 0.404506
+    | 1.140483 | -1.200514 | 0.066556 | 1.127830 | -0.347581 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 13 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 | 0.617075
+    | 0.630834 | -0.298603 | 1.311759 | 0.373218 | 0.052320 |'
+  prefs: []
+  type: TYPE_TB
+- en: Data Preparation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s make an ordinal feature from the continuous production:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: low
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: medium
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: high
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: very high
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: production rates. This will help us visualize the results as we proceed, we
+    can look at wells with different levels of production projected into a variety
+    of lower dimensional spaces with multidimensional scaling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s take a look at the matrix scatter plot of our 3 features and the production
+    levels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/88023e2fe485fa10c6d95a886b783b2fbba0d51476bfbbaea540a357171cf53f.png](../Images/361d301ea20bab27b890f9dc5260164c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Random Projection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s demonstrate the use of random projection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: given the low dimensionality you will see quite poor performance for some random
+    seeds
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9d381e4fb7046bb5ea95413bbcb76d715648c0783488f14ad9ea4a0c6ebf4ee0.png](../Images/b97660935d743314d8384f5fbdb20615.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Check the orthogonality of the random projection matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: by calculating and displaying \(R_p^T R_p\), if orthogonal it should be a strictly
+    diagonal matrix
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b939873a0ebfe0d1abe1e7218ce8f485bb698d87d0fd5a003af297c5e30b4bbf.png](../Images/fb33fb692e076e2c71f895be6dd85b6c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Add More Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are seeing that for m = 6 we are not seeing significant dimensionality reduction.
+    Let’s instantiate a larger model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: set \(m\) as large, i.e., \(m \ge 100\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: set \(p\) as a reasonable ratio of \(m\), for example \(\frac{2}{3}\) up to
+    \(\frac{1}{2}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since we don’t have access to a arbitrarily large data set, let’s generate it
+    randomly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: standard normal, high dimensional multiGaussian distribution with all means
+    of 0 and variances of 1.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: random correlations between the features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we use eigendecomposition, set the negative or zero eigenvalues to small positive
+    to ensure the correlation matrix is positive semi-definite
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: This data is too high dimensional to conveniently visualize, let’s proceed with
+    random projection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/39619edae0c2641f4556b98d82390b3cbcb222a4cf0be2e436876337fd5ab48c.png](../Images/9e5d080e00dc637a851d8dfb22c425df.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Check the orthogonality of the random projection matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: by calculating and displaying \(R_p^T R_p\), if orthogonal it should be a strictly
+    diagonal matrix
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, \(R_p\) is not square, it is \(p \times m\), so we are actually checking
+    column orthogonality, \(R_p^T R_p\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: we are checking is the reduced dimensional projects forms an orthogonal basis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: from above \(R_p^T\) is \(m \times p\) and \(R_p\) is \(p \times m\) so \(R_p^T
+    R_p\) is \(m \times m\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e0a3c6713266a89bcad286ac5af2612cfcfd85f9cb728fa32ecee957d3274e79.png](../Images/7f0d011d72830b71ea8a9544642b5b1e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Add Even More Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s try a larger dimensionality with a single code block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8f03681f7a32673249e97bfda2fb7f490b40578656a4cd639874efec9a003e83.png](../Images/11e2a354bd1b2543a20f9194cee52d96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of random projection. Much more could be done and
+    discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation for Random Projection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Imagine we need very fast dimensionality reduction by a projection from \(m\)
+    features, i.e., high dimensional, to \(p\) features, i.e., lower dimensional space,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ 𝑝, \quad \text{where} \quad 𝑝 << 𝑚 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: and in this case,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we do not have all the data now (for example, real-time data), so we cannot
+    calculate a matrix of covariances nor dissimilarities
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we cannot afford to calculate an orthogonal transform, given the size of \(m\)
+    it is too computationally expensive
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Can we transform the \(m\) features to a lower dimensional \(p\) with a random
+    linear projection?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ff1ace2c6fcc051cac02de9dd663851.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The concept of random projection, vs. multidimensional scaling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(𝑋_{1 \times m}\) is a single data sample over \(m\) features, \(𝑅_{p
+    \times m}\) is a random projection matrix, populated with random values, and \(𝑋_{p
+    \times n}^{𝑅𝑃}\) is the new data projected to \(p\) features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random Projection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An alternative to principal components analysis and multidimensional scaling
+    that relies on an random (\(p \times n\)) projection matrix, \(𝑅_{p \times m}\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: all values are independent, random variables, typically standard normal, \(N\left[0,1\right]\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To avoid distortion, the projection \(𝑅_{p \times m}\) should be orthogonal,
+    but as said above, ensuring orthogonality is too computationally expensive, to
+    understand how this can work, we need to understand,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hercht-Neilsen (1994)** - the existence of a much larger number of orthogonal
+    vectors in high dimensional space, likely quasi-orthogonal'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Johnson-Lindenstrauss lemma (1984)** - that points in high-dimensional space
+    can be linearly embedded in lower dimension with approximate preservation of pairwise
+    distance with a high probability'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Near-orthogonal Vectors in High Dimensional Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Robert Hercht-Neilsen (1994) demonstrates that in high dimensional space, there
+    exists a much larger number of almost orthogonal than strictly orthogonal directions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random matrices may be sufficiently close to orthogonal in high dimensions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ 𝑅_{m×p}^𝑇 𝑅_{p×m} \approx 𝐼_{m×m} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(I\) is the identify matrix, \(\approx\) indicates approximate equal
+    to identity matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our random vectors will be close enough to orthogonal if the dimensionality
+    is large enough, i.e., high dimensional space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the probability increases with increase in dimensionality, the number of features,
+    \(𝑚\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Probability of Near Preservation of Pairwise Distance in High Dimensional Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This random approach works practically because of the The Johnson-Lindenstrauss
+    lemma:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In mathematics, the Johnson-Lindenstrauss lemma is a result concerning low-distortion
+    embeddings of points from high-dimensional into low-dimensional Euclidean space.
+    The lemma states that a small set of points in a high-dimensional space can be
+    embedded into a space of much lower dimension in such a way that distances between
+    the points are nearly preserved. The map used for the embedding is at least Lipschitz,
+    and can even be taken to be an orthogonal projection.* - Wikipedia article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Points in a high-dimensionality space can be linearly embedded in a space of
+    much lower dimensionality in such a way that distances between the points are
+    nearly preserved (we allow for error, 𝜀)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can calculate given the size of data set, 𝑛, and desired error limit, 𝜀,
+    the minimum number of dimensions, 𝑝, that we can project to with high probability
+    of based on random projection, as a minimum,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ 𝑝 > \frac{ln⁡(𝑛)}{𝜀^2} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, for 1,000 data with an pairwise distance error of 10% (0.1) we
+    can project randomly to 690 dimensional.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this minimum does not depend on the original dimensionality of the problem,
+    \(𝑚\)!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code loads the required libraries. These should have been installed
+    with Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Convenience functions to add commas to numbers and major and minor gridlines
+    to plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the working directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here’s the command to load our comma delimited data file in to a Pandas’ DataFrame
+    object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualizing the DataFrame would be useful and we already learned about these
+    methods in this demo ([https://git.io/fNgRW](https://git.io/fNgRW)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can preview the DataFrame by utilizing the ‘head’ DataFrame member function
+    (with a nice and clean format, see below). With the head command, add parameter
+    ‘n=13’ to see the first 13 rows of the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Prod |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 3 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 6 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 7 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 8 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 9 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 10 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 11 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 12 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 13 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 |'
+  prefs: []
+  type: TYPE_TB
+- en: 'This dataset has features from 200 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well index
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: well average porosity (%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: permeability (mD)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m2s*10^6)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: normalized initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note, the dataset is synthetic, but has realistic ranges and general multivariate
+    relationships.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ranking features is really an effort to understand the features and their relationships
+    with each other. We will start with basic data visualization and move to more
+    complicated methods such are partial correlation and recursive feature elimination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary Statistics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the summary statistics of our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | count | mean | std | min | 25% | 50% | 75% | max |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Well | 200.0 | 100.500000 | 57.879185 | 1.000000 | 50.750000 | 100.500000
+    | 150.250000 | 200.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Por | 200.0 | 14.991150 | 2.971176 | 6.550000 | 12.912500 | 15.070000 | 17.402500
+    | 23.550000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Perm | 200.0 | 4.330750 | 1.731014 | 1.130000 | 3.122500 | 4.035000 | 5.287500
+    | 9.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| AI | 200.0 | 2.968850 | 0.566885 | 1.280000 | 2.547500 | 2.955000 | 3.345000
+    | 4.630000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Brittle | 200.0 | 48.161950 | 14.129455 | 10.940000 | 37.755000 | 49.510000
+    | 58.262500 | 84.330000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| TOC | 200.0 | 0.991950 | 0.478264 | 0.000000 | 0.617500 | 1.030000 | 1.350000
+    | 2.180000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| VR | 200.0 | 1.964300 | 0.300827 | 0.930000 | 1.770000 | 1.960000 | 2.142500
+    | 2.870000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| Prod | 200.0 | 3864.407081 | 1553.277558 | 839.822063 | 2686.227611 | 3604.303506
+    | 4752.637555 | 8590.384044 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary statistics are a critical first step in data checking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this includes the number of valid (non-null) values for each feature (count
+    removes all np.NaN from the totals for each variable).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can see the general behaviors such as central tendency, mean, and dispersion,
+    variance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we can identify issue with negative values, extreme values, and values that
+    are outside the range of plausible values for each property.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We can also establish the feature ranges for plotting. We could calculate the
+    feature range directly from the data with code like this:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: but, this would not result in easy to understand color bars and axis scales,
+    let’s pick convenient round numbers. We will also declare feature labels for ease
+    of plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: The data looks to be in pretty good shape and for brevity we skip outlier detection.
+    Let’s look at the distributions with a matrix scatter plot from the Seaborn package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/d82e98fd3f20b062e5af7a1166a4e2e974afd596af23ad51bb6ea0c6f780ddce.png](../Images/95fb79f6de153d43d36030d365b24d3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feature Standardization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since our model works with dissimilarity (analogous to distance in feature space)
+    measures, we need to standardize the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Well | Por | Perm | AI | Brittle | TOC | VR | Prod | NS_Por | NS_Perm
+    | NS_AI | NS_Brittle | NS_TOC | NS_VR |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 0 | 1 | 12.08 | 2.92 | 2.80 | 81.40 | 1.16 | 2.31 | 1695.360819 | -0.982256
+    | -0.817030 | -0.298603 | 2.358297 | 0.352257 | 1.152048 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 2 | 12.38 | 3.53 | 3.22 | 46.17 | 0.89 | 1.88 | 3007.096063 | -0.881032
+    | -0.463751 | 0.444147 | -0.141332 | -0.213702 | -0.280931 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 2 | 3 | 14.02 | 2.59 | 4.01 | 72.80 | 0.89 | 2.72 | 2531.938259 | -0.327677
+    | -1.008148 | 1.841224 | 1.748113 | -0.213702 | 2.518377 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 3 | 4 | 17.67 | 6.75 | 2.63 | 39.81 | 1.08 | 1.88 | 5288.514854 | 0.903875
+    | 1.401098 | -0.599240 | -0.592585 | 0.184565 | -0.280931 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 4 | 5 | 17.52 | 4.57 | 3.18 | 10.94 | 1.51 | 1.90 | 2859.469624 | 0.853263
+    | 0.138561 | 0.373409 | -2.640962 | 1.085907 | -0.214280 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 6 | 14.53 | 4.81 | 2.69 | 53.60 | 0.94 | 1.67 | 4017.374438 | -0.155597
+    | 0.277556 | -0.493133 | 0.385839 | -0.108895 | -0.980758 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 6 | 7 | 13.49 | 3.60 | 2.93 | 63.71 | 0.80 | 1.85 | 2952.812773 | -0.506505
+    | -0.423211 | -0.068704 | 1.103161 | -0.402355 | -0.380906 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 8 | 11.58 | 3.03 | 3.25 | 53.00 | 0.69 | 1.93 | 2670.933846 | -1.150962
+    | -0.753324 | 0.497200 | 0.343268 | -0.632930 | -0.114305 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 8 | 9 | 12.52 | 2.72 | 2.43 | 65.77 | 0.95 | 1.98 | 2474.048178 | -0.833795
+    | -0.932859 | -0.952930 | 1.249322 | -0.087933 | 0.052320 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 9 | 10 | 13.25 | 3.94 | 3.71 | 66.20 | 1.14 | 2.65 | 2722.893266 | -0.587484
+    | -0.226301 | 1.310688 | 1.279831 | 0.310334 | 2.285102 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 11 | 15.04 | 4.39 | 2.22 | 61.11 | 1.08 | 1.77 | 3828.247174 | 0.016483
+    | 0.034314 | -1.324305 | 0.918687 | 0.184565 | -0.647507 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 11 | 12 | 16.19 | 6.30 | 2.29 | 49.10 | 1.53 | 1.86 | 5095.810104 | 0.404506
+    | 1.140483 | -1.200514 | 0.066556 | 1.127830 | -0.347581 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 12 | 13 | 16.82 | 5.42 | 2.80 | 66.65 | 1.17 | 1.98 | 4091.637316 | 0.617075
+    | 0.630834 | -0.298603 | 1.311759 | 0.373218 | 0.052320 |'
+  prefs: []
+  type: TYPE_TB
+- en: Data Preparation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s make an ordinal feature from the continuous production:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: low
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: medium
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: high
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: very high
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: production rates. This will help us visualize the results as we proceed, we
+    can look at wells with different levels of production projected into a variety
+    of lower dimensional spaces with multidimensional scaling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s take a look at the matrix scatter plot of our 3 features and the production
+    levels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/88023e2fe485fa10c6d95a886b783b2fbba0d51476bfbbaea540a357171cf53f.png](../Images/361d301ea20bab27b890f9dc5260164c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Random Projection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s demonstrate the use of random projection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: given the low dimensionality you will see quite poor performance for some random
+    seeds
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/9d381e4fb7046bb5ea95413bbcb76d715648c0783488f14ad9ea4a0c6ebf4ee0.png](../Images/b97660935d743314d8384f5fbdb20615.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Check the orthogonality of the random projection matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: by calculating and displaying \(R_p^T R_p\), if orthogonal it should be a strictly
+    diagonal matrix
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b939873a0ebfe0d1abe1e7218ce8f485bb698d87d0fd5a003af297c5e30b4bbf.png](../Images/fb33fb692e076e2c71f895be6dd85b6c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Add More Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We are seeing that for m = 6 we are not seeing significant dimensionality reduction.
+    Let’s instantiate a larger model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: set \(m\) as large, i.e., \(m \ge 100\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: set \(p\) as a reasonable ratio of \(m\), for example \(\frac{2}{3}\) up to
+    \(\frac{1}{2}\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since we don’t have access to a arbitrarily large data set, let’s generate it
+    randomly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: standard normal, high dimensional multiGaussian distribution with all means
+    of 0 and variances of 1.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: random correlations between the features
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we use eigendecomposition, set the negative or zero eigenvalues to small positive
+    to ensure the correlation matrix is positive semi-definite
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: This data is too high dimensional to conveniently visualize, let’s proceed with
+    random projection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/39619edae0c2641f4556b98d82390b3cbcb222a4cf0be2e436876337fd5ab48c.png](../Images/9e5d080e00dc637a851d8dfb22c425df.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Check the orthogonality of the random projection matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: by calculating and displaying \(R_p^T R_p\), if orthogonal it should be a strictly
+    diagonal matrix
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note, \(R_p\) is not square, it is \(p \times m\), so we are actually checking
+    column orthogonality, \(R_p^T R_p\)
+  prefs: []
+  type: TYPE_NORMAL
+- en: we are checking is the reduced dimensional projects forms an orthogonal basis
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: from above \(R_p^T\) is \(m \times p\) and \(R_p\) is \(p \times m\) so \(R_p^T
+    R_p\) is \(m \times m\)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e0a3c6713266a89bcad286ac5af2612cfcfd85f9cb728fa32ecee957d3274e79.png](../Images/7f0d011d72830b71ea8a9544642b5b1e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Add Even More Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s try a larger dimensionality with a single code block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8f03681f7a32673249e97bfda2fb7f490b40578656a4cd639874efec9a003e83.png](../Images/11e2a354bd1b2543a20f9194cee52d96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of random projection. Much more could be done and
+    discussed, I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL

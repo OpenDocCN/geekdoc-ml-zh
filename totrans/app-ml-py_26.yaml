@@ -1,0 +1,4611 @@
+- en: Decision Tree
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_decision_tree.html](https://geostatsguy.github.io/MachineLearningDemos_Book/MachineLearning_decision_tree.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Michael J. Pyrcz, Professor, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chapter of e-book “Applied Machine Learning in Python: a Hands-on Guide with
+    Code”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite this e-Book as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *Applied Machine Learning in Python: A Hands-on Guide with
+    Code* [e-book]. Zenodo. doi:10.5281/zenodo.15169138 [![DOI](../Images/7e4ea662f44af1eae87e87ecbb962ff4.png)](https://doi.org/10.5281/zenodo.15169138)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The workflows in this book and more are available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cite the MachineLearningDemos GitHub Repository as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pyrcz, M.J., 2024, *MachineLearningDemos: Python Machine Learning Demonstration
+    Workflows Repository* (0.0.3) [Software]. Zenodo. DOI: 10.5281/zenodo.13835312\.
+    GitHub repository: [GeostatsGuy/MachineLearningDemos](https://github.com/GeostatsGuy/MachineLearningDemos)
+    [![DOI](../Images/4e3a59c17d684b06a170c4af84e0f631.png)](https://zenodo.org/doi/10.5281/zenodo.13835312)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Michael J. Pyrcz
+  prefs: []
+  type: TYPE_NORMAL
+- en: © Copyright 2024.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This chapter is a tutorial for / demonstration of **Decision Tree**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**YouTube Lecture**: check out my lectures on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Introduction to Machine Learning](https://youtu.be/zOUM_AnI1DQ?si=wzWdJ35qJ9n8O6Bl)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Decision Tree](https://youtu.be/JUGo1Pu3QT4?si=ebQXv6Yglar0mYWp)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Random Forest](https://youtu.be/m5_wk310fho?si=up-mzVPHvniXsYE6)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Gradient Boosting](https://youtu.be/___T8_ixIwc?si=ozHR_eIuMF3SPTxJ)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These lectures are all part of my [Machine Learning Course](https://youtube.com/playlist?list=PLG19vXLQHvSC2ZKFIkgVpI9fCjkN38kwf&si=XonjO2wHdXffMpeI)
+    on YouTube with linked well-documented Python workflows and interactive dashboards.
+    My goal is to share accessible, actionable, and repeatable educational content.
+    If you want to know about my motivation, check out [Michael’s Story](https://michaelpyrcz.com/my-story).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Decision trees are not the most powerful, cutting edge method in machine learning,
+    so why cover decision trees?
+  prefs: []
+  type: TYPE_NORMAL
+- en: one of the most understandable, interpretable predictive machine learning models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: decision trees are enhanced with random forests, bagging and boosting to be
+    one of the best machine learning predictive models in many cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/90b8611f2db53bd1e441fa8eb6dce0d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A single proud black spruce tree within the Boreal Forest in Alaska, similar
+    to the northern region of my home province of Alberta. Crop of photo from https://www.britannica.com/plant/spruce#/media/1/561445/8933,
+    access date May 1, 2025\.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s cover some key aspects of decision trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Formulation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The prediction feature space is partitioned into \(J\) exhaustive, mutually
+    exclusive regions \(R_1, R_2, \ldots, R_J\). For a given prediction case \(x_1,\ldots,x_m
+    \in R_j\), the prediction is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regression** - the average of the training data in the region, \(R_j\)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \frac{1}{|R_j|} \sum_{\mathbf{x}_i \in R_j} y_i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\hat{y}\) is the predicted value for input \(\mathbf{x}\), \(R_j\) is
+    the region (leaf node) that \(\mathbf{x}\) falls into, \(|R_j|\) is the number
+    of training samples in region \(R_j\), and \(y_i\) is the actual target values
+    of those training samples in \(R_j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Classification** - category with the plurality of training cases (most common
+    case) in region \(R_j\):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \arg\max_{c \in C} \left( \frac{1}{|R_j|} \sum_{\mathbf{x}_i \in
+    R_j} \mathbb{1}(y_i = c) \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(C\) is the set of all possible categories, \(\mathbb{1}(y_i = c)\) is
+    indicator transform, 1 if \(y_i = c\), 0 otherwise, \(|R_j|\) is the number of
+    training samples in region \(R_j\), and \(\hat{y}\) is the predicted class label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The predictor space, \(𝑋_1,\ldots,𝑋_𝑚\), is segmented into \(J\) mutually exclusive,
+    exhaustive regions, \(R_j, j = 1,\ldots,J\), where the regions are,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**mutually exclusive** – any combination of predictor features, \(x_1,\ldots,x_𝑚\),
+    only belongs to a single region, \(R_j\)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**exhaustive** – all combinations of predictor feature values belong a region,
+    \(R_j\), i.e., all the regions, \(R_j, j = 1,\ldots,J\), cover entire predictor
+    feature space'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All prediction cases, \(x_1,\ldots,x_m\) that fall in the same region, \(R_j\),
+    are estimated with the same value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the prediction model inherently discontinuous at the region boundaries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, consider this decision tree prediction model for the production
+    response feature, \(\hat{Y}\) ̂from porosity, \(X_1\), predictor feature,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/98d8fb73fe41299a6a9b443163b47c96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Four region decision tree with data and predictions, \(\hat{Y}(R_j) = \overline{Y}(R_j)\)
+    by region, \(R_j, j=1,…,4\). For example, given a predictor feature value of 13%
+    porosity, the model predicts about 2,000 MCFPD for production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we segment the predictor feature space?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Look at this example with predictor features porosity and brittleness to predict
+    the production response feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/31b00c9edfa4f39d2ae71626df2cd687.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A very complicated segmentation of the predictor feature space with 3 regions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: these are very efficient boundaries that would capture low, mid and high production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But, this model would be quite complicated,
+  prefs: []
+  type: TYPE_NORMAL
+- en: requiring a large number of model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: difficult to train for a large number of prediction features, i.e., high dimensionality
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If I can convince you to accept these regions instead, then you would have a
+    model that,
+  prefs: []
+  type: TYPE_NORMAL
+- en: is very easy to train
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: has very few parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: very compact and interpretable
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/13cf7080472834d100f0e7812be6d2d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A simpler segmentation of the predictor feature space with 9 regions, but much
+    fewer parameters and easy to train for any dimensionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a set of regions based on hierarchical, binary segmentation. Let’s clarify
+    the concept of predictor feature space and then explain this form of predictor
+    feature segmentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predictor Feature Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s step back and establish the concept of predictor feature space. We define
+    it as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the space that includes all possible estimation problems, i.e., the combination
+    of all possible predictor feature values, \(x_1, x_2,\ldots,x_m\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/2328290a847e59dd59f76c37a18c6df3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of predictor feature space for the case of 3 predictor features
+    with specified minimum and maximum values per feature resulting in a rectangular
+    cuboid of possible predictions, $x_1, x_2, x_3$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically this is defined by the range of possible values, \(x_{\alpha} \in
+    \left[X_{\alpha,\text{𝑚𝑖𝑛}},𝑋_{\alpha,\text{max}} \right]\)​, resulting in,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 predictor feature \(\rightarrow\) line segment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2 predictor features \(\rightarrow\) rectangle
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3 predictor features \(\rightarrow\) rectangular cuboid
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(>\)3 predictor features \(\rightarrow\) hyperrectangle
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While we define the predictor feature space with the ranges of the predictor
+    features, I should provide a cautionary note.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision Trees have an Implicit Extrapolation Model
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you will see below, the regions along the exterior extend to infinity, effectively
+    assuming a constant extrapolation model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tree Loss Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For regression trees we minimize the residual sum of squares and for classification
+    trees we minimize the weighted average Gini impurity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Residual Sum of Squares (RSS) measures the total squared difference between
+    the actual values and predicted values in a regression tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{RSS} = \sum_{j=1}^{J} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(J\) is the total number of regions in the tree, \(R_j\) is the \(j\)
+    region, \(y_i\) is the truth value of the response feature at observation the
+    \(i\) training data, and \(\hat{y}_{R_j}\) is the predicted value for region \(R_j\),
+    the mean of \(y_i \; \forall \; i \in R_j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When a parent node splits into two child nodes ( t_L ) and ( t_R ), the weighted
+    Gini impurity is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Gini}_{\text{total}} = \sum_{j=1}^{J} \frac{N_j}{N} \cdot \text{Gini}(j)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(J\) is the total number of regions in the tree, \(N\) is the total number
+    of samples in the dataset, \(N_j\) is the number of samples in leaf node \(j\),
+    and \(\text{Gini}(j)\) is the Gini impurity of leaf node \(j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Gini impurity for a single decision tree node is calculated as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Gini}(j) = 1 - \sum_{c=1}^{C} p_{j,c}^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(p_{j,c}\) is the proportion of class \(c\) samples in node \(j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For classification our loss function does not compare the predictions to the
+    truth values like our regression loss!
+  prefs: []
+  type: TYPE_NORMAL
+- en: the Gini impurity penalizes mixtures of training data categories! A region of
+    all one category of training data will have a Gini impurity of 0 to contribute
+    to the over all loss.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that the by-region Gini impurity is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**weighted** - by the number of training data in each regions, regions with
+    more training data have greater impact on the overall loss'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**averaged** - over all the regions to calculate the total Gini impurity of
+    the decision tree'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These losses are calculated during,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**tree model training** - with respect to training data to grow the tree'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**tree model tuning** - with respect to withheld testing data to select the
+    optimum tree complexity.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s talk about tree model training first and then tree model tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the Tree Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How do we calculate these mutually exclusive, exhaustive regions? This is accomplished
+    through hierarchical binary segmentation of the predictor feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training a decision tree model is both,
+  prefs: []
+  type: TYPE_NORMAL
+- en: assigning the mutual exclusive, exhaustive regions
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: building a decision tree, each region is a terminal node, also known as a leaf
+    node
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These are the same thing! Let’s list the steps and then walk through a training
+    a tree to demonstrate this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Assign All Data to a Single Region** - this region covers the entire predictor
+    feature space'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Scan All Possible Splits** - over all regions and over all features'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Select the Best Split** - this is greedy optimization, i.e., the best split
+    minimizes the residual sum of squares of errors over all the training data \(y_i\)
+    over all of the regions \(j = 1,\ldots,J\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Iterate Until Very Overfit** - return to step 1 for the next split until
+    the tree is very overfit.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note, this method for training a decision tree is a solution heuristic,
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is no effort to jointly optimize all splits at once, for example, to select
+    a suboptimal split to maximize training error reduction with a subsequent split
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, the decision tree is constructed from the top down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we begin with a single region that covers the entire predictor feature space
+    and then proceed with a sequence of region splits / tree branches.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s illustrate this with an example, predicting natural gas production
+    response feature with 2 predictor features,
+  prefs: []
+  type: TYPE_NORMAL
+- en: porosity - impacting pore volume and flow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness - impacting the ability to induce and hold open fractures
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We start with all our predictor feature space in a single region with the single
+    possible prediction as the average of all the training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4a6be7714eba68f580cfee8421d15f61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Initial data all in 1 region, i.e., hyperparameter number of leaf nodes of 1,
+    predict with the global mean of the response feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we scan all features to find the first best split, porosity of 16.7%.
+    This very simple decision tree with a single decision node and 2 regions or leaf
+    nodes is known as a stump tree, i.e., the simplest possible decision tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c418139a6f37dbda3462cd0ab2d519d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 2, first best split resulting in a stump
+    tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we scan over both regions and over all predictor features to find the best
+    next split, brittleness of 36.1 in the greater than or equal to porosity of 16.7%
+    region.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5786413cc0e329c72793e1d2adf2a54b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Continuing, we find our next split of porosity of 18.5% in the upper right region.
+    We now have 4 regions. Our decision tree is starting to capture the increasing
+    production with increasing porosity along with lower production for low brittleness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9931df51305b719f93fc51eecf44641d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the next best split is in the original lower porosity region from the stump
+    tree with porosity of 13.2%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/597e4adea071f8f67d71e82f4c1015f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next best split divides the region in the middle of porosity, capturing
+    the trend of low production for low brittleness, even with high porosity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1024ff1d9be25d7b007a5ee890b6d8f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 6.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next split is capturing the reduction in production with high brittleness,
+    even with high porosity,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/782938df9c411d347bdc8e6e031a6d66.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 7.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and this split continues to capture this same pattern in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3401dcf9ca381bf65d39fada64ecde2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 8.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For brevity we stop here, and make these observations,
+  prefs: []
+  type: TYPE_NORMAL
+- en: hierarchical, binary segmentation is the same as sequentially building a decision
+    tree, each split adds a new decision node and increases the number of leaf nodes
+    by one.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the simple decision trees are in the complicated decision tree, i.e., if we
+    build an \(8\) leaf node model, we have the \(8, 7, \ldots, 2\) leaf node model
+    by sequentially removing the decision nodes, in the order of last one is the first
+    one to remove.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the ultimate overfit model is number of leaf nodes equal to the number of training
+    data. In this case, the training error is 0.0 as have one region for each training
+    data a we estimate with the training data response feature values for all the
+    at the training data cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Updating the Loss Function with a New Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To find the next best split, we must scan over all regions, and over all features
+    with the regions. This may sound like a lot of computation, but it is quite efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we only need to check the midpoints between sorted training data for each feature
+    in each region, because any split that does not change the region assignment of
+    a training data will not change the training loss.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For a region \(R\) split into candidate regions \(R_L\) and \(R_R\), the RSS
+    after the split is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{RSS}_{\text{split}} = \sum_{i \in R_L} (y_i - \hat{y}_{R_L})^2 + \sum_{i
+    \in R_R} (y_i - \hat{y}_{R_R})^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where, \(y_i\) is the actual response feature for training data observation
+    \(i\), and \(\hat{y}_{R_L}\), \(\hat{y}_{R_R}\) is the mean of training data response
+    feature in candidate regions \(R_L\) and \(R_R\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, we add in the RSS components from all the other regions to get the total
+    model RSS to find the best split over all the regions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the split with the lowest \(\text{RSS}_{\text{split}}\) is selected for the
+    region and compared to all other best splits in the other regions to find the
+    next best split, greedy solution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now we are prepared for tuning a decision tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tuning the Tree Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To tune the decision tree we take the very overfit trained tree model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: sequentially cut the last decision node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: i.e., prune the last branch of the decision tree
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since the simpler trees are inside the complicated tree!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can calculate test error as we prune and select tree with minimum test error
+  prefs: []
+  type: TYPE_NORMAL
+- en: We overfit the decision tree model, with a large number of leaf nodes and then
+    we reduce the number of leaf nodes while tracking the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we select the number of leaf nodes that minimize the testing error.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: since we are sequentially removing the last branch to simplify the tree, we
+    call model tuning **pruning** for decision trees
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here is an overfit decision tree with many, \(100\), leaf nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3383a81c81cdb9ed5c96432a485e7194.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, hyperparameter number of leaf nodes of 100 (left),
+    train and test cross validation plot (center) and train and test error over number
+    of leaf nodes (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since this tree is calculated with my interactive Python dashboard, I am able
+    to easily reduce the number of regions from \(100, 99, 98, 96, 95, \ldots\) and
+    visualize the tree to explore complicated to simple trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: by doing this we can demonstrate that the simple trees are in the complicated
+    tree.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, here’s the 5 region decision tree in the overfit 100 region decision
+    tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/566f12da178143a07d17de9adc100684.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The 5 leaf node tree in the very overfit 100 leaf node tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and here is the 10 region decision tree in the overfit 100 region decision tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96e18c15cb01e9558e4b2512a6b1ef20.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The 10 leaf node tree in the very overfit 100 leaf node tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and finally, here is the 20 region decision tree in the overfit 100 region decision
+    tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19d39b48f3c129dc12099bd52c3bb546.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The 20 leaf node tree in the very overfit 100 leaf node tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might wonder, why I didn’t just update the decision tree plot? scikit-learn’s
+    decision tree plotting function recales the plot and the geometry changes so much
+    it is not easy to visualize the simple trees within the complicated tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I think this approach of visualizing the simple trees and drafting the polylines
+    works well for educational purposes!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s return to our very overfit tree and demonstrate the hyperparameter
+    tuning by tree pruning approach,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24f9e4745fc35d0cf9c039aec32684f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we identify the last added branch and remove it to calculate the 99 region
+    decision tree, a slightly simpler decision tree, and we calculate the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2c6ffbcc9634d3d3f7350cb0564380d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we identify the last added branch again and remove it to calculate the 98
+    region decision tree, once again a slightly simpler decision tree, and we calculate
+    the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/efae49220a4ea118479dcc21d333e37a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we identify the last added branch again and remove it to calculate the 97
+    region decision tree, once again a slightly simpler decision tree, and we calculate
+    the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4af3bd7dce90621152ff68c398bd578.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we identify the last added branch again and remove it to calculate the 96
+    region decision tree, once again a slightly simpler decision tree, and we calculate
+    the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eeea92714bf8b2f878a05ce7f50e9eae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we identify the last added branch again and remove it to calculate the 95
+    region decision tree, once again a slightly simpler decision tree, and we calculate
+    the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90180132c5183f3342f2051c501aee4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we identify the last added branch again and remove it to calculate the 94
+    region decision tree, once again a slightly simpler decision tree, and we calculate
+    the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53f087807a31ef6a8e1be0e1ec170292.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s return and look at the very overfit model and add some more information
+    over different levels of complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab38e613fbf8ad17fdab5bd4f89adaa6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, hyperparameter number of leaf nodes of 100 (left),
+    train and test cross validation plot (center) and train and test error over number
+    of leaf nodes (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I include the,
+  prefs: []
+  type: TYPE_NORMAL
+- en: train and test cross validation plot with nearly perfect training prediction
+    and very poor testing prediction for the 100 leaf node overfit decision tree
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train and test error versus number of leaf nodes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This demonstrates that the decision tree model is indeed very overfit, for example,
+    see the falling training error and rising testing error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we prune the decision nodes until we obtain the model with the minimum testing
+    error at about 19 leaf nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/064eac7331174101230aee9c413623f3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tuned decision tree, hyperparameter number of leaf nodes of 20 (left), train
+    and test cross validation plot (center) and train and test error over number of
+    leaf nodes indicating that testing error is minimized (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For completeness, I have included an underfit model, i.e., if we prune our decision
+    tree too much, with only 8 leaf nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d7b773b0de829f858763876c59a1c04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Underfit decision tree, hyperparameter number of leaf nodes of 8 (left), train
+    and test cross validation plot (center) and train and test error over number of
+    leaf nodes indicating that testing error is minimized (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, that the train and test error are both very high with the underfit decision
+    tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I prefer number of leaf nodes as my decision tree hyperparameter because it
+    provides,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**continuous, uniform increase in complexity** - equal steps in increased complexity
+    without jumps'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**intuitive control on complexity** - we can understand and relate the \(2,
+    3, \ldots, 100\) leaf node decision trees'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**flexible complexity** - the tree is free to grow in any manner to reduce
+    training error, including highly asymmetric decision trees'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are other common decision tree hyperparameters including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Minimum reduction in RSS** – related to the idea that incremental increase
+    in complexity must be offset by sufficient reduction in training error. This could
+    stop the model early, for example, a split with low reduction in training error
+    could lead to a subsequent split with a much larger reduction in training error'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Minimum number of training data in each region** – related to the concept
+    of accuracy of the by-region estimates, i.e., we need at least \(n\) data for
+    a reliable mean and most common category'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Maximum number of levels** – forces symmetric trees, similar number of splits
+    to get to each leaf node. There is a large change in model complexity with change
+    in the hyperparameter.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Prediction Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The decision tree prediction model is represented as **set of nested if statements**,
+    for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: and the predictions as stated above are either the,
+  prefs: []
+  type: TYPE_NORMAL
+- en: regression - average of the training data in the region
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: classification - the plurality, most common category, of the training data in
+    the region
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shapley Values from Decision Trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recall, we need to take a single model, for example, \(f(x_1,x_2,x_3,x_4)\),
+    and make an estimate for all possible combinations of feature subsets, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f(x_1) \quad f(x_2,x_4) \quad f(x_1,x_2,x_3) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, the naïve approach to calculate Shapley values is to train the full combinatorial
+    of models with different predictor features, but we don’t want to make new models
+    if our goal is feature importance to diagnose our specific model, \(f\), to support
+    model explainability.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One solution is to apply a variety of approaches, similar to imputation methods,
+    including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: replace the excluded feature(s) with the expected value, global mean,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ f(x_1,x_2,x_3) = f(x_1,x_2,x_3,x_4=E[x_4]) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: replace the excluded feature(s) with the median value, the 50th percentile,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ f(x_1,x_2,x_3) = f(x_1,x_2,x_3,x_4=P50_{x_4}) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a more accurate, unique method with tree-based models, we can actually
+    remove the influence of any of the features from the decision tree after the model
+    is trained, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: remove all \(x_4\) branches, and then the model does not use \(x_4\) to make
+    the prediction
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Of course, we cannot just remove branches and ‘wood glue’ the tree back together!
+  prefs: []
+  type: TYPE_NORMAL
+- en: we must make new predictions that don’t introduce bias.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s demonstrate the procedure for removing a feature from a decision tree,
+    with a couple of prediction cases,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is a prediction case that does not encounter the removed feature, \(x_2\)
+    is removed and,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_1=25 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: the prediction is made as usual.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a9783a200ab476bb3a92cb2cfec12d63.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction case that does not encounter the removed feature is made as usual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f(x_1=25) = 20 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: A prediction case that does encounter the removed feature, \(x_1\) is removed
+    and,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_2 = 60 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we effectively go down both paths, by weighting, by number of training data,
+    the solution over both paths!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8152951b8a3c920f03825528d98c5ae7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction case that does encounter the removed feature is made by weighting
+    both paths by the number of training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f(x_2=60) = \frac{60}{100} \left[ \frac{15}{60} \times 20 + \frac{45}{60}
+    \times 70 \right] + \frac{40}{100} \left[130\right] = 86.5 \]\[ f(x_2=60) = 86.5
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices
+    and visualization of a decision tree regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset [unconv_MV.csv](https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/unconv_MV.csv)
+    available in my GeoDataSet repo. It is a comma delimited file with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well index (integer)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^6\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial gas production (90 day average) (MCFPD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a data frame we called ‘df’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Python Tip: using functions from a package** just type the label for the
+    package that we declared at the beginning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'so we can access the pandas function ‘read_csv’ with the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: but read csv has required input parameters. The essential one is the name of
+    the file. For our circumstance all the other default parameters are fine. If you
+    want to see all the possible parameters for this function, just go to the docs
+    [here](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The docs are always helpful
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is often a lot of flexibility for Python functions, possible through using
+    various inputs parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, the program has an output, a pandas DataFrame loaded from the data. So
+    we have to specify the name / variable representing that new object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s run this command to load the data and then this command to extract a random
+    subset of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Feature Engineering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s make some changes to the data to improve the workflow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Select the predictor features (x2) and the response feature (x1)**, make
+    sure the metadata is also consistent.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Metadata** encoding such as the units, labels and display ranges for each
+    feature.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Reduce the number of data** for ease of visualization (hard to see if too
+    many points on our plots).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Train and test data split** to demonstrate and visualize simple hyperparameter
+    tuning.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Add random noise to the data** to demonstrate model overfit. The original
+    data is error free and does not readily demonstrate overfit.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Given this is properly set, one should be able to use any dataset and features
+    for this demonstration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for brevity we don’t show any feature selection here. Previous chapter, e.g.,
+    k-nearest neighbours include some feature selection methods, but see the feature
+    selection chapter for many possible methods with codes for feature selection.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Optional: Add Random Noise to the Response Feature'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can do this to observe the impact of data noise on overfit and hyperparameter
+    tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is for experiential learning, of course we wouldn’t add random noise to
+    our data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We set the random number seed for reproducibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s make sure that we have selected reasonable features to build a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: the 2 predictor features are not collinear, as this would result in an unstable
+    prediction model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: each of the features are related to the response feature, the predictor features
+    inform the response
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the Correlation Matrix and Correlation with Response Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with correlation analysis. We can calculate and view the correlation
+    matrix and correlation to the response features with these previously declared
+    functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation analysis is based on the assumption of linear relationships, but
+    it is a good start
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/152d837d72f43ba9a48527a444d81b3bbc73a2ba553d2760d27f5c20206ea0b2.png](../Images/fe078f42023f81da1972474b1d3bbf26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This looks good. There is a mix of correlation magnitudes. Of course, correlation
+    coefficients are limited to degree of linear correlations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the matrix scatter plot to see the pairwise relationship between
+    the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8d03fa748bcc76aea92c8e57b5fb8071473e84b910d1402f5fd62dd21b102145.png](../Images/515a70a53d49c49c9ecf98249cd67b5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For convenience and simplicity we use scikit-learn’s random train and test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the train and test DataFrame is useful check before we build our
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 86 | 12.83 | 29.87 | 2089.258307 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 35 | 17.39 | 56.43 | 5803.596379 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 75 | 12.23 | 40.67 | 3511.348151 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 36 | 13.72 | 40.24 | 4004.849870 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 126 | 12.83 | 17.20 | 2712.836372 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 15.55 | 58.25 | 5353.761093 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 46 | 20.21 | 23.78 | 4387.577571 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 96 | 15.07 | 39.39 | 4412.135054 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 45 | 12.10 | 63.24 | 3654.779704 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 105 | 19.54 | 37.40 | 5251.551624 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The describe command provides count, mean, minimum, maximum in a nice data table.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 105.000000 | 105.000000 | 105.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 14.859238 | 48.861143 | 4238.554591 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 3.057228 | 14.432050 | 1087.707113 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 7.220000 | 10.940000 | 1517.373571 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 23.550000 | 84.330000 | 6907.632261 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 35.000000 | 35.000000 | 35.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 15.011714 | 46.798286 | 4378.913131 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 3.574467 | 13.380910 | 1290.216113 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 6.550000 | 20.120000 | 1846.027145 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 20.860000 | 68.760000 | 6593.447893 |'
+  prefs: []
+  type: TYPE_TB
+- en: It is good that we checked the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check out the range of values for each feature to set up and adjust plotting
+    limits. See above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Train and Test Splits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the consistency and coverage of training and testing with histograms
+    and scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check to make sure the training and testing cover the range of possible feature
+    combinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ensure we are not extrapolating beyond the training data with the testing cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7f95232f4bccd970cd69b500c8930cfffaf4ffd9a243b7aea1e184337ba9175d.png](../Images/3e84676c9f7f37dcabed4194a238047f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sometimes I find it more convenient to compare distributions by looking at CDF’s
+    instead of histograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we avoid the arbitrary choice of histogram bin size, because CDF’s are at the
+    data resolution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/846daf6f4bcdece7bb39d2b1b9c385e351fbcf923d9599f41f5c7a4c3639c3dc.png](../Images/89d70d18d70c546bb0ac8c55112e894e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again, the distributions are well behaved,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we cannot observe obvious gaps nor truncations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check coverage of the train and test data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s look at a scatter plot of Porosity vs. Brittleness with points colored
+    by Production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a0a42ff41b36629afd1b47ee725006868db8d0038504ccf72d1f966ac5e69281.png](../Images/3ec3d66453c69d41e8b4c7a2508530a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This problem looks complicated and could not be modeled with simple linear regression.
+    It appears that there are non-linearities. Let’s use a simple nonparametric model,
+    decision tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instantiate, Fit and Predict with scikit-learn
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s build our predictive machine learning model, by instantiate, fit and predict
+    with scikit-learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**instantiate** the model object with the hyperparameters, k-nearest neighbours'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**fit** by training the model with the training data, we use the member function
+    fit'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**predict** with the trained model. After fit is run, predict is available
+    to make predictions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training a Decision Tree (Regression Tree)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we are ready to run the DecisionTreeRegressor command to build our regression
+    tree to predict our response feature given our 2 predictor features (recall we
+    limit ourselves here to 2 predictor features for ease of visualization).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use our two functions defined above to visualize the decision tree prediction
+    over the feature space and the cross plot of actual and estimated production for
+    the training data along with three model metrics from the sklearn.metric module.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Hyper Parameters** - we constrain our tree complexity with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*max_leaf_nodes* - maximum number of regions, also called terminal or lead
+    nodes in the decision tree'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*max_depth* - maximum number of levels, e.g., max_depth = 1 is a stump tree
+    with only 1 decision and two regions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*min_samples_leaf* - minimum number of data in a new region, good constraint
+    to ensure each region has enough data to make a reasonable estimate'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For now lets just try out some hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Underfit Decision Tree Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s use too few regions, set max_leaf_nodes too small and see the resulting
+    decision tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/de9bb85033f26085feea46a1ec5a5786ccbe3d092bb940c53d319584063a39c7.png](../Images/be259c4cb62524490823c4f4d2d09c0c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This model is very much underfit, it is too simple to fit the shape of the prediction
+    problem. Here’s some more information on the plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See the horizontal lines on the plot of estimated vs. actual production (plot
+    on the bottom)?
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is expected as the regression tree estimates with the average of the data
+    in each region of the feature space (terminal node).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To further assess the model performance, I have included the actual response
+    P10, mean and P90 for each leaf node, region for both training and testing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: underfit predictive machine learning models have poor accuracy and training
+    and testing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If we have a more complicated tree with more terminal nodes then there would
+    be more lines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overfit Decision Tree Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s use too many regions, set max_leaf_nodes too large and see the resulting
+    decision tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b64f9666026f63544dd4662412c50db7132cd58f19c828937a4e3bbfa9366dc6.png](../Images/c28519e97623d45a6f72540a6b408c6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we have an overfit predictive machine learning model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: too much complexity and flexibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we are fitting the noise in the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: good accuracy in training, but poor accuracy in testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is instructive to observe the decision tree model over the feature space
+    as we incrementally add terminal nodes. We can graphically observe the hierarchical
+    binary splitting quite clearly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize from simple complicated models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b066c86d94043d639bf7b5305f612745b8a64d2920e129e3f924e8deaac2ab67.png](../Images/43008585fa66e722cde17f42284274b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It may be useful to look at a decision tree model and the associated decision
+    tree, side-by-side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fbf5427fe1d098a17a235d28fdd24ff7b7b442c21b958df2b2855e4ffeb66011.png](../Images/de575bff5cbcf3e18e0bc1c385400e3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How do we find the best hyperparameters, for the best complexity for optimum
+    prediction accuracy for testing? That is hyperparameter tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tuning a Decision Tree (Regression Tree)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s perform hyperparameter tuning. To do this we,
+  prefs: []
+  type: TYPE_NORMAL
+- en: See the range of possible hyperparameter values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Loop over the range of possible hyperparameter values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train on the training data with the current hyperparameter values.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Predict at the testing data
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Summarize the error over all the testing data
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Select the hyperparameters that minimize the error at for the testing data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: When I teach this to my students, I suggest that this is a model dress rehearsal.
+    We add value by making predictions for cases not used to train the model. We want
+    the model that performs best for cases not in the training, so we are simulating
+    real world use of the model!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s do hyperparameter tuning ‘by-hand’, by varying the decision tree complexity
+    and find the complexity that minimizes MSE in testing
+  prefs: []
+  type: TYPE_NORMAL
+- en: for simplicity the code below loops only over the maximum leaf nodes hyperparameter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we set minimum number of samples to 1, and maximum depth to 9 to ensure that
+    these hyperparameters will not have any impact (we set them to very complicated
+    so they don’t limit the model complexity)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/27a521f2cbd01b3caec37b95530d68674a6785fa6c061acdac71ea6326a9fe6b.png](../Images/f43c9ad2b759692c2b199e397c735352.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is useful to evaluate the performance of our tree by observing the accuracy
+    vs. complexity, with a minimum due to the model variance and model bias trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a more robust result, let’s try k-fold cross validation. sklearn has a
+    built in cross validation method called cross_val_score that we can use to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply k-fold approach with iterative separation of training and testing data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With k=5, we have 20% withheld for testing for each fold
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Automate the model construction, looping over folds and averaging the metric
+    of interest
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s try it out on our trees with variable number of terminal nodes. Note the
+    cross validation is set to use 4 processors, but still will likely take a couple
+    of minutes to run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/35821438b0adbe9ae455b2e6731dab92e05cf7dfb2dcbaaa8d296ac1c9a18b39.png](../Images/2df3cfa16f6fb36c7bd2a52fe7d20a6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The k-fold cross validation provides a smoother plot of MSE vs. the hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is accomplished by averaging the MSE over all the folds to reduce sensitivity
+    of the metric to specific assignment of training and testing data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: all our train and test cross validation or k-fold cross validation was to get
+    this one value, the model **hyperparameter**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Build the Final Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s take that hyperparameter and train on all the data, this is our **final
+    model**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e85bbd71cc280b9a057d106524b0d1dfca28c6500e32ece594637cde5b8b1dba.png](../Images/608907e2a0d015a0d611204bfa6c41e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have completed our predictive machine learning model. Now let’s cover a couple
+    more decision tree diagnostics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interrogating Decision Trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It may be useful to evaluate for any possible feature combination, the order
+    of decision nodes that resulted in the specific prediction. The following function
+    provides the list of nodes that the prediction cases passes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Extracting the Decision Tree Prediction Model as a Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Furthermore it may be useful to convert the decision tree to code, a nested
+    set of ‘if’ statements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This creates a portable model that could be copied and applied as a standalone
+    function.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, one could conveniently interrogate the code version of the tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use the previously defined function to do this with our pruned tree.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: Decision Tree-based Feature Importance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Feature importance is calculated from a decision trees by summarizing the reduction
+    in mean square error through inclusion of each feature and is summarized as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ FI(x) = \sum_{t \in T_f} \frac{N_t}{N} \Delta_{MSE_t} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(T_f\) are all nodes with feature \(x\) as the split, \(N_t\) is the
+    number of training samples reaching node \(t\), \(N\) is the total number of samples
+    in the dataset and \(\Delta_{MSE_t}\) is the reduction in MSE with the \(t\) split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, feature importance can be calculated in a similar manner to MSE above
+    for the case of classification trees with **Gini Impurity**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8fcae780c3b59534e28863b5aa7a46545ac1a9e556ab9950e41495b87e7bee49.png](../Images/e7672512b746dfc82482f39bc8c78ddc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualize the Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s take a last look at the graphical representation of our pruned tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/67fb9697896ebccb3d2ba5fce562153c671634fd57bdc8739c47227f04785578.png](../Images/dceac0eb1f800b2c21d5e490c1248210.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple Code to Make a Decision Tree Machine and Calculate a Prediction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To support those just getting started, here’s a minimal amount of code to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: load the scikit-learn package for decision trees
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: load data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: instantiate a decision tree with hyperparameters (no tuning is shown)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train the decision tree with the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: make a prediction with the decision tree
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Machine Learning Pipelines for Clean, Compact Machine Learning Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pipelines are a scikit-learn class that allows for the encapsulation of a sequence
+    of data preparation and modeling steps
+  prefs: []
+  type: TYPE_NORMAL
+- en: then we can treat the pipeline as an object in our much condensed workflow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The pipeline class allows us to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: improve code readability and to keep everything straight
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: build complete workflows with very few lines of readable code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: avoid common workflow problems like data leakage, testing data informing model
+    parameter training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: abstract common machine learning modeling and focus on building the best model
+    possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The fundamental philosophy is to treat machine learning as a combinatorial search
+    to find the best model (AutoML)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more information see my recorded lecture on [Machine Learning Pipelines](https://www.youtube.com/watch?v=tYrPs8s1l9U&list=PLG19vXLQHvSAufDFgZEFAYQEwMJXklnQV&index=5)
+    and a well-documented demonstration [Machine Learning Pipeline Workflow](http://localhost:8892/notebooks/OneDrive%20-%20The%20University%20of%20Texas%20at%20Austin/Courses/Workflows/PythonDataBasics_Pipelines.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: Practice on a New Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Ok, time to get to work. Let’s load up a dataset and build a decision tree prediction
+    model with,
+  prefs: []
+  type: TYPE_NORMAL
+- en: compact code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: basic visaulizations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: save the output
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can select any of these datasets or modify the code and add your own to
+    do this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3 year cumulative oil production (Mbbl)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load and format the data,
+  prefs: []
+  type: TYPE_NORMAL
+- en: drop the response feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reformate the features as needed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, I like to store the metadata in lists
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Density | PVel | Youngs | SVel | Shear | CumulativeOil
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.907730 | 133.910637 | 7.308846 | 2.146360 | 3563.549461 | 25.688560
+    | 1673.770439 | 6.429229 | 1201.20 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 12.647965 | 114.359667 | 7.343836 | 2.188597 | 3570.094553 | 25.444064
+    | 1670.043495 | 6.100984 | 683.92 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 12.998469 | 129.332122 | 7.282051 | 2.131121 | 3524.448615 | 25.985734
+    | 1681.960101 | 6.203527 | 978.14 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 15 | 12.426141 | 123.227677 | 7.351795 | 2.203026 | 3417.596818 | 25.976462
+    | 1675.355860 | 6.288040 | 608.09 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 16 | 13.507371 | 147.562087 | 7.300360 | 2.210916 | 3476.167397 | 24.817767
+    | 1656.890690 | 6.222528 | 1062.10 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 36 | 13.309477 | 122.818961 | 7.345220 | 2.178749 | 3346.347661 | 25.436579
+    | 1651.679529 | 6.334308 | 539.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 49 | 11.822910 | 98.168307 | 7.386212 | 2.301552 | 3250.020705 | 24.340656
+    | 1662.438742 | 6.617267 | 1095.30 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 51 | 13.986616 | 132.575456 | 7.194749 | 2.108986 | 3415.255945 | 26.253236
+    | 1712.017629 | 5.583251 | 805.49 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 61 | 14.735895 | 128.201000 | 7.172693 | 1.841786 | 3886.950307 | 28.289950
+    | 1672.370150 | 5.044439 | 1146.00 |'
+  prefs: []
+  type: TYPE_TB
+- en: Build and Check Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We apply the follow steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: specify the K-fold method
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: loop over number of leaf nodes, instantiate, fit and record the error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: plot the test error vs. number of leaf nodes, select the hyperparameter that
+    minimizes test error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: retrain the model with the tuned hyperparameter and all of the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/800e93156a21d23fb27ec3b349cbd0c234a2789e27a8582567a80abbbf0e08b0.png](../Images/a3d66d6b8f851c5edb5b770a5393116c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of decision tree. Much more could be done and discussed,
+    I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Decision trees are not the most powerful, cutting edge method in machine learning,
+    so why cover decision trees?
+  prefs: []
+  type: TYPE_NORMAL
+- en: one of the most understandable, interpretable predictive machine learning models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: decision trees are enhanced with random forests, bagging and boosting to be
+    one of the best machine learning predictive models in many cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/90b8611f2db53bd1e441fa8eb6dce0d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A single proud black spruce tree within the Boreal Forest in Alaska, similar
+    to the northern region of my home province of Alberta. Crop of photo from https://www.britannica.com/plant/spruce#/media/1/561445/8933,
+    access date May 1, 2025\.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s cover some key aspects of decision trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Formulation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The prediction feature space is partitioned into \(J\) exhaustive, mutually
+    exclusive regions \(R_1, R_2, \ldots, R_J\). For a given prediction case \(x_1,\ldots,x_m
+    \in R_j\), the prediction is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regression** - the average of the training data in the region, \(R_j\)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \frac{1}{|R_j|} \sum_{\mathbf{x}_i \in R_j} y_i \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(\hat{y}\) is the predicted value for input \(\mathbf{x}\), \(R_j\) is
+    the region (leaf node) that \(\mathbf{x}\) falls into, \(|R_j|\) is the number
+    of training samples in region \(R_j\), and \(y_i\) is the actual target values
+    of those training samples in \(R_j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Classification** - category with the plurality of training cases (most common
+    case) in region \(R_j\):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \hat{y} = \arg\max_{c \in C} \left( \frac{1}{|R_j|} \sum_{\mathbf{x}_i \in
+    R_j} \mathbb{1}(y_i = c) \right) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(C\) is the set of all possible categories, \(\mathbb{1}(y_i = c)\) is
+    indicator transform, 1 if \(y_i = c\), 0 otherwise, \(|R_j|\) is the number of
+    training samples in region \(R_j\), and \(\hat{y}\) is the predicted class label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The predictor space, \(𝑋_1,\ldots,𝑋_𝑚\), is segmented into \(J\) mutually exclusive,
+    exhaustive regions, \(R_j, j = 1,\ldots,J\), where the regions are,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**mutually exclusive** – any combination of predictor features, \(x_1,\ldots,x_𝑚\),
+    only belongs to a single region, \(R_j\)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**exhaustive** – all combinations of predictor feature values belong a region,
+    \(R_j\), i.e., all the regions, \(R_j, j = 1,\ldots,J\), cover entire predictor
+    feature space'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All prediction cases, \(x_1,\ldots,x_m\) that fall in the same region, \(R_j\),
+    are estimated with the same value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: the prediction model inherently discontinuous at the region boundaries
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, consider this decision tree prediction model for the production
+    response feature, \(\hat{Y}\) ̂from porosity, \(X_1\), predictor feature,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/98d8fb73fe41299a6a9b443163b47c96.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Four region decision tree with data and predictions, \(\hat{Y}(R_j) = \overline{Y}(R_j)\)
+    by region, \(R_j, j=1,…,4\). For example, given a predictor feature value of 13%
+    porosity, the model predicts about 2,000 MCFPD for production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we segment the predictor feature space?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Look at this example with predictor features porosity and brittleness to predict
+    the production response feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/31b00c9edfa4f39d2ae71626df2cd687.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A very complicated segmentation of the predictor feature space with 3 regions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: these are very efficient boundaries that would capture low, mid and high production
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But, this model would be quite complicated,
+  prefs: []
+  type: TYPE_NORMAL
+- en: requiring a large number of model parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: difficult to train for a large number of prediction features, i.e., high dimensionality
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If I can convince you to accept these regions instead, then you would have a
+    model that,
+  prefs: []
+  type: TYPE_NORMAL
+- en: is very easy to train
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: has very few parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: very compact and interpretable
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/13cf7080472834d100f0e7812be6d2d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A simpler segmentation of the predictor feature space with 9 regions, but much
+    fewer parameters and easy to train for any dimensionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a set of regions based on hierarchical, binary segmentation. Let’s clarify
+    the concept of predictor feature space and then explain this form of predictor
+    feature segmentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predictor Feature Space
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s step back and establish the concept of predictor feature space. We define
+    it as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the space that includes all possible estimation problems, i.e., the combination
+    of all possible predictor feature values, \(x_1, x_2,\ldots,x_m\).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/2328290a847e59dd59f76c37a18c6df3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of predictor feature space for the case of 3 predictor features
+    with specified minimum and maximum values per feature resulting in a rectangular
+    cuboid of possible predictions, $x_1, x_2, x_3$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically this is defined by the range of possible values, \(x_{\alpha} \in
+    \left[X_{\alpha,\text{𝑚𝑖𝑛}},𝑋_{\alpha,\text{max}} \right]\)​, resulting in,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 predictor feature \(\rightarrow\) line segment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2 predictor features \(\rightarrow\) rectangle
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3 predictor features \(\rightarrow\) rectangular cuboid
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \(>\)3 predictor features \(\rightarrow\) hyperrectangle
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While we define the predictor feature space with the ranges of the predictor
+    features, I should provide a cautionary note.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decision Trees have an Implicit Extrapolation Model
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you will see below, the regions along the exterior extend to infinity, effectively
+    assuming a constant extrapolation model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tree Loss Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For regression trees we minimize the residual sum of squares and for classification
+    trees we minimize the weighted average Gini impurity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Residual Sum of Squares (RSS) measures the total squared difference between
+    the actual values and predicted values in a regression tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{RSS} = \sum_{j=1}^{J} \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(J\) is the total number of regions in the tree, \(R_j\) is the \(j\)
+    region, \(y_i\) is the truth value of the response feature at observation the
+    \(i\) training data, and \(\hat{y}_{R_j}\) is the predicted value for region \(R_j\),
+    the mean of \(y_i \; \forall \; i \in R_j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When a parent node splits into two child nodes ( t_L ) and ( t_R ), the weighted
+    Gini impurity is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Gini}_{\text{total}} = \sum_{j=1}^{J} \frac{N_j}{N} \cdot \text{Gini}(j)
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(J\) is the total number of regions in the tree, \(N\) is the total number
+    of samples in the dataset, \(N_j\) is the number of samples in leaf node \(j\),
+    and \(\text{Gini}(j)\) is the Gini impurity of leaf node \(j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Gini impurity for a single decision tree node is calculated as,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{Gini}(j) = 1 - \sum_{c=1}^{C} p_{j,c}^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(p_{j,c}\) is the proportion of class \(c\) samples in node \(j\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For classification our loss function does not compare the predictions to the
+    truth values like our regression loss!
+  prefs: []
+  type: TYPE_NORMAL
+- en: the Gini impurity penalizes mixtures of training data categories! A region of
+    all one category of training data will have a Gini impurity of 0 to contribute
+    to the over all loss.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that the by-region Gini impurity is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**weighted** - by the number of training data in each regions, regions with
+    more training data have greater impact on the overall loss'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**averaged** - over all the regions to calculate the total Gini impurity of
+    the decision tree'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These losses are calculated during,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**tree model training** - with respect to training data to grow the tree'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**tree model tuning** - with respect to withheld testing data to select the
+    optimum tree complexity.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s talk about tree model training first and then tree model tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training the Tree Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How do we calculate these mutually exclusive, exhaustive regions? This is accomplished
+    through hierarchical binary segmentation of the predictor feature space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training a decision tree model is both,
+  prefs: []
+  type: TYPE_NORMAL
+- en: assigning the mutual exclusive, exhaustive regions
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: building a decision tree, each region is a terminal node, also known as a leaf
+    node
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These are the same thing! Let’s list the steps and then walk through a training
+    a tree to demonstrate this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Assign All Data to a Single Region** - this region covers the entire predictor
+    feature space'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Scan All Possible Splits** - over all regions and over all features'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Select the Best Split** - this is greedy optimization, i.e., the best split
+    minimizes the residual sum of squares of errors over all the training data \(y_i\)
+    over all of the regions \(j = 1,\ldots,J\).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Iterate Until Very Overfit** - return to step 1 for the next split until
+    the tree is very overfit.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note, this method for training a decision tree is a solution heuristic,
+  prefs: []
+  type: TYPE_NORMAL
+- en: there is no effort to jointly optimize all splits at once, for example, to select
+    a suboptimal split to maximize training error reduction with a subsequent split
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, the decision tree is constructed from the top down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we begin with a single region that covers the entire predictor feature space
+    and then proceed with a sequence of region splits / tree branches.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s illustrate this with an example, predicting natural gas production
+    response feature with 2 predictor features,
+  prefs: []
+  type: TYPE_NORMAL
+- en: porosity - impacting pore volume and flow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness - impacting the ability to induce and hold open fractures
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We start with all our predictor feature space in a single region with the single
+    possible prediction as the average of all the training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4a6be7714eba68f580cfee8421d15f61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Initial data all in 1 region, i.e., hyperparameter number of leaf nodes of 1,
+    predict with the global mean of the response feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we scan all features to find the first best split, porosity of 16.7%.
+    This very simple decision tree with a single decision node and 2 regions or leaf
+    nodes is known as a stump tree, i.e., the simplest possible decision tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c418139a6f37dbda3462cd0ab2d519d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 2, first best split resulting in a stump
+    tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we scan over both regions and over all predictor features to find the best
+    next split, brittleness of 36.1 in the greater than or equal to porosity of 16.7%
+    region.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5786413cc0e329c72793e1d2adf2a54b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Continuing, we find our next split of porosity of 18.5% in the upper right region.
+    We now have 4 regions. Our decision tree is starting to capture the increasing
+    production with increasing porosity along with lower production for low brittleness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9931df51305b719f93fc51eecf44641d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the next best split is in the original lower porosity region from the stump
+    tree with porosity of 13.2%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/597e4adea071f8f67d71e82f4c1015f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next best split divides the region in the middle of porosity, capturing
+    the trend of low production for low brittleness, even with high porosity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1024ff1d9be25d7b007a5ee890b6d8f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 6.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next split is capturing the reduction in production with high brittleness,
+    even with high porosity,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/782938df9c411d347bdc8e6e031a6d66.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 7.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and this split continues to capture this same pattern in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3401dcf9ca381bf65d39fada64ecde2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hyperparameter number of leaf nodes of 8.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For brevity we stop here, and make these observations,
+  prefs: []
+  type: TYPE_NORMAL
+- en: hierarchical, binary segmentation is the same as sequentially building a decision
+    tree, each split adds a new decision node and increases the number of leaf nodes
+    by one.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the simple decision trees are in the complicated decision tree, i.e., if we
+    build an \(8\) leaf node model, we have the \(8, 7, \ldots, 2\) leaf node model
+    by sequentially removing the decision nodes, in the order of last one is the first
+    one to remove.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the ultimate overfit model is number of leaf nodes equal to the number of training
+    data. In this case, the training error is 0.0 as have one region for each training
+    data a we estimate with the training data response feature values for all the
+    at the training data cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Updating the Loss Function with a New Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To find the next best split, we must scan over all regions, and over all features
+    with the regions. This may sound like a lot of computation, but it is quite efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we only need to check the midpoints between sorted training data for each feature
+    in each region, because any split that does not change the region assignment of
+    a training data will not change the training loss.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For a region \(R\) split into candidate regions \(R_L\) and \(R_R\), the RSS
+    after the split is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ \text{RSS}_{\text{split}} = \sum_{i \in R_L} (y_i - \hat{y}_{R_L})^2 + \sum_{i
+    \in R_R} (y_i - \hat{y}_{R_R})^2 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where, \(y_i\) is the actual response feature for training data observation
+    \(i\), and \(\hat{y}_{R_L}\), \(\hat{y}_{R_R}\) is the mean of training data response
+    feature in candidate regions \(R_L\) and \(R_R\).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, we add in the RSS components from all the other regions to get the total
+    model RSS to find the best split over all the regions,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the split with the lowest \(\text{RSS}_{\text{split}}\) is selected for the
+    region and compared to all other best splits in the other regions to find the
+    next best split, greedy solution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now we are prepared for tuning a decision tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tuning the Tree Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To tune the decision tree we take the very overfit trained tree model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: sequentially cut the last decision node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: i.e., prune the last branch of the decision tree
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since the simpler trees are inside the complicated tree!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can calculate test error as we prune and select tree with minimum test error
+  prefs: []
+  type: TYPE_NORMAL
+- en: We overfit the decision tree model, with a large number of leaf nodes and then
+    we reduce the number of leaf nodes while tracking the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we select the number of leaf nodes that minimize the testing error.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: since we are sequentially removing the last branch to simplify the tree, we
+    call model tuning **pruning** for decision trees
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here is an overfit decision tree with many, \(100\), leaf nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3383a81c81cdb9ed5c96432a485e7194.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, hyperparameter number of leaf nodes of 100 (left),
+    train and test cross validation plot (center) and train and test error over number
+    of leaf nodes (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since this tree is calculated with my interactive Python dashboard, I am able
+    to easily reduce the number of regions from \(100, 99, 98, 96, 95, \ldots\) and
+    visualize the tree to explore complicated to simple trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: by doing this we can demonstrate that the simple trees are in the complicated
+    tree.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For example, here’s the 5 region decision tree in the overfit 100 region decision
+    tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/566f12da178143a07d17de9adc100684.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The 5 leaf node tree in the very overfit 100 leaf node tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and here is the 10 region decision tree in the overfit 100 region decision tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96e18c15cb01e9558e4b2512a6b1ef20.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The 10 leaf node tree in the very overfit 100 leaf node tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: and finally, here is the 20 region decision tree in the overfit 100 region decision
+    tree,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19d39b48f3c129dc12099bd52c3bb546.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The 20 leaf node tree in the very overfit 100 leaf node tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might wonder, why I didn’t just update the decision tree plot? scikit-learn’s
+    decision tree plotting function recales the plot and the geometry changes so much
+    it is not easy to visualize the simple trees within the complicated tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I think this approach of visualizing the simple trees and drafting the polylines
+    works well for educational purposes!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now let’s return to our very overfit tree and demonstrate the hyperparameter
+    tuning by tree pruning approach,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24f9e4745fc35d0cf9c039aec32684f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we identify the last added branch and remove it to calculate the 99 region
+    decision tree, a slightly simpler decision tree, and we calculate the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2c6ffbcc9634d3d3f7350cb0564380d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we identify the last added branch again and remove it to calculate the 98
+    region decision tree, once again a slightly simpler decision tree, and we calculate
+    the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/efae49220a4ea118479dcc21d333e37a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we identify the last added branch again and remove it to calculate the 97
+    region decision tree, once again a slightly simpler decision tree, and we calculate
+    the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4af3bd7dce90621152ff68c398bd578.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we identify the last added branch again and remove it to calculate the 96
+    region decision tree, once again a slightly simpler decision tree, and we calculate
+    the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eeea92714bf8b2f878a05ce7f50e9eae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we identify the last added branch again and remove it to calculate the 95
+    region decision tree, once again a slightly simpler decision tree, and we calculate
+    the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90180132c5183f3342f2051c501aee4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we identify the last added branch again and remove it to calculate the 94
+    region decision tree, once again a slightly simpler decision tree, and we calculate
+    the test error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53f087807a31ef6a8e1be0e1ec170292.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, train and test error vs. model complexity (left)
+    and decision tree (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s return and look at the very overfit model and add some more information
+    over different levels of complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab38e613fbf8ad17fdab5bd4f89adaa6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Very overfit decision tree, hyperparameter number of leaf nodes of 100 (left),
+    train and test cross validation plot (center) and train and test error over number
+    of leaf nodes (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I include the,
+  prefs: []
+  type: TYPE_NORMAL
+- en: train and test cross validation plot with nearly perfect training prediction
+    and very poor testing prediction for the 100 leaf node overfit decision tree
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train and test error versus number of leaf nodes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This demonstrates that the decision tree model is indeed very overfit, for example,
+    see the falling training error and rising testing error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we prune the decision nodes until we obtain the model with the minimum testing
+    error at about 19 leaf nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/064eac7331174101230aee9c413623f3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tuned decision tree, hyperparameter number of leaf nodes of 20 (left), train
+    and test cross validation plot (center) and train and test error over number of
+    leaf nodes indicating that testing error is minimized (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For completeness, I have included an underfit model, i.e., if we prune our decision
+    tree too much, with only 8 leaf nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d7b773b0de829f858763876c59a1c04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Underfit decision tree, hyperparameter number of leaf nodes of 8 (left), train
+    and test cross validation plot (center) and train and test error over number of
+    leaf nodes indicating that testing error is minimized (right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, that the train and test error are both very high with the underfit decision
+    tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I prefer number of leaf nodes as my decision tree hyperparameter because it
+    provides,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**continuous, uniform increase in complexity** - equal steps in increased complexity
+    without jumps'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**intuitive control on complexity** - we can understand and relate the \(2,
+    3, \ldots, 100\) leaf node decision trees'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**flexible complexity** - the tree is free to grow in any manner to reduce
+    training error, including highly asymmetric decision trees'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are other common decision tree hyperparameters including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Minimum reduction in RSS** – related to the idea that incremental increase
+    in complexity must be offset by sufficient reduction in training error. This could
+    stop the model early, for example, a split with low reduction in training error
+    could lead to a subsequent split with a much larger reduction in training error'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Minimum number of training data in each region** – related to the concept
+    of accuracy of the by-region estimates, i.e., we need at least \(n\) data for
+    a reliable mean and most common category'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Maximum number of levels** – forces symmetric trees, similar number of splits
+    to get to each leaf node. There is a large change in model complexity with change
+    in the hyperparameter.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Prediction Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The decision tree prediction model is represented as **set of nested if statements**,
+    for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: and the predictions as stated above are either the,
+  prefs: []
+  type: TYPE_NORMAL
+- en: regression - average of the training data in the region
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: classification - the plurality, most common category, of the training data in
+    the region
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shapley Values from Decision Trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recall, we need to take a single model, for example, \(f(x_1,x_2,x_3,x_4)\),
+    and make an estimate for all possible combinations of feature subsets, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f(x_1) \quad f(x_2,x_4) \quad f(x_1,x_2,x_3) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: note, the naïve approach to calculate Shapley values is to train the full combinatorial
+    of models with different predictor features, but we don’t want to make new models
+    if our goal is feature importance to diagnose our specific model, \(f\), to support
+    model explainability.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One solution is to apply a variety of approaches, similar to imputation methods,
+    including,
+  prefs: []
+  type: TYPE_NORMAL
+- en: replace the excluded feature(s) with the expected value, global mean,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ f(x_1,x_2,x_3) = f(x_1,x_2,x_3,x_4=E[x_4]) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: replace the excluded feature(s) with the median value, the 50th percentile,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: \[ f(x_1,x_2,x_3) = f(x_1,x_2,x_3,x_4=P50_{x_4}) \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a more accurate, unique method with tree-based models, we can actually
+    remove the influence of any of the features from the decision tree after the model
+    is trained, for example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: remove all \(x_4\) branches, and then the model does not use \(x_4\) to make
+    the prediction
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Of course, we cannot just remove branches and ‘wood glue’ the tree back together!
+  prefs: []
+  type: TYPE_NORMAL
+- en: we must make new predictions that don’t introduce bias.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s demonstrate the procedure for removing a feature from a decision tree,
+    with a couple of prediction cases,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is a prediction case that does not encounter the removed feature, \(x_2\)
+    is removed and,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_1=25 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: the prediction is made as usual.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a9783a200ab476bb3a92cb2cfec12d63.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction case that does not encounter the removed feature is made as usual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f(x_1=25) = 20 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: A prediction case that does encounter the removed feature, \(x_1\) is removed
+    and,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: \[ x_2 = 60 \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: we effectively go down both paths, by weighting, by number of training data,
+    the solution over both paths!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/8152951b8a3c920f03825528d98c5ae7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction case that does encounter the removed feature is made by weighting
+    both paths by the number of training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ f(x_2=60) = \frac{60}{100} \left[ \frac{15}{60} \times 20 + \frac{45}{60}
+    \times 70 \right] + \frac{40}{100} \left[130\right] = 86.5 \]\[ f(x_2=60) = 86.5
+    \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the Required Libraries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will also need some standard packages. These should have been installed with
+    Anaconda 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you get a package import error, you may have to first install some of these
+    packages. This can usually be accomplished by opening up a command window on Windows
+    and then typing ‘python -m pip install [package-name]’. More assistance is available
+    with the respective package docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Declare Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s define a couple of functions to streamline plotting correlation matrices
+    and visualization of a decision tree regression model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the Working Directory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I always like to do this so I don’t lose files and to simplify subsequent read
+    and writes (avoid including the full address each time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will have to update the part in quotes with your own working directory and
+    the format is different on a Mac (e.g. “~/PGE”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, spatial dataset [unconv_MV.csv](https://raw.githubusercontent.com/GeostatsGuy/GeoDataSets/master/unconv_MV.csv)
+    available in my GeoDataSet repo. It is a comma delimited file with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well index (integer)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: porosity (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: permeability (\(mD\))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (\(\frac{kg}{m^3} \cdot \frac{m}{s} \cdot 10^6\)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial gas production (90 day average) (MCFPD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load it with the pandas ‘read_csv’ function into a data frame we called ‘df’
+    and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Python Tip: using functions from a package** just type the label for the
+    package that we declared at the beginning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'so we can access the pandas function ‘read_csv’ with the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: but read csv has required input parameters. The essential one is the name of
+    the file. For our circumstance all the other default parameters are fine. If you
+    want to see all the possible parameters for this function, just go to the docs
+    [here](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The docs are always helpful
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There is often a lot of flexibility for Python functions, possible through using
+    various inputs parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, the program has an output, a pandas DataFrame loaded from the data. So
+    we have to specify the name / variable representing that new object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s run this command to load the data and then this command to extract a random
+    subset of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: Feature Engineering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s make some changes to the data to improve the workflow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Select the predictor features (x2) and the response feature (x1)**, make
+    sure the metadata is also consistent.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Metadata** encoding such as the units, labels and display ranges for each
+    feature.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Reduce the number of data** for ease of visualization (hard to see if too
+    many points on our plots).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Train and test data split** to demonstrate and visualize simple hyperparameter
+    tuning.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Add random noise to the data** to demonstrate model overfit. The original
+    data is error free and does not readily demonstrate overfit.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Given this is properly set, one should be able to use any dataset and features
+    for this demonstration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: for brevity we don’t show any feature selection here. Previous chapter, e.g.,
+    k-nearest neighbours include some feature selection methods, but see the feature
+    selection chapter for many possible methods with codes for feature selection.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Optional: Add Random Noise to the Response Feature'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can do this to observe the impact of data noise on overfit and hyperparameter
+    tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is for experiential learning, of course we wouldn’t add random noise to
+    our data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We set the random number seed for reproducibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s make sure that we have selected reasonable features to build a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: the 2 predictor features are not collinear, as this would result in an unstable
+    prediction model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: each of the features are related to the response feature, the predictor features
+    inform the response
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the Correlation Matrix and Correlation with Response Ranking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with correlation analysis. We can calculate and view the correlation
+    matrix and correlation to the response features with these previously declared
+    functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: correlation analysis is based on the assumption of linear relationships, but
+    it is a good start
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/152d837d72f43ba9a48527a444d81b3bbc73a2ba553d2760d27f5c20206ea0b2.png](../Images/fe078f42023f81da1972474b1d3bbf26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Note the 1.0 diagonal resulting from the correlation of each variable with themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This looks good. There is a mix of correlation magnitudes. Of course, correlation
+    coefficients are limited to degree of linear correlations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the matrix scatter plot to see the pairwise relationship between
+    the features.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8d03fa748bcc76aea92c8e57b5fb8071473e84b910d1402f5fd62dd21b102145.png](../Images/515a70a53d49c49c9ecf98249cd67b5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Train and Test Split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For convenience and simplicity we use scikit-learn’s random train and test split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE49]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualize the DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Visualizing the train and test DataFrame is useful check before we build our
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: many things can go wrong, e.g., we loaded the wrong data, all the features did
+    not load, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can preview by utilizing the ‘head’ DataFrame member function (with a nice
+    and clean format, see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE50]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE51]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 86 | 12.83 | 29.87 | 2089.258307 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 35 | 17.39 | 56.43 | 5803.596379 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 75 | 12.23 | 40.67 | 3511.348151 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 36 | 13.72 | 40.24 | 4004.849870 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 126 | 12.83 | 17.20 | 2712.836372 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 5 | 15.55 | 58.25 | 5353.761093 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 46 | 20.21 | 23.78 | 4387.577571 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 96 | 15.07 | 39.39 | 4412.135054 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 45 | 12.10 | 63.24 | 3654.779704 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 105 | 19.54 | 37.40 | 5251.551624 |'
+  prefs: []
+  type: TYPE_TB
+- en: Summary Statistics for Tabular Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are a lot of efficient methods to calculate summary statistics from tabular
+    data in DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The describe command provides count, mean, minimum, maximum in a nice data table.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE52]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE53]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 105.000000 | 105.000000 | 105.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 14.859238 | 48.861143 | 4238.554591 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 3.057228 | 14.432050 | 1087.707113 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 7.220000 | 10.940000 | 1517.373571 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 23.550000 | 84.330000 | 6907.632261 |'
+  prefs: []
+  type: TYPE_TB
+- en: '|  | Por | Brittle | Production |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| count | 35.000000 | 35.000000 | 35.000000 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| mean | 15.011714 | 46.798286 | 4378.913131 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| std | 3.574467 | 13.380910 | 1290.216113 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| min | 6.550000 | 20.120000 | 1846.027145 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| max | 20.860000 | 68.760000 | 6593.447893 |'
+  prefs: []
+  type: TYPE_TB
+- en: It is good that we checked the summary statistics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: there are no obvious issues
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check out the range of values for each feature to set up and adjust plotting
+    limits. See above.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Visualize the Train and Test Splits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s check the consistency and coverage of training and testing with histograms
+    and scatter plots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: check to make sure the training and testing cover the range of possible feature
+    combinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ensure we are not extrapolating beyond the training data with the testing cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE54]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/7f95232f4bccd970cd69b500c8930cfffaf4ffd9a243b7aea1e184337ba9175d.png](../Images/3e84676c9f7f37dcabed4194a238047f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sometimes I find it more convenient to compare distributions by looking at CDF’s
+    instead of histograms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we avoid the arbitrary choice of histogram bin size, because CDF’s are at the
+    data resolution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE55]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/846daf6f4bcdece7bb39d2b1b9c385e351fbcf923d9599f41f5c7a4c3639c3dc.png](../Images/89d70d18d70c546bb0ac8c55112e894e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once again, the distributions are well behaved,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we cannot observe obvious gaps nor truncations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: check coverage of the train and test data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s look at a scatter plot of Porosity vs. Brittleness with points colored
+    by Production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE56]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/a0a42ff41b36629afd1b47ee725006868db8d0038504ccf72d1f966ac5e69281.png](../Images/3ec3d66453c69d41e8b4c7a2508530a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This problem looks complicated and could not be modeled with simple linear regression.
+    It appears that there are non-linearities. Let’s use a simple nonparametric model,
+    decision tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instantiate, Fit and Predict with scikit-learn
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s build our predictive machine learning model, by instantiate, fit and predict
+    with scikit-learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**instantiate** the model object with the hyperparameters, k-nearest neighbours'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**fit** by training the model with the training data, we use the member function
+    fit'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**predict** with the trained model. After fit is run, predict is available
+    to make predictions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training a Decision Tree (Regression Tree)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we are ready to run the DecisionTreeRegressor command to build our regression
+    tree to predict our response feature given our 2 predictor features (recall we
+    limit ourselves here to 2 predictor features for ease of visualization).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use our two functions defined above to visualize the decision tree prediction
+    over the feature space and the cross plot of actual and estimated production for
+    the training data along with three model metrics from the sklearn.metric module.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Hyper Parameters** - we constrain our tree complexity with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*max_leaf_nodes* - maximum number of regions, also called terminal or lead
+    nodes in the decision tree'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*max_depth* - maximum number of levels, e.g., max_depth = 1 is a stump tree
+    with only 1 decision and two regions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*min_samples_leaf* - minimum number of data in a new region, good constraint
+    to ensure each region has enough data to make a reasonable estimate'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For now lets just try out some hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Underfit Decision Tree Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s use too few regions, set max_leaf_nodes too small and see the resulting
+    decision tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE57]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/de9bb85033f26085feea46a1ec5a5786ccbe3d092bb940c53d319584063a39c7.png](../Images/be259c4cb62524490823c4f4d2d09c0c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This model is very much underfit, it is too simple to fit the shape of the prediction
+    problem. Here’s some more information on the plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See the horizontal lines on the plot of estimated vs. actual production (plot
+    on the bottom)?
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is expected as the regression tree estimates with the average of the data
+    in each region of the feature space (terminal node).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To further assess the model performance, I have included the actual response
+    P10, mean and P90 for each leaf node, region for both training and testing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: underfit predictive machine learning models have poor accuracy and training
+    and testing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If we have a more complicated tree with more terminal nodes then there would
+    be more lines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overfit Decision Tree Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s use too many regions, set max_leaf_nodes too large and see the resulting
+    decision tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE58]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b64f9666026f63544dd4662412c50db7132cd58f19c828937a4e3bbfa9366dc6.png](../Images/c28519e97623d45a6f72540a6b408c6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we have an overfit predictive machine learning model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: too much complexity and flexibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we are fitting the noise in the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: good accuracy in training, but poor accuracy in testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is instructive to observe the decision tree model over the feature space
+    as we incrementally add terminal nodes. We can graphically observe the hierarchical
+    binary splitting quite clearly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize from simple complicated models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE59]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b066c86d94043d639bf7b5305f612745b8a64d2920e129e3f924e8deaac2ab67.png](../Images/43008585fa66e722cde17f42284274b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It may be useful to look at a decision tree model and the associated decision
+    tree, side-by-side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE60]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fbf5427fe1d098a17a235d28fdd24ff7b7b442c21b958df2b2855e4ffeb66011.png](../Images/de575bff5cbcf3e18e0bc1c385400e3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How do we find the best hyperparameters, for the best complexity for optimum
+    prediction accuracy for testing? That is hyperparameter tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Underfit Decision Tree Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s use too few regions, set max_leaf_nodes too small and see the resulting
+    decision tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE61]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/de9bb85033f26085feea46a1ec5a5786ccbe3d092bb940c53d319584063a39c7.png](../Images/be259c4cb62524490823c4f4d2d09c0c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This model is very much underfit, it is too simple to fit the shape of the prediction
+    problem. Here’s some more information on the plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See the horizontal lines on the plot of estimated vs. actual production (plot
+    on the bottom)?
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is expected as the regression tree estimates with the average of the data
+    in each region of the feature space (terminal node).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To further assess the model performance, I have included the actual response
+    P10, mean and P90 for each leaf node, region for both training and testing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: underfit predictive machine learning models have poor accuracy and training
+    and testing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If we have a more complicated tree with more terminal nodes then there would
+    be more lines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overfit Decision Tree Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Let’s use too many regions, set max_leaf_nodes too large and see the resulting
+    decision tree model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE62]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b64f9666026f63544dd4662412c50db7132cd58f19c828937a4e3bbfa9366dc6.png](../Images/c28519e97623d45a6f72540a6b408c6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we have an overfit predictive machine learning model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: too much complexity and flexibility
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we are fitting the noise in the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: good accuracy in training, but poor accuracy in testing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is instructive to observe the decision tree model over the feature space
+    as we incrementally add terminal nodes. We can graphically observe the hierarchical
+    binary splitting quite clearly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s visualize from simple complicated models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE63]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/b066c86d94043d639bf7b5305f612745b8a64d2920e129e3f924e8deaac2ab67.png](../Images/43008585fa66e722cde17f42284274b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It may be useful to look at a decision tree model and the associated decision
+    tree, side-by-side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE64]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/fbf5427fe1d098a17a235d28fdd24ff7b7b442c21b958df2b2855e4ffeb66011.png](../Images/de575bff5cbcf3e18e0bc1c385400e3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: How do we find the best hyperparameters, for the best complexity for optimum
+    prediction accuracy for testing? That is hyperparameter tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tuning a Decision Tree (Regression Tree)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s perform hyperparameter tuning. To do this we,
+  prefs: []
+  type: TYPE_NORMAL
+- en: See the range of possible hyperparameter values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Loop over the range of possible hyperparameter values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train on the training data with the current hyperparameter values.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Predict at the testing data
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Summarize the error over all the testing data
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Select the hyperparameters that minimize the error at for the testing data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: When I teach this to my students, I suggest that this is a model dress rehearsal.
+    We add value by making predictions for cases not used to train the model. We want
+    the model that performs best for cases not in the training, so we are simulating
+    real world use of the model!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s do hyperparameter tuning ‘by-hand’, by varying the decision tree complexity
+    and find the complexity that minimizes MSE in testing
+  prefs: []
+  type: TYPE_NORMAL
+- en: for simplicity the code below loops only over the maximum leaf nodes hyperparameter
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we set minimum number of samples to 1, and maximum depth to 9 to ensure that
+    these hyperparameters will not have any impact (we set them to very complicated
+    so they don’t limit the model complexity)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE65]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/27a521f2cbd01b3caec37b95530d68674a6785fa6c061acdac71ea6326a9fe6b.png](../Images/f43c9ad2b759692c2b199e397c735352.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is useful to evaluate the performance of our tree by observing the accuracy
+    vs. complexity, with a minimum due to the model variance and model bias trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a more robust result, let’s try k-fold cross validation. sklearn has a
+    built in cross validation method called cross_val_score that we can use to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply k-fold approach with iterative separation of training and testing data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With k=5, we have 20% withheld for testing for each fold
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Automate the model construction, looping over folds and averaging the metric
+    of interest
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s try it out on our trees with variable number of terminal nodes. Note the
+    cross validation is set to use 4 processors, but still will likely take a couple
+    of minutes to run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE66]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/35821438b0adbe9ae455b2e6731dab92e05cf7dfb2dcbaaa8d296ac1c9a18b39.png](../Images/2df3cfa16f6fb36c7bd2a52fe7d20a6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The k-fold cross validation provides a smoother plot of MSE vs. the hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: this is accomplished by averaging the MSE over all the folds to reduce sensitivity
+    of the metric to specific assignment of training and testing data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: all our train and test cross validation or k-fold cross validation was to get
+    this one value, the model **hyperparameter**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Build the Final Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now let’s take that hyperparameter and train on all the data, this is our **final
+    model**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE67]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/e85bbd71cc280b9a057d106524b0d1dfca28c6500e32ece594637cde5b8b1dba.png](../Images/608907e2a0d015a0d611204bfa6c41e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have completed our predictive machine learning model. Now let’s cover a couple
+    more decision tree diagnostics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interrogating Decision Trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It may be useful to evaluate for any possible feature combination, the order
+    of decision nodes that resulted in the specific prediction. The following function
+    provides the list of nodes that the prediction cases passes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE68]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE69]'
+  prefs: []
+  type: TYPE_PRE
+- en: Extracting the Decision Tree Prediction Model as a Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Furthermore it may be useful to convert the decision tree to code, a nested
+    set of ‘if’ statements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This creates a portable model that could be copied and applied as a standalone
+    function.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, one could conveniently interrogate the code version of the tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use the previously defined function to do this with our pruned tree.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE70]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE71]'
+  prefs: []
+  type: TYPE_PRE
+- en: Decision Tree-based Feature Importance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Feature importance is calculated from a decision trees by summarizing the reduction
+    in mean square error through inclusion of each feature and is summarized as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: \[ FI(x) = \sum_{t \in T_f} \frac{N_t}{N} \Delta_{MSE_t} \]
+  prefs: []
+  type: TYPE_NORMAL
+- en: where \(T_f\) are all nodes with feature \(x\) as the split, \(N_t\) is the
+    number of training samples reaching node \(t\), \(N\) is the total number of samples
+    in the dataset and \(\Delta_{MSE_t}\) is the reduction in MSE with the \(t\) split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, feature importance can be calculated in a similar manner to MSE above
+    for the case of classification trees with **Gini Impurity**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE72]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/8fcae780c3b59534e28863b5aa7a46545ac1a9e556ab9950e41495b87e7bee49.png](../Images/e7672512b746dfc82482f39bc8c78ddc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualize the Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s take a last look at the graphical representation of our pruned tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE73]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/67fb9697896ebccb3d2ba5fce562153c671634fd57bdc8739c47227f04785578.png](../Images/dceac0eb1f800b2c21d5e490c1248210.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simple Code to Make a Decision Tree Machine and Calculate a Prediction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To support those just getting started, here’s a minimal amount of code to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: load the scikit-learn package for decision trees
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: load data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: instantiate a decision tree with hyperparameters (no tuning is shown)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train the decision tree with the training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: make a prediction with the decision tree
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE74]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE75]'
+  prefs: []
+  type: TYPE_PRE
+- en: Machine Learning Pipelines for Clean, Compact Machine Learning Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pipelines are a scikit-learn class that allows for the encapsulation of a sequence
+    of data preparation and modeling steps
+  prefs: []
+  type: TYPE_NORMAL
+- en: then we can treat the pipeline as an object in our much condensed workflow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The pipeline class allows us to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: improve code readability and to keep everything straight
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: build complete workflows with very few lines of readable code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: avoid common workflow problems like data leakage, testing data informing model
+    parameter training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: abstract common machine learning modeling and focus on building the best model
+    possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The fundamental philosophy is to treat machine learning as a combinatorial search
+    to find the best model (AutoML)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more information see my recorded lecture on [Machine Learning Pipelines](https://www.youtube.com/watch?v=tYrPs8s1l9U&list=PLG19vXLQHvSAufDFgZEFAYQEwMJXklnQV&index=5)
+    and a well-documented demonstration [Machine Learning Pipeline Workflow](http://localhost:8892/notebooks/OneDrive%20-%20The%20University%20of%20Texas%20at%20Austin/Courses/Workflows/PythonDataBasics_Pipelines.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE76]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE77]'
+  prefs: []
+  type: TYPE_PRE
+- en: Practice on a New Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Ok, time to get to work. Let’s load up a dataset and build a decision tree prediction
+    model with,
+  prefs: []
+  type: TYPE_NORMAL
+- en: compact code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: basic visaulizations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: save the output
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can select any of these datasets or modify the code and add your own to
+    do this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3 year cumulative oil production (Mbbl)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load and format the data,
+  prefs: []
+  type: TYPE_NORMAL
+- en: drop the response feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reformate the features as needed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, I like to store the metadata in lists
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE78]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Density | PVel | Youngs | SVel | Shear | CumulativeOil
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.907730 | 133.910637 | 7.308846 | 2.146360 | 3563.549461 | 25.688560
+    | 1673.770439 | 6.429229 | 1201.20 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 12.647965 | 114.359667 | 7.343836 | 2.188597 | 3570.094553 | 25.444064
+    | 1670.043495 | 6.100984 | 683.92 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 12.998469 | 129.332122 | 7.282051 | 2.131121 | 3524.448615 | 25.985734
+    | 1681.960101 | 6.203527 | 978.14 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 15 | 12.426141 | 123.227677 | 7.351795 | 2.203026 | 3417.596818 | 25.976462
+    | 1675.355860 | 6.288040 | 608.09 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 16 | 13.507371 | 147.562087 | 7.300360 | 2.210916 | 3476.167397 | 24.817767
+    | 1656.890690 | 6.222528 | 1062.10 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 36 | 13.309477 | 122.818961 | 7.345220 | 2.178749 | 3346.347661 | 25.436579
+    | 1651.679529 | 6.334308 | 539.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 49 | 11.822910 | 98.168307 | 7.386212 | 2.301552 | 3250.020705 | 24.340656
+    | 1662.438742 | 6.617267 | 1095.30 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 51 | 13.986616 | 132.575456 | 7.194749 | 2.108986 | 3415.255945 | 26.253236
+    | 1712.017629 | 5.583251 | 805.49 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 61 | 14.735895 | 128.201000 | 7.172693 | 1.841786 | 3886.950307 | 28.289950
+    | 1672.370150 | 5.044439 | 1146.00 |'
+  prefs: []
+  type: TYPE_TB
+- en: Build and Check Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We apply the follow steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: specify the K-fold method
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: loop over number of leaf nodes, instantiate, fit and record the error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: plot the test error vs. number of leaf nodes, select the hyperparameter that
+    minimizes test error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: retrain the model with the tuned hyperparameter and all of the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE79]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/800e93156a21d23fb27ec3b349cbd0c234a2789e27a8582567a80abbbf0e08b0.png](../Images/a3d66d6b8f851c5edb5b770a5393116c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dataset 0, Unconventional Multivariate v4
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, dataset [unconv_MV.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/unconv_MV_v4.csv).
+    This dataset has variables from 1,000 unconventional wells including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well average porosity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: log transform of permeability (to linearize the relationships with other variables)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: acoustic impedance (kg/m^3 x m/s x 10^6)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: brittleness ratio (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: total organic carbon (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: vitrinite reflectance (%)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: initial production 90 day average (MCFPD).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dataset 2, Reservoir 21
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let’s load the provided multivariate, 3D spatial dataset [res21_wells.csv](https://github.com/GeostatsGuy/GeoDataSets/blob/master/res21_wells.csv).
+    This dataset has variables from 73 vertical wells over a 10,000m x 10,000m x 50
+    m reservoir unit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: well (ID)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: X (m), Y (m), Depth (m) location coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Porosity (%) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Permeability (mD)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Acoustic Impedance (kg/m2s*10^6) after units conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facies (categorical) - ordinal with ordering from Shale, Sandy Shale, Shaley
+    Sand, to Sandstone.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density (g/cm^3)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compressible velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Youngs modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear velocity (m/s)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shear modulus (GPa)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3 year cumulative oil production (Mbbl)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We load the tabular data with the pandas ‘read_csv’ function into a DataFrame
+    we called ‘my_data’ and then preview it to make sure it loaded correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: we also populate lists with data ranges and labels for ease of plotting
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Load and format the data,
+  prefs: []
+  type: TYPE_NORMAL
+- en: drop the response feature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: reformate the features as needed
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: also, I like to store the metadata in lists
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE80]'
+  prefs: []
+  type: TYPE_PRE
+- en: '|  | Por | Perm | AI | Density | PVel | Youngs | SVel | Shear | CumulativeOil
+    |'
+  prefs: []
+  type: TYPE_TB
+- en: '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 1 | 12.907730 | 133.910637 | 7.308846 | 2.146360 | 3563.549461 | 25.688560
+    | 1673.770439 | 6.429229 | 1201.20 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 7 | 12.647965 | 114.359667 | 7.343836 | 2.188597 | 3570.094553 | 25.444064
+    | 1670.043495 | 6.100984 | 683.92 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 10 | 12.998469 | 129.332122 | 7.282051 | 2.131121 | 3524.448615 | 25.985734
+    | 1681.960101 | 6.203527 | 978.14 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 15 | 12.426141 | 123.227677 | 7.351795 | 2.203026 | 3417.596818 | 25.976462
+    | 1675.355860 | 6.288040 | 608.09 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 16 | 13.507371 | 147.562087 | 7.300360 | 2.210916 | 3476.167397 | 24.817767
+    | 1656.890690 | 6.222528 | 1062.10 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 36 | 13.309477 | 122.818961 | 7.345220 | 2.178749 | 3346.347661 | 25.436579
+    | 1651.679529 | 6.334308 | 539.98 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 49 | 11.822910 | 98.168307 | 7.386212 | 2.301552 | 3250.020705 | 24.340656
+    | 1662.438742 | 6.617267 | 1095.30 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 51 | 13.986616 | 132.575456 | 7.194749 | 2.108986 | 3415.255945 | 26.253236
+    | 1712.017629 | 5.583251 | 805.49 |'
+  prefs: []
+  type: TYPE_TB
+- en: '| 61 | 14.735895 | 128.201000 | 7.172693 | 1.841786 | 3886.950307 | 28.289950
+    | 1672.370150 | 5.044439 | 1146.00 |'
+  prefs: []
+  type: TYPE_TB
+- en: Build and Check Model
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: We apply the follow steps,
+  prefs: []
+  type: TYPE_NORMAL
+- en: specify the K-fold method
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: loop over number of leaf nodes, instantiate, fit and record the error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: plot the test error vs. number of leaf nodes, select the hyperparameter that
+    minimizes test error
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: retrain the model with the tuned hyperparameter and all of the data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE81]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![_images/800e93156a21d23fb27ec3b349cbd0c234a2789e27a8582567a80abbbf0e08b0.png](../Images/a3d66d6b8f851c5edb5b770a5393116c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a basic treatment of decision tree. Much more could be done and discussed,
+    I have many more resources. Check out my [shared resource inventory](https://michaelpyrcz.com/my-resources)
+    and the YouTube lecture links at the start of this chapter with resource links
+    in the videos’ descriptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this is helpful,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the Author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/eb709b2c0a0c715da01ae0165efdf3b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Professor Michael Pyrcz in his office on the 40 acres, campus of The University
+    of Texas at Austin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz is a professor in the [Cockrell School of Engineering](https://cockrell.utexas.edu/faculty-directory/alphabetical/p),
+    and the [Jackson School of Geosciences](https://www.jsg.utexas.edu/researcher/michael_pyrcz/),
+    at [The University of Texas at Austin](https://www.utexas.edu/), where he researches
+    and teaches subsurface, spatial data analytics, geostatistics, and machine learning.
+    Michael is also,
+  prefs: []
+  type: TYPE_NORMAL
+- en: the principal investigator of the [Energy Analytics](https://fri.cns.utexas.edu/energy-analytics)
+    freshmen research initiative and a core faculty in the Machine Learn Laboratory
+    in the College of Natural Sciences, The University of Texas at Austin
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an associate editor for [Computers and Geosciences](https://www.sciencedirect.com/journal/computers-and-geosciences/about/editorial-board),
+    and a board member for [Mathematical Geosciences](https://link.springer.com/journal/11004/editorial-board),
+    the International Association for Mathematical Geosciences.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Michael has written over 70 [peer-reviewed publications](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en),
+    a [Python package](https://pypi.org/project/geostatspy/) for spatial data analytics,
+    co-authored a textbook on spatial data analytics, [Geostatistical Reservoir Modeling](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    and author of two recently released e-books, [Applied Geostatistics in Python:
+    a Hands-on Guide with GeostatsPy](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    and [Applied Machine Learning in Python: a Hands-on Guide with Code](https://geostatsguy.github.io/MachineLearningDemos_Book/intro.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of Michael’s university lectures are available on his [YouTube Channel](https://www.youtube.com/@GeostatsGuyLectures)
+    with links to 100s of Python interactive dashboards and well-documented workflows
+    in over 40 repositories on his [GitHub account](https://github.com/GeostatsGuy),
+    to support any interested students and working professionals with evergreen content.
+    To find out more about Michael’s work and shared educational resources visit his
+    Website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to Work Together?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this content is helpful to those that want to learn more about subsurface
+    modeling, data analytics and machine learning. Students and working professionals
+    are welcome to participate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Want to invite me to visit your company for training, mentoring, project review,
+    workflow design and / or consulting? I’d be happy to drop by and work with you!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Interested in partnering, supporting my graduate student research or my Subsurface
+    Data Analytics and Machine Learning consortium (co-PI is Professor John Foster)?
+    My research combines data analytics, stochastic modeling and machine learning
+    theory with practice to develop novel methods and workflows to add value. We are
+    solving challenging subsurface problems!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I can be reached at [mpyrcz@austin.utexas.edu](mailto:mpyrcz%40austin.utexas.edu).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m always happy to discuss,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Michael*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Michael Pyrcz, Ph.D., P.Eng. Professor, Cockrell School of Engineering and The
+    Jackson School of Geosciences, The University of Texas at Austin
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More Resources Available at: [Twitter](https://twitter.com/geostatsguy) | [GitHub](https://github.com/GeostatsGuy)
+    | [Website](http://michaelpyrcz.com) | [GoogleScholar](https://scholar.google.com/citations?user=QVZ20eQAAAAJ&hl=en&oi=ao)
+    | [Geostatistics Book](https://www.amazon.com/Geostatistical-Reservoir-Modeling-Michael-Pyrcz/dp/0199731446)
+    | [YouTube](https://www.youtube.com/channel/UCLqEr-xV-ceHdXXXrTId5ig) | [Applied
+    Geostats in Python e-book](https://geostatsguy.github.io/GeostatsPyDemos_Book/intro.html)
+    | [Applied Machine Learning in Python e-book](https://geostatsguy.github.io/MachineLearningDemos_Book/)
+    | [LinkedIn](https://www.linkedin.com/in/michael-pyrcz-61a648a1)'
+  prefs: []
+  type: TYPE_NORMAL
