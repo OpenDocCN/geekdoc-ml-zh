@@ -8,6 +8,7 @@
 +   [MLearningAI 博客中文翻译](docs/mlearningai-blog/README.md)
 +   [务实程序员的机器学习指南](docs/ppml/README.md)
 +   [科学中的监督机器学习](docs/sprv-ml-sci/README.md)
++   [使用概率编程自动化推断学习和设计](docs/使用概率编程自动化推断学习和设计/README.md)
 +   [机器人状态估计](docs/机器人状态估计/README.md)
 +   [机器学习基础（FML）中文第二版](docs/机器学习基础（FML）中文第二版/README.md)
 +   [机器学习的概率视角（MLAPP）](docs/机器学习的概率视角（MLAPP）/README.md)
