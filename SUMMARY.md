@@ -8,4 +8,5 @@
 +   [MLearningAI 博客中文翻译](docs/mlearningai-blog/README.md)
 +   [务实程序员的机器学习指南](docs/ppml/README.md)
 +   [科学中的监督机器学习](docs/sprv-ml-sci/README.md)
++   [机器学习的概率视角（MLAPP）](docs/机器学习的概率视角（MLAPP）/README.md)
 +   [面向初学者的随机森林](docs/面向初学者的随机森林/README.md)
