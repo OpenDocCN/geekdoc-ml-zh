@@ -12,5 +12,6 @@
 +   [机器人状态估计](docs/机器人状态估计/README.md)
 +   [机器学习基础（FML）中文第二版](docs/机器学习基础（FML）中文第二版/README.md)
 +   [机器学习的概率视角（MLAPP）](docs/机器学习的概率视角（MLAPP）/README.md)
++   [概率机器学习导论](docs/概率机器学习导论/README.md)
 +   [计算机视觉算法与应用](docs/计算机视觉算法与应用/README.md)
 +   [面向初学者的随机森林](docs/面向初学者的随机森林/README.md)
